@@ -1,29 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div class="templates:init">
-    <div class="templates:surround?with=page.html&amp;at=content">
+    <div class="templates:surround?with=page.html&amp;at=content-container">
         <div class="row-fluid">
-            <div id="content" class="span8">
-                <div class="templates:if-parameter-unset?param=query">
-                    <div class="templates:include?path=content/welcome.xml">welcome
-                </div>
-                </div>
-                
-<!--<div class="templates:if-parameter-set?param=query">-->
-                <div class="templates:include?path=query_input.html">search
+            <div class="span2">
+                <div class="templates:include?path=sidebar.html">sidebar</div>
             </div>
-                <div class="templates:if-parameter-set?param=query">
-                    <div id="results" class="fcs:query?x-dataview=full">
-                        <p>Found: <span id="hit-count" class="fcs:hit-count"/> matches.</p>
-                        <div class="fcs:show-hits?howmany=20"/>
-                    </div>
-                </div>
-            </div>
-            <div class="span4">
-                <h2>App Info</h2>
-                <div class="config:app-info"/>
-                <div>
-                    <div class="test:main">test:main</div>
-                </div>
+            <div id="content" class="span10">
+                <div class="templates:include-detail?path-detail=main.html">main</div>
             </div>
         </div>
     </div>
