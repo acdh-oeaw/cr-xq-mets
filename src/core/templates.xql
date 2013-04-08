@@ -284,9 +284,39 @@ declare function templates:init($node as node(), $model as map(*), $project as x
        map { "config" := config:config($project) }
 };
  
-declare function templates:include($node as node(), $model as map(*), $path as xs:string) {
+
+(:declare function templates:include($node as node(), $model as map(*), $path as xs:string) {
     templates:process(config:resolve($model, $path), $model)
 };
+
+:)
+declare %templates:default("filter", "") 
+function templates:include($node as node(), $model as map(*), $path as xs:string, $filter as xs:string) {
+    let $content := config:resolve($model, $path)
+    let $restricted-content := if ($filter != '') then 
+            (: try to handle namespaces dynamically 
+                by switching  to source namespace :)
+            let $ns-uri := namespace-uri($content[1]/*)        	       
+            let $ns := util:declare-namespace("",xs:anyURI($ns-uri))
+           return util:eval(concat("$content//", $filter)) else $content 
+    return templates:process($restricted-content , $model)
+};
+
+(:~ extra function for detail-include, to be able to pass a path-param 
+(otherwise it would overwrite also other includes )
+:)
+declare %templates:default("filter", "") 
+function templates:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string) {
+    let $content := config:resolve($model, $path-detail)
+    let $restricted-content := if ($filter != '' and exists($content)) then 
+            (: try to handle namespaces dynamically 
+                by switching  to source namespace :)
+            let $ns-uri := namespace-uri($content[1]/*)        	       
+            let $ns := util:declare-namespace("",xs:anyURI($ns-uri))
+           return util:eval(concat("$content//", $filter)) else $content 
+    return templates:process($restricted-content , $model)
+};
+
 
 declare function templates:surround($node as node(), $model as map(*), $with as xs:string, $at as xs:string?, $using as xs:string?) {
     let $path := concat($config:app-root, "/", $with)

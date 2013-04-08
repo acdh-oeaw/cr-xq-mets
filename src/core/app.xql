@@ -2,6 +2,7 @@ module namespace app="http://sade/app";
 
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 (:
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
 
@@ -61,4 +62,59 @@ function app:logo($node as node(), $model as map(*)) {
                     <img src="{$logo-image}" class="logo right"/>
                 </a>
            
+};
+
+
+
+declare 
+    %templates:wrap
+function app:login($node as node(), $model as map(*)) {
+
+    let $user := config:param-value($model, 'user')
+    
+    return
+    if ($user='') then <a href="core/login.html">login</a>
+            else <a href="?logout=true">logout</a>
+     
+};
+
+
+declare
+    %templates:default("filter", "")
+function app:list-projects($node as node(), $model as map(*), $filter as xs:string) {
+
+    let $filter-seq:= tokenize($filter,',')
+    let  $projects := if ($filter='') then config:list-projects()
+                        else $filter-seq
+    
+    (: get the absolute path to controller, for the image-urls :)
+    let $exist-controller := config:param-value($model, 'exist-controller')
+    let $request-uri:= config:param-value($model, 'request-uri')
+    let $base-uri:= if (contains($request-uri,$exist-controller)) then 
+                        concat(substring-before($request-uri,$exist-controller),$exist-controller)
+                      else $request-uri
+    
+    for $pid in $projects
+    
+                    let $config-map := map { "config" := config:project-config($pid)}
+                    (: try to get the base-project (could be different then the current $project-id for the only-config-projects :) 
+                    let $config-dir := substring-after(config:param-value($config-map, 'project-dir'),$config-params:projects-dir)
+                    let $visibility := config:param-value($config-map, 'visibility')                 
+                    let $title := config:param-value($config-map, 'project-title')
+                    let $link := if (config:param-value($config-map, 'project-url')!='') then
+                                        config:param-value($config-map, 'project-url')
+                                        else  concat($base-uri, '/', $pid, '/index.html')
+                    let $teaser-image :=  concat($base-uri, '/', $config-dir, config:param-value($config-map, 'teaser-image'))
+                    let $teaser-text:= if (config:param-value($config-map, 'teaser-text')!='') then
+                                            config:param-value($config-map, 'teaser-text')
+                                        else
+                                            collection(config:param-value($config-map, 'project-static-dir'))//*[xs:string(@id)= ('welcome','teaser')]/p
+                                          
+                    
+(:                                let $teaser := config:param-value($config-map, 'teaser'):)
+                    return if ($visibility != 'private') then <div class="teaser"><img class="teaser" src="{$teaser-image}" /> <h3><a href="{$link}" >{$title}</a></h3>
+                                     {$teaser-text}
+                            </div> else ()
+
+(:    return $projects:)
 };

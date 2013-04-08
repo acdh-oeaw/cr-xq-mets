@@ -82,28 +82,32 @@
                 <!-- fill form@action with <xsl:call-template name="formURL"/> will not work, 
                         because the parameter have to be encoded as input-elements  not in the form-url  
                     -->
-                <form id="searchretrieve" action="{$base_url}" method="get">
+                <!--<form id="searchretrieve" action="{$base_url}" method="get">-->
+                <form id="searchretrieve" action="" method="get">
                     <input type="hidden" name="x-format" value="{$format}"/>
-                    <table class="cmds-ui-elem-stretch">
+                    <!--<table class="cmds-ui-elem-stretch">
                         <tr>
                             <td colspan="2">
-                                <label>Context</label>
-                                <xsl:call-template name="contexts-select"/>
-                                <input type="text" id="input-simplequery" name="query" value="{$q}" class="queryinput active"/>
-                                <div id="searchclauselist" class="queryinput inactive"/>
-                            </td>
+                    -->
+                    <label>Context</label>
+                    <xsl:call-template name="contexts-select"/>
+                    <br/>
+                    <input type="text" id="input-simplequery" name="query" value="{$q}" class="queryinput active"/>
+<!--                                <div id="searchclauselist" class="queryinput inactive"/>-->
+                       <!--     </td>
                             <td>
-                                <input type="submit" value="submit" id="submit-query"/>
-                                <br/>
-                                <span id="switch-input" class="cmd"/>
-                                <label>Complex query</label>
-                            </td>
+                       -->
+                    <input type="submit" value="submit" id="submit-query"/>
+                                <!--<br/>-->
+                                <!--<span id="switch-input" class="cmd"/>
+                                <label>Complex query</label>-->
+                          <!--  </td>
                         </tr>
                         <tr>
                             <td valign="top">                                    
                                         
-							<!--  selected collections  -->
-							<!-- <label>Collections</label><br/>-->
+							<!-\-  selected collections  -\->
+							<!-\- <label>Collections</label><br/>-\->
                                 <div id="collections-widget" class="c-widget"/>
                             </td>
                             <td valign="top">
@@ -111,7 +115,7 @@
                             </td>
                             <td/>
                         </tr>
-                    </table>
+                    </table>-->
                 </form>
             </div>
         </div>
