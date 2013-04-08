@@ -113,10 +113,10 @@ declare function fcs:count-records($node as node(), $model as map(*)) {
     
 };
 
-(:
-declare function app:status($node as node(), $model as map(*)) {
 
-let $count-records := app:count-records($node, $model)
+declare function fcs:status($node as node(), $model as map(*)) {
+
+let $count-records := fcs:count-records($node, $model)
        
 let $logs := collection("/db/mdrepo-data/logs")/log
 
@@ -140,4 +140,3 @@ let $dataset_status := for $dataset in  distinct-values ($logs/xs:string(@datase
         </div>
     
 };
-:)
