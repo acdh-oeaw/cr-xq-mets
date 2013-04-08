@@ -117,7 +117,8 @@
     -->
     <xsl:template name="contexts-select">
         
-<!--            DEBUG: contexts_url:<xsl:copy-of select="$contexts_url" />-->
+            <!--DEBUG: contexts_url:<xsl:copy-of select="resolve-uri($contexts_url)" />
+        DEBUG: base_url:<xsl:value-of select="$base_url" />-->
         <select name="x-context">
             <xsl:if test="$contexts">
                 <xsl:for-each select="$contexts//sru:terms/sru:term">
