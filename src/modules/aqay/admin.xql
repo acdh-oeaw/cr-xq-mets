@@ -3,7 +3,7 @@ import module namespace request="http://exist-db.org/xquery/request";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 import module namespace crday  = "http://aac.ac.at/content_repository/data-ay" at "crday.xqm";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "modules/diagnostics/diagnostics.xqm";
-import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "/db/cr/repo-utils.xqm";
+import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
 
 let $config-path := request:get-parameter("config", "/db/cr/conf/cr/config.xml"),
     $op := request:get-parameter("operation", ""),
