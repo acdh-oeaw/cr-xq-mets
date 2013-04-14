@@ -1,7 +1,8 @@
 module namespace crday  = "http://aac.ac.at/content_repository/data-ay";
 
-import module namespace repo-utils =  "http://aac.ac.at/content_repository/utils" at  "/db/cr/repo-utils.xqm";
-import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "modules/diagnostics/diagnostics.xqm";
+import module namespace repo-utils =  "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
+import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
+import module namespace fcs = "http://clarin.eu/fcs/1.0" at "../fcs/fcs.xqm";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 (:import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "modules/diagnostics/diagnostics.xqm";
@@ -9,7 +10,7 @@ import module namespace util="http://exist-db.org/xquery/util";
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 :)
 declare namespace sru = "http://www.loc.gov/zing/srw/";
-declare namespace fcs = "http://clarin.eu/fcs/1.0";
+(:declare namespace fcs = "http://clarin.eu/fcs/1.0";:)
 declare namespace cmd = "http://www.clarin.eu/cmd/";
 (:declare namespace tei = "http://www.tei-c.org/ns/1.0";:)
 
@@ -26,7 +27,7 @@ declare variable $crday:restrictAyRecordsSize:= true();
 };:)
 
 declare function crday:display-overview($config) as item()* {
- crday:display-overview($config, 'htmlpage')
+ crday:display-overview($config, '', 'htmlpage')
 };
 
 
@@ -36,54 +37,85 @@ declare function crday:display-overview($config) as item()* {
 @param format [raw, htmlpage, html] - raw: return only the produced table, html* : serialize as html   
 @returns a html-table with overview of the datasets
 :)
-declare function crday:display-overview($config, $format as xs:string ) as item()* {
+declare function crday:display-overview($config, $x-context as xs:string, $format as xs:string ) as item()* {
 
 (:       let $config := doc($config-path), 
          let $config := repo-utils:config($config-path),:)
-         let $mappings := doc(repo-utils:config-value($config, 'mappings')),
+(:         let $mappings := doc(repo-utils:config-value($config, 'mappings')),:)
+          let $context-mapping := fcs:get-mapping('',$x-context, $config),
+          (: if not specific mapping found for given context, use whole mappings-file :)
+          $mappings := if ($context-mapping/xs:string(@key) = $x-context) then $context-mapping 
+                    else doc(repo-utils:config-value($config, 'mappings')), 
            $baseadminurl := repo-utils:config-value($config, 'admin.url') 
-           
+
         let $opt := util:declare-option("exist:serialize", "media-type=text/html method=xhtml")
         
-let $overview :=  <table class="show"><tr><th>collection</th><th>path</th><th>size</th><th>base-elem</th><th>indexes</th><th>tests</th><th>struct</th></tr>
-           { for $map in $mappings//map[@key]
+let $overview :=  <div id="resources-overview">
+                    <h2>Project overview - resources</h2>
+                <table class="show"><tr><th>collection</th><th>path</th><th>file</th><th>resources</th><th>base-elem</th><th>indexes</th><th>tests</th><th>struct</th></tr>
+           { for $map in $mappings/descendant-or-self::map[@key]
                     let $map-key := $map/xs:string(@key),
                         $map-dbcoll-path := $map/xs:string(@path),
 (:                        $map-dbcoll:= if ($map-dbcoll-path ne '' and xmldb:collection-available (($map-dbcoll-path,"")[1])) then collection($map-dbcoll-path) else (),                      :)
                           $map-dbcoll:= repo-utils:context-to-collection($map-key, $config),
+                          $resources:= fcs:apply-index($map-dbcoll,'fcs.resource',$x-context,$config),
 
                         $queries-doc-name := crday:check-queries-doc-name($config, $map-key),
                         $sturct-doc-name := repo-utils:gen-cache-id("structure", ($map-key,""), xs:string($crday:defaultMaxDepth)),
-                        $invoke-href := concat($baseadminurl,'?x-context=', $map-key ,'&amp;config=OBSOLETE_', '&amp;operation=' ),                        
+                        $invoke-href := concat($baseadminurl,'?x-context=', $map-key ,'&amp;action=' ),                        
                         $queries := if (repo-utils:is-in-cache($queries-doc-name, $config)) then 
-                                                <a href="{concat($invoke-href,'query-view')}" >view</a>                                             
+                                                <a href="{concat($invoke-href,'xpath-queryset-view')}" >view</a>                                             
                                               else (),                       
                         $structure := if (repo-utils:is-in-cache($sturct-doc-name, $config)) then                                                
-                                                <a href="{concat($invoke-href,'struct-view')}" >view</a>                                             
+                                                <a href="{concat($invoke-href,'ay-xml-view')}" >view</a>                                             
                                               else ()
                     return <tr>
                         <td>{$map-key}</td>
                         <td>{$map-dbcoll-path}</td>
                         <td align="right">{count($map-dbcoll)}</td>
+                        <td align="right">{count($resources)}</td>
                         <td>{$map/xs:string(@base_elem)}</td>
-                        <td align="right">{count($map/index)}</td>                        
-                        <td>{$queries} [<a href="{concat($invoke-href,'query-run')}" >run</a>]</td>                        
-                        <td>{$structure} [<a href="{concat($invoke-href,'struct-run')}" >run</a>]</td>
+                        <td align="right"><a href="fcs?x-context={$map-key}&amp;operation=explain">{count($map/index)}</a></td>                        
+                        <td>{$queries} [<a href="{concat($invoke-href,'xpath-queryset-run')}" >run</a>]</td>                        
+                        <td>{$structure} [<a href="{concat($invoke-href,'ay-xml-run')}" >run</a>]</td>
                         </tr>
                         }
-        </table>
+        </table></div>
 
             (: <th>ns</th><th>root-elem</th>
             $root-elems := for $elem in distinct-values($map-dbcoll/*/name()) return $elem,
             $ns-uris := for $ns in distinct-values($map-dbcoll/namespace-uri(*)) return $ns,
                         <td>{$ns-uris}</td>
                         <td>{$root-elems}</td>:)
-            
+ 
+ let $indexes := distinct-values($mappings//index/xs:string(@key))
+ let $indexes-overview := <div><h2>Project overview - indexes</h2>
+                     <table class="show">
+                    <tr><th>collection</th>{ for $map in $mappings/descendant-or-self::map[@key]
+                                return <th>{ $map/xs:string(@key)} </th>}</tr>
+                  <tbody>{
+                    for $index in $indexes 
+                        (:let $map-key:= $index/parent::map/xs:string(@key),
+                          $map-dbcoll:= repo-utils:context-to-collection($map-key, $config),
+                          $resources:= fcs:apply-index($map-dbcoll,'fcs.resource',$x-context,$config),
 
-       return if ($format eq 'raw') then
+                        $invoke-href := concat($baseadminurl,'?x-context=', $map-key ,'&amp;action=' ):)                        
+                        
+                    return <tr>
+                        <td>{$index}</td>
+                        { for $map in $mappings/descendant-or-self::map[@key]
+                                let $context-index := 'x' 
+                                return <td>{if ($map/index[xs:string(@key)=$index]) then $context-index else '' }</td> }
+                        </tr>
+                        }</tbody>
+                 </table>
+               </div>
+
+   return ($overview, $indexes-overview)
+       (:return if ($format eq 'raw') then
                    $overview
                 else            
-                   repo-utils:serialise-as($overview, $format, 'html', $config, ())
+                   repo-utils:serialise-as($overview, $format, 'html', $config, ()):)
 };
 
 
