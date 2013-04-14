@@ -4,13 +4,15 @@ module namespace fcs-tests  = "http://clarin.eu/fcs/1.0/tests";
 import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 import module namespace t="http://exist-db.org/xquery/testing";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
+import module namespace xqjson="http://xqilla.sourceforge.net/lib/xqjson";
 
 declare namespace zr="http://explain.z3950.org/dtd/2.0/";
 declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace diag = "http://www.loc.gov/zing/srw/diagnostic/";
 declare namespace ds = "http://aac.ac.at/corpus_shell/dataset";
-declare namespace xhtml="http://www.w3.org/1999/xhtml"; 
+declare namespace xhtml="http://www.w3.org/1999/xhtml";
+
 
 (: sample input: 
  :)
@@ -28,7 +30,7 @@ declare function fcs-tests:config-value($config, $type, $key as xs:string?) as x
 (:    let $config := doc(concat($fcs-tests:testsets-coll, $fcs-tests:run-config))/config:)
 (:                if ($type eq "queryset") then  xs:string($config//queryset[xs:string(@key)=$key]/
                         else :)
-                        if ($type eq "operation") then repo-utils:config-value($config, 'operation')
+                        if ($type eq "action") then repo-utils:config-value($config, 'action')
                         else $config//target[xs:string(@key)=$key]/xs:string(@url)
 };
 (:
@@ -77,19 +79,19 @@ declare function fcs-tests:get-queryset($queryset as xs:string, $config) as item
 Generates a run-config out of the full config based on the parameters.
 @param $target-key identifying key of the target  as set in the config, or 'all' for all targets in th config
 @param $queryset-key identifying key of the testset as set in the config (that also has to be the name of the testset-file)
-@param $operation run or run-store; with `run-store` also the fetched individual results stored, the final result is stored anyway
+@param $action run or run-store; with `run-store` also the fetched individual results stored, the final result is stored anyway
 :)
-declare function fcs-tests:run-testset($target-key as xs:string, $queryset-key as xs:string, $operation as xs:string, $config) as item()* {
+declare function fcs-tests:run-testset($target-key as xs:string, $queryset-key as xs:string, $action as xs:string, $config) as item()* {
     
     (: preparing a configuration for given run, based on the parameters :)
    (: let $run-config := <config>{($config//target[xs:string(@key) = $target],
                                 $config//testset[xs:string(@key) = $queryset-key],
-                                <property key="operation">{$operation}</property>)}</config>
+                                <property key="action">{$action}</property>)}</config>
     :)
-    (: for now put the whole config plus the operation-param
+    (: for now put the whole config plus the action-param
         perhaps this could be cleaned up :) 
-    let $run-config := <config>{($config, <property key="operation">{$operation}</property>)}</config>
-(:    let $run-config := ($config, <property key="operation">{$operation}</property>):)
+    let $run-config := <config>{($config, <property key="action">{$action}</property>)}</config>
+(:    let $run-config := ($config, <property key="operation">{$action}</property>):)
     
     
     (: TODO: eliminate the run-config  - but probably needed for t:run-testSet :)
@@ -188,12 +190,12 @@ declare function fcs-tests:process-test($test as node(), $target-key, $config) a
         $list-doc := if (doc-available($test-list)) then doc($test-list) else (),
         $target-uri := fcs-tests:config-value($config, "target", $target-key), 
 (:        $target-key := fcs-tests:config-key("target"),:)
-        $operation := fcs-tests:config-value($config, "operation", ())
+        $action := fcs-tests:config-value($config, "action", ())
 
 
     return if (empty($list-doc)) then 
                 let $request := concat($target-uri, xs:string($a/@href))                
-                return fcs-tests:process-request ($test, $request, $a/text(), $target-key, $test-id, $operation, $config)
+                return fcs-tests:process-request ($test, $request, $a/text(), $target-key, $test-id, $action, $config)
             else 
             (: if we have a list, iterate over the items of the list and run a request for each :)
                 for $i at $c in $list-doc/lst/*
@@ -201,12 +203,12 @@ declare function fcs-tests:process-test($test as node(), $target-key, $config) a
                       $i-id := if ($i/@id) then xs:string($i/@id) else $c,
                       $request-id := concat($test-id, $i-id),
                       $a-text := fcs-tests:subst(xs:string($a/text()), $i)
-                  return fcs-tests:process-request ($test, $request, $a-text, $target-key, $request-id, $operation, $config)
+                  return fcs-tests:process-request ($test, $request, $a-text, $target-key, $request-id, $action, $config)
 };
 
 (:~ executes one URL-request. 
 
-Issues one http-call to the target-url in the a@href-attribute, stores the incoming result (only if $operation='run-store') and evaluates the associated xpaths  
+Issues one http-call to the target-url in the a@href-attribute, stores the incoming result (only if $action='run-store') and evaluates the associated xpaths  
 
 @param $test div[@class='test']-element
 @param $request resolved (substituted) link
@@ -216,7 +218,7 @@ Issues one http-call to the target-url in the a@href-attribute, stores the incom
 
 @returns the requested-url as link, results of the xpath-evaluations as a div-list and any diagnostics
 :) 
-declare function fcs-tests:process-request($test, $request as xs:string, $a-text as xs:string, $target-key as xs:string, $request-id as xs:string, $operation as xs:string, $config) as item()* { 
+declare function fcs-tests:process-request($test, $request as xs:string, $a-text as xs:string, $target-key as xs:string, $request-id as xs:string, $action as xs:string, $config) as item()* { 
             
     let $result-link := $config//property[xs:string(@key)='result-link']            
     let $a-processed := (if (contains($result-link,'original')) then <a href="{$request}">{$a-text}</a> else (),
@@ -237,13 +239,37 @@ declare function fcs-tests:process-request($test, $request as xs:string, $a-text
                             let $auth := concat("Basic ", util:base64-encode(concat($username, ':', $password)))
                             return <headers><header name="Authorization" value="{$auth}"/></headers>
                             
-    let $result-data := httpclient:get(xs:anyURI($request), false(), $headers )
-                            
-(:        let $store := if ($operation eq 'run-store') then fcs-tests:store-result($target-key, $request-id, $result-data//httpclient:body/*) else ()
-rather store everything including the envelope: :)
-let $store := if ($operation eq 'run-store') then fcs-tests:store-result($target-key, $request-id, $result-data//httpclient:body/*, $config) else ()
-
+    let $result-data-raw := httpclient:get(xs:anyURI($request), false(), $headers )
     
+                           
+(: if json data - convert to xml - and add the converted xml to the result  :)
+    let $json := if ($result-data-raw//httpclient:body/xs:string(@encoding)="Base64Encoded") then
+                        util:base64-decode($result-data-raw//httpclient:body/text())
+                     else 
+                        $result-data-raw//httpclient:body/text()
+    let $json-xml := if ($json) then  xqjson:parse-json($json) else ()
+
+    let $result-data := if ($result-data-raw//httpclient:headers/httpclient:header[xs:string(@name)="Content-Type"]
+                                  /contains(xs:string(@value),"application/json")) then                                    
+                (:              let $json := if ($result-data-raw//httpclient:body/xs:string(@encoding)="Base64Encoded") then
+                                                util:base64-decode($result-data-raw//httpclient:body/text())
+                                             else 
+                                                $result-data-raw//httpclient:body/text()
+                               let $json-xml := $json (\:xqjson:parse-json($json):\):)
+   
+                               <httpclient:response>
+                                        {($result-data-raw/@statusCode,
+                                          $result-data-raw/httpclient:headers,
+                                          $result-data-raw/httpclient:body,
+                                          <httpclient:body  mimetype="application/xml; charset=UTF-8">{$json-xml}</httpclient:body>
+                                          )}</httpclient:response>
+                        else $result-data-raw                    
+                            
+(:        let $store := if ($action eq 'run-store') then fcs-tests:store-result($target-key, $request-id, $result-data//httpclient:body/*) else ()
+rather store everything including the envelope: :)
+let $store := if (contains($action,'run-store')) then fcs-tests:store-result($target-key, $request-id, $result-data, $config) else ()
+
+
 (:    <a href="{fcs-tests:get-result-paths($target-key, $request-id) else ():)
 (:    let $cache-uri := if (exists($store)) then <a href="{concat(repo-utils:base-url(()), document-uri($store))}" > cache </a> else ():)
     (: evaluate all xpaths defined for given request :) 
@@ -307,13 +333,13 @@ declare function fcs-tests:format-result($result as node(), $config) as item()* 
 
 (:~ generates the html-page displaying either the overview, or the result of selected testset 
 :)
-declare function fcs-tests:display-page($target  as xs:string, $queryset as xs:string, $operation, $config) as item()* {
+declare function fcs-tests:display-page($target  as xs:string, $queryset as xs:string, $action, $config) as item()* {
 
     let $result := fcs-tests:get-result($target, $queryset, $config)        
      
     let $formatted-result := fcs-tests:format-result($result, $config)  
     let $opt := util:declare-option("exist:serialize", "media-type=text/html method=xhtml") 
-    return     
+         (:
     <html>
         <head>
             <title>cr-xq/aqay - autoquery/testing suite</title>
@@ -329,9 +355,9 @@ declare function fcs-tests:display-page($target  as xs:string, $queryset as xs:s
                 <h1>cr-xq/aqay - autoquery/testing suite</h1>
                 <a href="?operation=overview">overview</a>
             </div>
-            <!-- <div>{$config}</div> -->        
-            <div id="content">
-            {if ($operation = 'overview') then fcs-tests:display-overview($config) else () }
+            <!-- <div>{$config}</div> -->:)        
+    return        <div id="content">
+            {if (contains($action, 'overview')) then fcs-tests:display-overview($config) else () }
             <form>
                 <label>targets</label><select name="target">
                     {
@@ -354,12 +380,11 @@ declare function fcs-tests:display-page($target  as xs:string, $queryset as xs:s
                         return $option
                     }
                 </select>
-                <label>test-set</label>
-                    <select name="operation">
-                       <option value="run" >{if ($operation = 'run') then attribute selected { "selected" } else ()} run</option>
-                       <option value="run-store" >{if ($operation = 'run-store') then attribute selected { "selected" } else ()} run-store</option>
-                       <option value="view" > {if ($operation = 'view') then attribute selected { "selected" } else ()} view</option>                    
-                       <option value="overview" > {if ($operation = 'overview') then attribute selected { "selected" } else ()} overview</option>
+                <label>action</label>
+                    <select name="action">
+                       <option value="rest-queryset-run" >{if (contains($action, 'run') and not(contains($action, 'run-store'))) then attribute selected { "selected" } else ()} run</option>
+                       <option value="rest-queryset-run-store" >{if (contains($action, 'run-store')) then attribute selected { "selected" } else ()} run-store</option>
+                       <option value="rest-queryset-view" > {if (contains($action,'view')) then attribute selected { "selected" } else ()} view</option>                                          
                     </select>                
                 <input type="submit" value="View/Run" />
                 </form>
@@ -367,8 +392,8 @@ declare function fcs-tests:display-page($target  as xs:string, $queryset as xs:s
                 <div id="result">{$formatted-result}</div>
                 
             </div>            
-        </body>
-    </html>
+        (:</body>
+    </html>:)
 
 };
 
@@ -393,9 +418,9 @@ declare function fcs-tests:display-overview($config) as item()* {
                                                                 {if (exists($test-result//diagnostics)) then <span class="test-failed">!!</span> else () }
                                                               </span>
                                                             else $root-elem 
-                                            return <a href="?target={$target-key}&amp;queryset={$queryset-key}&amp;operation=view" >{$show}</a> 
+                                            return <a href="?target={$target-key}&amp;queryset={$queryset-key}&amp;action=rest-queryset-view" >{$show}</a> 
                             let $run := if ($queryset-key = $target/queryset/xs:string(@key)) then 
-                                                        ('[', <a href="?target={$target-key}&amp;queryset={$queryset-key}&amp;operation=run" >run</a>, ']')
+                                                        ('[', <a href="?target={$target-key}&amp;queryset={$queryset-key}&amp;action=rest-queryset-run" >run</a>, ']')
                                                     else ()                 
                         return <td align="center">{($view, $run)} </td>
                         }
