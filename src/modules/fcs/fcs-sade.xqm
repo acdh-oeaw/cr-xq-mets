@@ -3,11 +3,11 @@ xquery version "3.0";
 module namespace fcs="http://sade/fcs";
 
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
-import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 import module namespace kwic="http://exist-db.org/xquery/kwic"
     at "resource:org/exist/xquery/lib/kwic.xql";
-import module namespace fcsm = "http://clarin.eu/fcs/1.0" at "/db/cr/fcs.xqm";
-import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "/db/cr/repo-utils.xqm";
+import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
+import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
+import module namespace fcsm = "http://clarin.eu/fcs/1.0" at "fcs.xqm";
 
 declare namespace cmd = "http://www.clarin.eu/cmd/";
 
