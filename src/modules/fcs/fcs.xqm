@@ -91,12 +91,13 @@ declare function fcs:repo($config) as item()* {
 		                  else
 		                     $scanClause-param,
 		
+		$mode := request:get-parameter("x-mode", ""),
 		$start-term := request:get-parameter("startTerm", 1),
 		$response-position := request:get-parameter("responsePosition", 1),
 		$max-terms := request:get-parameter("maximumTerms", 50),
 	    $max-depth := request:get-parameter("x-maximumDepth", 1),
 		$sort := request:get-parameter("sort", 'text')
-		 return fcs:scan($scanClause, $x-context, $start-term, $max-terms, $response-position, $max-depth, $sort, $config) 
+		 return fcs:scan($scanClause, $x-context, $start-term, $max-terms, $response-position, $max-depth, $sort, $mode, $config) 
         (: return fcs:scan($scanClause, $x-context) :)
 	  else if ($operation eq $fcs:searchRetrieve) then
         if ($query eq "") then diag:diagnostics("param-missing", "query")
@@ -144,9 +145,11 @@ declare function fcs:explain($x-context as xs:string*, $config) as item()* {
     let $md-dbcoll := collection(repo-utils:config-value($config,'metadata.path'))
     
     let $context-mapping := fcs:get-mapping('',$x-context, $config),
-     (: if not specific mapping found for given context, use whole mappings-file :)
+     (: if not specific mapping found for given context, use whole mappings-file
+        this currently happens already in the get-mapping function 
           $mappings := if ($context-mapping/xs:string(@key) = $x-context) then $context-mapping 
-                    else doc(repo-utils:config-value($config, 'mappings'))
+                    else doc(repo-utils:config-value($config, 'mappings')):)
+        $mappings := $context-mapping
 
 (:    let $mappings := doc(repo-utils:config-value($config, 'mappings'))
 (\:    let $context-mappings := if ($x-context='') then $mappings else $mappings//map[xs:string(@key)=$x-context]:\):\)
@@ -248,7 +251,7 @@ declare function fcs:scan($scanClause as xs:string, $x-context as xs:string*) {
 :   there either scanClause-filter or x-context is used as constraint (scanClause-filter is prefered))
 
 :)
-declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, $start-item as xs:integer, $max-items as xs:integer, $response-position as xs:integer, $max-depth as xs:integer, $p-sort as xs:string?, $config) as item()? {
+declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, $start-item as xs:integer, $max-items as xs:integer, $response-position as xs:integer, $max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {
 
   let $scx := tokenize($scan-clause,'='),
 	 $index-name := $scx[1],  
@@ -264,7 +267,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
   
   (: get the base-index from cache, or create and cache :)
   $index-scan := 
-  if (repo-utils:is-in-cache($index-doc-name, $config)) then
+  if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
           repo-utils:get-from-cache($index-doc-name, $config) 
         else
         (: TODO: cmd-specific stuff has to be integrated in a more dynamic way! :) 
@@ -280,13 +283,17 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     
                 else :)
                 if ($index-name eq 'fcs.resource') then
+                    let $context-map := fcs:get-mapping('', $x-context,$config)
+                      
                     let $map := 
-                        if ($x-context= ('', 'default')) then 
-                            doc(repo-utils:config-value($config, 'mappings'))
+(:                        if ($x-context= ('', 'default')) then 
+                             doc(repo-utils:config-value($config, 'mappings')):)
+                          if (not($context-map/xs:string(@key) = $x-context) ) then 
+                                $context-map
                         else
                             (: generate a map based on the indexes defined for given context :) 
                             let $data-collection := repo-utils:context-to-collection($x-context, $config)
-                            let $context-map := fcs:get-mapping('', $x-context,$config)
+(:                            let $context-map := fcs:get-mapping('', $x-context,$config):)
                             let $fcs-resource-index := fcs:get-mapping('fcs.resource', $x-context,$config)
                             let $index-key-xpath := $fcs-resource-index/path[xs:string(@type)='key']  
                             let $index-label-xpath := $fcs-resource-index/path[xs:string(@type)='label']
@@ -294,9 +301,9 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                             return <map >{
                                 ($context-map/@key, $context-map/@title, 
                                 for $item in util:eval(concat("$data-collection/descendant-or-self::", $base-elem))
-                                let $key := util:eval(concat("$item/", $index-key-xpath ))
-                                let $label := util:eval(concat("$item/", $index-label-xpath ))
-                                return <map key="{$key}" title="{$label}" />
+                                    let $key := util:eval(concat("$item/", $index-key-xpath ))
+                                    let $label := util:eval(concat("$item/", $index-label-xpath ))
+                                    return <map key="{$key}" title="{$label}" />
                                 )}</map>
 
 (:                    let $mappings := doc(repo-utils:config-value($config, 'mappings')):)
@@ -496,7 +503,7 @@ declare function fcs:format-record-data($record-data as node(), $data-view as xs
                                                  else "title"
                            (: WATCHME: this only works if default-sort and title index are the same :)
                            (:important is the $responsePosition=2 :)
-                          let $prev-next-scan := fcs:scan(concat($sort-index, '=', $title),$x-context, 1,3,2,1,'text',$config)
+                          let $prev-next-scan := fcs:scan(concat($sort-index, '=', $title),$x-context, 1,3,2,1,'text','',$config)
                                     (: handle also edge situations 
                                         expect maximum 3 terms, on the edges only 2 terms:)
                           let $rf-prev := if (count($prev-next-scan//sru:terms/sru:term) = 3
@@ -645,15 +652,21 @@ declare function fcs:get-mapping($index as xs:string, $x-context as xs:string+, 
     
     $context-map := if (exists($mappings//map[xs:string(@key) = $x-context])) then 
                                 $mappings//map[xs:string(@key) = $x-context]
-                            else $mappings//map[xs:string(@key) = 'default'],    
-    $context-index := $context-map/index[xs:string(@key) eq $index]
+(:                            else $mappings//map[xs:string(@key) = 'default'],:)
+     (: if not specific mapping found for given context, use whole mappings-file :)
+                             else $mappings,
+                        
+    $context-index := $context-map/index[xs:string(@key) eq $index],
+    $default-index := $mappings//map[xs:string(@key) = 'default']/index[xs:string(@key) eq $index]
     
     
     return  if ($index eq '') then 
                 $context-map
              else if (exists($context-index)) then 
                         $context-index
-                else (: if no contextual index, dare to take any index - may be dangerous!  :)
+             else if (exists($default-index)) then
+                        $default-index
+             else (: if no contextual index, dare to take any index - may be dangerous!  :)
                     let $any-index := $mappings//index[xs:string(@key) eq $index]
                     return $any-index
 };
@@ -705,10 +718,11 @@ declare function fcs:index-as-xpath($index as xs:string, $x-context as xs:string
                                             else concat('/', xs:string($index-map/@use)) 
                                          else '' :)
                                   let $match-on := if (exists($index-map/@use) ) then concat('/', xs:string($index-map[1]/@use)) else ''
-                                  
-                        let $indexes := if (count($index-map/path) > 1) then  
-                                            translate(concat('(', string-join($index-map/path,'|'),')', $match-on),'.','/')
-                                            else translate(concat($index-map/path, $match-on),'.','/')
+                        let $paths := $index-map/path[not(@type) or xs:string(@type)='key']
+(:                        let $paths := $index-map/path:)
+                        let $indexes := if (count($paths) > 1) then  
+                                            translate(concat('(', string-join($paths ,'|'),')', $match-on),'.','/')
+                                            else translate(concat($paths, $match-on),'.','/')
                            return $indexes
                   else $index
     

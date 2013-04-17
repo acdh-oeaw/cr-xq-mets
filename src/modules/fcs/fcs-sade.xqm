@@ -91,7 +91,7 @@ $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
     let $x-context-x := if ($x-context='') then config:param-value($node, $model,'fcs','','x-context') else $x-context
     
     let $result :=
-            fcsm:scan($scanClause, $x-context-x, $start-term, $max-terms, 1, 1, $sort, $model("config"))
+            fcsm:scan($scanClause, $x-context-x, $start-term, $max-terms, 1, 1, $sort, '', $model("config"))
     
     let $params := <parameters><param name="format" value="{$x-format}"/>
                   			         <param name="base_url" value="{$base-path}"/>
