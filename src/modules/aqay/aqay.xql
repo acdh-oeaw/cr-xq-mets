@@ -7,8 +7,14 @@ import module namespace crday  = "http://aac.ac.at/content_repository/data-ay" a
 import module namespace fcs-tests = "http://clarin.eu/fcs/1.0/tests" at  "tests.xqm";
 
 (:~ action-list:
-resources-overview
-
+resources-overview - default
+ay-xml-run
+ay-xml-view
+queryset-overview
+rest-queryset-run
+rest-queryset-run-store
+rest-queryset-view
+! xpath-queryset-* ! TODO
 :)
 let $action := request:get-parameter("action", ""),
 (:    $config := doc($config-path),

@@ -33,7 +33,7 @@ declare function crday:display-overview($config) as item()* {
 
 (:~ creates a html-overview of the datasets based on the defined mappings (as linked to from config)
 
-@param config-path path to the confing-file
+@param config config-object (not map)
 @param format [raw, htmlpage, html] - raw: return only the produced table, html* : serialize as html   
 @returns a html-table with overview of the datasets
 :)
@@ -52,13 +52,14 @@ declare function crday:display-overview($config, $x-context as xs:string, $forma
         
 let $overview :=  <div id="resources-overview">
                     <h2>Project overview - resources</h2>
-                <table class="show"><tr><th>collection</th><th>path</th><th>file</th><th>resources</th><th>base-elem</th><th>indexes</th><th>tests</th><th>struct</th></tr>
+                <table class="show"><tr><th>collection</th><th>path</th><th>file</th><th>resources</th><th colspan="2">base-elem</th><th>indexes</th><th>struct</th></tr>
            { for $map in $mappings/descendant-or-self::map[@key]
                     let $map-key := $map/xs:string(@key),
                         $map-dbcoll-path := $map/xs:string(@path),
 (:                        $map-dbcoll:= if ($map-dbcoll-path ne '' and xmldb:collection-available (($map-dbcoll-path,"")[1])) then collection($map-dbcoll-path) else (),                      :)
                           $map-dbcoll:= repo-utils:context-to-collection($map-key, $config),
-                          $resources:= fcs:apply-index($map-dbcoll,'fcs.resource',$x-context,$config),
+                          $resources:= fcs:apply-index($map-dbcoll,'fcs.resource',$map-key,$config),
+                          $base-elems:= fcs:apply-index($map-dbcoll,'cql.serverChoice',$map-key,$config),
 
                         $queries-doc-name := crday:check-queries-doc-name($config, $map-key),
                         $sturct-doc-name := repo-utils:gen-cache-id("structure", ($map-key,""), xs:string($crday:defaultMaxDepth)),
@@ -73,10 +74,10 @@ let $overview :=  <div id="resources-overview">
                         <td>{$map-key}</td>
                         <td>{$map-dbcoll-path}</td>
                         <td align="right">{count($map-dbcoll)}</td>
-                        <td align="right">{count($resources)}</td>
+                        <td align="right"><a href="fcs?x-context={$map-key}&amp;operation=scan&amp;scanClause=fcs.resource&amp;x-format={$format}">{count($resources)}</a></td>
                         <td>{$map/xs:string(@base_elem)}</td>
-                        <td align="right"><a href="fcs?x-context={$map-key}&amp;operation=explain">{count($map/index)}</a></td>                        
-                        <td>{$queries} [<a href="{concat($invoke-href,'xpath-queryset-run')}" >run</a>]</td>                        
+                        <td>{count($base-elems)}</td>
+                        <td align="right"><a href="fcs?x-context={$map-key}&amp;operation=explain&amp;x-format={$format}">{count($map/index)}</a></td>
                         <td>{$structure} [<a href="{concat($invoke-href,'ay-xml-run')}" >run</a>]</td>
                         </tr>
                         }
@@ -104,8 +105,18 @@ let $overview :=  <div id="resources-overview">
                     return <tr>
                         <td>{$index}</td>
                         { for $map in $mappings/descendant-or-self::map[@key]
-                                let $context-index := 'x' 
-                                return <td>{if ($map/index[xs:string(@key)=$index]) then $context-index else '' }</td> }
+                                let $context-key := $map/xs:string(@key)
+                                (: fetch scan from cache - if available :) 
+                                let $sanitized-xcontext := repo-utils:sanitize-name($context-key) 
+                                let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index, 'text', 1 ))
+                                let $index-scan := if (repo-utils:is-in-cache($index-doc-name, $config)) then
+                                                            repo-utils:get-from-cache($index-doc-name, $config)
+                                                        else ()
+                                let $index-size := $index-scan//fcs:countTerms/text()
+                                let $context-index := if ($index-size) then $index-size else 'run'
+(:                                let $context-index := 'x':)
+                                let $href := concat("fcs?operation=scan&amp;scanClause=",$index,"&amp;x-context=",$context-key, "&amp;x-format=", $format)
+                                return <td>{if ($map/index[xs:string(@key)=$index]) then <a href="{$href}" >{$context-index}</a> else '' }</td> }
                         </tr>
                         }</tbody>
                  </table>
