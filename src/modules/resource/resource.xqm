@@ -6,6 +6,7 @@ xquery version "3.0";
     pid-handling
     
     not TESTED yet!
+    especially PID-assignement
 :)
    
 module namespace resource = "http://cr-xq/resource" ;
