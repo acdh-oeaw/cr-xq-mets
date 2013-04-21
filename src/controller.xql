@@ -113,7 +113,17 @@ else if (contains($exist:path, "fcs")) then
 else if (contains($exist:path, "aqay")) then
 
 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/aqay/admin.xql" >
+        <forward url="{$exist:controller}/modules/aqay/aqay.xql" >
+            <add-parameter name="project" value="{$project}"/>
+            <add-parameter name="exist-path" value="{$exist:path}"/>
+            <add-parameter name="exist-resource" value="{$exist:resource}"/>
+        </forward>
+	
+    </dispatch>
+else if (contains($exist:path, "resource")) then
+
+<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/resource/resource.xql" >
             <add-parameter name="project" value="{$project}"/>
             <add-parameter name="exist-path" value="{$exist:path}"/>
             <add-parameter name="exist-resource" value="{$exist:resource}"/>
