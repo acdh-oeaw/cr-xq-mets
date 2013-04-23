@@ -30,9 +30,9 @@ import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  ".
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
 import module namespace kwic = "http://exist-db.org/xquery/kwic";
-(:import module namespace cmdcoll = "http://clarin.eu/cmd/collections" at  "../cmd/cmd-collections.xqm";
+(:import module namespace cmdcoll = "http://clarin.eu/cmd/collections" at  "../cmd/cmd-collections.xqm"; :)
 import module namespace cmdcheck = "http://clarin.eu/cmd/check" at  "../cmd/cmd-check.xqm";
-:)import module namespace cql = "http://exist-db.org/xquery/cql" at "../cqlparser/cqlparser.xqm";
+import module namespace cql = "http://exist-db.org/xquery/cql" at "../cqlparser/cqlparser.xqm";
 
 declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
@@ -40,7 +40,7 @@ declare variable $fcs:searchRetrieve as xs:string := "searchRetrieve";
 
 declare variable $fcs:scanSortText as xs:string := "text";
 declare variable $fcs:scanSortSize as xs:string := "size";
-declare variable $fcs:indexXsl := doc('index.xsl');
+declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
 declare variable $fcs:kwicWidth := 30;
 
 (:~ The main entry-point. Processes request-parameters
@@ -97,7 +97,8 @@ declare function fcs:repo($config) as item()* {
 		$max-terms := request:get-parameter("maximumTerms", 50),
 	    $max-depth := request:get-parameter("x-maximumDepth", 1),
 		$sort := request:get-parameter("sort", 'text')
-		 return fcs:scan($scanClause, $x-context, $start-term, $max-terms, $response-position, $max-depth, $sort, $mode, $config) 
+		 return if ($scanClause='') then  diag:diagnostics('param-missing',"scanClause")
+		          else fcs:scan($scanClause, $x-context, $start-term, $max-terms, $response-position, $max-depth, $sort, $mode, $config) 
         (: return fcs:scan($scanClause, $x-context) :)
 	  else if ($operation eq $fcs:searchRetrieve) then
         if ($query eq "") then diag:diagnostics("param-missing", "query")
@@ -277,11 +278,12 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     let $starting-handle := if ($filter ne '') then $filter else $x-context
                     return cmdcoll:colls($starting-handle, $max-depth, cmdcoll:base-dbcoll($config))
                   (\: just a hack for now, handling of special indexes should be put solved in some more easily extensible way :\)  
-                else if ($index-name eq 'cmd.profile') then
-(\:                    let $context := repo-utils:context-to-collection($x-context, $config):\)
+                else :) 
+                if ($index-name eq 'cmd.profile') then
+(:(\:                    let $context := repo-utils:context-to-collection($x-context, $config):\):)
                     cmdcheck:scan-profiles($x-context, $config)
                     
-                else :)
+                else 
                 if ($index-name eq 'fcs.resource') then
                     let $context-map := fcs:get-mapping('', $x-context,$config)
                       
