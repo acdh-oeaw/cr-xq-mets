@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <description>@app.name@</description>
+    <author/>
+    <website/>
+    <status>alpha</status>
+    <license>GNU-LGPL</license>
+    <copyright>true</copyright>
+    <type>application</type>
+    <target>@app.name@</target>
+    <prepare>setup.xql</prepare>
+    <!--    <finish/>
+    <permissions user="admin" password="" group="dba" mode="rw-rw-r-/-"/> 
+        <deployed>@timestamp@</deployed>-->
+
+    <deployed>2013-04-15T14:52:36.853+01:00</deployed>
+</meta>
