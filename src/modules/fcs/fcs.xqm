@@ -60,6 +60,7 @@ declare function fcs:repo($config) as item()* {
 (:    $operation :=  if ($query eq "") then request:get-parameter("operation", $fcs:explain):)
     $operation :=  if ($query eq "") then request:get-parameter("operation", "explain")
                     else request:get-parameter("operation", $fcs:searchRetrieve),
+    $recordPacking:= request:get-parameter("recordPacking", 'xml'),
       
     (: take only first format-argument (otherwise gives problems down the line) 
         TODO: diagnostics :)
@@ -97,18 +98,37 @@ declare function fcs:repo($config) as item()* {
 		$max-terms := request:get-parameter("maximumTerms", 50),
 	    $max-depth := request:get-parameter("x-maximumDepth", 1),
 		$sort := request:get-parameter("sort", 'text')
-		 return if ($scanClause='') then  diag:diagnostics('param-missing',"scanClause")
+		 return if ($scanClause='') then  <sru:scanResponse><sru:version>1.2</sru:version>{diag:diagnostics('param-missing',"scanClause")}
+		                                        </sru:scanResponse>
+		            else if (not(number($max-terms)=number($max-terms)) or number($max-terms) < 0 ) then
+                                    <sru:scanResponse><sru:version>1.2</sru:version>{diag:diagnostics('unsupported-param-value',"maximumTerms")}
+		                                        </sru:scanResponse>
+                    else if (not(number($response-position)=number($response-position)) or number($response-position) < 0 ) then
+                                    <sru:scanResponse><sru:version>1.2</sru:version>{diag:diagnostics('unsupported-param-value',"responsePosition")}
+		                                        </sru:scanResponse>
 		          else fcs:scan($scanClause, $x-context, $start-term, $max-terms, $response-position, $max-depth, $sort, $mode, $config) 
         (: return fcs:scan($scanClause, $x-context) :)
 	  else if ($operation eq $fcs:searchRetrieve) then
-        if ($query eq "") then diag:diagnostics("param-missing", "query")
+        if ($query eq "") then <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+                                {diag:diagnostics("param-missing", "query")}</sru:searchRetrieveResponse>
         else 
       	 let $cql-query := $query,
 			$start-item := request:get-parameter("startRecord", 1),
-			$max-items := request:get-parameter("maximumRecords", 50),	
+			$max-items := request:get-parameter("maximumRecords", 50),
 			$x-dataview := request:get-parameter("x-dataview", repo-utils:config-value($config, 'default.dataview'))
             (: return cr:search-retrieve($cql-query, $query-collections, $format, xs:integer($start-item), xs:integer($max-items)) :)
-            return fcs:search-retrieve($cql-query, $x-context, xs:integer($start-item), xs:integer($max-items), $x-dataview, $config)
+            return 
+            if (not($recordPacking = ('string','xml'))) then 
+                        <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+                                {diag:diagnostics("unsupported-record-packing", $recordPacking)}</sru:searchRetrieveResponse>
+                else if (not(number($max-items)=number($max-items)) or number($max-items) < 0 ) then
+                        <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+                                {diag:diagnostics("unsupported-param-value", "maximumRecords")}</sru:searchRetrieveResponse>
+                else if (not(number($start-item)=number($start-item)) or number($start-item) <= 0 ) then
+                        <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+                                {diag:diagnostics("unsupported-param-value", "startRecord")}</sru:searchRetrieveResponse>
+                else
+            fcs:search-retrieve($cql-query, $x-context, xs:integer($start-item), xs:integer($max-items), $x-dataview, $config)
     else 
       diag:diagnostics('unsupported-operation',$operation)
     
@@ -166,7 +186,15 @@ declare function fcs:explain($x-context as xs:string*, $config) as item()* {
         $date-modified := 'TODO'
       
       
-    let $explain:= <zr:explain xmlns:zr="http://explain.z3950.org/dtd/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    let $explain:=
+    <sru:explainResponse>
+ <sru:version>1.1</sru:version>
+ <sru:record>
+
+   <sru:recordSchema>http://explain.z3950.org/dtd/2.1/</sru:recordSchema>
+   <sru:recordPacking>xml</sru:recordPacking>
+   <sru:recordData>
+    <zr:explain xmlns:zr="http://explain.z3950.org/dtd/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://explain.z3950.org/dtd/2.0/ file:/C:/Users/m/3lingua/corpus_shell/_repo2/corpus_shell/fcs/schemas/zeerex-2.0.xsd"
     authoritative="false" id="id1">
     <zr:serverInfo protocol="SRU" version="1.2" transport="http">
@@ -218,6 +246,9 @@ declare function fcs:explain($x-context as xs:string*, $config) as item()* {
 <!--        <supports type="extraSearchData">cmd context</supports> -->
     </zr:configInfo>
 </zr:explain>
+   </sru:recordData>
+ </sru:record>
+</sru:explainResponse>
 
     return $explain
 };
@@ -326,12 +357,15 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
         
                 else $data:)
 
+    (: extra handling if fcs.resource=root :)
+    let $filterx := if ($index-name= 'fcs.resource' and $filter='root') then '' else $filter
+    
 	(: extract the required subsequence (according to given sort) :)
 	let $res-nodeset := transform:transform($index-scan,$fcs:indexXsl, 
 			<parameters><param name="scan-clause" value="{$scan-clause}"/>
 			            <param name="mode" value="subsequence"/>
 						<param name="sort" value="{$sort}"/>
-						<param name="filter" value="{$filter}"/>
+						<param name="filter" value="{$filterx}"/>
 						<param name="start-item" value="{$start-item}"/>
 					    <param name="response-position" value="{$response-position}"/>
 						<param name="max-items" value="{$max-items}"/>
@@ -422,7 +456,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
         $result-seq-match := fcs:highlight-result($result-seq, $match-seq, $x-context, $config),
         (:$match := (),
         $result-seq-match := $result-seq,:)
-        $records :=
+        $records := if (count($result-seq-match)=0) then () else
           <sru:records>
     	       {for $rec at $pos in $result-seq-match	           
     	           let $rec-data := fcs:format-record-data($rec,$x-dataview, $x-context, $config)	           
@@ -440,7 +474,22 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
           </sru:records>,
         $end-time2 := util:system-dateTime(),
         $result :=
+           if ($xpath-query instance of element(sru:diagnostics)) then
+             <sru:searchRetrieveResponse>
+              <sru:version>1.2</sru:version>
+              <sru:numberOfRecords>{$result-count}</sru:numberOfRecords>
+              {$xpath-query}
+             </sru:searchRetrieveResponse>
+           else if ($startRecord > $result-count + 1 ) then
+           <sru:searchRetrieveResponse>
+              <sru:version>1.2</sru:version>
+              <sru:numberOfRecords>{$result-count}</sru:numberOfRecords>
+              {diag:diagnostics('start-out-of-range',concat( $startRecord , ' > ', $result-count))}
+             </sru:searchRetrieveResponse>
+          else          
+          
         <sru:searchRetrieveResponse>
+          <sru:version>1.2</sru:version>
           <sru:numberOfRecords>{$result-count}</sru:numberOfRecords>
           <sru:echoedSearchRetrieveRequest>
               <sru:version>1.2</sru:version>
