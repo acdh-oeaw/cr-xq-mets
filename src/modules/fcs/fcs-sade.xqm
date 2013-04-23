@@ -118,7 +118,7 @@ declare function fcs:status($node as node(), $model as map(*)) {
 
 let $count-records := fcs:count-records($node, $model)
        
-let $logs := collection("/db/mdrepo-data/logs")/log
+let $logs := collection("/db/mdrepo-data/logs")/loglet $logs := collection("/db/mdrepo-data/logs")/log[translate(xs:string(@start-time),' ', 'T') castable as xs:dateTime]
 
 let $dataset_status := for $dataset in  distinct-values ($logs/xs:string(@dataset))
     let $last-updated := max ($logs[xs:string(@dataset)=$dataset]/xs:dateTime(translate(@start-time,' ','T')))
