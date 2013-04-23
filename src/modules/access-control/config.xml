@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config type="module">
+    <module key="access-control">
+        <param key="writer">/db/apps/cr-xq/modules/access-control/writer.xml</param>
+    </module>
+</config>
