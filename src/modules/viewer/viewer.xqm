@@ -1,31 +1,38 @@
 module namespace viewer = "http://sade/viewer" ;
 declare namespace templates="http://exist-db.org/xquery/templates";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
-import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "/db/cr/repo-utils.xqm";
+import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
+import module namespace resource = "http://cr-xq/resource" at  "../resource/resource.xqm";
 (:declare namespace tei = "http://www.tei-c.org/ns/1.0" ;:)
 
 (:~ default viewer, fetching data, transforming with xslt 
 based on text-viewer 
+tries to get the resources matching the @xml:id, then the filename (in the data- and metadata-path)
 :)
 
+(: moved to resource-module 
 declare function viewer:get ($config-map, $id as xs:string) {
 
     let $data-dir := config:param-value($config-map, 'data-dir'),
+    $metadata-dir := config:param-value($config-map, 'metadata-path'),
     $resource-id := collection($data-dir)//*[@xml:id eq $id],
     $resource := if (exists($resource-id)) then $resource-id
-                 else if (doc-available(concat($data-dir, '/', $id))) then 
-                                doc(concat($data-dir, '/', $id))
-                                else ()
+                 else if (doc-available(concat($data-dir, '/', $id))) then
+                            doc(concat($data-dir, '/', $id))
+                 else if (doc-available(concat($metadata-dir, '/', $id))) then
+                            doc(concat($metadata-dir, '/', $id))
+                 else ()
     
     
     return if (exists($resource)) then $resource 
                 else <diagnostics><message>Resource unavailable, id: { ($data-dir, $id) } </message></diagnostics> 
 
 };
+:)
 
 declare function viewer:display($config-map, $id as xs:string, $format as xs:string) as item()* {    
     
-    let $data := viewer:get($config-map, $id)
+    let $data := resource:get($config-map, $id)
     
     let $params := <parameters>
                         <param name="format" value="{$format}"/>
@@ -40,7 +47,7 @@ declare function viewer:display($config-map, $id as xs:string, $format as xs:str
             else 
             <div class="templates:init">
                <div class="templates:surround?with=page.html&amp;at=content-container">
-                { repo-utils:serialise-as($data, $format, 'html', $config-map("config"), $params) }
+                { repo-utils:serialise-as($data, $format, 'xml', $config-map("config"), $params) }
               </div>
              </div>
     
