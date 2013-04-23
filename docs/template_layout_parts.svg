@@ -15,7 +15,7 @@
    id="svg3160"
    version="1.1"
    inkscape:version="0.48.1 "
-   sodipodi:docname="New document 1">
+   sodipodi:docname="template_layout_parts.svg">
   <defs
      id="defs3162" />
   <sodipodi:namedview
@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.97909483"
-     inkscape:cx="629.53775"
-     inkscape:cy="620"
+     inkscape:cx="467.14286"
+     inkscape:cy="623.31987"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -35,7 +35,9 @@
      inkscape:window-height="838"
      inkscape:window-x="1272"
      inkscape:window-y="188"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true" />
   <metadata
      id="metadata3165">
     <rdf:RDF>
@@ -53,19 +55,25 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="opacity:0.57522122;fill:#e3dedb;fill-opacity:1;stroke:#241f1c;stroke-width:0.99999994;stroke-miterlimit:4;stroke-dasharray:none"
+       style="opacity:0.34513274;fill:#e3dedb;fill-opacity:1;stroke:#241f1c;stroke-width:0.99999994000000003;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3168"
        width="587.05701"
        height="476.67618"
        x="22.443342"
-       y="97.442528" />
+       y="97.442528"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
        x="36.288799"
        y="118.67079"
        id="text3940"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          sodipodi:role="line"
          x="36.288799"
          y="118.67079"
@@ -88,14 +96,20 @@
        id="use3958"
        transform="matrix(0.97600349,0,0,0.12788935,6.8507438,156.83212)"
        width="744.09448"
-       height="1052.3622" />
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <text
        sodipodi:linespacing="125%"
        id="text3962"
        y="191.43945"
        x="47.523666"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          style="font-size:20px"
          y="191.43945"
          x="47.523666"
@@ -113,14 +127,20 @@
        id="use3958-9"
        transform="matrix(0.97600349,0,0,0.57951499,8.0085477,210.36726)"
        width="744.09448"
-       height="1052.3622" />
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <text
        sodipodi:linespacing="125%"
        id="text3962-8"
        y="289.33643"
        x="46.681465"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          style="font-size:20px"
          y="289.33643"
          x="46.681465"
@@ -143,14 +163,20 @@
        id="use3996"
        transform="matrix(0.24763384,0,0,0.60783349,390.24172,84.908294)"
        width="744.09448"
-       height="1052.3622" />
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
        x="419.12833"
        y="215.95189"
        id="text4011"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          id="tspan4015"
          sodipodi:role="line"
          x="419.12833"
@@ -163,7 +189,10 @@
        id="use4023"
        transform="matrix(0.21614125,0,0,0.36866937,40.623088,306.4455)"
        width="744.09448"
-       height="1052.3622" />
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <use
        x="0"
        y="0"
@@ -171,14 +200,20 @@
        id="use4025"
        transform="matrix(0.6875346,0,0,0.36906147,174.58617,306.85665)"
        width="744.09448"
-       height="1052.3622" />
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <text
        sodipodi:linespacing="125%"
        id="text3962-8-7"
        y="365.41098"
        x="56.371571"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          style="font-size:20px"
          y="365.41098"
          x="56.371571"
@@ -190,7 +225,10 @@
        y="365.73117"
        x="203.81505"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          style="font-size:20px"
          y="365.73117"
          x="203.81505"
@@ -203,14 +241,20 @@
        id="use3996-1"
        transform="matrix(0.67113722,0,0,0.82866688,177.23138,240.49502)"
        width="744.09448"
-       height="1052.3622" />
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
        x="214.0724"
        y="409.54184"
        id="text4011-4"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          id="tspan4015-0"
          sodipodi:role="line"
          x="214.0724"
@@ -223,14 +267,20 @@
        id="use4106"
        xlink:href="#use3958"
        y="0"
-       x="0" />
+       x="0"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876" />
     <text
        sodipodi:linespacing="125%"
        id="text4108"
        y="467.75888"
        x="212.02969"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       xml:space="preserve"><tspan
+       xml:space="preserve"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          style="font-size:20px"
          y="467.75888"
          x="212.02969"
@@ -242,7 +292,10 @@
        x="30.853184"
        y="259.33743"
        id="text3940-4"
-       sodipodi:linespacing="125%"><tspan
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="C:\Users\m\3\corpus_shell\_repo\SADE\docs\template_layout_parts.png"
+       inkscape:export-xdpi="90.058876"
+       inkscape:export-ydpi="90.058876"><tspan
          sodipodi:role="line"
          x="30.853184"
          y="259.33743"

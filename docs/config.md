@@ -10,10 +10,13 @@ It has three levels of parameters:
     container/function
 
 There is a tentative schema [config.xsd](/tharman/SADE/blob/sade_modules/schemas/config.xsd).
-See also [boilerplate config](/tharman/SADE/blob/sade_modules/src/project-boilerplate/config.xml)
+See also [default project config](/tharman/SADE/blob/sade_modules/src/project-boilerplate/config.xml)
 
+Optionally, also modules can have config.
 
 config:param-value()
 --------------------
 
 To ensure consistent access to the configuration information the config-module provides appropriate functions, that can be called by the modules to retrieve param-values.
+
+There is a precedence ordering defined for retrieving the param-values  (see inline-docs for config:param-value()).
