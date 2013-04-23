@@ -153,14 +153,14 @@ let $resources-overview :=  <div id="resources-overview">
                         $md-selflink:= $md//cmd:MdSelfLink/text()
                         
                 return <tr>
-                        <td><a href="get/{$resource-id}">{$resource-id}</a><br/>
+                        <td><a href="get/{$resource-id}?format=html">{$resource-id}</a><br/>
                         <a href="{$pid}">{$pid}</a>
                         </td>
                         <td>{util:document-name($resource)}</td>
                         
                         <td>{count($base-elems)}</td>
-                        <td><a href="get/{$md-id}">{$md-id}</a><br/>
-                        <a href="get/{$md-selflink}">{$md-selflink}</a></td>
+                        <td><a href="get/{$md-id}?format=html">{$md-id}</a><br/>
+                        <a href="{$md-selflink}">{$md-selflink}</a></td>
                         </tr>
                         }
             
