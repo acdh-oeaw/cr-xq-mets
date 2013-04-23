@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="xar" name="packages">
+	
+	<property file="build.properties"  />
+	
 	<property name="build.dir" value="${basedir}/build"/>
 	<target name="xar">
 	  <ant dir="src"/>
