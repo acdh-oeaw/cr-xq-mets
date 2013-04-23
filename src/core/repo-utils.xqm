@@ -234,6 +234,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	           let $xslDoc := repo-utils:xsl-doc($operation, $format, $config )
 	           let $res := if (exists($xslDoc)) then transform:transform($item,$xslDoc, 
               			<parameters><param name="format" value="{$format}"/>
+              			           <param name="operation" value="{$operation}"/>
               			            <param name="x-context" value="{repo-utils:param-value($config, 'x-context', '' )}"/>
               			            <param name="base_url" value="{repo-utils:base-url($config)}"/>
               			            <param name="mappings-file" value="{repo-utils:config-value($config, 'mappings')}"/>
