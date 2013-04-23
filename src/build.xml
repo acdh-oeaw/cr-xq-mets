@@ -1,8 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="xar" name="sade-main">
+<!--    <property name="project-name" value="cr-xq"/>-->
+   
+   <import file="../build.xml"/>
+
+<!--    <property  file="../build.properties"  />-->
+
     <property name="build.dir" value="build"/>
-    <target name="xar">
+    <target name="xar" depends="configure-metafiles">
+        
+        <echo>building: ${app.name}/${app.version}</echo>
+        <echo>into: ${build.dir}</echo>
         <mkdir dir="${build.dir}"/>
-        <zip basedir="." destfile="${build.dir}/sade-0.2.xar" excludes="${build.dir},${build.dir}/**"/>
+        <zip basedir="." destfile="${build.dir}/${app.name}-${app.version}.xar" excludes="${build.dir},${build.dir}/**,**/*.template.*,**/build.*"/>
+    </target>
+    
+    <!-- insert the values from build.properties into the xar meta files: repo.xml and expath-pkg.xml -->  
+    <target name="configure-metafiles">
+        <copy file="repo.template.xml" tofile="repo.xml" />
+        <copy file="expath-pkg.template.xml" tofile="expath-pkg.xml" />
+        <replace dir="." includes="repo.xml expath-pkg.xml"
+                propertyFile="../build.properties">
+                <replacefilter 
+                    token="@app.name@" 
+                    property="app.name"/>
+                <replacefilter 
+                    token="@app.uri@" 
+                    property="app.uri"/>
+                <replacefilter 
+                    token="@app.version@" 
+                    property="app.version"/>
+            
+        </replace>
+        
+        <copy file="core/config.template.xql" tofile="core/config.xql" />
+        <replace file="core/config.xql"
+            propertyFile="../build.properties">
+            <replacefilter 
+                token="@projects.dir@" 
+                property="projects.dir"/>
+        </replace>
     </target>
 </project>
