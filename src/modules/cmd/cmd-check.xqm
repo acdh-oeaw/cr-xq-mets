@@ -1,4 +1,4 @@
-xquery version "1.0";
+        xquery version "1.0";
 module namespace cmdcheck = "http://clarin.eu/cmd/check";
 (: checking (trying to ensure) consistency of the IDs in CMD-records (MdSelfLink vs. ResourceProxies vs. IsPartOf)
 
@@ -9,6 +9,7 @@ TODO: check (and/or generate) the inverse links in IsPartOf (vs. ResourceProxies
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
 import module namespace fcs = "http://clarin.eu/fcs/1.0" at "../fcs/fcs.xqm";
 import module namespace crday  = "http://aac.ac.at/content_repository/data-ay" at "../aqay/crday.xqm";
+import module namespace smc = "http://clarin.eu/smc" at "../smc/smc.xqm";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 
 declare namespace sru = "http://www.loc.gov/zing/srw/";
@@ -17,7 +18,7 @@ declare namespace cmd = "http://www.clarin.eu/cmd/";
 (:~ default namespace: cmd - declared statically, because dynamic ns-declaration did not work 
 cmd is the default namespace in (not) all the CMD records  
 :)
-declare default element namespace "http://www.clarin.eu/cmd/";
+(:declare default element namespace "http://www.clarin.eu/cmd/";:)
 (:~ default namespace - not declared explicitely, it is declared dynamically where necessary (function: addIsPartOf() :) 
 declare variable $cmdcheck:default-ns := "http://www.clarin.eu/cmd/";
 declare variable $cmdcheck:root-coll := "root";
@@ -45,7 +46,7 @@ and store it to conf
 :)
 declare function cmdcheck:collection-to-mapping($config,$x-context as xs:string+ ) as item()* {
     
-    let $config-path := util:collection-name($config)
+    let $config-path := util:collection-name($config[1])
     let $context-path := repo-utils:context-to-collection-path($x-context, $config)
 
     let $maps :=  <map>{ for $dataset-coll in xmldb:get-child-collections($context-path)
@@ -54,8 +55,8 @@ declare function cmdcheck:collection-to-mapping($config,$x-context as xs:string+
                           <map key="{$provider-coll}" label="{translate($provider-coll,'_', ' ')}" path="{concat($context-path,'/',$dataset-coll,'/',$provider-coll)}"/>
                 }</map>
     
-     let $store := repo-utils:store($config-path ,  'mappings_auto.xml', $maps, true())    
-    return $store     
+     let $store := repo-utils:store($config-path ,  'mappings_auto.xml', $maps, true())     
+    return $config-path
 };
 
 
@@ -113,13 +114,23 @@ let $profiles-summary :=
                                             return util:eval("$context//CMD/concat(Header/MdProfile/text(), '#', Components/*[1]/local-name())")
                                                  
             let $distinct-profiles := distinct-values($profiles)
-           return for $profile in $distinct-profiles            
+            
+           return for $profile in $distinct-profiles
+           
 (:                                let $profile-name := util:eval("$context[.//(MdProfile|cmd:MdProfile)/text() = $profile][1]//(Components|cmd:Components)/*/name()"):)
-                                let $profile-name := substring-after($profile, '#') 
-                                let $profile-id := substring-before($profile, '#')
+                                let $profile-name := substring-after($profile, '#')
+                                (:  if ID missing try to fill up from smc:cmd-terms :)
+                                
+                                let $matching-cmd-profile := $smc:cmd-terms//Termset[xs:string(@name)=$profile-name and @type="CMD_Profile"]
+                                let $profile-id := if (substring-before($profile, '#') ne '') then substring-before($profile, '#') 
+                                                        else 
+(:                                                            let $matching-cmd-profile := $smc:cmd-terms//Termset[xs:string(@name)=$profile-name and @type="CMD_Profile"]:)
+                                                            (: WATCH: potentially problematic: if ambiguous match, takes first matching :)
+                                                            if (count($matching-cmd-profile)>0) then $matching-cmd-profile[1]/xs:string(@id) else ''
+                                
                                 let $cnt := count($profiles[. eq $profile])
                                 return <sru:term>
-                                           <sru:value>{if ($profile-id ne '') then $profile-id else $profile-name}</sru:value>
+                                           <sru:value>{if ($profile-id ne '') then $profile-id else $profile-name}</sru:value>                                           
                                            <sru:numberOfRecords>{$cnt }</sru:numberOfRecords>
                                            <sru:displayTerm>{$profile-name}</sru:displayTerm>
                                            { if ($profile-id eq '') then
@@ -149,9 +160,10 @@ let $profiles-summary :=
 };
 
 
-declare function cmdcheck:display-overview($config-path as xs:string) as item()* {
+declare function cmdcheck:display-overview($config) as item()* {
 
-   let $config := repo-utils:config($config-path),
+(:$config := repo-utils:config($config-path),:)
+   let 
        $dummy := util:declare-namespace("",xs:anyURI("")),
        $mappings := doc(repo-utils:config-value($config, 'mappings'))
 (:       $baseurl := repo-utils:config-value($config, 'base.url'),:)
