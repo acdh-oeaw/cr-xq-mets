@@ -149,7 +149,8 @@ declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node
   $cache-path := repo-utils:config-value($config, 'cache.path'),
   $dummy := xdb:login($cache-path, $clarin-writer//write-user/text(), $clarin-writer//write-user-cred/text()),
   $store := (: util:catch("org.exist.xquery.XPathException", :) xdb:store($cache-path, $doc-name, $data), (: , ()) :)
-  $stored-doc := fn:doc(concat($cache-path, "/", $doc-name))
+  $stored-doc := if ( util:is-binary-doc(concat($cache-path, "/", $doc-name))) then util:binary-doc(concat($cache-path, "/", $doc-name))
+                        else fn:doc(concat($cache-path, "/", $doc-name))
   return $stored-doc
 (:  ():)
 };
@@ -176,11 +177,14 @@ declare function repo-utils:store($collection as xs:string, $doc-name as xs:stri
   let $clarin-writer := fn:doc("writer.xml"),
   $dummy := xdb:login($collection, $clarin-writer//write-user/text(), $clarin-writer//write-user-cred/text())
 
-  let $rem := if ($overwrite and doc-available(concat($collection, $doc-name))) then xdb:remove($collection, $doc-name) else ()
+(:  let $rem := if ($overwrite and doc-available(concat($collection, $doc-name))) then xdb:remove($collection, $doc-name) else () :)
+  let $rem := if ($overwrite) then xdb:remove($collection, $doc-name) else ()
   
-  let $store := (: util:catch("org.exist.xquery.XPathException", :) xdb:store($collection, $doc-name, $data), (: , ()) :)
-  $stored-doc := fn:doc(concat($collection, "/", $doc-name))
+  
+  let $store := (: util:catch("org.exist.xquery.XPathException", :) xdb:store($collection, $doc-name, $data),  
+  $stored-doc := if (util:is-binary-doc(concat($collection, "/", $doc-name))) then  util:binary-doc(concat($collection, "/", $doc-name)) else fn:doc(concat($collection, "/", $doc-name))
   return $stored-doc
+  
 };
 
 
