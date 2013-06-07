@@ -33,14 +33,19 @@ tries to get the resources matching the @xml:id, then the filename (in the data-
 :)
 
 declare function resource:get ($config-map, $id as xs:string) {
-
-    let $data-dir := config:param-value($config-map, 'data-dir'),
-    $resource-by-id := collection($data-dir)//*[@xml:id eq $id],
+       
+    let $sanitized-id := repo-utils:sanitize-name($id),
+        $data-dir := config:param-value($config-map, 'data-dir'),
+        $data-coll := if ($data-dir eq "" ) then ()
+                    else collection($data-dir),
+    $resource-by-id := $data-coll//*[@xml:id eq $id],
     $resource := if (exists($resource-by-id)) then $resource-by-id
-                 else if (doc-available(concat($data-dir, '/', $id))) then
-                            doc(concat($data-dir, '/', $id))
+                 else  if ($data-dir ne  "" ) then
+                    if (doc-available(concat($data-dir, '/', $sanitized-id))) then
+                            doc(concat($data-dir, '/', $sanitized-id))
                  (: if not resource found, try to get a metadata-record :)
                  else resource:getMD($config-map,$id)
+                    else resource:getMD($config-map,$id)
                  
     
     
@@ -50,15 +55,31 @@ declare function resource:get ($config-map, $id as xs:string) {
 };
 
 
+(:~ tries to get the metadata-record to a resource, based on ID 
+but this is not clean yet 
+
+TODO: make the query  (@xml:id) to use index!
+
+:)
 declare function resource:getMD ($config-map, $id as xs:string) {
 
     let $metadata-dir := config:param-value($config-map, 'metadata-path'),
         $id-cmd := concat($id, '.cmd'),
-        $md-record-by-id := collection($metadata-dir)//*[@xml:id = ($id,$id-cmd)],
-        $md-record := if (exists($md-record-by-id)) then $md-record-by-id 
-                 else if (doc-available(concat($metadata-dir, '/', $id-cmd))) then
-                            doc(concat($metadata-dir, '/', $id-cmd))
+        $sanitized-id := repo-utils:sanitize-name($id-cmd),
+        (: if no metadata-dir specified (or empty) dont search! (otherwise `collection('')`would go through whole db!! :)
+        $md-coll := if ($metadata-dir eq "" ) then ()
+                    else collection($metadata-dir),
+        $md-record-by-id := $md-coll//*[@xml:id = ($id,$id-cmd)],
+        (:$md-record := if (exists($md-record-by-id)) then $md-record-by-id 
+                 else if (doc-available(concat($metadata-dir, '/', $sanitized-id))) then
+                            doc(concat($metadata-dir, '/', $sanitized-id))
+                 else ():)
+         $md-record := if (exists($md-record-by-id)) then $md-record-by-id 
+                        else  if ($metadata-dir ne  "" ) then  
+                                    if (doc-available(concat($metadata-dir, '/', $sanitized-id))) then
+                                            doc(concat($metadata-dir, '/', $sanitized-id))
                  else ()
+                              else ()
     
     return if (exists($md-record)) then $md-record 
                 else <diagnostics><message>MD-record unavailable, id: { ($id, ' in ', $metadata-dir) } </message></diagnostics> 
