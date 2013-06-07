@@ -50,7 +50,7 @@ declare
     %templates:default("x-dataview","kwic")
     %templates:default("startRecord",1)
     %templates:default("maximumRecords",10)
-    %templates:default("x-format","html")
+    %templates:default("x-format","html")    
 function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-context as xs:string*, $x-dataview as xs:string*, $x-format as xs:string?, $startRecord as xs:integer, $maximumRecords as xs:integer, $base-path as xs:string?) {
     session:create(),
 (:    let $hits := app:do-query($query, $mode):)       
@@ -59,11 +59,16 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
     let $x-context-x := if ($x-context='') then config:param-value($node, $model,'fcs','','x-context') else $x-context
     let $x-dataview-x := if ($x-dataview='') then config:param-value($node, $model,'fcs','','x-dataview') else $x-dataview
     
+    let $base-path-x := if ($base-path='') then config:param-value($model,'base-url') else $base-path
+    
+    (: hardcoded sorting - needs to be optional (currently only used in STB :)
+    let $cql-query := if (contains($query, 'sortBy')) then $query else concat ($query, " sortBy sort")
+    
     let $result := 
 (:       fcs:search-retrieve($query, $x-context, xs:integer($start-item), xs:integer($max-items), $x-dataview, $config):)
-       fcsm:search-retrieve($query, $x-context-x, $startRecord , $maximumRecords, $x-dataview-x, $model("config"))
+       fcsm:search-retrieve($cql-query, $x-context-x, $startRecord , $maximumRecords, $x-dataview-x, $model("config"))
     let $params := <parameters><param name="format" value="{$x-format}"/>
-                  			         <param name="base_url" value="{$base-path}"/>
+                  			         <param name="base_url" value="{config:param-value($model,'base-url')}"/>
               			            <param name="x-context" value="{$x-context-x}"/>              			            
               			            <param name="x-dataview" value="{$x-dataview-x}"/>
                   </parameters>
@@ -89,12 +94,14 @@ function fcs:scan($node as node()*, $model as map(*), $scanClause as xs:string, 
 $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
     
     let $x-context-x := if ($x-context='') then config:param-value($node, $model,'fcs','','x-context') else $x-context
+    let $base-path-x := if ($base-path='') then config:param-value($model,'base-url') else $base-path
     
     let $result :=
             fcsm:scan($scanClause, $x-context-x, $start-term, $max-terms, 1, 1, $sort, '', $model("config"))
     
     let $params := <parameters><param name="format" value="{$x-format}"/>
-                  			         <param name="base_url" value="{$base-path}"/>
+                  			         <param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>
+                  			         <param name="sort" value="{$sort}"/>
               			            <param name="x-context" value="{$x-context-x}"/>             			            
     
                   </parameters>
