@@ -3,6 +3,9 @@
 	
 	<property file="build.properties"  />
 	
+	<import file="build_docs.xml" />   
+	
+	
 	<property name="build.dir" value="${basedir}/build"/>
 	<target name="xar">
 	  <ant dir="src"/>
