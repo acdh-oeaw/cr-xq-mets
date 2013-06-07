@@ -355,7 +355,12 @@ declare function config:project-config($project as xs:string) {
 declare function config:list-projects() {
        collection($config-params:projects-dir)//config/param[xs:string(@key)='project-id']/text()
 };
-  
+
+
+(:~ lists all existing modules (i.e. present in the modules-colleciton) :)
+declare function config:list-modules() {
+       xmldb:get-child-collections($config:modules-dir)
+};
 
 
 (:~ tries to find module-specific configurations
