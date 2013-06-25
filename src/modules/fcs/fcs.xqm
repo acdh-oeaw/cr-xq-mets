@@ -432,13 +432,13 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
          
             (: if there was a problem with the parsing the query  don't evaluate :)
         let $results := if ($xpath-query instance of text() or $xpath-query instance of xs:string) then
-                                util:eval(concat("$data-collection",$xpath-query))
+                                util:eval(concat("$data-collection",translate($xpath-query,'&amp;','?')))
                            else ()
     
         let	$result-count := fn:count($results),         
-(: deactivated ordering -> TODO: optional
-        $ordered-result := fcs:sort-result($results, $query, $x-context, $config),                              :)
-        $ordered-result := $results,
+(: deactivated ordering -> TODO: optional:)
+        $ordered-result := fcs:sort-result($results, $query, $x-context, $config),                              
+(:        $ordered-result := $results,:)
         $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),
         
         $seq-count := fn:count($result-seq),        
@@ -875,5 +875,6 @@ declare function fcs:sort-result($result as node()*, $cql as xs:string, $x-conte
                                     ), '')                                   
    return if (count($indexes) = 0) then $result
                 else util:eval($sorting-expression)
+(:                else $sorting-expression:)
 
 };
