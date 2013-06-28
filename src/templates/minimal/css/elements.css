@@ -1,0 +1,7 @@
+/* ****************** */
+/* styling of html-elements */
+
+a, a:link, a:hover { text-decoration: none;}
+
+ul { padding-left: 4px; list-style-type: none; margin: 0;}
+li { background: url('imgs/icon-dot-4.png') no-repeat; background-position: 0px 7px; padding-left: 8px;  }

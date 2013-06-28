@@ -1,0 +1,87 @@
+/*********************/
+/* basic page/blocks layout */ 
+
+
+/* wireframe for debugging */
+/*div {border:1px dotted grey; }*/
+
+
+body{
+    margin:0;
+}
+
+
+/* ********************* */
+/* header */
+
+#header {
+       margin-bottom: 1em;
+       height: 70px;       
+}
+
+#site-name { display:inline; padding-left: 20px; position:absolute; top:20px;}
+#logo { display:block; padding-top: 10px; float: left;}
+
+/*#top-menu {position: absolute; top: 50px; display:inline-block; padding-left: 20px; left:30%; }
+
+
+#query-input { padding: 4px;  max-width:700px;  }
+#repositories {margin: 6px 0px; }
+#notify {display:none; /\* max-width: 400px; position: relative; overflow: auto; height: 40px; *\/}
+#user {text-align: right;}
+#welcome {max-width: 600px; padding: 10px;}
+*/
+
+/* ********** */
+/* navigation */
+
+#navigation {display:inline; }
+#top-menu {display:inline; position: absolute; top: 50px; }
+#top-menu li { display: inline; padding: 0 1em; background: none;}
+
+
+#sidebar { width: 20%; min-width: 150px;  float: left;}
+/*#left-menu {float: left; width:250px; height:500px; overflow:auto;}*/
+
+
+
+/*******************/
+/* main */
+
+#main {margin-left: 2em; float:left; width: 75%;} 
+
+#results { float: left;}
+/*#content, #main {float: left;}*/
+
+/*******************/
+/* detail */
+
+
+#detail  {float:right; width: 40%; }
+/* padding-top: 5em;
+			#impressum {float:left; margin-left: 2%; width:60%; }
+			#detail {float:right; width:36%; display:none; }
+			#detail-front {float:right; width:35%; margin-top:7em; margin-left:3%;}
+*/
+
+/* customize jquery-ui*/
+
+.ui-widget {font-size: 1em; font-family: inherit;}
+.ui-accordion .ui-accordion-content { 	padding: 4px 8px; }
+.ui-widget-header { padding-left: 6px; }
+.ui-widget-content { padding: 6px;	}
+.ui-dialog {padding: 0px;}
+.ui-dialog .ui-dialog-titlebar { padding: 0 0 0 6px; }
+
+
+/*
+ * .ui-accordion .ui-accordion-header { 	padding-left: 12px; }
+.ui-accordion .ui-accordion-header .ui-icon {	left: -0.2em; }
+	
+.ui-widget {font-size: 1em; font-family: inherit;}
+	.ui-tabs .ui-tabs-panel { padding:1em;}
+	.ui-tabs .ui-tabs-nav li a, .result-header {padding: 0.2em 0.5em; }
+	.ui-accordion .ui-accordion-header a {padding: 0.1em 0.3em;}
+    .ui-datepicker {width: auto;}  
+    .ui-datepicker table {width: 100%;}
+    .ui-datepicker select.ui-datepicker-month, .ui-datepicker select.ui-datepicker-year {    width: auto; }*/

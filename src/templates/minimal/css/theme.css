@@ -1,0 +1,33 @@
+/* ************** */
+/* THEME = setting fonts and colors */
+
+
+
+html, body, table{ 
+    font-size: 12px; 
+    font-family: "Tahoma, Segoe UI, sans-serif"; 
+}	
+
+#header {
+    background-color:
+}
+  
+#site-name {
+    font-family: Helvetica, Tahoma, Verdana, sans-serif; 
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #c00000; 
+}
+
+a, a:link, a:hover {
+    color: #c00000;
+}
+
+input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button {
+    border:  1px solid #A6C9E2;
+}
+ 
+label, .label, .cmds-elem-prop .label { font-size: 0.9em; color: #014172; font-style: italic; }
+
+
+.kwic em , .hilight { font-size: 1.1em; font-weight: bold;  margin: 0 0.2em;}

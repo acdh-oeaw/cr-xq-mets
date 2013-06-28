@@ -7,7 +7,8 @@
     <!--<div class="templates:if-parameter-set?param=query">-->
     <div class="templates:include?path=query_input.html">search</div>
     <div class="templates:if-parameter-set?param=query">
-        <div id="results" class="fcs:query?x-dataview=full">
+        <div id="results" class="fcs:query">
+<!--            ?x-dataview=full-->
             <p>Found: <span id="hit-count" class="fcs:hit-count"/> matches.</p>
             <div class="fcs:show-hits?howmany=20"/>
         </div>
