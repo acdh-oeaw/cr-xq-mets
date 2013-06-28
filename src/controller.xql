@@ -17,10 +17,6 @@ let $params := tokenize($exist:path, '/')
                   else if (config:project-exists(request:get-parameter('project',"default"))) then 
                             request:get-parameter('project',"default") 
                   else "default" 
-
-let $modules := config:list-modules()
-let $module := if ($params[3] = $modules) then $params[3] else ''
-
  let $project-config :=  config:project-config($project) 
  let $config := map { "config" := $project-config}
  let $template-id := config:param-value($config,'template')
@@ -31,7 +27,6 @@ let $module := if ($params[3] = $modules) then $params[3] else ''
  
  let $protected := config:param-value($config,'visibility')='protected'
  let $allowed-users := tokenize(config:param-value($config,'users'),',')
- 
  
 return         
 
@@ -102,18 +97,22 @@ else if ($file-type = ('js', 'css', 'png', 'jpg', 'gif')) then
     (: if called from a module (with separate path-step (currently only /get) :)
     let $corr-rel-path := if (starts-with($rel-path, "/get")) then substring-after($rel-path, '/get') else $rel-path
     let $path := config:resolve-template-to-uri($config, $corr-rel-path)
-    return <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$path}" />        
-    </dispatch>
-else if (not($module='')) then
-<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/{$module}/{$module}.xql" >
-            <add-parameter name="project" value="{$project}"/>
-            <add-parameter name="exist-path" value="{$exist:path}"/>
-            <add-parameter name="exist-resource" value="{$exist:resource}"/>
-        </forward>
-	
-    </dispatch>
+    return 
+        (: daniel 2013-06-12 catch requests for facsimile :)
+        if (starts-with($path,'/facs'))
+        then
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{$exist:controller}/modules/facsviewer/facsviewer.xql" >
+                    <add-parameter name="project" value="{$project}"/>
+                    <add-parameter name="exist-path" value="{$exist:path}"/>
+                    <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                </forward>
+            </dispatch>
+            
+        else
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$path}" />        
+        </dispatch>
 else if (contains($exist:path, "fcs")) then
 
 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
