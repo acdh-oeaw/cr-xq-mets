@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "3.0";
 module namespace fcs-tests  = "http://clarin.eu/fcs/1.0/tests";
 
 import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
@@ -247,7 +247,17 @@ declare function fcs-tests:process-request($test, $request as xs:string, $a-text
                         util:base64-decode($result-data-raw//httpclient:body/text())
                      else 
                         $result-data-raw//httpclient:body/text()
-    let $json-xml := if ($json) then  xqjson:parse-json($json) else ()
+              
+                    let $json-xml := if ($json) then
+                            try {
+                                    xqjson:parse-json($json) 
+                           }
+                       catch *         
+                        {
+                        diag:diagnostics('general-error', string-join(($err:code , $err:description, $err:value), '; '))
+                        }
+                            else ()
+                    
 
     let $result-data := if ($result-data-raw//httpclient:headers/httpclient:header[xs:string(@name)="Content-Type"]
                                   /contains(xs:string(@value),"application/json")) then                                    
