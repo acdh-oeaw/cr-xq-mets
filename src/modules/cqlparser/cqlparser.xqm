@@ -11,8 +11,6 @@ import module namespace cqlparser = "http://exist-db.org/xquery/cqlparser";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "/db/cr/repo-utils.xqm";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "/db/cr/modules/diagnostics/diagnostics.xqm";
 
-declare namespace sru = "http://www.loc.gov/zing/srw/";
-
 (:declare variable $cql:transform-doc := doc("XCQL2Xpath.xsl");:)
 declare variable $cql:transform-doc := doc(concat(system:get-module-load-path(),"/XCQL2Xpath.xsl"));
 
@@ -45,7 +43,7 @@ declare function cql:cql-to-xcql($cql-expression as xs:string) {
 declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:string)  as item() {
     let $xcql := cql:cql-to-xcql($cql-expression)
 (:    return transform:transform ($xcql, $cql:transform-doc, <parameters><param name="mappings-file" value="{repo-utils:config-value('mappings')}" /></parameters>):)
-    return if (not($xcql instance of element(sru:diagnostics))) then
+    return if (not($xcql instance of element(diagnostics))) then
                 transform:transform ($xcql, $cql:transform-doc, <parameters><param name="x-context" value="{$x-context}" /></parameters> )
              else $xcql 
   
@@ -56,7 +54,7 @@ declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:st
 declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:string, $mappings as xs:string)  as item() {
     let $xcql := if (doc-available($mappings)) then  cql:cql-to-xcql($cql-expression)
                     else diag:diagnostics("mappings-missing", $mappings)
-      return if (not($xcql[1] instance of element(sru:diagnostics))) then                
+      return if (not($xcql[1] instance of element(diagnostics))) then                
                 transform:transform ($xcql, $cql:transform-doc, 
                     <parameters><param name="x-context" value="{$x-context}" />
                         <param name="mappings-file" value="{$mappings}" /></parameters> )
