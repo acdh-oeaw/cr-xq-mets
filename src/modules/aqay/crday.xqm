@@ -16,7 +16,7 @@ declare namespace cmd = "http://www.clarin.eu/cmd/";
 (:declare namespace tei = "http://www.tei-c.org/ns/1.0";:)
 declare namespace cr=   "http://aac.ac.at/content-repository";
 
-declare variable $crday:docTypeTerms := "Terms";
+declare variable $crday:docTypeTerms := "Termset";
 declare variable $crday:defaultMaxDepth:= 8;
 (: just analyze a subsequence of: :)
 declare variable $crday:maxAyRecords:= 1000;  
@@ -94,9 +94,34 @@ declare function crday:gen-query-internal($queries, $context as node()*, $x-cont
     return $result-doc
 };
 
+
+
+(:~
+generates ay-xml for individual collections, 
+by invoking get-ay-xml for each collection individually (as x-context)
+
+not finished - smc:gen-mappings does this basically (for CMD data)
+
+@returns a summary of generated stuff
+:)(:
+declare function smc:gen-ay-xml($config, $x-context as xs:string+, $run-flag as xs:boolean, $format as xs:string) as item()* {
+
+(\:         let $mappings := doc(repo-utils:config-value($config, 'mappings')),:\)
+    let $context-mapping := fcs:get-mapping('',$x-context, $config),
+          (\: if not specific mapping found for given context, use whole mappings-file :\)
+          $mappings := if ($context-mapping/xs:string(@key) = $x-context) then $context-mapping 
+                    else doc(repo-utils:config-value($config, 'mappings')) 
+    
+    for $map in $mappings/descendant-or-self::map[@key]
+                let $map := crday:get-ay-xml($config, $map/xs:string(@key),  true(), 'raw')
+                return <structure count_indexes="{count($map/index)}" >{$map/@*}</map>
+
+};:)
+
 (:~ wrapper for the ay-xml function cares for storing the result or fetching a stored one
 
-@param format [raw, htmlpage, html] - raw: return only the produced table, html* : serialize as html
+@param $format [raw, htmlpage, html] - raw: return only the produced table, html* : serialize as html
+@param $run-flag if true - re-run even if in cache
 :)
 declare function crday:get-ay-xml($config, $x-context as xs:string+, $init-xpath as xs:string, $max-depth as xs:integer, $run-flag as xs:boolean, $format as xs:string ) as item()? {
 	
@@ -141,7 +166,8 @@ declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $dept
         diag:diagnostics("general-error", "ay-xml: no starting path provided") 
     else
         
-        let $ns-uri := namespace-uri($context[1]/*),
+        let $max-records := request:get-parameter("maxItems",$crday:maxAyRecords),
+            $ns-uri := namespace-uri($context[1]/*),
             $local-name := $context[1]/*/local-name(),
 (:            $prefix := if (exists(prefix-from-QName($qname))) then prefix-from-QName($qname) else "",:)
             $dummy := if (exists($ns-uri)) then util:declare-namespace("",$ns-uri) else ()
@@ -151,7 +177,7 @@ declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $dept
                             else     fn:concat("$context/descendant-or-self::", $path)
 
        let $path-nodes := if ($crday:restrictAyRecordsSize) then
-                               subsequence(util:eval($full-path), 1, $crday:maxAyRecords)
+                               subsequence(util:eval($full-path), 1, $max-records)
                             else 
                                util:eval($full-path)
        
@@ -161,6 +187,7 @@ declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $dept
      	  $result := element {$crday:docTypeTerms} {
      (:      		  $coll-names-value,:)
            		  attribute depth {$depth},
+(:           		  attribute fullpath {$full-path},:)
            		  attribute created {fn:current-dateTime()},
            		  $entries  
      		}
@@ -178,6 +205,7 @@ declare function crday:elem-r($path-nodes as node()*, $path as xs:string, $ns as
 	$child-ns-qnames := if (exists($child-elements)) then distinct-values($child-elements/concat(namespace-uri(), '|', local-name())) else (),	
 	$nodes-child-terminal := if (empty($child-elements)) then $path-nodes else () (: Maybe some selected elements $child-elements[not(element())] later on :),
 	$text-nodes := $nodes-child-terminal/text(),
+(:	$text-nodes := $path-nodes/text(),:)
 	$text-count := count($text-nodes),
 	$text-count-distinct := count(distinct-values($text-nodes)),
 	$dummy-undeclare-ns := util:declare-namespace("",xs:anyURI(""))
