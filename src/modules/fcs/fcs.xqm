@@ -603,12 +603,14 @@ declare function fcs:format-record-data($record-data-input as node(), $query-mat
     let $dv-facs :=  let $facs-uri:=fcs:apply-index ($record-data-input, "facs-uri",$x-context, $config)
     				 return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
                      
-    let $dv-title := <fcs:DataView type="title">{$title[1]}</fcs:DataView>                      
+    let $dv-title := <fcs:DataView type="title">{$title[1]}</fcs:DataView>
+    
+    let $dv-xml := <fcs:DataView type="xml">{util:serialize($record-data,'method=xml')}</fcs:DataView>
 
     return if ($data-view = 'raw') then $record-data 
             else <fcs:Resource pid="{$resource-pid}">
                        <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
-                    ($dv-title, $kwic, 
+                    ($dv-title, $kwic, $dv-xml
                     	 if (exists($dv-facs)) then $dv-facs else (),
                          if ('full' = $data-view or not(exists($kwic))) then <fcs:DataView type="full">{$record-data}</fcs:DataView>
                              else ()
