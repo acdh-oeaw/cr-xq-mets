@@ -610,7 +610,7 @@ declare function fcs:format-record-data($record-data-input as node(), $query-mat
     return if ($data-view = 'raw') then $record-data 
             else <fcs:Resource pid="{$resource-pid}">
                        <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
-                    ($dv-title, $kwic, $dv-xml
+                    ($dv-title, $kwic, $dv-xml,
                     	 if (exists($dv-facs)) then $dv-facs else (),
                          if ('full' = $data-view or not(exists($kwic))) then <fcs:DataView type="full">{$record-data}</fcs:DataView>
                              else ()
