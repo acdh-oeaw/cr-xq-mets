@@ -604,13 +604,13 @@ declare function fcs:format-record-data($record-data-input as node(), $query-mat
     let $dv-facs :=     if (contains($data-view,'facs')) 
                         then 
                             let $facs-uri:=fcs:apply-index ($record-data-input, "facs-uri",$x-context, $config)
-    				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
+    				        return attribute ref {$facs-uri[1]}
     				    else ()
                      
-    let $dv-title := <fcs:DataView type="title">{$title[1]}</fcs:DataView>
+    let $dv-title := $title[1]
     
     let $dv-xmlescaped :=   if (contains($data-view,'xmlescaped')) 
-                            then <fcs:DataView type="xmlescaped">{util:serialize($record-data,'method=xml, indent=yes')}</fcs:DataView>
+                            then util:serialize($record-data,'method=xml, indent=yes')
                             else ()
     
     (:return if ($data-view = 'raw') then $record-data 
