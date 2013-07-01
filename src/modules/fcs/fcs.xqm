@@ -552,28 +552,29 @@ declare function fcs:format-record-data($record-data-input as node(), $query-mat
 	                                         )
 	                               else ""
 	
-    let $kwic := if ('kwic' = $data-view) then
+    let $kwic := if (contains($data-view,'kwic')) then
                    let $kwic-config := <config width="{$fcs:kwicWidth}"/>
                    let $kwic-html := kwic:summarize($record-data, $kwic-config)
                        
-                    return if (exists($kwic-html)) then  
-                                           <fcs:DataView type="kwic">{
-                                               for $match in $kwic-html 
-                                               return (<fcs:c type="left">{$match/span[1]/text()}</fcs:c>, 
+                    return 
+                        if (exists($kwic-html)) 
+                        then  
+                            for $match in $kwic-html
+                            return (<fcs:c type="left">{$match/span[1]/text()}</fcs:c>, 
                                        (: <c type="left">{kwic:truncate-previous($exp-rec, $matches[1], (), 10, (), ())}</c> :)
                                                       <fcs:kw>{$match/span[2]/text()}</fcs:kw>,
                                                       <fcs:c type="right">{$match/span[3]/text()}</fcs:c>)            	                       
                                        (: let $summary  := kwic:get-summary($exp-rec, $matches[1], $config) :)
                         (:	                               <fcs:DataView type="kwic-html">{$kwic-html}</fcs:DataView>:)
-                                            }</fcs:DataView>
+                        
 (: DEBUG:                                            <fcs:DataView>{$kwic-html}</fcs:DataView>) :)
-                                     else (: if no kwic-match let's take first 100 characters 
+                        else (: if no kwic-match let's take first 100 characters 
                                         There c/should be some more sophisticated way to extract most significant info 
                                         e.g. match on the query-field :)
-                                       <fcs:DataView type="kwic">{substring($record-data,1,(2 * $fcs:kwicWidth))}</fcs:DataView>                                         
+                        substring($record-data,1,(2 * $fcs:kwicWidth))                                         
                      else ()
     (: prev-next :)                     
-    let $dv-navigation:= if ('navigation' = $data-view) then
+    let $dv-navigation:= if (contains($data-view,'navigation')) then
                             let $context-map := fcs:get-mapping("",$x-context, $config)
                           let $sort-index := if (exists($context-map/@sort)) then $context-map/@sort
                                                  else "title"
@@ -600,24 +601,45 @@ declare function fcs:format-record-data($record-data-input as node(), $query-mat
                              <fcs:ResourceFragment type="next" pid="{$rf-next}" ref="{$rf-next-ref}"  />)
                         else ()
                         
-    let $dv-facs :=  let $facs-uri:=fcs:apply-index ($record-data-input, "facs-uri",$x-context, $config)
-    				 return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
+    let $dv-facs :=     if (contains($data-view,'facs')) 
+                        then 
+                            let $facs-uri:=fcs:apply-index ($record-data-input, "facs-uri",$x-context, $config)
+    				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
+    				    else ()
                      
     let $dv-title := <fcs:DataView type="title">{$title[1]}</fcs:DataView>
     
-    let $dv-xml := <fcs:DataView type="xml">{util:serialize($record-data,'method=xml')}</fcs:DataView>
-
-    return if ($data-view = 'raw') then $record-data 
+    let $dv-xmlescaped :=   if (contains($data-view,'xmlescaped')) 
+                            then <fcs:DataView type="xmlescaped">{util:serialize($record-data,'method=xml, indent=yes')}</fcs:DataView>
+                            else ()
+    
+    (:return if ($data-view = 'raw') then $record-data 
             else <fcs:Resource pid="{$resource-pid}">
                        <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
-                    ($dv-title, $kwic, $dv-xml,
-                    	 if (exists($dv-facs)) then $dv-facs else (),
+                    ($dv-title, $kwic,
                          if ('full' = $data-view or not(exists($kwic))) then <fcs:DataView type="full">{$record-data}</fcs:DataView>
                              else ()
                            )}</fcs:ResourceFragment>
                            {$dv-navigation}
-                       </fcs:Resource>
-
+                       </fcs:Resource>:)
+    return
+        if ($data-view = "raw") 
+        then $record-data
+        else <fcs:Resource pid="{$resource-pid}">
+                <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
+                    for $d in tokenize($data-view,',\s*') 
+                    return 
+                        let $data:= switch ($d)
+                                        case "full"         return util:expand($record-data)
+                                        case "facs"         return $dv-facs
+                                        case "title"        return $dv-title
+                                        case "kwic"         return $kwic
+                                        case "navigation"   return $dv-navigation
+                                        case "xmlescaped"   return $dv-xmlescaped
+                                        default             return $kwic
+                         return <fcs:DataView type="{$d}">{$data}</fcs:DataView>
+                }</fcs:ResourceFragment>
+            </fcs:Resource>
 
 };
 
@@ -979,9 +1001,12 @@ declare function fcs:add-exist-match($ancestor as node(), $match as node()) {
 declare function fcs:highlight-matches-in-copy($copy as element(), $exist-matches as element(exist:match)+) as element() {
    let  $stylesheet:=   doc('highlight-matches.xsl'),
         $nodes:=        $exist-matches/ancestor-or-self::*[@xml:id and count(descendant::*) lt 5][1],
-        $xsl-input:=    <facs:query-result>
-                            <facs:matches>{$nodes}</facs:matches>
-                            <facs:page-content>{$copy}</facs:page-content>
-                        </facs:query-result>
-   return transform:transform($xsl-input,$stylesheet,())/*
+        $xsl-input:=    <fcs:query-result>
+                            <fcs:matches>{$nodes}</fcs:matches>
+                            <fcs:page-content>{$copy}</fcs:page-content>
+                        </fcs:query-result>
+   return 
+            if (exists($stylesheet)) 
+            then transform:transform($xsl-input,$stylesheet,())/* 
+            else ()
 }; 
