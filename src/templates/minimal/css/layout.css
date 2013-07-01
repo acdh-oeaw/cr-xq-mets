@@ -7,7 +7,7 @@
 
 
 body{
-    margin:0;
+    margin:10px;
 }
 
 
@@ -49,6 +49,9 @@ body{
 /* main */
 
 #main {margin-left: 2em; float:left; width: 75%;} 
+
+
+#welcome {max-width: 600px; padding: 10px; clear:both;}
 
 #results { float: left;}
 /*#content, #main {float: left;}*/
