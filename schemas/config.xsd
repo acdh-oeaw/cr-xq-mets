@@ -5,7 +5,15 @@
   <!-- Importing XHTML namespace -->
   <xs:import namespace="http://www.w3.org/1999/xhtml"
     schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd"/>
+
+  <xs:annotation>
+    <xs:documentation>
+      This schema is primarily meant for documentation of the available options in the config.
+      The listing of parameter-keys is not exhaustive, i.e. some configurations may not validate. 
+    </xs:documentation>
+  </xs:annotation>  
   
+
   <xs:simpleType name="config_keys">
     <xs:restriction base="xs:NCName">
       <xs:enumeration value="project-id">
@@ -36,7 +44,9 @@
         <xs:annotation>
           <xs:documentation>
             This param provides a path to a logo for this project which is used by the app:list-projects function in
-            cr-xq/core/app.xql. The path is relative to "%location_of_config.xml%/static".  ??? used by
+            cr-xq/core/app.xql. The path is relative to "%location_of_config.xml%/static".
+            The app:list-projects function is normally used in the "default" project, not providing any data itself, 
+            just giving an overview of the available projects.  
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>
@@ -44,7 +54,7 @@
         <xs:annotation>
           <xs:documentation>
             This param provides a short summary text for this project which is used by the app:list-projects function in
-            cr-xq/core/app.xql. ??? used by
+            cr-xq/core/app.xql.
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>      
@@ -84,7 +94,7 @@
       <xs:enumeration value="pages-dir">
         <xs:annotation>
           <xs:documentation>
-            ???
+            Expected by the facsviewer-module
             The directory where the data split page wise is to be found in the exist directory structure.
             E.g. /db/cr-data/%project-name%/pages.
           </xs:documentation>
@@ -93,7 +103,7 @@
       <xs:enumeration value="orig-data-dir">
         <xs:annotation>
           <xs:documentation>
-            ???
+            OBSOLETED - will be removed            
             The directory where the data in its original format is to be found in the exist directory structure.
             E.g. /db/cr-data/%project-name%/orig.
           </xs:documentation>
@@ -101,10 +111,11 @@
       </xs:enumeration>
       <xs:enumeration value="metadata-path">
         <xs:annotation>
-          <xs:documentation>
-            ???
+          <xs:documentation>            
             The directory where the meta data is to be found in the exist directory structure.
-            E.g. /db/cr-data/_md/%project-name%.
+            E.g. /db/cr-data/_md/%project-id%.
+            Used by the resource-module as base-collection when looking up metadata records for resources.
+            e.g. %app-root%/%project-id%/get/%md-identifier%
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>
@@ -122,37 +133,45 @@
       <xs:enumeration value="x-context">
         <xs:annotation>
           <xs:documentation>
-            fcs: This param provides the name which sets the search context to this project when querying using HTTP.
+            fcs: This param provides the identifier to restrict the search context when querying using HTTP.
+            The identifier can represent either a whole collection (a sub-project) or an individual resource.             
             The character set is restricted as this parameter is passed as a URL parameter.
-            ??? Corresponds to http://www.clarin.eu/node/3449 x-cmd-context.
+            Corresponds to http://www.clarin.eu/fcs #x-cmd-context.
+            The identifier must have been announced beforehand via the request: %app-url%/%project%/fcs?operation=scan&amp;scanClause=fcs.resource
+            Thus it is an opaque string to client applications. In other words, whatever given project issues as identifiers for its resources, 
+            it has to be able to interpret it, once confronted with these identifiers sent in the x-context parameter.
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="default.dataview">
         <xs:annotation>
           <xs:documentation>
-            fcs: ???. always "kwic" == "x-dataview"
+            fcs: define, which dataview shall be served in the searchRetrieveResponse, when nothing explicit requested in the "x-dataview" parameter
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
       <xs:enumeration value="x-dataview">
         <xs:annotation>
           <xs:documentation>
-            fcs: ???. always "kwic" == "default.dataview"
+            fcs: which dataview shall be served in the searchRetrieveResponse (for every record/hit).
+            This is primarily expected to come as http-request parameter, but it can be also set in the configuration. (Overrides "default.dataview")
+            allowed value: comma-separated list of values some of: "kwic", "full", "facs", "title", "kwic", "navigation", "xmlescaped"
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
       <xs:enumeration value="site.name">
         <xs:annotation>
           <xs:documentation>
-            fcs: Provides a title for this project visible at ??? . E.g. %project_name% site.name ???
+            fcs: Provides a title for this project visible at the html-views for the fcs endpoint . E.g. %app-url%/%project_id%/fcs?x-format=htmlpage
+            Will be deprecated in favor of project-title.
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
       <xs:enumeration value="mappings">
         <xs:annotation>
-          <xs:documentation>
+          <xs:documentation>             
             fcs: This param provides an absolute path to a file which maps exist indexes search options in SRU searches.
+            required for fcs-module.
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>         
@@ -160,34 +179,35 @@
         <xs:annotation>
           <xs:documentation>
             fcs: This param provides an absolute path to the data for this project.
+            Will be deprecated in favor of data-path 
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
       <xs:enumeration value="scripts.path">
         <xs:annotation>
           <xs:documentation>
-            fcs: This param provides an absolute path to XSL scripts for this project.
+            fcs: This param provides an absolute db-path to XSL scripts for this project.
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
       <xs:enumeration value="scan.xsl">
         <xs:annotation>
           <xs:documentation>
-            fcs: This param provides a file name for a XSL script to be executed on scan.
+            fcs: This param provides a file name for a XSL script to be applied on the XML-result of the fcs:scan-operation to transform into HTML.
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
       <xs:enumeration value="searchRetrieve.xsl">
         <xs:annotation>
           <xs:documentation>
-            fcs: This param provides a file name for a XSL script to be executed on search retrieval.
+            fcs: This param provides a file name for a XSL script to be applied on the XML-result of the fcs:searchRetrieve-operation to transform into HTML.
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>      
       <xs:enumeration value="cache.path">
         <xs:annotation>
           <xs:documentation>
-            fcs: This param provides an absolute path to a location where FCS indexes can be cached.
+            fcs: This param provides an absolute path to a location where FCS indexes are being cached.
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration> 
@@ -205,22 +225,21 @@
       <xs:enumeration value="fcs">
         <xs:annotation>
           <xs:documentation>
-            Provide params for the Federated Content Search (fcs) module.
+            Identifier for the Federated Content Search (fcs) module.
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>
       <xs:enumeration value="facsviewer">
         <xs:annotation>
           <xs:documentation>
-            Provide params for the facsimile viewer module (facsviewer).
+            Identifier for the facsimile viewer module (facsviewer).
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
       <xs:enumeration value="aqay">
         <xs:annotation>
           <xs:documentation>
-            ???
-            Provide params for the aqay module.
+            Identifier for module Automatic Querying and Analysis            
           </xs:documentation>
         </xs:annotation>       
       </xs:enumeration>
@@ -243,7 +262,7 @@
       </xs:annotation>
       <xs:sequence>
         <xs:element name="param" maxOccurs="unbounded">
-          <xs:complexType mixed="true">
+          <xs:complexType mixed="true" >
             <xs:choice>
                <xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
                <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -265,7 +284,8 @@
   <xs:element name="module">
     <xs:annotation>
       <xs:documentation>
-         Configuration for additional modules, mainly the fcs module.
+         Additional module-specific configuration.
+         Parameters inside the module element have higher precedence then global parameters. 
       </xs:documentation>
     </xs:annotation>
     <xs:complexType>
@@ -283,6 +303,7 @@
     <xs:annotation>
       <xs:documentation>
         Overrides for some parts of the representation provided by the templates.
+        Currently only used with the key=html-head, to allow individual projects to inject project-specific stuff (css, js) in the html/head
       </xs:documentation>
     </xs:annotation>
     <xs:complexType>
@@ -295,8 +316,5 @@
       </xs:choice>
       <xs:attribute name="key" use="required" type="xs:NCName"/>
     </xs:complexType>
-  </xs:element>
-  <xs:element name="param">
-
-  </xs:element>
+  </xs:element>  
 </xs:schema>
