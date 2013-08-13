@@ -1,42 +1,302 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml" elementFormDefault="unqualified">
+  
+  <!-- Importing XHTML namespace -->
+  <xs:import namespace="http://www.w3.org/1999/xhtml"
+    schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd"/>
+  
+  <xs:simpleType name="config_keys">
+    <xs:restriction base="xs:NCName">
+      <xs:enumeration value="project-id">
+        <xs:annotation>
+          <xs:documentation>
+            This param provides an ID for the project. May be used as JavaScrpt object property identifier and XML ID
+            so the set of valid characters is restricted.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="project-title">
+        <xs:annotation>
+          <xs:documentation>
+            This param provides a intelligable name for the project.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="logo-image">
+        <xs:annotation>
+          <xs:documentation>
+            This param provides a path to a logo for this project which is inserted by the app:logo function in
+            cr-xq/core/app.xql into a tag of class "app:logo". Eg. there is a span tag for this purpose in the minimal template's
+            head.html. The path is relative to "%location_of_config.xml%/static".
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="teaser-image">
+        <xs:annotation>
+          <xs:documentation>
+            This param provides a path to a logo for this project which is used by the app:list-projects function in
+            cr-xq/core/app.xql. The path is relative to "%location_of_config.xml%/static".  ??? used by
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="teaser-text">
+        <xs:annotation>
+          <xs:documentation>
+            This param provides a short summary text for this project which is used by the app:list-projects function in
+            cr-xq/core/app.xql. ??? used by
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>      
+      <xs:enumeration value="visibility">
+        <xs:annotation>
+          <xs:documentation>
+             If "protected" only users listed in a "users" parameter have access rights. 
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>      
+      <xs:enumeration value="users">
+        <xs:annotation>
+          <xs:documentation>
+            Users which have access rights if the "visibility" is "protected".
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="template">
+        <xs:annotation>
+          <xs:documentation>
+            This param provides a reference to a template to be used for the project. 
+            Change the template for the project by changing the param template!
+            TODO: how to distinguish between (sade-)global and (project-)local templates?
+            Possible values are e.g. "minimal" or "stb-template". Possible templates can be enumerated in
+            /db/apps/cr-xq/templates.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="data-dir">
+        <xs:annotation>
+          <xs:documentation>
+            The directory where the data is to be found in the exist directory structure.
+            E.g. /db/cr-data/%project-name%/sth/sth-else/etc.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="pages-dir">
+        <xs:annotation>
+          <xs:documentation>
+            ???
+            The directory where the data split page wise is to be found in the exist directory structure.
+            E.g. /db/cr-data/%project-name%/pages.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="orig-data-dir">
+        <xs:annotation>
+          <xs:documentation>
+            ???
+            The directory where the data in its original format is to be found in the exist directory structure.
+            E.g. /db/cr-data/%project-name%/orig.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="metadata-path">
+        <xs:annotation>
+          <xs:documentation>
+            ???
+            The directory where the meta data is to be found in the exist directory structure.
+            E.g. /db/cr-data/_md/%project-name%.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="module_param_keys">
+    <xs:restriction base="xs:NCName">
+      <xs:enumeration value="facs.path">
+        <xs:annotation>
+          <xs:documentation>
+            facsviewer: A URL pointing to the location where the facsimile pictures for this project can be found.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>      
+      <xs:enumeration value="x-context">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides the name which sets the search context to this project when querying using HTTP.
+            The character set is restricted as this parameter is passed as a URL parameter.
+            ??? Corresponds to http://www.clarin.eu/node/3449 x-cmd-context.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="default.dataview">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: ???. always "kwic" == "x-dataview"
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="x-dataview">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: ???. always "kwic" == "default.dataview"
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="site.name">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: Provides a title for this project visible at ??? . E.g. %project_name% site.name ???
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="mappings">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides an absolute path to a file which maps exist indexes search options in SRU searches.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>         
+      <xs:enumeration value="data.path">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides an absolute path to the data for this project.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="scripts.path">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides an absolute path to XSL scripts for this project.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="scan.xsl">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides a file name for a XSL script to be executed on scan.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="searchRetrieve.xsl">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides a file name for a XSL script to be executed on search retrieval.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>      
+      <xs:enumeration value="cache.path">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides an absolute path to a location where FCS indexes can be cached.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration> 
+      <xs:enumeration value="index.prefix">
+        <xs:annotation>
+          <xs:documentation>
+            fcs: This param provides an absolute path ??? which will be prefixed to cached FCS indexes.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration> 
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="module_keys">
+    <xs:restriction base="xs:NCName">
+      <xs:enumeration value="fcs">
+        <xs:annotation>
+          <xs:documentation>
+            Provide params for the Federated Content Search (fcs) module.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="facsviewer">
+        <xs:annotation>
+          <xs:documentation>
+            Provide params for the facsimile viewer module (facsviewer).
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="aqay">
+        <xs:annotation>
+          <xs:documentation>
+            ???
+            Provide params for the aqay module.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>
+      <xs:enumeration value="test">
+        <xs:annotation>
+          <xs:documentation>
+            ???
+            Provide param for the test module.
+          </xs:documentation>
+        </xs:annotation>       
+      </xs:enumeration>      
+    </xs:restriction>
+  </xs:simpleType>
   <xs:element name="config">
     <xs:complexType>
+      <xs:annotation>
+        <xs:documentation>
+          Root element for SADE/cr-xq configuration.
+        </xs:documentation>
+      </xs:annotation>
       <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="param"/>
-        <xs:element ref="module"/>
-        <xs:element ref="container"/>
+        <xs:element name="param" maxOccurs="unbounded">
+          <xs:complexType mixed="true">
+            <xs:choice>
+               <xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+               <xs:choice minOccurs="0" maxOccurs="unbounded">
+                 <xs:element ref="xhtml:link"/>
+                 <xs:element ref="xhtml:style"/>
+                 <xs:element ref="xhtml:script"/>
+                 <xs:element ref="xhtml:div"/>
+                 <xs:element ref="xhtml:p"/>        
+               </xs:choice>
+            </xs:choice>
+            <xs:attribute name="key" use="required" type="config_keys"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element maxOccurs="unbounded" ref="module"/>
+        <xs:element maxOccurs="unbounded" ref="container"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="module">
+    <xs:annotation>
+      <xs:documentation>
+         Configuration for additional modules, mainly the fcs module.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="param"/>
+        <xs:element name="param" maxOccurs="unbounded">
+          <xs:complexType mixed="true">
+            <xs:attribute name="key" use="required" type="module_param_keys"/>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
-      <xs:attribute name="key" use="required" type="xs:NCName"/>
+      <xs:attribute name="key" use="required" type="module_keys"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="container">
+    <xs:annotation>
+      <xs:documentation>
+        Overrides for some parts of the representation provided by the templates.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="function"/>
-      </xs:sequence>
-      <xs:attribute name="key" use="required"/>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="function">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="param"/>
-      </xs:sequence>
-      <xs:attribute name="key" use="required" type="xs:anyURI"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="xhtml:link"/>
+        <xs:element ref="xhtml:style"/>
+        <xs:element ref="xhtml:script"/>
+        <xs:element ref="xhtml:div"/>
+        <xs:element ref="xhtml:p"/>        
+      </xs:choice>
+      <xs:attribute name="key" use="required" type="xs:NCName"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="param">
-    <xs:complexType mixed="true">
-      <xs:attribute name="key" use="required"/>
-      <xs:attribute name="value"/>
-    </xs:complexType>
+
   </xs:element>
 </xs:schema>
