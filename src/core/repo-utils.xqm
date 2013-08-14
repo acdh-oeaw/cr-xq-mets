@@ -31,7 +31,8 @@ declare function repo-utils:base-url($config as item()*) as xs:string* {
     (:let $server-base := if (repo-utils:config-value($config, 'server.base') = '') then ''  else repo-utils:config-value($config, 'server.base')
     let $config-base-url := if (repo-utils:config-value($config, 'base.url') = '') then request:get-uri() else repo-utils:config-value($config, 'base.url')
     return concat($server-base, $config-base-url):)
-    let $url := request:get-url()
+(:    let $url := request:get-url():)
+let $url := request:get-uri()
     return $url
 };  
 
@@ -178,7 +179,12 @@ declare function repo-utils:store($collection as xs:string, $doc-name as xs:stri
   $dummy := xdb:login($collection, $clarin-writer//write-user/text(), $clarin-writer//write-user-cred/text())
 
 (:  let $rem := if ($overwrite and doc-available(concat($collection, $doc-name))) then xdb:remove($collection, $doc-name) else () :)
-  let $rem := if ($overwrite) then xdb:remove($collection, $doc-name) else ()
+
+let $rem :=if (util:is-binary-doc(concat($collection, $doc-name)) and $overwrite) then
+                        xdb:remove($collection, $doc-name)
+                      else if ($overwrite and doc-available(concat($collection, $doc-name))) 
+                        then xdb:remove($collection, $doc-name)  
+                        else ()
   
   
   let $store := (: util:catch("org.exist.xquery.XPathException", :) xdb:store($collection, $doc-name, $data),  
