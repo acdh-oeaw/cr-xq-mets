@@ -6,6 +6,7 @@ The Scalable Architecture for Digital Editions (SADE) tries to meet the requirem
 Build
 =====
 
+* Copy build.properties.default to build.properties and edit to your needs.
 * Build the SADE modules for eXist with ant.
 * Build the distribution zip file with build.sh from dist-utils.
 

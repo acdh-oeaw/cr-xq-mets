@@ -17,9 +17,9 @@
 	<property name="xsl.dir" value="xsl/" />
 	
 	
-	<property name="scripts.dir" location="C:\Users\m\3\7utils"/>
+	<property name="scripts.dir" location="build/scripts"/>
 	
-	<import file="${scripts.dir}\build.xml" />   
+<!--	<import file="${scripts.dir}\build.xml" /> -->   
 	
 	
 	<target name="gen-docs" depends="gen-build-info,gen-jsdocs">
