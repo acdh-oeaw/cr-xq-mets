@@ -396,7 +396,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
     $seq-count := fn:count($result-seq) :)
 
   return $res-nodeset   
-(:return $index-scan:)
+(:return $index-scan  DEBUG:)
 };
 
 
@@ -546,6 +546,7 @@ declare function fcs:format-record-data($record-data-input as node(), $query-mat
 	                                           replace(xmldb:encode-uri(replace($resourcefragment-pid,'//','__')),'__','//'),
 	                                           '"&amp;x-context=', $x-context,
 	                                           '&amp;x-dataview=full',
+	                                           '&amp;version=1.2',
 	                                           if (exists(util:expand($record-data)//exist:match/ancestor-or-self::*[@xml:id][1]))
 	                                           then '&amp;x-highlight='||string-join(util:expand($record-data)//exist:match/ancestor-or-self::*[@xml:id][1]/@xml:id,',')
 	                                           else ()
@@ -604,13 +605,13 @@ declare function fcs:format-record-data($record-data-input as node(), $query-mat
     let $dv-facs :=     if (contains($data-view,'facs')) 
                         then 
                             let $facs-uri:=fcs:apply-index ($record-data-input, "facs-uri",$x-context, $config)
-    				        return attribute ref {$facs-uri[1]}
+    				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
     				    else ()
                      
-    let $dv-title := $title[1]
+    let $dv-title := <fcs:DataView type="title">{$title[1]}</fcs:DataView>
     
     let $dv-xmlescaped :=   if (contains($data-view,'xmlescaped')) 
-                            then util:serialize($record-data,'method=xml, indent=yes')
+                            then <fcs:DataView type="xmlescaped">{util:serialize($record-data,'method=xml, indent=yes')}</fcs:DataView>
                             else ()
     
     (:return if ($data-view = 'raw') then $record-data 
