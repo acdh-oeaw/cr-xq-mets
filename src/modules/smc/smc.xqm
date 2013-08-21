@@ -85,10 +85,15 @@ declare function smc:gen-mappings($config, $x-context as xs:string+, $run-flag a
           $mappings := if ($context-mapping/xs:string(@key) = $x-context) then $context-mapping 
                     else doc(repo-utils:config-value($config, 'mappings')) 
     
-    for $map in $mappings/descendant-or-self::map[@key]
+   
+   let $mapsummaries := for $map in $mappings/descendant-or-self::map[@key]
                 let $map := smc:get-mappings($config, $map/xs:string(@key), true(), 'raw')
-                return <map count_indexes="{count($map/index)}" >{$map/@*}</map>
-           
+                return <map count_profiles="{count($map/map)}" count_indexes="{count($map//index)}" >{($map/@*,
+                            for $profile-map in $map/map 
+                            return <map count_indexes="{count($profile-map/index)}" count_paths="{count($profile-map/index/path)}">{$profile-map/@*}</map>)}</map>
+(:                return $map:)
+   
+   return <map empty_maps="{count($mapsummaries[xs:integer(@count_indexes)=0])}">{$mapsummaries}</map>
 
 };
 
