@@ -42,6 +42,7 @@ declare function cmdcheck:run-stats($config-path as xs:string) as item()* {
 
 (:~
 generate a mapping out of the db-collection structure
+combine it with manual configuration (expects: mappings-manual.xml in projects-config-collections)
 and store it to conf
 :)
 declare function cmdcheck:collection-to-mapping($config,$x-context as xs:string+ ) as item()* {
@@ -49,14 +50,17 @@ declare function cmdcheck:collection-to-mapping($config,$x-context as xs:string+
     let $config-path := util:collection-name($config[1])
     let $context-path := repo-utils:context-to-collection-path($x-context, $config)
 
-    let $maps :=  <map>{ for $dataset-coll in xmldb:get-child-collections($context-path)
-                      for $provider-coll in xmldb:get-child-collections(concat($context-path,'/',$dataset-coll))
-                          return 
-                          <map key="{$provider-coll}" label="{translate($provider-coll,'_', ' ')}" path="{concat($context-path,'/',$dataset-coll,'/',$provider-coll)}"/>
-                }</map>
+    let $mappings-manual := doc(concat($config-path, '/mappings-manual.xml')) 
+
+    let $maps :=  <map>{ ($mappings-manual/map/*,
+                            for $dataset-coll in xmldb:get-child-collections($context-path)
+                                for $provider-coll in xmldb:get-child-collections(concat($context-path,'/',$dataset-coll))
+                                    return 
+                                        <map key="{$provider-coll}" label="{translate($provider-coll,'_', ' ')}" path="{concat($context-path,'/',$dataset-coll,'/',$provider-coll)}"/>
+                            ) }</map>
     
-     let $store := repo-utils:store($config-path ,  'mappings_auto.xml', $maps, true())     
-    return $config-path
+     let $store := repo-utils:store($config-path ,  'mappings.xml', $maps, true(),$config)     
+    return $store
 };
 
 
@@ -85,64 +89,86 @@ declare function cmdcheck:check($x-context as xs:string+, $config ) as item()* {
 };
 
 (:~ extracts CMD-Profiles from given nodeset
+expects the data to be in CMD format (especially cmd-namespace)
+generates a list of profile-ids
+and matches each against $smc:cmd-terms (-> and diagnostics)
 
-TODO: match with cmd-terms and diagnostics
+special handling of missing profile-ids
+
+REMOVED dynamic handling of namespaces, just scan cmd-ns, otherwise got bad errors, when some not cmd-data was in given db-collection
+also REMOVED generating a list of profile-id#profile-name pairs, as it was too expensive - and just for data-debugging (consistence checks) purposes
+
 :)
 declare function cmdcheck:scan-profiles($x-context as xs:string, $config as node()*) as item()* {
       (: try- to handle namespace problem - primitively :) 
       
     let $context := repo-utils:context-to-collection($x-context, $config),
         $ns-uri := namespace-uri($context[1]/*)  
-            (: dynamically declare a namespace for the next step, if one is defined in current context 
-       $dummy := if (exists($ns-uri)) then util:declare-namespace("",$ns-uri) else () :)
-       (: this is now trying to overcome the default-ns issue, by accepting with and without ns :)
+            
 
 let $profiles-summary := 
         if (not(exists($context))) then
             diag:diagnostics("general-error", concat("scan-profiles: no context: ", $x-context))
          else
-            (:        $dummy := util:declare-namespace("",xs:anyURI(""))       :)
-            (:    let $profiles := util:eval("$context//(MdProfile|cmd:MdProfile)/text()"):)
-(:                    let $is-ns-cmd := ($ns-uri = xs:anyURI("http://www.clarin.eu/cmd/") ) 
-            just scan cmd-ns, otherwise got bad errors, when some not cmd-data was in given db-collection :)
-                        let $is-ns-cmd := true()
-                let $profiles := 
-                                      if ($is-ns-cmd) then 
-                                            $context//cmd:CMD/concat((cmd:Header/cmd:MdProfile)[1]/text(), '#', if(exists(cmd:Components/*[1])) then cmd:Components/*[1]/local-name() else 'ERROR' )
-                                      else
-                                            let $dummy := util:declare-namespace("",xs:anyURI($ns-uri))  
-                                            return util:eval("$context//CMD/concat(Header/MdProfile/text(), '#', Components/*[1]/local-name())")
-                                                 
-            let $distinct-profiles := distinct-values($profiles)
             
-           return for $profile in $distinct-profiles
-           
-(:                                let $profile-name := util:eval("$context[.//(MdProfile|cmd:MdProfile)/text() = $profile][1]//(Components|cmd:Components)/*/name()"):)
-                                let $profile-name := substring-after($profile, '#')
-                                (:  if ID missing try to fill up from smc:cmd-terms :)
+             
+            let $missing-profiles-records := $context//cmd:MdProfile[. = '']/ancestor::cmd:CMD
+            let $missing-profiles-distinct-names := distinct-values($missing-profiles-records/cmd:Components/*/local-name())
+                        
+            let $missing-profiles := for $profile-name in $missing-profiles-distinct-names
+                (:  if ID missing try to fill up from smc:cmd-terms :)
+                 let $matching-cmd-profile := $smc:cmd-terms//Termset[xs:string(@name)=$profile-name and @type="CMD_Profile"]
+                 let $profile-id := if (count($matching-cmd-profile)>0) then $matching-cmd-profile[1]/xs:string(@id) else $profile-name
+                 let $cnt := count($missing-profiles-records/cmd:Components/*[local-name()=$profile-name]/ancestor::cmd:CMD)
+                 let $diag :=  concat($profile-name, ' - ',
+                                        "no matching profile"[$matching-cmd-profile = ()],
+                                    concat("matched with profile: ",$matching-cmd-profile[1]/xs:string(@id))[count($matching-cmd-profile)=1],
+                                    concat("ambiguous match with profiles: ", string-join($matching-cmd-profile/xs:string(@id),', '))[count($matching-cmd-profile)>1]
+                                    )
+               return <sru:term>
+                           <sru:value>{$profile-id}</sru:value>                                           
+                           <sru:numberOfRecords>{$cnt}</sru:numberOfRecords>
+                           <sru:displayTerm>{$profile-name}</sru:displayTerm>
+                           <sru:extraTermData>
+                                        { diag:diagnostics("profile-id-missing", $diag) }
+                                    </sru:extraTermData>                           
+                         </sru:term>
+          
+           let $profile-ids := distinct-values($context//cmd:MdProfile)
+            
+            let $profiles := for $profile-id in $profile-ids[. ne '']
+                        let $records := $context//cmd:MdProfile[. = $profile-id]/ancestor::cmd:CMD
+                        let $profile-name := ($records)[1]/cmd:Components/*[1]/local-name()
+                        let $cnt := count($records)
+                        
+                        let $matching-cmd-profile := $smc:cmd-terms//Termset[xs:string(@id)=$profile-id and @type="CMD_Profile"]
+                        (: check if the defined name of the profile matches with the base-component element in the data (at least the first record we took as sample *sigh* :)
+                        let $profile-name-matching :=  ($profile-name = $matching-cmd-profile/xs:string(@name))
+                        
+                    (: for debugging mainly, to check if there are more base-components (cmd:Components/*) associated with one id
+                       but prohibitively slow for larger datasets - 
+                       let $distinct-base-components := distinct-values($records/cmd:Components/*/local-name())
+                       alternatively just check, if there is another record with the same profile-id, but other local-name - a bit less slow :)
+                    (:  let $other-base-comp:= $records/cmd:Components/*[xs:string(local-name()) ne $first-base-comp]/local-name(.):)
                                 
-                                let $matching-cmd-profile := $smc:cmd-terms//Termset[xs:string(@name)=$profile-name and @type="CMD_Profile"]
-                                let $profile-id := if (substring-before($profile, '#') ne '') then substring-before($profile, '#') 
-                                                        else 
-(:                                                            let $matching-cmd-profile := $smc:cmd-terms//Termset[xs:string(@name)=$profile-name and @type="CMD_Profile"]:)
-                                                            (: WATCH: potentially problematic: if ambiguous match, takes first matching :)
-                                                            if (count($matching-cmd-profile)>0) then $matching-cmd-profile[1]/xs:string(@id) else ''
-                                
-                                let $cnt := count($profiles[. eq $profile])
                                 return <sru:term>
-                                           <sru:value>{if ($profile-id ne '') then $profile-id else $profile-name}</sru:value>                                           
-                                           <sru:numberOfRecords>{$cnt }</sru:numberOfRecords>
+                                           <sru:value>{$profile-id}</sru:value>                                           
+                                           <sru:numberOfRecords>{$cnt}</sru:numberOfRecords>
                                            <sru:displayTerm>{$profile-name}</sru:displayTerm>
-                                           { if ($profile-id eq '') then
+                                           { if ($matching-cmd-profile = () or not($profile-name-matching)) then
                                                     <sru:extraTermData>
-                                                        { (diag:diagnostics("profile-missing", $profile-name),
-                                                           if (not($is-ns-cmd)) then diag:diagnostics("unknown-namespace", $ns-uri)
-                                                                        else ()
-                                                        )}
+                                                        { (diag:diagnostics("profile-unknown", $profile-id)[not(exists($matching-cmd-profile))] ,
+                                                          diag:diagnostics("profile-name-mismatch", 
+                                                                    concat($profile-name, '!=', $matching-cmd-profile/xs:string(@name)))[exists($matching-cmd-profile) and not($profile-name-matching)]
+                                                           )
+                                                        }
                                                     </sru:extraTermData>
                                                   else ()
                                                   }
                                          </sru:term>
+                                         
+           return ($profiles, $missing-profiles)
+           
     let $count-all := count($profiles-summary)                                        
     return
                     <sru:scanResponse xmlns:sru="http://www.loc.gov/zing/srw/" xmlns:fcs="http://clarin.eu/fcs/1.0">
