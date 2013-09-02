@@ -242,9 +242,10 @@ declare function config:app-info($node as node(), $model as map(*)) {
  : <li>config parameter for given module (config:module/param)</li>
  : <li>global config param (config:param)</li>
  :  </ol>
+ : @param strict only returns a value if it exists for given level of precedence (module) 
  : @returns either the string-value of the @value-attribute or the content of the param-node (in that order)
  :)
-declare function config:param-value($node as node()*, $model as map(*)*, $module-key as xs:string, $function-key as xs:string, $param-key as xs:string) as item()* {
+declare function config:param-value($node as node()*, $model as map(*)*, $module-key as xs:string, $function-key as xs:string, $param-key as xs:string, $strict as xs:boolean) as item()* {
 
     let $node-id := $node/xs:string(@id)
     let $config := $model("config")
@@ -294,7 +295,12 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
 (:    let $param-global:= $config//param[xs:string(@key)=$param-key][parent::config]:)
     let $param-global:= $config//param[xs:string(@key)=$param-key]
     
-    let $param := if ($param-special != '') then $param-special[1]
+    (: $strict currently only implemented for module :)
+    let $param := if ($strict) then
+                           if ($module-key ne '' and  exists($param-module)) then $param-module[1]
+                           else ""
+                    else 
+                    if ($param-special != '') then $param-special[1]
                         else if ($param-request != '') then $param-request[1]
                         else if (exists($param-container)) then $param-container[1]
                         else if (exists($param-function)) then $param-function[1]
@@ -309,6 +315,12 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
                            
    return ($param-value)
     
+};
+
+(:~ override the full-function, without (later added) $strict-parameter (set to false()   
+:)
+declare function config:param-value($node as node()*, $model as map(*)*, $module-key as xs:string, $function-key as xs:string, $param-key as xs:string) as item()* {
+   config:param-value($node,$model,$module-key,$function-key,$param-key, false())
 };
 
 (:~ returns the value of a parameter, but regards only request or global config param   
