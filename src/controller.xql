@@ -17,19 +17,25 @@ let $params := tokenize($exist:path, '/')
                   else if (config:project-exists(request:get-parameter('project',"default"))) then 
                             request:get-parameter('project',"default") 
                   else "default" 
+                  
+let $project-config :=  config:project-config($project)
+let $project-config-map := map { "config" := $project-config}
+let $full-config :=  config:config($project) 
+let $full-config-map := map { "config" := $full-config}
+
  let $modules := config:list-modules()
 let $module := if ($params[3] = $modules) then $params[3] else ''
+let $module-protected := config:param-value((),$full-config-map,$module,'','visibility',true())='protected'
+let $module-users := tokenize(config:param-value((),$full-config-map,$module,'','users',true()),',')
 
- let $project-config :=  config:project-config($project) 
- let $config := map { "config" := $project-config}
- let $template-id := config:param-value($config,'template')
+ let $template-id := config:param-value($project-config-map,'template')
  
  let $file-type := tokenize($exist:resource,'\.')[last()]
  (: remove project from the path to the resource  needed for web-resources (css, js, ...) :)
  let $rel-path := if (contains($exist:path,$project )) then substring-after($exist:path, $project) else $exist:path
  
- let $protected := config:param-value($config,'visibility')='protected'
- let $allowed-users := tokenize(config:param-value($config,'users'),',')
+ let $protected := config:param-value($project-config-map,'visibility')='protected'
+ let $allowed-users := tokenize(config:param-value($full-config-map,'users'),',')
  
 return         
 
@@ -69,7 +75,7 @@ else
 
    if (not($protected) or request:get-attribute("org.exist.demo.login.user")=$allowed-users) then
     let $user := request:get-attribute("org.exist.demo.login.user")
-   let $path := config:resolve-template-to-uri($config, $rel-path)
+   let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
     (:      <forward url="{$exist:controller}/{$config:templates-dir}{$template-id}/{$exist:resource}"/>
          :)
     return  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -96,10 +102,10 @@ else
 (: Requests for js, css are resolved via our special resolver 
 <forward url="{concat('/sade/templates/', $template-id, '/', $rel-path )}" />
 :)
-else if ($file-type = ('js', 'css', 'png', 'jpg', 'gif')) then
+else if ($file-type = ('js', 'css', 'png', 'jpg', 'gif', 'pdf')) then
     (: if called from a module (with separate path-step (currently only /get) :)
     let $corr-rel-path := if (starts-with($rel-path, "/get")) then substring-after($rel-path, '/get') else $rel-path
-    let $path := config:resolve-template-to-uri($config, $corr-rel-path)
+    let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path)
     return 
         (: daniel 2013-06-12 catch requests for facsimile :)
         if (starts-with($path,'/facs'))
@@ -116,15 +122,53 @@ else if ($file-type = ('js', 'css', 'png', 'jpg', 'gif')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <forward url="{$path}" />        
         </dispatch>
+(: DEBUG
 else if (not($module='')) then
-<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/{$module}/{$module}.xql" >
-            <add-parameter name="project" value="{$project}"/>
-            <add-parameter name="exist-path" value="{$exist:path}"/>
-            <add-parameter name="exist-resource" value="{$exist:resource}"/>
-        </forward>
-	
-    </dispatch>
+    (login:set-user("org.exist.demo.login", (), false()),
+        <a>{tokenize(config:param-value($full-config-map,'users'),',')}</a>)
+else if (false()) then
+:)        
+ else if (not($module='')) then
+   (if ($module-protected) then 
+       (login:set-user("org.exist.demo.login", (), false()),    
+            if (not(request:get-attribute("org.exist.demo.login.user")=$module-users)) then
+ 
+               <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                  <forward url="{$exist:controller}/modules/access-control/login.html"/>
+                  <view>
+                      <forward url="{$exist:controller}/core/view.xql">
+                          <add-parameter name="project" value="{$project}"/>
+                  <add-parameter name="exist-path" value="{$exist:path}"/>
+                  <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                  <add-parameter name="exist-controller" value="{$exist:controller}"/>
+                  <add-parameter name="exist-root" value="{$exist:root}"/>
+                  <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
+                          <set-header name="Cache-Control" value="no-cache"/>
+                      </forward>
+                  </view>
+              </dispatch>
+           else () (: it is an allowed user, so just go to the second part :) 
+        )
+    else (), (: not protected, so also go to second part :)
+
+   if (not($module-protected) or request:get-attribute("org.exist.demo.login.user")=$module-users) then
+    let $user := request:get-attribute("org.exist.demo.login.user")
+   let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
+    (:      <forward url="{$exist:controller}/{$config:templates-dir}{$template-id}/{$exist:resource}"/>
+         :)
+      
+     return  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}/modules/{$module}/{$module}.xql" >
+                <add-parameter name="project" value="{$project}"/>
+                <add-parameter name="user" value="{$user}"/>
+                <add-parameter name="exist-path" value="{$exist:path}"/>
+                <add-parameter name="exist-resource" value="{$exist:resource}"/>
+            </forward>    	
+        </dispatch>
+        
+    else () (: login :)
+    )
+
 else if (contains($exist:path, "fcs")) then
 
 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
