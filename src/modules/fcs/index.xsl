@@ -157,6 +157,8 @@
             <xsl:copy-of select="*[not(local-name()='extraTermData')]"/>
             <!-- <xsl:attribute name="pos" select="position()"/> -->
             <sru:extraTermData>
+<!--                pass pre-existing sru:extraTermData through-->                
+                <xsl:copy-of select="sru:extraTermData/*"/>
                 <fcs:position>
                     <xsl:value-of select="position() + $start-pos"/>
                 </fcs:position>
