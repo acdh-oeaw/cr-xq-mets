@@ -96,7 +96,11 @@ function app:list-projects($node as node(), $model as map(*), $filter as xs:stri
                     let $teaser-text:= if (config:param-value($config-map, 'teaser-text')!='') then
                                             config:param-value($config-map, 'teaser-text')
                                         else
-                                            collection(config:param-value($config-map, 'project-static-dir'))//*[xs:string(@id)= ('welcome','teaser')]/p
+(:                                        welcome message as fallback for teaser:)
+                                            let $teaser := collection(config:param-value($config-map, 'project-static-dir'))//*[xs:string(@id)= 'teaser'][1]/p
+                                            let $welcome := collection(config:param-value($config-map, 'project-static-dir'))//*[xs:string(@id)='welcome'][1]/p
+                                            return if ($teaser) then $teaser else $welcome
+                                                                                    
                                           
                     
 (:                                let $teaser := config:param-value($config-map, 'teaser'):)
