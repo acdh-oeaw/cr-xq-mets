@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config type="module">
     <module key="access-control">
-        <param key="writer">/db/apps/cr-xq/modules/access-control/writer.xml</param>
-        <param key="users">/db/apps/cr-xq/modules/access-control/users.xml</param>
+        <param key="writer.file">/db/apps/cr-xq/modules/access-control/writer.xml</param>
+        <param key="users.file">/db/apps/cr-xq/modules/access-control/users.xml</param>
     </module>
 </config>
