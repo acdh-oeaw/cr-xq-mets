@@ -330,8 +330,8 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                             let $data-collection := repo-utils:context-to-collection($x-context, $config)
 (:                            let $context-map := fcs:get-mapping('', $x-context,$config):)
                             let $fcs-resource-index := fcs:get-mapping('fcs.resource', $x-context,$config)
-                            let $index-key-xpath := $fcs-resource-index/path[xs:string(@type)='key']  
-                            let $index-label-xpath := $fcs-resource-index/path[xs:string(@type)='label']
+                            let $index-key-xpath := $fcs-resource-index/(path[xs:string(@type)='key'], path)[1]
+                            let $index-label-xpath := $fcs-resource-index/(path[xs:string(@type)='label'], path)[1]
                             let $base-elem := $fcs-resource-index/xs:string(@base_elem)
                             return <map >{
                                 ($context-map/@key, $context-map/@title, 
