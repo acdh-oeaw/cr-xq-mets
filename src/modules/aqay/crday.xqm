@@ -44,7 +44,7 @@ declare function crday:get-query-internal($config, $x-context as xs:string, $run
                   else                    
                     let $context := repo-utils:context-to-collection($x-context, $config)
                     return if (exists($context)) then 
-                            crday:gen-query-internal($testset, $context, $x-context, $cache-path, $queries-doc-name)
+                            crday:gen-query-internal($testset, $context, $x-context, $cache-path, $queries-doc-name,$config)
                             (: no need to store, because already continuously stored during querying  
                                  return repo-utils:store-in-cache($index-doc-name , $data, $config) :)
                            else 
@@ -65,7 +65,7 @@ declare function crday:get-query-internal($config, $x-context as xs:string, $run
 @param $context nodeset to evaluate the queries against ($context shall be used in the queries)
 @param $x-context string-key identifying the context 
 :)
-declare function crday:gen-query-internal($queries, $context as node()*, $x-context as xs:string+, $result-path as xs:string, $result-filename as xs:string ) as item()* {
+declare function crday:gen-query-internal($queries, $context as node()*, $x-context as xs:string+, $result-path as xs:string, $result-filename as xs:string, $config ) as item()* {
        
     (: collect the xpaths from the queries-list before fiddling with the namespace :)
     let $xpaths := $queries//xpath
@@ -74,7 +74,7 @@ declare function crday:gen-query-internal($queries, $context as node()*, $x-cont
 
 (:    let $result-store := xmldb:store($result-path ,  $result-filename, <result test="{$queries//test/xs:string(@id)}" context="{$x-context}" ></result>),:)
         let $result := <result test="{$queries//test/xs:string(@id)}" context="{$x-context}" ></result>    
-        let $result-doc := repo-utils:store($result-path , $result-filename, $result, true())    
+        let $result-doc := repo-utils:store($result-path , $result-filename, $result, true(), $config)    
 (:        $result-doc:= doc($result-store):)
 
     let $ns-uri := namespace-uri($context[1]/*)        	           
@@ -134,7 +134,7 @@ declare function crday:get-ay-xml($config, $x-context as xs:string+, $init-xpath
       let $context := repo-utils:context-to-collection($x-context, $config)
              (: prevent running on whole default collection - rather do it context by context :)
       return if (exists($context) and $x-context ne '') then
-                    let $data := crday:gen-ay-xml($context, $init-xpath, $max-depth)
+                    let $data := crday:gen-ay-xml($context, $init-xpath, $max-depth, $x-context)
                     return repo-utils:store-in-cache($name, $data,$config)
                   else 
                     diag:diagnostics("general-error", concat("run-ay-xml: no context: ", $x-context))        
@@ -157,6 +157,13 @@ calls elem-r for recursive processing
 @returns xml-with paths and numbers 
 :)
 declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $depth as xs:integer ) as element() {
+    crday:gen-ay-xml($context, $path, $depth, '')
+};
+
+(:~ 
+@param $maxItems can be injected via request (as URL-param), default= 1000
+:)
+declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $depth as xs:integer, $x-context as xs:string ) as element() {
   
   (:let $collection := collection($cr:dataPath),
   if ($collections[1] eq $cr:collectionRoot) then
@@ -186,6 +193,7 @@ declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $dept
              $dummy-undeclare-ns := util:declare-namespace("",xs:anyURI("")), 
      	  $result := element {$crday:docTypeTerms} {
      (:      		  $coll-names-value,:)
+           		  attribute context {$x-context},
            		  attribute depth {$depth},
 (:           		  attribute fullpath {$full-path},:)
            		  attribute created {fn:current-dateTime()},

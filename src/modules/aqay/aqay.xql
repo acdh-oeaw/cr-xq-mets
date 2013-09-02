@@ -64,6 +64,7 @@ return <html>
                 </ul>--> 
                 <h1>cr-xq/aqay - autoquery/testing suite</h1>
                 <a href="resource?action=resources-overview">resources </a> <a href="aqay?action=queryset-overview"> querysets</a>
+                <span> user: {request:get-attribute("org.exist.demo.login.user")}</span>
             </div>
        <div id="content-wrapper"> {$result }</div>
       </body>
