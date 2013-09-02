@@ -25,10 +25,20 @@
         <details>{$param}</details>
         <message>Query syntax error</message>
     </diagnostic>
-    <diagnostic key="profile-missing">
+    <diagnostic key="profile-unknown">
         <uri>info:cmd/diagnostic/1/20</uri>
         <details>{$param}</details>
-        <message>Missing profile reference</message>
+        <message>Missing profile reference (Unknown public profile)</message>
+    </diagnostic>
+    <diagnostic key="profile-id-missing">
+        <uri>info:cmd/diagnostic/1/21</uri>
+        <details>{$param}</details>
+        <message>Missing profile-id (expected in cmd:MdProfile)</message>
+    </diagnostic>
+    <diagnostic key="profile-name-mismatch">
+        <uri>info:cmd/diagnostic/1/22</uri>
+        <details>{$param}</details>
+        <message>Defined profile name does not match the root-component name (cmd:Components/*/local-name())</message>
     </diagnostic>
     <diagnostic key="start-out-of-range">
         <uri>info:srw/diagnostic/1/61</uri>
