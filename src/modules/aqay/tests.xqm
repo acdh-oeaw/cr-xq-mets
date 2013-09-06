@@ -220,10 +220,12 @@ Issues one http-call to the target-url in the a@href-attribute, stores the incom
 :) 
 declare function fcs-tests:process-request($test, $request as xs:string, $a-text as xs:string, $target-key as xs:string, $request-id as xs:string, $action as xs:string, $config) as item()* { 
             
-    let $result-link := $config//property[xs:string(@key)='result-link']            
+(:    let $result-link := $config//property[xs:string(@key)='result-link']            :)
+      let $result-link := repo-utils:config-value($config,'result-link')
     let $a-processed := (if (contains($result-link,'original')) then <a href="{$request}">{$a-text}</a> else (),
                          if (contains($result-link,'rewrite')) then
-                                               let $cache-uri-prefix := $config//property[xs:string(@key)='result-uri-prefix']
+(:                                               let $cache-uri-prefix := $config//property[xs:string(@key)='result-uri-prefix']:)
+                                               let $cache-uri-prefix :=  repo-utils:config-value($config,'result-uri-prefix')
                                                let $req-rwr := concat($cache-uri-prefix, $request-id, ".xml")                                               
                                                return <a href="{$req-rwr}">{$a-text}</a>
                                                else (),
@@ -273,6 +275,8 @@ declare function fcs-tests:process-request($test, $request as xs:string, $a-text
                                           $result-data-raw/httpclient:body,
                                           <httpclient:body  mimetype="application/xml; charset=UTF-8">{$json-xml}</httpclient:body>
                                           )}</httpclient:response>
+                        else if (repo-utils:config-value($config, 'store.flag') eq 'data-only') then                         
+                            $result-data-raw//httpclient:body/*
                         else $result-data-raw                    
                             
 (:        let $store := if ($action eq 'run-store') then fcs-tests:store-result($target-key, $request-id, $result-data//httpclient:body/*) else ()
