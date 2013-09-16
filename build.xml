@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="xar" name="packages">
 	
-	<property file="build.properties"  />
+   <property file="build.properties"/>
 	
 	<import file="build_docs.xml" />   
 	

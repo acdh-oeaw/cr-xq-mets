@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+  <xs:simpleType name="config_keys">
+    <xs:restriction base="xs:NCName">
+      <xs:enumeration value="fcs.resource">
+        <xs:annotation>
+          <xs:documentation>
+            This param provides the ID that designates the project. May be used as JavaScrpt object property identifier and XML ID
+            so the set of valid characters is restricted.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="cql.serverChoice">
+        <xs:annotation>
+          <xs:documentation>
+            This specifies the mapping to some inexed XML element if the client opts to use the server's choice about what to search in.
+            <a xmlns="http://www.w3.org/1999/xhtml" href="http://www.loc.gov/standards/sru/sru1-1archive/cql/cql-context-set.html">
+              See the CQL docs by LOC.
+            </a>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="cmd.collection">
+        <xs:annotation>
+          <xs:documentation>
+            Special value for the resource providing infomation about available resources. ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="pos">
+        <xs:annotation>
+          <xs:documentation>
+            This specifies an index for part of speech search requests starting with p=.
+            <strong xmlns="http://www.w3.org/1999/xhtml">Important:</strong> in order to be able to highlight matches when testing attributes fcs:search-retrieve (without base element)
+            <strong xmlns="http://www.w3.org/1999/xhtml">must</strong> return the attribute, so do <strong xmlns="http://www.w3.org/1999/xhtml">not</strong> put it into @use, so that it will end up in the xpath-predicate!
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="lemma">
+        <xs:annotation>
+          <xs:documentation>
+            This specifies an index for lemma search requests starting with l=.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="text">
+        <xs:annotation>
+          <xs:documentation>
+            This specifies an index for search requests which search all the text ???.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="geo">
+        <xs:annotation>
+          <xs:documentation>
+            This specifies an index for search requests which search all the geographical information encoded in the document ???.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration> 
+      <xs:enumeration value="ana">
+        <xs:annotation>
+          <xs:documentation>
+            This specifies an index for search requests which search all the analytics encoded in the document ???.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>       
+      <xs:enumeration value="resource-pid">
+        <xs:annotation>
+          <xs:documentation>
+            A unique identifier for facsimiles belonging to this project or for ???.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="resourcefragment-pid">
+        <xs:annotation>
+          <xs:documentation>
+            An XQuery that returns an idenifier which is used together with resource-pid 
+            to locate the facsimile corresponding to the content displayed.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="facs-uri">
+        <xs:annotation>
+          <xs:documentation>
+            An XQuery that generates the location of the facsimiles.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="title">
+        <xs:annotation>
+          <xs:documentation>
+            An XQuery that returns the title of the displayed content. Eg. the ??? in the ??? window of ???.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="ref">
+        <xs:annotation>
+          <xs:documentation>
+            An XQuery that returns all reffering strings, like names of persons, places etc. ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="rs-type">
+        <xs:annotation>
+          <xs:documentation>
+            An XQuery that returns all reffering strings with a particular type, like names of persons, places etc. ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="rs-subtype">
+        <xs:annotation>
+          <xs:documentation>
+            An XQuery that returns all reffering strings with a particular subtype, like names of persons, places etc. ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="rs-typesubtype">
+        <xs:annotation>
+          <xs:documentation>
+            An XQuery that returns all reffering strings with a particular type and subtype, like names of persons, places etc. ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="map">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="map" minOccurs="1" maxOccurs="unbounded">      
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="index"/>
+      </xs:sequence>
+      <xs:attribute name="base_elem" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>
+            A base element which is used in every XQuery specified by index elements if ignore_base_element isn't set to "true".
+            This is almost always present, the only exception is the metadata provider which can be queried for available resources.
+            It is a very bad idea to give * as default PLUS default base-elem !!!
+          </xs:documentation>            
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="key" type="xs:NCName" use="required">
+        <xs:annotation>
+          <xs:documentation>
+            The project's id to which this configuration belongs.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="path" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>
+            The exist-db path which is the base for all XQuerys.
+            (Like prepending collection("$path") to all the XQuerys defined by this map.)
+            This is almost always present, the only exception is the metadata provider which can be queried for available resources.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="sort" type="xs:NCName">
+        <xs:annotation>
+          <xs:documentation>
+            ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="title"/>
+    </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="index">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="unbounded" ref="path"/>
+      </xs:sequence>
+      <xs:attribute name="base_elem" type="xs:NMTOKEN">
+        <xs:annotation>
+          <xs:documentation>
+            ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ignore_base_elem" type="xs:boolean" default="false">
+        <xs:annotation>
+          <xs:documentation>
+            If set to "true" the base_element provided in the map element containing this index is ignored.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="index-type" type="xs:NCName">
+        <xs:annotation>
+          <xs:documentation>
+            Specifies the type of index which exist-db uses for this element. Eg. "ngram".
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="key" use="required" type="config_keys"/>
+      <xs:attribute name="link" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>
+            Specifies a URL which does ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="status" type="xs:NCName">
+        <xs:annotation>
+          <xs:documentation>
+            Denotes the status of this index like "indexed" ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="type" type="xs:NCName">
+        <xs:annotation>
+          <xs:documentation>
+            explicit ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="use" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            This attribute is used as the predicate for the XQuery generated from this index element.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="path">
+    <xs:complexType mixed="true">
+      <xs:attribute name="type" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

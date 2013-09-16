@@ -136,7 +136,7 @@
             fcs: This param provides the identifier to restrict the search context when querying using HTTP.
             The identifier can represent either a whole collection (a sub-project) or an individual resource.             
             The character set is restricted as this parameter is passed as a URL parameter.
-            Corresponds to http://www.clarin.eu/fcs #x-cmd-context.
+            Corresponds to <a xmlns="http://www.w3.org/1999/xhtml" href="http://www.clarin.eu/fcs">http://www.clarin.eu/fcs</a> x-cmd-context.
             The identifier must have been announced beforehand via the request: %app-url%/%project%/fcs?operation=scan&amp;scanClause=fcs.resource
             Thus it is an opaque string to client applications. In other words, whatever given project issues as identifiers for its resources, 
             it has to be able to interpret it, once confronted with these identifiers sent in the x-context parameter.
@@ -277,7 +277,7 @@
           </xs:complexType>
         </xs:element>
         <xs:element maxOccurs="unbounded" ref="module"/>
-        <xs:element maxOccurs="unbounded" ref="container"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="container"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
