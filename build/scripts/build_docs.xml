@@ -1,0 +1,214 @@
+<project name="gen-docs" default="init" basedir=".">
+    <description>
+        for generating various (auto)docs, jsdocs, xsl ...
+        
+    </description>
+
+    <import file="build.xml" />
+    
+  <!-- set global properties for this build -->  
+  <property name="scripts.dir" location="."/>
+  
+   <property name="in.dir" value="C:\Users\master\3RMA\suki\scripts"/>
+   <property name="in.file" location="."/>
+   <property name="out.file" location="out.txt"/>
+   <property name="temp.dir" value="zx_metares"/>
+   <property name="pattern" value="^[^z][^x]"/>
+   <property name="pattern2" value="."/>
+   <property name="style.dir" value="file:///C:/7utils/style"/>
+   
+   <property name="other.build" location="."/>
+
+
+<!-- 	*****************************
+			section: fs-management -->
+<!--
+perl scripts/merge_files.pl results/s2 results/s2/merged_meta_2.xml meta_.*xml mergedmeta2
+-->
+
+  <target name="ay-xsl"
+        description="analyze set of stylesheets; status: usable except problem with NS on xinclude" >        
+        <property name="out.dir" value="${in.dir}/${temp.dir}"/>
+        <property name="out.fn" value="stylesheets_xincl" />
+        <property name="file.prefix" value=".."/>
+        <mkdir dir="${out.dir}" />
+        <antcall target="fs2xinclude" >
+            <param name="pattern" value="^[^z][^x]" />
+        		<param name="pattern2" value="^[^_].*\.xsl$" />
+        		<param name="file.prefix" value="${file.prefix}" />
+        		<param name="out.file" value="${out.dir}/${out.fn}_.xml" />        		
+        </antcall> 
+        <xinclude2 in="${out.dir}/${out.fn}_.xml"  out="${out.dir}/${out.fn}.xml"   /> 
+        <saxon-xslt in="${out.dir}/${out.fn}.xml"  out="${out.dir}/${out.fn}.html" style="${scripts.dir}/misc/xsl2xhtml.xsl" >        		
+        		<param name="style_dir" expression="${style.dir}"/>
+        </saxon-xslt> 
+        <!-- <param name="file_name"  expression="xsl2xhtml.xsl" />-->
+        
+        <antcall target="gen-dep-graph" >
+        	<param name="work.dir" value="${out.dir}"/>
+            <param name="in.file" value="${out.dir}/${out.fn}.xml"/>
+        </antcall>
+</target>    	
+
+    <target name="gen-dep-graph-each" 
+        description="generate a dep-graph for each xsl separately" >        
+        <property name="out.dir" value="${in.dir}/${temp.dir}"/>
+        <property name="out.fn" value="stylesheets_xincl" />
+        <property name="file.prefix" value=".."/>
+        
+<!--        inheritall="true"-->
+        <foreach target="gen-dep-graph" param="in.file" >
+            <fileset dir="${in.dir}" casesensitive="yes">
+                <include name="**/*.xsl"/>
+                <exclude name="zx_*"/>
+            </fileset>
+        </foreach>
+            
+    </target>  
+    
+<target name="gen-dep-graph" description="generate a graph of xsl file. status: started 20091218" >
+    		<!--<ant2svg destfile="build_graph.svg"/>  -->
+    		<property name="work.dir" value="${out.dir}" />
+    		<property name="in.file" value="${work.dir}/${in.fn}.xsl" />
+            <basename property="out.fn_" file="${in.file}"/>
+    		<property name="out.fn" value="${out.fn_}" />
+    		<property name="title" value="${in.file}" />
+    <!--<saxon-xslt in="${work.dir}/${in.file}" out="${work.dir}/${out.fn}.dot"-->
+        <saxon-xslt in="${in.file}" out="${work.dir}/${out.fn}.dot"
+		    				style="${scripts.dir}/misc/xsl2dot.xsl"
+		    				filenameparameter="fn"	 >    						    
+		    				<param name="fn" expression="${out.fn}"/>
+		    				<param name="title" expression="${title}"/>
+		    				<param name="parts" expression="${parts}"/>
+		    				
+		    </saxon-xslt>    		
+		    <exec executable="dot">			    				
+					<arg value="${work.dir}/${out.fn}.dot" />
+				  <arg value="-o${work.dir}/${out.fn}.png"/>
+				  <arg value="-Tpng"/>
+			</exec>
+			
+    </target>			
+
+
+    <target name="gen-xq-graph-all"
+        description="analyze set of xq files" >
+            <property name="out.dir" value="${in.dir}/${temp.dir}"/>
+            <property name="out.fn" value="xq-call-graph" />
+            <property name="file.prefix" value=".."/>
+            <mkdir dir="${out.dir}" />
+            <antcall target="fs2xinclude" >
+                <param name="pattern" value="^[^z][^x]" />
+                <param name="pattern2" value="^[^_].*\.xq.?$" />
+                <param name="file.prefix" value="${file.prefix}" />
+                <param name="out.file" value="${out.dir}/${out.fn}_.xml" />        		
+            </antcall> 
+            <xinclude2 in="${out.dir}/${out.fn}_.xml"  out="${out.dir}/${out.fn}.xml"   />
+        
+        <antcall target="gen-xq-graph" >
+            <param name="in.file"  value="${out.dir}/${out.fn}.xml"/>
+            <param name="out.fn"  value="${out.fn}"/>
+            <param name="parts"  value="imports"/>
+        </antcall>
+        
+
+    </target>
+    
+    <!-- expects propertY: in.file -->
+    <target name="gen-xq-graph"
+        description="analyze set of xq files" >
+        <property name="in.file" value="${out.dir}/${out.fn}.xml"></property>
+        
+        <!-- parsing out the file name from the in.file-path -->
+        <propertyregex property="out.fn2" input="${in.file}" regexp="(.*)[\/\\]([^\.\/\\]*)\.?(.*)" 			
+            select="\2"			defaultvalue="${out.fn}"  override="true"/>
+        
+        <propertyregex property="title" input="${in.file}" regexp="(.*)[\/\\]([^\.\/\\]*)\.?(.*)" 			
+            select="\2_\3"			defaultvalue="${out.fn}"  override="true"/>
+        
+<!--python C:/Users/m/3/7utils/autodocs/xql-calls_v2.py
+            C:\Users\m\3\corpus_shell\_repo\sade\docs\xqdocs\cr-xq-calls.xml 
+            "cr-xq imports" > C:\Users\m\3\corpus_shell\_repo\sade\docs\xqdocs\cr-xq-imports.dot-->
+      <echo>starting python extract from: ${in.file} with parts: ${parts}</echo>      
+        <exec executable="python" output="${out.dir}/${out.fn2}.dot" errorproperty="python-error">
+            <arg value="${scripts.dir}/autodocs/xql-calls_v2.py" />
+            <arg value="${in.file}" />
+            <arg value="${title}" />
+            <arg value="${parts}" />
+        </exec>
+        <echo>${python-error}</echo>
+        <echo>starting dot transform: ${out.dir}/${out.fn2}.png</echo>
+        <exec executable="dot">			    				
+            <arg value="${out.dir}/${out.fn2}.dot" />
+            <arg value="-o${out.dir}/${out.fn2}.png"/>
+            <arg value="-Tpng"/>    
+        </exec>
+  </target>
+    
+   <target name="gen-xq-graph-each" 
+        description="generate a call-graph for each xquery file separately" >        
+        <property name="out.dir" value="${in.dir}/${temp.dir}"/>
+        <property name="file.prefix" value=".."/>
+        
+        <!--        inheritall="true"-->
+        <foreach target="gen-xq-graph" param="in.file" >
+            <param name="parts" value="imports, calls"></param>
+            
+            <fileset dir="${in.dir}" casesensitive="yes">
+                <include name="**/*.xq*"/>
+                <exclude name="zx_*"/>
+            </fileset>
+        </foreach>
+        
+    </target>  
+    
+        
+
+<!-- problems with jsdoc-ant-tasks: https://github.com/jannon/jsdoc3-ant-task/issues/4 [2013-01-17]  -->
+
+<!--<property name="jsdoc.home" location="C:\Users\m\3\external\_repo\jsdoc\"/>
+		<property name="jsdoc3-task-jar" location="C:\Users\m\3\external\_repo\jsdoc3-ant-task\build\jar\jsdoc3-ant-task-1.0.jar"/>
+    <property name="rhino-jar" location="C:\Users\m\3\external\_repo\jsdoc3-ant-task\lib\rhino\js-1.7r3_jsdoc.jar"/> -->
+<!--    <property name="jsdoc.home" value="_repo/jsdoc"/>
+    <property name="jsdoc3-task-jar" value="../jsdoc3-ant-task/build/jar/jsdoc3-ant-task-1.0.jar"/>
+<property name="rhino-jar" value="rhino/js.jar"/> 
+ -->       
+<!-- <taskdef name="jsdoc" classname="net.jannon.ant.tasks.JsDoc3" classpath="${jsdoc3-task-jar}:${rhino-jar}"/> -->
+
+<target name="gen-jsdoc" >
+	<!-- 		<jsdoc jsdochome="${jsdoc.home}" to="${docs.dir}" dir="${src.dir}" /> -->
+ <property name="jsdoc-full-path"
+            location="C:/Users/m/3/external/_repo/jsdoc/jsdoc.cmd"/>
+            
+    <exec executable="${jsdoc-full-path}" >
+        <arg line="-d ${docs.dir} ${src.dir}"/>          
+    </exec>
+    
+</target>
+
+ <!--
+ c:\apps\Python33>python Scripts/rst2html.py C:\Users\m\3\clarin\_repo\SMC\docs\userdocs.rst C:\Users\m\3\clarin\_repo\SMC\docs\userdocs.html
+ -->
+<target name="rst2html" >
+ <property name="rst2html-path"
+            location="Scripts\rst2html.py"/>
+            
+    <exec executable="c:\apps\Python33\python.exe" dir="c:\apps\Python33\" >
+        <arg line="Scripts\rst2html.py --stylesheet ${stylesheet} --link-stylesheet ${src.file} ${out.file}"/>          
+    </exec>
+    
+</target>
+
+    <target name="rst2s5" >
+        <property name="rst2s5-path"
+            location="Scripts\rst2s5.py"/>
+        <exec executable="c:\apps\Python33\python.exe" dir="c:\apps\Python33\" >
+            <arg line="Scripts\rst2s5.py --stylesheet ${stylesheet} --link-stylesheet ${src.file} ${out.file}"/>          
+        </exec>
+        
+    </target>
+    
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+</project>
+ 
