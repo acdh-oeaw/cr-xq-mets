@@ -183,10 +183,11 @@ declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $dept
                              fn:concat("$context", $path)
                             else     fn:concat("$context/descendant-or-self::", $path)
 
+        let $all-nodes := util:eval($full-path)
        let $path-nodes := if ($crday:restrictAyRecordsSize) then
-                               subsequence(util:eval($full-path), 1, $max-records)
+                               subsequence($all-nodes, 1, $max-records)
                             else 
-                               util:eval($full-path)
+                               $all-nodes
        
        let $entries := crday:elem-r($path-nodes, $path, $ns-uri, $depth, $depth),
      (:      $coll-names-value := if (fn:empty($collections)) then () else attribute colls {fn:string-join($collections, ",")},:)
@@ -194,6 +195,7 @@ declare function crday:gen-ay-xml($context as item()*, $path as xs:string, $dept
      	  $result := element {$crday:docTypeTerms} {
      (:      		  $coll-names-value,:)
            		  attribute context {$x-context},
+           		  attribute count {count($all-nodes)},
            		  attribute depth {$depth},
 (:           		  attribute fullpath {$full-path},:)
            		  attribute created {fn:current-dateTime()},
