@@ -844,7 +844,7 @@ declare function fcs:apply-index($data, $index as xs:string, $x-context as xs:st
 (:    $match-on := if (exists($index-map/@use) ) then concat('/', xs:string($index-map[1]/@use)) else ''
 , $match-on:)  
     return
-        if (exists($index-map/path/text())) then util:eval("$data//"||$index-xpath)
+        if (exists($index-map/path/text())) then util:eval("util:expand($data)//"||$index-xpath)
         else ()  
 };
 
