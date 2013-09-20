@@ -406,7 +406,7 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $index-xpath as 
         let $getnodes := util:eval(fn:concat("$data-collection//", $index-xpath)),
             (: if we collected strings, we have to wrap them in elements 
                     to be able to work with them in xsl :) 
-            $prenodes := if ($getnodes[1] instance of xs:string) then
+            $prenodes := if ($getnodes[1] instance of xs:string or $getnodes[1] instance of text()) then
                                     for $t in $getnodes return <v>{$t}</v>
                             else if ($getnodes[1] instance of attribute()) then
                                     for $t in $getnodes return <v>{xs:string($t)}</v>
@@ -443,20 +443,45 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
         $end-time := util:system-dateTime(),
     
         $xpath-query-no-base-elem := fcs:transform-query ($query, $x-context, $config, false()),
-             $results-no-base-elem:=         util:eval("$data-collection"||$xpath-query-no-base-elem),
-             $add-match-tags-on-attributes:= for $hit in $results-no-base-elem
+
+(:      started trying to invert the base-elem handling
++        $xpath-query-with-base-elem := fcs:transform-query ($query, $x-context, $config, true()),
++        $xpath-query-base-elem := substring-after($xpath-query-with-base-elem , $xpath-query
++        :)
+
+(: do the extra highlighting (only if data-view kwic :)
+        $match-seq := util:eval (concat("$result-seq", $xpath-query-no-base-elem)),
+        $result-seq-match:=         fcs:highlight-result($result-seq, $match-seq, $x-context, $config),
+            (:if (contains($x-dataview,'kwic')) then
+               let $match-seq := util:eval (concat("$result-seq", $xpath-query-no-base-elem))
+               return fcs:highlight-result($result-seq, $match-seq, $x-context, $config)
+            else $result-seq,:)
+        (:$match := (),
+        $result-seq-match := $result-seq,:)
+        
+(: do xml-based highlighting in full-dataview  :)
+         $add-match-tags-on-attributes:= if (contains($x-dataview,'full')) then
+                                        let $results-no-base-elem:=         util:eval("$data-collection"||$xpath-query-no-base-elem)
+                                        for $hit in $results-no-base-elem
                                              return
                                                  if ($hit instance of attribute())
                                                  then fcs:add-exist-match(($hit/ancestor-or-self::*[@xml:id])[1],$hit)
-                                                 else (),
+                                                 else ()
+                                   else (),
              (: daniel 2013-06-19 query matches are now passed on to fcs:format-record-data :)                                            
              (:$query-matches:=($add-match-tags-on-attributes,$xpath-query-no-base-elem),:)
              $query-matches:=$add-match-tags-on-attributes,
              $query-matches-expanded:=util:expand($query-matches)//exist:match,
              $records :=
                <sru:records>
-         	       {for $rec at $pos in $result-seq
-         	           let $rec-data := fcs:format-record-data($rec, $query-matches-expanded, $x-dataview, $x-context, $config)
+         	       {for $rec at $pos in $result-seq-match
+                            (: match
+         	           with the original sequence based on the position - na wenn das funktioniert :)
+         	              let $orig-data := $result-seq[$pos] 
+         	           let $rec-data := fcs:format-record-data($orig-data, $rec, $query-matches-expanded, $x-dataview, $x-context, $config)
+(:         	           let $rec-data := fcs:format-record-data($rec, $x-dataview, $x-context, $config):)
+
+(: 	                   <fcs:debug>{$orig-data/preceding-sibling::tei:pb[1]}</fcs:debug>:)
          	           return 
          	               <sru:record>
          	                   <sru:recordSchema>http://clarin.eu/fcs/1.0/Resource.xsd</sru:recordSchema>
@@ -484,7 +509,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
               {diag:diagnostics('start-out-of-range',concat( $startRecord , ' > ', $result-count))}
              </sru:searchRetrieveResponse>
           else          
-          
+(:          <fcs:debug>{$result-seq-match}</fcs:debug>:)
         <sru:searchRetrieveResponse>
           <sru:version>1.2</sru:version>
           <sru:numberOfRecords>{$result-count}</sru:numberOfRecords>
@@ -514,15 +539,23 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
 };
 
 declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config) as item()*  {
-    fcs:format-record-data($record-data, (), $data-view, $x-context, $config)
+    fcs:format-record-data($record-data, $record-data, (), $data-view, $x-context, $config)
 };
 
-declare function fcs:format-record-data($record-data-input as node(), $query-matches as element(exist:match)*, $data-view as xs:string*, $x-context as xs:string*, $config) as item()*  {
+(:~ generates the inside of one record according to fcs/Resource.xsd 
+fcs:Resource, fcs:ResourceFragment, fcs:DataView 
+all based on mappings and parameters (data-view)
+
+@param $orig-sequence-record-data - the node from the original not expanded search result, so that we can optionally navigate outside the base_elem (for resource_fragment or so)
+                    if not providable, setting the same data as in $record-data-input works mostly (expect, when you want to move out of the base_elem)
+@param $record-data-input the base-element with the match hits inside (marked with exist:match) 
+:)
+declare function fcs:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $query-matches as element(exist:match)*, $data-view as xs:string*, $x-context as xs:string*, $config) as item()*  {
 (:    let $record-data := util:expand($record, ""):)
                         (:	      cmdcoll:get-md-collection-name($raw-record-data):)
-	let $title := fcs:apply-index ($record-data-input, "title",$x-context, $config)	   
-	let $resource-pid := fcs:apply-index ($record-data-input, "resource-pid",$x-context, $config)	
-	let $resourcefragment-pid :=   fcs:apply-index($record-data-input, "resourcefragment-pid",$x-context, $config)
+	let $title := fcs:apply-index ($orig-sequence-record-data, "title",$x-context, $config)	   
+	let $resource-pid := fcs:apply-index ($orig-sequence-record-data, "resource-pid",$x-context, $config)	
+	let $resourcefragment-pid :=   fcs:apply-index($orig-sequence-record-data, "resourcefragment-pid",$x-context, $config)
 	                                
     
      let $matches-to-highlight:=    for $m in (tokenize(request:get-parameter('x-highlight',''),','),$query-matches)
@@ -890,10 +923,11 @@ declare function fcs:highlight-result($result as node()*, $match as node()*, $x-
     (: if the kwic-module already did its work, just give that back, 
             else use the custom highlighting:) 
      
-    (:temporarily deactivated for performance
+    (:problematic performance:)
     let $processed-result := if (exists($default-expand//exist:match)) then $default-expand
-                               else fcs:process-result($result, $match):)
-      let $processed-result := $default-expand                               
+                               else fcs:process-result($result, $match)
+(:  do-nothing pass-through variant :)
+(:      let $processed-result := $default-expand                               :)
 (:                    else  :)
                      (: "highlight-matches=elements"):)
     
