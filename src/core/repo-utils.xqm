@@ -1,3 +1,4 @@
+xquery version "3.0";
 module namespace repo-utils = "http://aac.ac.at/content_repository/utils";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
@@ -139,7 +140,18 @@ declare function repo-utils:is-in-cache($doc-name as xs:string,$config) as xs:bo
 
 
 declare function repo-utils:get-from-cache($doc-name as xs:string,$config) as item()* {
-      fn:doc(fn:concat(repo-utils:config-value($config, 'cache.path'), "/", $doc-name))
+    let $path := fn:concat(repo-utils:config-value($config, 'cache.path'), "/", $doc-name)
+    
+    return 
+        try {
+           if (doc-available($path)) then
+            fn:doc($path)
+            else ()
+        } catch * {         
+           if (util:binary-doc-available($path)) then
+                util:binary-doc($path)
+           else ()
+        }
 };
 
 (:~ Store the data in cache. Uses own writer-account
