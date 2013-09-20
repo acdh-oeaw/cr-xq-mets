@@ -52,6 +52,7 @@ body{
 
 
 #welcome {max-width: 600px; padding: 10px; clear:both;}
+/*.listing {max-width: 600px;}*/
 
 #results { float: left;}
 /*#content, #main {float: left;}*/
