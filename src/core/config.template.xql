@@ -16,4 +16,4 @@ declare variable $config:projects-baseuri:= "/@projects.dir@/";
  (mark the trick with parent folder for the baseuri - this is necessary to fool the controller ):
 :) 
 declare variable $config:projects-dir := "/db/@projects.dir@/";
-declare variable $config:projects-baseuri:= "/cr-xq/../../@projects.dir@/";
+declare variable $config:projects-baseuri:= "/@app.name@/../../@projects.dir@/";
