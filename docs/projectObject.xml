@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file is a METS representation of a cr_xq Project. -->
+<!-- Status: beta -->
+<!-- Author: Daniel Schopper -->
+<!-- Date: 2013-09-20 -->
+<mets xmlns="http://www.loc.gov/METS/" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" OBJID="crEd:projectTemplate" LABEL="cr xq project template" TYPE="crEd:template">
+    <metsHdr CREATEDATE="2013-08-19T13:24:26.123+02:00" RECORDSTATUS="a">
+        <agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="software">
+            <name>cr_xq</name>
+            <note>Version 1.0</note>
+        </agent>
+        <agent ROLE="IPOWNER" TYPE="ORGANIZATION">
+            <name>ICLLT / Project ABaC:us</name>
+        </agent>
+        <agent ROLE="EDITOR" TYPE="INDIVIDUAL">
+            <name>Daniel Schopper</name>
+        </agent>
+        <altRecordID TYPE="x-context">abacus</altRecordID>
+        <altRecordID TYPE="doi">doi:10.1553/abacus</altRecordID>
+    </metsHdr>
+    <dmdSec ID="projectDMD">
+        <mdWrap MDTYPE="MODS">
+            <xmlData>
+                <mods:mods xmlns="http://www.loc.gov/mods/v3" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-5.xsd">
+                    <titleInfo>
+                        <title>ABaC:us - Austrian Baroque Corpus</title>
+                    </titleInfo>
+                    <name>
+                        <namePart type="family">Resch</namePart>
+                        <namePart type="given">Claudia</namePart>
+                        <role>
+                            <roleTerm type="text">Project Manager</roleTerm>
+                        </role>
+                    </name>
+                    <language>
+                        <languageTerm type="text">german</languageTerm>
+                    </language>
+                    <typeOfResource>mixed material</typeOfResource>
+                    <abstract>ABaC:us is a growing digital collection of printed German language texts dating from the Baroque era, in particular the years from 1650 to 1750.</abstract>
+                </mods:mods>
+            </xmlData>
+        </mdWrap>
+    </dmdSec>
+    <dmdSec ID="text1DMD">
+        <mdRef LOCTYPE="URL" MDTYPE="TEIHDR" xlink:href="/db/cr-data/_md/abacus/ABACUS_Mercks_Wienn.xml"/>
+    </dmdSec>
+    <dmdSec ID="text2DMD">
+        <mdRef LOCTYPE="URL" MDTYPE="TEIHDR" xlink:href="/db/cr-data/_md/abacus/ABACUS_Todten_Capelle.xml"/>
+    </dmdSec>
+    <amdSec ID="projectAMD">
+        <techMD ID="crProjectMappings">
+            <mdWrap MDTYPE="OTHER">
+                <xmlData>
+                    <mappings xmlns=""> ... </mappings>
+                </xmlData>
+            </mdWrap>
+            <mdRef LOCTYPE="OTHER" MDTYPE="OTHER" xlink:href="/db/cr-projects/abacus/mappings.xml"/>
+        </techMD>
+        <techMD ID="crProjectConfig" GROUPID="config.xml">
+            <mdWrap MDTYPE="OTHER">
+                <xmlData>
+                    <param xmlns="" key="template">minimal</param>
+                    <param xmlns="" key="project-home">/db/cr-projects/abacus</param>
+                    <param xmlns="" key="data-dir">/db/cr-data/abacus</param>
+                </xmlData>
+            </mdWrap>
+            <mdRef LOCTYPE="URL" MDTYPE="OTHER" xlink:href="/db/cr-projects/abacus/config.xml"/>
+        </techMD>
+        <techMD ID="crProjectModuleConfig" GROUPID="config.xml">
+            <mdWrap MDTYPE="OTHER">
+                <xmlData>
+                    <module xmlns="" key="fcs">
+                        <param key="x-context">abacus</param>
+                        <param key="default.dataview">kwic</param>
+                        <param key="site.name">Abacus site.name</param>
+                        <param key="mappings">/db/cr-projects/abacus/mappings.xml</param>
+                        <param key="data.path">/db/cr-data/abacus_2012_10/pages</param>
+                        <param key="cache.path">/db/cr-data/_indexes</param>
+                        <param key="index.prefix">/db/cr-data/_indexes/index_</param>
+                        <param key="scripts.path">/db/cr-projects/abacus/</param>
+                        <param key="scan.xsl">scan2view_custom.xsl</param>
+                        <param key="searchRetrieve.xsl">result2view_v1_custom.xsl</param>
+                    </module>
+                </xmlData>
+            </mdWrap>
+            <mdRef LOCTYPE="URL" MDTYPE="OTHER" xlink:href="/db/cr-projects/abacus/config.xml"/>
+        </techMD>
+        <rightsMD ID="projectLicense">
+            <mdWrap MDTYPE="METSRIGHTS">
+                <xmlData>
+                    <rts:RightsDeclarationMD RIGHTSCATEGORY="PUBLIC DOMAIN"/>
+                </xmlData>
+            </mdWrap>
+        </rightsMD>
+        <rightsMD ID="projectACL" GROUPID="config.xml">
+            <mdWrap MDTYPE="OTHER">
+                <xmlData>
+                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="admin" group="dba" mode="rw-------">
+                        <sm:acl entries="3">
+                            <sm:ace index="0" target="GROUP" who="abacusReaders" access_type="ALLOWED" mode="r-x"/>
+                            <sm:ace index="1" target="GROUP" who="abacusEditors" access_type="ALLOWED" mode="rwx"/>
+                            <sm:ace index="2" target="GROUP" who="abacusAdmins" access_type="ALLOWED" mode="rwx"/>
+                        </sm:acl>
+                    </sm:permission>
+                </xmlData>
+            </mdWrap>
+        </rightsMD>
+    </amdSec>
+    <fileSec>
+        <fileGrp ID="projectResources">
+            <fileGrp ID="templates">
+                <file ID="templates0001" GROUPID="static">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/sidebar.html"/>
+                </file>
+                <file ID="templates0002" GROUPID="static">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/detail.html"/>
+                </file>
+                <file ID="templates0003" GROUPID="static">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/main.html"/>
+                </file>
+                <file ID="templates0004" GROUPID="static">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/navigation.html"/>
+                </file>
+            </fileGrp>
+            <fileGrp ID="components">
+                <file ID="templates0005" USE="projectHtmlHead">
+                    <FContent>
+                        <xmlData>
+                            <script xmlns="http://www.w3.org/1999/xhml" type="text/javascript">
+                                
+                                $(function()
+                                {
+                                // Accordion
+                                $("#accordion").accordion({ header: "h3", autoHeight: false, active: 0  });
+                                });
+                                
+                            </script>
+                        </xmlData>
+                    </FContent>
+                </file>
+                <file ID="projectTeaserText" USE="projectTeaserText">
+                    <FContent>
+                        <xmlData>
+                            <p xmlns="http://www.w3.org/1999/xhml">
+                                <p>Text zum Totentanz<br/>
+                                    <a href="get?id=_md/ABACUS/ABACUS_Loesch_Wienn.xml&amp;format=html">sample metadata</a>
+                                </p>
+                            </p>
+                        </xmlData>
+                    </FContent>
+                </file>
+            </fileGrp>
+            <fileGrp ID="content">
+                <file ID="content1" GROUPID="static:content">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Corpus.xml"/>
+                </file>
+                <file ID="content2" GROUPID="static:content">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Dank.xml"/>
+                </file>
+                <file ID="content3" GROUPID="static:content">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Impressum.xml"/>
+                </file>
+                <file ID="content004" GROUPID="static:content">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Nutzung.xml"/>
+                </file>
+                <file ID="content005" GROUPID="static:content">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Annotation.xml"/>
+                </file>
+            </fileGrp>
+            <fileGrp ID="images">
+                <file ID="images001" GROUPID="static:images">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/2Corpus.jpg"/>
+                </file>
+                <file ID="images002" GROUPID="static:images">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/3Annotation.jpg"/>
+                </file>
+                <file ID="images003" GROUPID="static:images">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/1Anfang.jpg"/>
+                </file>
+                <file ID="images004" GROUPID="static:images">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/1Anfang.jpg"/>
+                </file>
+                <file ID="images005" USE="projectLogo" GROUPID="static:images">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/logo_abacus_crop_resize.png"/>
+                </file>
+            </fileGrp>
+            <fileGrp ID="xsl">
+                <file ID="xsl001">
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/result2view_v1_custom.xsl"/>
+                </file>
+            </fileGrp>
+        </fileGrp>
+        <fileGrp ID="imgResources">
+            <fileGrp ID="text1Facs" USE="facsimile">
+                <fileGrp USE="thumbnail">
+                    <file ID="mercksWien00001t">
+                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/thumbnail/content"/>
+                    </file>
+                    <file ID="mercksWien00002t">
+                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/thumbnail/content"/>
+                    </file>
+                </fileGrp>
+                <fileGrp USE="archive image">
+                    <file ID="mercksWien00001a">
+                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/archive/content"/>
+                    </file>
+                    <file ID="mercksWien00002a">
+                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/archive/content"/>
+                    </file>
+                </fileGrp>
+                <fileGrp USE="web image">
+                    <file ID="mercksWien00001w">
+                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/web/content"/>
+                    </file>
+                    <file ID="mercksWien00002w">
+                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/web/content"/>
+                    </file>
+                </fileGrp>
+            </fileGrp>
+        </fileGrp>
+        <fileGrp ID="teiResources">
+            <fileGrp ID="text1Tei">
+                <file ID="text1TeiMaster" MIMETYPE="application/xml" USE="MASTER" DMDID="text1DMD">
+                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/mercks_wien.xml"/>
+                </file>
+                <file ID="text1TeiPage001" MIMETYPE="text/xml" USE="PAGE">
+                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00001.xml"/>
+                </file>
+                <file ID="text1TeiPage002" MIMETYPE="text/xml" USE="PAGE">
+                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00002.xml"/>
+                </file>
+            </fileGrp>
+            <fileGrp ID="text2Tei">
+                <file ID="text2TeiMaster" MIMETYPE="application/xml" USE="MASTER" DMDID="text1DMD">
+                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/mercks_wien.xml"/>
+                </file>
+                <file ID="text2TeiPage001" MIMETYPE="text/xml" USE="PAGE">
+                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00001.xml"/>
+                </file>
+                <file ID="text2TeiPage002" MIMETYPE="text/xml" USE="PAGE">
+                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00002.xml"/>
+                </file>
+            </fileGrp>
+        </fileGrp>
+        <fileGrp ID="webResources"/>
+    </fileSec>
+    <structMap TYPE="physical">
+        <div TYPE="corpus">
+            <div TYPE="book" ID="mercksWien" LABEL="Mercks Wien" DMDID="text1DMD">
+                <fptr FILEID="text1TeiMaster"/>
+                <div TYPE="page" LABEL="Titelblatt" ID="text1TeiMaster">
+                    <fptr FILEID="mercksWien00001a"/>
+                    <fptr FILEID="mercksWien00001t"/>
+                    <fptr FILEID="mercksWien00001w"/>
+                    <fptr FILEID="text1TeiP001"/>
+                </div>
+                <div TYPE="page" LABEL="Vorsatz, Seite 1">
+                    <fptr FILEID="mercksWien00002a"/>
+                    <fptr FILEID="mercksWien00002t"/>
+                    <fptr FILEID="mercksWien00002w"/>
+                    <fptr FILEID="text1TeiPage002"/>
+                </div>
+            </div>
+            <div TYPE="book" ID="abrahamTodtencapelle" LABEL="Abraham: Todtencapelle">
+                <div TYPE="page"/>
+            </div>
+        </div>
+    </structMap>
+</mets>

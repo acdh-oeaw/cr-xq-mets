@@ -1,0 +1,269 @@
+graph crProject {
+	ranksep = 1.5; 
+	ratio = auto;
+	//size = "50,50";
+	//resolution=300;
+	
+	
+	project -- metsHdr;
+	
+	/* PROJECT DESCRIPTIVE METADATA */
+	project -- projectDMD;
+	
+	/* PROJECT ADMINISTRATIVE METADATA */
+	project -- projectAMD;
+		
+		projectAMD -- crProjectConfig -- crProjectConfigContent;
+		projectAMD -- crProjectModuleConfig -- crProjectModuleConfigContent;
+		projectAMD -- crProjectMappingsConfig;
+							crProjectMappingsConfig -- crProjectMappingsConfigContent;
+		projectAMD -- Licensing;
+		projectAMD -- ACL -- ACLContent;
+		
+		/* RESOURCES DESCRIPTIVE METADATA */
+		projectAMD -- text1SourceDMD;
+		projectAMD -- text2SourceDMD;
+		
+		// projectAMD -- crProjectLegacyConfig -- crProjectLegacyConfigContent;
+		// projectAMD -- crProjectIngestConfig -- crProjectIngestConfigContent;
+	
+	project -- fileSec;
+		fileSec -- projectResources;
+			projectResources -- projectLogoImg;
+			projectResources -- projectTeaserImg;
+			projectResources -- projectTeaserText -- projectTeaserTextContent ;
+			projectResources -- projectHtmlHead -- projectHtmlHeadContent ;
+			projectResources -- static;
+				static -- content;
+					{
+						edge[dir=forward, color=green, weight=2, headlabel="mets:FLocat/@xlink:href  ", labelfontcolor=green, labelfontsize="12"];
+						content -- "Annotation.xml";
+						content -- "Corpus.xml";
+						content -- "Dank.xml";
+						content -- "Impressum.xml";
+						content -- "Nutzung.xml";
+					};
+				static -- images;
+					images -- "1Anfang.jpg";
+					images -- "2Corpus.jpg";
+					images -- "3Annotation.jpg";
+				static -- "detail.html";
+				static -- "main.html";
+				static -- "navigation.html";
+				static -- "sidebar.html";
+					
+		fileSec -- imgResources;
+			imgResources -- text1Facs;
+				text1Facs -- text1FacsMaster;
+					text1FacsMaster -- text1Page001ImgM;
+					text1FacsMaster -- text1Page002ImgM;
+				text1Facs -- text1FacsUseCopy;
+					text1FacsUseCopy -- text1Page001ImgU;
+					text1FacsUseCopy -- text1Page002ImgU;
+				text1Facs -- text1FacsThumbnails;
+					text1FacsThumbnails -- text1Page001ImgT;
+					text1FacsThumbnails -- text1Page002ImgT;
+			
+			imgResources -- text2Facs;
+				text2Facs -- text2FacsMaster;
+					text2FacsMaster -- text2Page001ImgM;
+					text2FacsMaster -- text2Page002ImgM;
+				text2Facs -- text2FacsUseCopy;
+					text2FacsUseCopy -- text2Page001ImgU;
+					text2FacsUseCopy -- text2Page002ImgU;
+				text2Facs -- text2FacsThumbnails;
+					text2FacsThumbnails -- text2Page001ImgT;
+					text2FacsThumbnails -- text2Page002ImgT;
+	
+		fileSec -- teiResources;
+			teiResources -- text1Tei;
+				text1Tei -- text1TeiMaster;
+				text1Tei -- text1TeiPage1;
+				text1Tei -- text1TeiPage2;
+				
+			teiResources -- text2Tei;
+				text2Tei -- text2TeiMaster;
+				text2Tei -- text2TeiPage1;
+				text2Tei -- text2TeiPage2;
+		
+		
+	project -- structMap;
+		structMap -- corpusDiv;
+		corpusDiv -- text1Div;
+				text1Div -- text1Page001;
+				text1Div -- text1Page002;
+		corpusDiv -- text2Div;
+				text2Div -- text2Page001;
+				text2Div -- text2Page002;
+
+
+
+
+
+
+
+
+
+	
+	subgraph fileMDRel{
+		edge [dir=forward, style=dashed, constraint=false, color=red,labelfontcolor=red,taillabel="@DMDID"];
+		text1Tei -- text1SourceDMD;
+		text2Tei -- text2SourceDMD;
+		text1Div -- text1SourceDMD;
+		text2Div -- text2SourceDMD;
+	};
+	
+	subgraph structFileRel {
+		edge[constraint=false,dir=forward,style=dotted,color=blue];
+		
+		// TEXT 1 
+		text1Div -- text1TeiMaster;
+		
+		text1Page001 -- text1TeiPage1;
+		text1Page001 -- text1Page001ImgM;
+		text1Page001 -- text1Page001ImgU;
+		text1Page001 -- text1Page001ImgT;
+		
+		text1Page002 -- text1TeiPage2;
+		text1Page002 -- text1Page002ImgM;
+		text1Page002 -- text1Page002ImgU;
+		text1Page002 -- text1Page002ImgT;
+		
+		// TEXT 2
+		text2Div -- text2TeiMaster;
+		text2Page001 -- text2TeiPage1;
+		text2Page001 -- text2Page001ImgM;
+		text2Page001 -- text2Page001ImgU;
+		text2Page001 -- text2Page001ImgT;
+		
+		text2Page002 -- text2TeiPage2;
+		text2Page002 -- text2Page002ImgM;
+		text2Page002 -- text2Page002ImgU;
+		text2Page002 -- text2Page002ImgT;
+	}
+	
+	subgraph configFileRel {
+		edge[dir=forward,color=green,weight=-1];
+		crProjectMappingsConfig -- crProjectMappingsConfigLocation;
+		crProjectConfig -- crProjectConfigLocation;
+		crProjectModuleConfig -- crProjectConfigLocation;
+		ACL -- crProjectConfigLocation;
+		Licensing -- crProjectConfigLocation;
+	}
+	
+	subgraph fileSecFileRel {
+		edge[dir=forward, color=green, weight=0, headlabel="mets:FLocat/@xlink:href  ", labelfontcolor=green, labelfontsize="12"];
+		text1TeiMaster -- text1TeiMasterLocation;
+		text2TeiMaster -- text2TeiMasterLocation;
+		
+		text1TeiPage1 -- text1TeiPage1Location;
+		text1TeiPage2 -- text1TeiPage2Location;
+		text2TeiPage1 -- text2TeiPage1Location;
+		text2TeiPage2 -- text2TeiPage2Location;
+		
+		};
+
+	subgraph fileSecFileRelImg {
+		edge[dir=forward, color=green, weight=2, headlabel="mets:FLocat/@xlink:href  ", labelfontcolor=green, labelfontsize="12"];
+		
+		text1Page001ImgM -- text1Page001ImgMLocation;
+		text1Page002ImgM -- text1Page002ImgMLocation;
+		
+		text1Page001ImgU -- text1Page001ImgULocation;
+		text1Page002ImgU -- text1Page002ImgULocation;
+		
+		text1Page001ImgT -- text1Page001ImgTLocation;
+		text1Page002ImgT -- text1Page002ImgTLocation;
+		
+		text2Page001ImgM -- text2Page001ImgMLocation;
+		text2Page002ImgM -- text2Page002ImgMLocation;
+		
+		text2Page001ImgU -- text2Page001ImgULocation;
+		text2Page002ImgU -- text2Page002ImgULocation;
+		
+		text2Page001ImgT -- text2Page001ImgTLocation;
+		text2Page002ImgT -- text2Page002ImgTLocation;
+
+		projectLogoImg -- projectLogoImgLocation;
+		projectTeaserImg -- projectTeaserImgLocation;
+
+	};
+	
+	subgraph teiHeaderRel {
+		edge[dir=forward,color=green];
+		text1SourceDMD -- text1TEIHeader;
+		text2SourceDMD -- text2TEIHeader;
+	}
+	
+	
+	text1FacsMaster, text2FacsMaster [shape=record, label="{#\N|mets:fileGrp|@USE='MASTER'\l}"];
+	text1FacsUseCopy, text2FacsUseCopy [shape=record, label="{#\N|mets:fileGrp|@USE='USE COPIES'\l}"];
+	text1FacsThumbnails, text2FacsThumbnails [shape=record, label="{#\N|mets:fileGrp|@USE='THUMBNAILS'\l}"];
+	
+	text1Page001ImgMLocation, text1Page002ImgMLocation, text1Page001ImgULocation, text1Page002ImgULocation, text1Page001ImgTLocation, text1Page002ImgTLocation, text2Page001ImgMLocation, text2Page002ImgMLocation, text2Page001ImgULocation,text2Page002ImgULocation, text2Page001ImgTLocation, text2Page002ImgTLocation, projectLogoImgLocation,projectTeaserImgLocation [shape=note, label="{imgfile}.tif"];
+	
+	project [ shape=record, label="{mets:mets|+ OBJID \l+ LABEL\l+ TYPE='cr-project'}" ];
+	metsHdr, projectDMD, projectAMD, fileSec [ shape=record ];
+	fileSec [ label="mets:\N"];
+	projectDMD [ label="{ #projectDMD | mets:dmdSec |+ mods:title \l+ mods:name \l+ mods:language\l+ mods:abstract\l}" ];
+	projectAMD [ label="{#projectAMD| mets:amdSec} " ];
+	crProjectModuleConfig, crProjectConfig [shape=record, label="{#\N|mets:techMD|@GROUPID='config.xml'}"];
+	// crProjectLegacyConfig [shape=record, label="{#\N|mets:techMD/mets:xmlData|dump of legacy conf.xml}"];
+	crProjectMappingsConfig [shape=record, label="{#crProjectMappings|mets:techMD}"];
+	
+	crProjectMappingsConfigContent,crProjectModuleConfigContent  [shape=plaintext, fontname="Courier"];
+	
+	crProjectMappingsConfigContent [label="<map>\l  <map base_elem='tei:div[@type=\"page\"]'>\l    <index>...</index>\l  </map>\l</map>\l"];
+	crProjectMappingsConfigLocation [shape=note,label="mappings.xml"];
+	crProjectConfigLocation [shape=note,label="config.xml"];
+	//crProjectIngestConfig [shape=record, label="{#\N|mets:techMD/mets:xmlData|default data-paths for ingest when used as archive format}"]
+	crProjectModuleConfigContent [label="<module key='fcs'>...</module>"];
+	//crProjectLegacyConfigContent [shape=plaintext, label="<config>\n...\n</config>", fontname="Courier"];
+	crProjectConfigContent [shape=plaintext, label="<param key='template'>minimal</param>", fontname="Courier"];
+	//crProjectIngestConfigContent [shape=plaintext, label="<param key='metadata-path'>...</param>\l<param key='data-dir'>...</param>", fontname="Courier"];
+	metsHdr [ label="{mets:metsHdr|@CREATEDATE \l@CREATOR \l@EDITOR \l+ mets:altRecordID[@TYPE=x-context]}" ];
+	
+	
+	// RESOURCES
+	imgResources, projectResources [ shape=record, label="{#\N|mets:fileGrp}" ];
+	teiResources[ shape=record, label="{#\N|mets:fileGrp|@USE='TEI encoded text'}" ];
+	
+	
+	/* TEI files */
+	text1Tei, text2Tei [ shape=record, label="{#\N|mets:fileGrp}" ];
+	text1TeiMaster, text2TeiMaster [ shape=record, label="{#\N|mets:file|@USE='MASTER'}" ];
+	text1TeiPage1, text1TeiPage2, text2TeiPage1, text2TeiPage2 [shape=record, label="{#\N|mets:file|@USE='PAGE'}"];
+	
+	text1TeiMasterLocation, text2TeiMasterLocation, text1TeiPage1Location, text1TeiPage2Location, text2TeiPage1Location, text2TeiPage2Location [ shape=note, label="{TEI}.xml" ];
+	
+	
+	text1SourceDMD, text2SourceDMD [ shape=record, label="{#\N|mets:sourceMD}" ];
+	
+	/* Images */
+	text1Page001ImgM, text1Page002ImgM, text2Page001ImgM, text2Page002ImgM [ shape=record, label="{#\N|mets:file}" ];
+	text1Page001ImgU, text1Page002ImgU, text2Page001ImgU, text2Page002ImgU [ shape=record, label="{#\N|mets:file}" ];
+	text1Page001ImgT, text1Page002ImgT, text2Page001ImgT, text2Page002ImgT [ shape=record, label="{#\N|mets:file}" ];
+	
+	
+	corpusDiv [ label = "TOC Corpus" ];
+	
+	
+	text1Div [shape=record, label = "{#text1 | mets:div |@TYPE='resource'\l@LABEL\l}" ]; 
+	text2Div [shape=record, label = "{#text2 | mets:div |@TYPE='resource'\l@LABEL\l}" ]; 
+	
+	text1Page001, text1Page002, text2Page001,text2Page002 [shape=record, label="{#\N|mets:div|@TYPE='resourcefragment'\l@LABEL\l}"];
+	
+	ACL, Licensing[shape=record,label="{#project\N|mets:rightsMD|@GROUPID='config.xml'}"]
+	
+	ACLContent [shape=plaintext,fontname="Courier",label="<sm:permission xmlns:sm='http://exist-db.org/xquery/securitymanager' owner='admin' group='dba' mode='rw-------'>\l  <sm:acl entries='3'>\l    <sm:ace index='0' target='GROUP' who='abacusReaders' access_type='ALLOWED' mode='r-x'/>\l    <sm:ace index='1' target='GROUP' who='abacusEditors' access_type='ALLOWED' mode='rwx'/>\l    <sm:ace index='2' target='GROUP' who='abacusAdmins' access_type='ALLOWED' mode='rwx'/>\l  </sm:acl>\l</sm:permission>\l"]
+	
+	"Annotation.xml", "Corpus.xml", "Dank.xml", "Impressum.xml", "Nutzung.xml", "1Anfang.jpg", "2Corpus.jpg", "3Annotation.jpg", "detail.html", "main.html", "navigation.html", "sidebar.html" [shape=note,fontsize=15];
+	
+	text1TEIHeader, text2TEIHeader [label="\N.xml",shape=note,fontsize=15];
+
+
+	projectTeaserText, projectHtmlHead, projectLogoImg, projectTeaserImg [shape=record,label="{#\N|mets:file}"];
+	projectTeaserTextContent[shape=plaintext,label="<html:p>...</html:p>",fontname="Courier"]
+	projectHtmlHeadContent [shape=plaintext,label="<html:script>...</html:script>",fontname="Courier"]
+	
+}
