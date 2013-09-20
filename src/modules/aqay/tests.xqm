@@ -198,7 +198,8 @@ declare function fcs-tests:process-test($test as node(), $target-key, $config) a
                 return fcs-tests:process-request ($test, $request, $a/text(), $target-key, $test-id, $action, $config)
             else 
             (: if we have a list, iterate over the items of the list and run a request for each :)
-                for $i at $c in $list-doc/lst/*
+            
+                for $i at $c in $list-doc/*/*
                   let $request := concat($target-uri,  fcs-tests:subst(xs:string($a/@href), $i)),
                       $i-id := if ($i/@id) then xs:string($i/@id) else $c,
                       $request-id := concat($test-id, $i-id),
