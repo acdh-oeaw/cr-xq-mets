@@ -7,7 +7,7 @@ declare namespace sru = "http://www.loc.gov/zing/srw/";
 
 declare variable $diag:msgs := doc('diagnostics.xml');
 
-declare function diag:diagnostics($key as xs:string, $param as xs:string) as item()? {
+declare function diag:diagnostics($key as xs:string, $param as xs:string*) as item()? {
     
     let $diag := 
 	       if (exists($diag:msgs//diag:diagnostic[@key=$key])) then
