@@ -1,4 +1,9 @@
 xquery version "3.0";
+(:~
+ : Main rewrite controller for the cr-xq content repository.
+ :  
+ : @author vronk
+~:)
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "core/config.xqm";
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
@@ -10,9 +15,11 @@ declare variable $exist:prefix external;
 declare variable $exist:root external;
 
 (:~
- : Tokenizing the request path we expect the following structure:
- : $exist:path = "http://host/exist/apps/cr-xq/abacus/fcs?query=string"
- : $params[1] = eXist-app context, e.g. "cr-xq"
+ : The variable <code>$params</code> holds contextual request parameters. 
+ : Tokenizing the $exist:path by slashes we expect the following structure:   
+ : request = "http://host/exist/apps/cr-xq/abacus/fcs?query=string"
+ : $exist:path = "/cr-xq/abacus/fcs?query=string"
+ : $params[1] = ""
  : $params[2] = ID of cr-project
  : $params[3] = optionally: name of a core module to operate in the current project's scope, 
                 for example the 'resource' module, which summarizes the structure of a project's resources.   
@@ -20,9 +27,22 @@ declare variable $exist:root external;
 let $params := tokenize($exist:path, '/')
 
 (:~
- : 
- 
+ : The variable <code>$cr-instance</code> holds the base path of the current content repository instance.
  :  
+ : This allows to differentiat between logins to concurrent cr-instances by setting unique login domains.
+ : 
+ : @see $domain   
+~:)
+let $cr-instance := $params[1]
+
+(:~
+ : The variable <code>$project</code> holds the ID of the current project. 
+ : Its value is determined by:
+ :  <ul>
+ :      <li>the request path</li>
+ :      <li>a explicit request parameter named 'project'</li>
+ :  </ul>
+ : If none of these two is set or the requested project does not exist, it falls back on the 'default' project.
 ~:)
 let $project := 
     if (config:project-exists($params[2])) 
@@ -30,39 +50,118 @@ let $project :=
     else 
         if (config:project-exists(request:get-parameter('project',"default"))) 
         then request:get-parameter('project',"default")
-        else "default" 
-                  
-let $project-config :=  config:project-config($project),
-    $project-config-map := map { "config" := $project-config}, 
-    $full-config :=  config:config($project), 
-    $full-config-map := map { "config" := $full-config}
+        else "default"
 
-let $modules := config:list-modules(),
-    $module := 
-        if ($params[3] = $modules) 
+
+(:~
+ : The variable <code>$project-config</code> holds the current project's configuration, 
+ : i.e. it's <code>project.xml</code> setup.  
+~:)
+let $project-config :=  config:project-config($project)
+
+(:~
+ : The variable <code>$project-config-map</code> holds a map containing the 
+ : current project's <code>project.xml</code> setup at under one single <code>config</code> key.
+ : This map is passed into the templating framework and is queried by most subsequent 
+ : functions. 
+~:)
+let $project-config-map := map { "config" := $project-config}
+
+(:~
+ : The variables <code>$full-config</code> and <code>$full-config-map</code> hold: 
+ : <ol>
+ :      <li>the current project's catalog</li>
+ :      <li>the configuration files (<code>conf.xml</code>) of all available cr-xq modules located in $app-root/modules</li>
+ : </ol>
+~:)
+let $full-config :=  config:config($project), 
+    $full-config-map := map { "config" := $full-config}
+    
+
+(:~ 
+ : The variable <code>$module</code> contains the name of a cr-xq module which is 
+ : requested to work in the current project's scope. 
+ : 
+ : Will be an empty string if the name does not refer to an available module. 
+~:)
+let $module := 
+        if ($params[3] = config:list-modules()) 
         then $params[3] 
         else ''
 
+(:~
+ : The variable <code>$module-protected</code> holds a boolean value determining 
+ : whether the requested cr-xq module may only be used by a closed list of 
+ : users (<code>true()</code>) or by any user (<code>false()</code>).
+ :
+ : Defaults to <code>false()</code> when the parameter 'visibility' in the modules's 
+ : configuration file (<code>config.xml</code>) is not set or has a value other than 'protected'.  
+ ~:)
 let $module-protected := config:param-value((),$full-config-map,$module,'','visibility',true())='protected'
-let $module-users := tokenize(config:param-value((),$full-config-map,$module,'','users',true()),',')
 
+(:~
+ : The varible <code>$module-users</code> holds a sequence of user names which 
+ : have rights to use the requested cr-xq module. This is set as comma separated values
+ : in the module's <code>conf.xml</code>.   
+~:)
+let $module-users := tokenize(config:param-value((),$full-config-map,$module,'','users',true()),'\s*,\s*')
+
+
+
+(:~
+ : The variable <code>$template-id</code> holds the name of the set of HTML templates 
+ : the current project is using. This is set in the project's configuration.  
+~:)
 let $template-id := config:param-value($project-config-map,'template')
  
+
+(:~
+ : The variable <code>$file-type</code> holds the requested resource's filename suffix. 
+~:)
 let $file-type := tokenize($exist:resource,'\.')[last()]
+
+
+
 (: remove project from the path to the resource needed for web-resources (css, js, ...) :)
 let $rel-path := 
     if (contains($exist:path,$project)) 
     then substring-after($exist:path, $project) 
     else $exist:path
  
+
+(:~
+ : The variable <code>$protected</code> holds a boolean value determining 
+ : whether the current project is to be accessed only by a closed list of users
+ : (<code>true()</code>) or by all users (<code>false()</code>).
+ :
+ : Defaults to <code>false()</code> when the parameter 'visibility' in the projects's 
+ : configuration file (<code>project.xml</code>) is not set or has a value other than 'protected'.
+~:)
 let $protected := config:param-value($project-config-map,'visibility')='protected'
-let $allowed-users := tokenize(config:param-value($full-config-map,'users'),',')
- 
+
+(:~
+ : The varible <code>$allowed-users</code> holds a sequence of user names which 
+ : have rights to accses the requested project. These are set as comma separated values
+ : in the project's configuration file (<code>project.xml</code>).   
+~:)
+let $allowed-users := tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
+
+(:~
+ : The variable <code>$domain</code> holds the name of the login domain to which the users  
+ : of the current cr-xq instance will be logged into.
+ : 
+ : This allows to differentiate between logins to different concurrent cr-instances.
+ :
+ : @see call to login:set-user() below.    
+~:)
+let $domain:=   "at.ac.aac.exist."||$cr-instance
+
 return         
 
 switch (true())
     (:~
-     : Request URIs which end on "/" are redirected to index.html.  
+     : Requests for the bases of the cr-xq instance or a cr-project are redirected 
+     : to the 'index.html' view.         
     ~:)
     case ($exist:path eq "/" or $rel-path eq "/") return 
         (: forward root (project) path to index.html :)
@@ -75,15 +174,17 @@ switch (true())
     (:~
      : Requests for HTML views are handled by the templating system after check for user authorization. 
     ~:)
-    case (ends-with($exist:resource, ".html")) return  
+    case (ends-with($exist:resource, ".html")) return
         (: this is a sequence of two steps, delivering result XOR (either one or the other) :)
-        (: step 1: only delivers result if login is necessary :)
+        (: step 1: only delivers a result if the project's visibility is protected :)
         (if ($protected) 
         then 
-            let $logout:=login:set-user("org.exist.demo.login", (), false())
+            let $login:=login:set-user($domain, (), false())
             return
-            if (not(request:get-attribute("org.exist.demo.login.user")=$allowed-users)) 
+            if (not(request:get-attribute($domain||".user")=$allowed-users)) 
             then
+                let $log:=util:log("INFO",'user='||request:get-attribute($domain||".user"))
+                return
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$exist:controller}/modules/access-control/login.html"/>
                     <view>
@@ -104,9 +205,9 @@ switch (true())
         else (), 
        
        (: step 2: only delivers result if login is not necessary (i.e. project not protected or user already logged-in) :)
-       if (not($protected) or request:get-attribute("org.exist.demo.login.user")=$allowed-users) 
+       if (not($protected) or request:get-attribute($domain||".user")=$allowed-users) 
        then
-            let $user := request:get-attribute("org.exist.demo.login.user")
+            let $user := request:get-attribute($domain||".user")
             let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
             return  
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -121,7 +222,7 @@ switch (true())
                             <add-parameter name="exist-root" value="{$exist:root}"/>
                             <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
                         </forward>
-                       	<error-handler>
+                           <error-handler>
                    			<forward url="{$exist:controller}/error-page.html" method="get"/>
                    			<forward url="{$exist:controller}/core/view.xql"/>
                    		</error-handler>
@@ -167,9 +268,9 @@ switch (true())
     case (not($module='')) return
         (if ($module-protected) 
         then 
-            let $logout:= login:set-user("org.exist.demo.login", (), false())
+            let $logout:= login:set-user($domain, (), false())
             return
-                if (not(request:get-attribute("org.exist.demo.login.user")=$module-users)) 
+                if (not(request:get-attribute($domain||".user")=$module-users)) 
                 then
                     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                         <forward url="{$exist:controller}/modules/access-control/login.html"/>
@@ -190,9 +291,9 @@ switch (true())
         (: not protected, so also go to second part :)
         else (), 
         
-        if (not($module-protected) or request:get-attribute("org.exist.demo.login.user")=$module-users) 
+        if (not($module-protected) or request:get-attribute($domain||".user")=$module-users) 
         then
-            let $user := request:get-attribute("org.exist.demo.login.user")
+            let $user := request:get-attribute($domain||".user")
             let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
             return  
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
