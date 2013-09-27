@@ -12,3 +12,11 @@ cr_xq.xpr
 src/repo.xml
 src/expath-pkg.xml
 build/*
+
+# imported cs-xsl files #
+#########################
+src/modules/cs-xsl
+
+# generated documentation files #
+#################################
+docs/*.docx
