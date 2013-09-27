@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<METS_Profile xmlns="http://www.loc.gov/METS_Profile/v2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/METS_Profile/v2 http://www.loc.gov/standards/mets/profile_docs/mets.profile.v2-0.xsd" STATUS="provisional" REGISTRATION="unregistered">
+    <URI LOCTYPE="URL" ASSIGNEDBY="local">http://www.github.com/vronk/SADE/docs/cr-project-v1.xml</URI>
+    <title>CR-Project</title>
+    <abstract>This METS profile describes the data structure of a cr-project file, the base model for any cr-xq project used by the cr-xq content repository.</abstract>
+    <date>2013-09-25T10:14:25.858+02:00</date>
+    <contact>
+        <name>Daniel Schopper</name>
+        <institution>Austrian Academy of Science, ICLTT</institution>
+        <address>Sonnenfelsgasse 19, 1010 Vienna</address>
+        <phone>+43 1 a</phone>
+        <email>daniel.schopper@oeaw.ac.at</email>
+    </contact>
+    <profile_context>
+        <resource_model></resource_model>
+        <uses>
+            <use></use>
+        </uses>
+    </profile_context>
+    <external_schema>
+        <name>TEI Header</name>
+        <URL></URL>
+        <context></context>
+        <note></note>
+    </external_schema>
+    <description_rules></description_rules>
+    <controlled_vocabularies>
+        <vocabulary>
+            <name></name>
+            <maintenance_agency></maintenance_agency>
+            <URI></URI>
+            <values>
+                <value></value>
+            </values>
+            <context></context>
+            <description></description>
+        </vocabulary>
+    </controlled_vocabularies>
+    <structural_requirements>
+        <metsRootElement>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </metsRootElement>
+        <metsHdr>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </metsHdr>
+        <dmdSec>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </dmdSec>
+        <amdSec>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </amdSec>
+        <fileSec>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </fileSec>
+        <structMap>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </structMap>
+        <structLink>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </structLink>
+        <behaviorSec>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </behaviorSec>
+        <multiSection>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </multiSection>
+    </structural_requirements>
+    <technical_requirements>
+        <content_files>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </content_files>
+        <behavior_files>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </behavior_files>
+        <metadata_files>
+            <requirement>
+                <description></description>
+                <tests>
+                    <test TESTLANGUAGE=""></test>
+                </tests>
+            </requirement>
+        </metadata_files>
+    </technical_requirements>
+    <tool>
+        <name>cr-xq Content Repository</name>
+        <agency>Austrian Academy of Sceience: ICLTT</agency>
+        <URI>http://www.github.com/vronk/SADE/</URI>
+    </tool>
+    <Appendix NUMBER="1">
+        <mets xmlns="http://www.loc.gov/METS"></mets>
+    </Appendix>
+</METS_Profile>
