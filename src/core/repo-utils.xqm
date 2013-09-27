@@ -233,79 +233,106 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
     repo-utils:serialise-as($item, $format, $operation, $config, ())
 };
 
-(:~ transform result to HTML, JSON, or leave as XML - according to format parameter
-
-@param $parameters optional additional parameters to be passed to xsl  
-:)
-declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $parameters as node()* ) as item()? {        
-        if ($format eq $repo-utils:responseFormatJSon) then
-	       
-	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config )
-	       let $res := if ($xslDoc) then
-	                           let $option := util:declare-option("exist:serialize", "method=text media-type=application/json")
-	                           return       transform:transform($item,$xslDoc, 
-                                 			<parameters><param name="format" value="{$format}"/>
-                                 			            <param name="x-context" value="{repo-utils:param-value($config, 'x-context', '' )}"/>
-                                 			            <param name="base_url" value="{repo-utils:base-url($config)}"/>
-                                 			            <param name="mappings-file" value="{repo-utils:config-value($config, 'mappings')}"/>
-                                 			            <param name="scripts_url" value="{repo-utils:config-value($config, 'scripts.url')}"/>
-                                 			             <param name="site_name" value="{repo-utils:config-value($config, 'site.name')}"/>
-                                 			             <param name="site_logo" value="{repo-utils:config-value($config, 'site.logo')}"/>
-                                 			             {$parameters/param}
-                                 			</parameters>)
-                            else 
-                                let $option := util:declare-option("exist:serialize", "method=json media-type=application/json")    
-                                return $item
+(:~ 
+ : Generic formating function which transforms results into the following formats, according to the function's 2nd parameter.
+ :
+ : Currently implemented formats are: 
+ : <ul>
+ :  <li>JSON</li>
+ :  <li>HTML (fragment or full page)</li>
+ :  <li>XML (default)</li>
+ : </ul>
+ : 
+ : Possible names for each format are defined in the following module variables:
+ : @see $repo-utils:responseFormatXml
+ : @see $repo-utils:responseFormatJSon
+ : @see $repo-utils:responseFormatText
+ : @see $repo-utils:responseFormatHTML
+ : @see $repo-utils:responseFormatHTMLpage
+ : 
+ : @param $item the data to be output
+ : @param $format the output format  
+ : @param $parameters optional additional parameters to be passed to xsl  
+~:)
+declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $parameters as node()* ) as item()? {
+    switch(true())
+        case ($format eq $repo-utils:responseFormatJSon) return	       
+	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config),
+	           $xslParams:=    <parameters>
+	                               <param name="format" value="{$format}"/>
+	                               <param name="x-context" value="{repo-utils:param-value($config, 'x-context', '' )}"/>
+	                               <param name="base_url" value="{repo-utils:base-url($config)}"/>
+	                               <param name="mappings-file" value="{repo-utils:config-value($config, 'mappings')}"/>
+	                               <param name="scripts_url" value="{repo-utils:config-value($config, 'scripts.url')}"/>
+	                               <param name="site_name" value="{repo-utils:config-value($config, 'site.name')}"/>
+	                               <param name="site_logo" value="{repo-utils:config-value($config, 'site.logo')}"/>
+	                               {$parameters/param}
+	                           </parameters>
+	       let $res := if ($xslDoc) 
+	                   then
+	                       let $option := util:declare-option("exist:serialize", "method=text media-type=application/json")
+	                       return transform:transform($item,$xslDoc,$xslParams)
+                       else 
+                           let $option := util:declare-option("exist:serialize", "method=json media-type=application/json")    
+                           return $item
 	       return $res
-	    else if (contains($format, $repo-utils:responseFormatHTML)) then
-	           let $xslDoc := repo-utils:xsl-doc($operation, $format, $config )
-	           let $res := if (exists($xslDoc)) then transform:transform($item,$xslDoc, 
-              			<parameters><param name="format" value="{$format}"/>
+	    case (contains($format, $repo-utils:responseFormatHTML)) return
+	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config ),
+	           $xslParams:=    <parameters>
+	                               <param name="format" value="{$format}"/>
               			           <param name="operation" value="{$operation}"/>
-              			            <param name="x-context" value="{repo-utils:param-value($config, 'x-context', '' )}"/>
-              			            <param name="base_url" value="{repo-utils:base-url($config)}"/>
-              			            <param name="mappings-file" value="{repo-utils:config-value($config, 'mappings')}"/>
-              			            <param name="scripts_url" value="{repo-utils:config-value($config, 'scripts.url')}"/>
-              			             <param name="site_name" value="{repo-utils:config-value($config, 'site.name')}"/>
-              			             <param name="site_logo" value="{repo-utils:config-value($config, 'site.logo')}"/>
-              			             {$parameters/param}
-              			</parameters>)          
-              		        else diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
-(:               let $option := util:declare-option("exist:serialize", "method=xml media-type=text/html"):)
-let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html")
-	           return $res
-	   else
+              			           <param name="x-context" value="{repo-utils:param-value($config, 'x-context', '' )}"/>
+              			           <param name="base_url" value="{repo-utils:base-url($config)}"/>
+              			           <param name="mappings-file" value="{repo-utils:config-value($config, 'mappings')}"/>
+              			           <param name="scripts_url" value="{repo-utils:config-value($config, 'scripts.url')}"/>
+              			           <param name="site_name" value="{repo-utils:config-value($config, 'site.name')}"/>
+              			           <param name="site_logo" value="{repo-utils:config-value($config, 'site.logo')}"/>
+              			           {$parameters/param}
+              			       </parameters>
+	       let $res := if (exists($xslDoc)) 
+	                   then transform:transform($item,$xslDoc, $xslParams)
+	                   else diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
+	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html")
+	       return $res
+	   default
 	       let $option := util:declare-option("exist:serialize", "method=xml media-type=application/xml")
-	    return $item
+	       return $item
 };
-(: $repo-utils:responseFormatXml, $repo-utils:responseFormatText:)	     
-       
-	    (:let $option := 
-	              if (contains($format, $repo-utils:responseFormatHTML)) then
-	                  util:declare-option("exist:serialize", "method=xml media-type=text/xhtml")
-	              else 
-    	              util:declare-option("exist:serialize", "method=xml media-type=application/xml")
-:)
 
 
-(:~ get appropriate xsl-stylesheet (based on operation and format);
-(handles multiple scripts-paths from config)
-preference for a specific for operation-format, 
-default: operation :)
-declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as item()? {        
-(:    let $scripts-path := repo-utils:config-value($config, 'scripts.path'),:)
+(:~
+ : Getter function for output formatting stylesheets: returns an document node() with the appropriate stylesheet
+ : given the current operation ($operation) and the desired output format ($format).
+ : 
+ : It tries to determine the best fitting XSL file by looking in any db collection mentioned 
+ : in any <code>param key='scripts.path'</code> in $config (this includes project configs as well as module configs). 
+ : In there tries to fetch files witch are mentioned in any config param named  
+ : <ul>
+ :      <li>'$operation-$format.xsl' or </li>
+ :      <li>'$operation.xsl' or </li>
+ : <ul>
+ : 
+ : It returns the <b>first</b> document in the resulting sequence.
+ :
+ :  
+ : @param $operation the operation which produced the result to be output. (no restriction)
+ : @param $format the name of the desired output format
+ : @param $config the global configuration map.
+ : @return zero or one XSL documents 
+~:)
+declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node(xsl:stylesheet)? {        
     let $scripts-paths := repo-utils:config-values($config, 'scripts.path'),
-    
-        $xsldoc := (for $scripts-path in $scripts-paths
-                      return if (doc-available(concat($scripts-path, repo-utils:config-value($config, concat($operation, '-', $format, ".xsl"))))) then
-                          doc(concat($scripts-path, repo-utils:config-value($config, concat($operation, '-', $format, ".xsl"))))
-                      else if (doc-available(concat($scripts-path, repo-utils:config-value($config, concat($operation, ".xsl"))))) then
-                            doc (concat($scripts-path, repo-utils:config-value($config, concat($operation, ".xsl"))))
-                       else ()
-                      )[1]
-        return $xsldoc
+        $xsldoc :=  for $scripts-path in $scripts-paths
+                    return 
+                        let $operation-format-xsl:= $scripts-path||repo-utils:config-value($config, $operation||'-'||$format||".xsl"),
+                            $operation-xsl:= $scripts-path||repo-utils:config-value($config, $operation||".xsl")
+                        return 
+                        switch(true())
+                            case (doc-available($operation-format-xsl)) return doc($operation-format-xsl)
+                            case (doc-available($operation-xsl)) return doc($operation-xsl)
+                            default return ()
+    return ($xsldoc)[1]
 };
-	          	(: $item :)
 
 (:~ helper function. Performs multiple replacements, using pairs of replace parameters. based on standard xpath2 function replace() 
 taken from: http://www.xqueryfunctions.com/xq/functx_replace-multi.html
