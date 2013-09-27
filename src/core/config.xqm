@@ -13,160 +13,171 @@ import module namespace templates="http://exist-db.org/xquery/templates" at "tem
 
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
+declare namespace mets="http://www.loc.gov/METS/";
+declare namespace xlink="http://www.w3.org/1999/xlink";
+declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
 
-
-
-(: NOT USED! replaced by the projects-dir variable from config-params ! :)
-declare variable $config:projects-dir := "USE config-params:projects-dir instead!" ;
-(: NOT USED! replaced by the projects-baseuri variable from config-params ! :)
-declare variable $config:projects-baseuri:= "USE config-params:projects-baseuri instead!";
 declare variable $config:templates-dir := "templates/";
-declare variable $config:modules-dir := concat($config:app-root, "/modules/");
+declare variable $config:modules-dir := $config:app-root||"/modules/";
 declare variable $config:project-static-dir := "static/";
-(:declare variable $config:templates-baseuri:= concat("/sade/", $config:templates-dir);:)
-declare variable $config:templates-baseuri:= concat($config:app-root-collection, $config:templates-dir);
-
-declare variable $config:repo-descriptor := doc(concat($config:app-root, "/repo.xml"))/repo:meta;
-
-declare variable $config:expath-descriptor := doc(concat($config:app-root, "/expath-pkg.xml"))/expath:package;
+declare variable $config:templates-baseuri:= $config:app-root-collection||$config:templates-dir;
+declare variable $config:repo-descriptor := doc($config:app-root||"/repo.xml")/repo:meta;
+declare variable $config:expath-descriptor := doc($config:app-root||"/expath-pkg.xml")/expath:package;
 
 (:~
- : Resolve the given path using the current application context.
- : If the app resides in the file system,
+ : Returns the xml resource by resolving the relative path $relPath using the current application context. 
+ : If the app resides in the file system, the resource will be loaded from there. 
+ :
+ : @param $relPath the relative path to the xml resource
+ : @return the xml resource  
  :)
-declare function config:resolve($relPath as xs:string) {
-    if (starts-with($config:app-root, "/db")) then
-        doc(concat($config:app-root, "/", $relPath))
-    else
-        doc(concat("file://", $config:app-root, "/", $relPath))
+declare function config:resolve($relPath as xs:string) as document-node()? {
+    if (starts-with($config:app-root, "/db")) 
+    then doc($config:app-root||"/"||$relPath)
+    else doc("file://"||$config:app-root||"/"||$relPath)
 };
 
-(: 
-    Determine the application root collection from the current module load path.
-:)
+(:~
+ : Contains the uri of the application root collection, determined from the current module load path.
+ ~:)
 declare variable $config:app-root := 
     let $rawPath := system:get-module-load-path()
     let $modulePath :=
         (: strip the xmldb: part :)
-        if (starts-with($rawPath, "xmldb:exist://")) then
-             
-            if (starts-with($rawPath, "xmldb:exist://null")) then
+        if (starts-with($rawPath, "xmldb:exist://")) 
+        then
+            if (starts-with($rawPath, "xmldb:exist://null")) 
+            then
                 (: seems necessary when the calling module is not stored (e.g. test script in exide) :)
                 substring($rawPath, 19)
-            else if (starts-with($rawPath, "xmldb:exist://embedded-eXist-server")) then
-                substring($rawPath, 36)
-            else
-                substring($rawPath, 15)
-        else
-            $rawPath
-    return
-(:            $modulePath:)
-        substring-before($modulePath, "/core")
+            else 
+                if (starts-with($rawPath, "xmldb:exist://embedded-eXist-server")) 
+                then substring($rawPath, 36)
+                else substring($rawPath, 15)
+        else $rawPath
+    return substring-before($modulePath, "/core")
 ;
 
-(:~ extracting the context collection of the application :)  
+(:~ 
+ : extracting the context collection of the application 
+~:)  
 declare variable $config:app-root-collection := concat( '/', (tokenize($config:app-root, '/'))[not(.='')][position()=last()], '/');
-            
+
+
 (:~
- : Extended resolver - projects and templates aware
- : try to find the resource in project-static content then in current template
- : @returns the resolved resource
- :)
-declare function config:resolve($model as map(*), $relPath as xs:string) {
+ : Extended resolver. Tries to locate the requested XML resource in the following locations:
+ : 
+ : <ol>
+ :      <li>'template' collection of the current project (as set in $model)</li>
+ :      <li>'static' collection of the current project (ibd.)</li>
+ :      <li>'template' collection in which the current template resides</li>
+ : </ol>
+ : 
+ : Checks the availability of the resource via doc-available, which will throw an error when
+ : confronted with a binary doc.
+ : 
+ : @param $model the model map as passed by the eXist-templating framework
+ : @param $relPath the relative path to the XML resource to be loaded
+ : @return the XML resource
+~:)
+declare function config:resolve($model as map(*), $relPath as xs:string) as document-node()? {
     doc(config:resolve-to-dbpath($model, $relPath))
 };
 
 
-
 (:~
- : Extended resolver - projects and templates aware
- : try to find the resource in project-template, then in project-static content then in current template
- : but return the path
+ : Auxiliary function for the extended resolver. 
+ : @see xqdoc/xqdoc-config;config:resolve
+ : 
+ : Checks the availability of the resource via <code>fn:doc-available()</code>, 
+ : which will throw an error when confronted with a binary resource.
+ : 
+ : @param $model the model map as passed by the eXist-templating framework
+ : @param $relPath the relative path to the xml resource to be loaded
+ : @return the absolute path to the resource as anyURI
  :)
 declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:string) as xs:anyURI {
-(:    let $file-type := tokenize($relPath,"\.")[last()]:)
-    let $project-template-dir := config:param-value($model, 'project-template-dir')
-    let $project-dir := config:param-value($model, 'project-static-dir')
-    let $template-dir := config:param-value($model, 'template-dir')
-    
+    let $project-template-dir := config:param-value($model, 'project-template-dir'),
+        $project-dir := config:param-value($model, 'project-static-dir'),
+        $template-dir := config:param-value($model, 'template-dir')
     return 
-    if (doc-available(concat($project-template-dir,$relPath))) then
-            xs:anyURI(concat($project-template-dir,$relPath))
-    else if (doc-available(concat($project-dir,$relPath))) then
-            xs:anyURI(concat($project-dir,$relPath))
-    else 
-            xs:anyURI(concat($template-dir,$relPath))
+        if (doc-available($project-template-dir||$relPath)) 
+        then xs:anyURI($project-template-dir||$relPath)
+        else 
+            if (doc-available($project-dir||$relPath)) 
+            then xs:anyURI($project-dir||$relPath)
+            else xs:anyURI($template-dir||$relPath)
 };
 
-(:~ delivers a URI (relative to base sade-controller) to a template-resource, with precedence for templates within project. 
- : Function checks if given resource exists in a template within the project<br/> 
- : <code>(sade-projects)/{$project-id}/templates/{$project-template}/{$relPath}</code><br/>
-: if not it checks for resource existence in the project-static content<br/> 
- : <code>(sade-projects)/{$project-id}/static/{$relPath}</code><br/> 
- : finally, if not it checks for resource existence in the template itself<br/> 
- : <code>(sade)/templates/{$project-template}/{$relPath}</code><br/> 
- : otherwise it returns the $relPath as it came in (knowing it will most probably result in 404)
- : special error handling for binary-docs necessary, as doc-available() will throw an error when confronted with binary docs 
- :)
+(:~ 
+ : Delivers the relative path (to base cr-xq-controller) of a template-resource, with precedence 
+ : for templates from the current project. It checks for the resource in the following locations:
+ : 
+ : <ol>
+ :      <li>in the 'templates' collection of the current project (as set in $model),</li>
+ :      <li>in the 'static' collection of the current project (as set in $model),</li>
+ :      <li>in the 'data' collection for the current project (as set in $model),</li>
+ :      <li>in the 'template' collection in which the current template resides,</li>
+ :      <li>in the root collection of the cr-xq app.</li>
+ :      <li>Otherwise returns $relPath as received.</li>
+ : </ol> 
+~:)
 declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string) as xs:anyURI {
-(:    let $file-type := tokenize($relPath,"\.")[last()]:)
- let $project-template-dir := config:param-value($model, 'project-template-dir'),
-     $project-static-dir := config:param-value($model, 'project-static-dir'),
-     $project-data-dir := config:param-value($model, 'project-data-dir'),
-     $template-dir := config:param-value($model, 'template-dir'),
-     $project-template-baseuri:= config:param-value($model, 'project-template-baseuri'),
-     $project-data-baseuri:= config:param-value($model, 'project-data-baseuri'),
-     $project-static-baseuri:= config:param-value($model, 'project-static-baseuri'),
-     $template-baseuri := config:param-value($model, 'template-baseuri')
- 
- return
-    try {
-        if (doc-available(concat($project-template-dir,$relPath))) then
-            xs:anyURI(concat($project-template-baseuri,$relPath))
-        else if (doc-available(concat($project-static-dir,$relPath))) then
-            xs:anyURI(concat($project-static-baseuri,$relPath))
-        else if (doc-available(concat($project-data-dir,$relPath))) then
-            xs:anyURI(concat($project-data-baseuri,$relPath))            
-        else if (doc-available(concat($template-dir,$relPath))) then
-              xs:anyURI(concat($template-baseuri,$relPath))
-       else if (doc-available(concat($config:app-root,$relPath))) then
-              xs:anyURI(concat($config:app-root-collection,$relPath))
-        else xs:anyURI($relPath)
-(: there was a problem with catching the specific error on one instance of exist (maybe not current code   
-   } catch err:FODC0005 { :)
-    } catch * {    
-        if (util:binary-doc-available(concat($project-template-dir,$relPath))) then
-            xs:anyURI(concat($project-template-baseuri,$relPath))
-        else if (util:binary-doc-available(concat($project-static-dir,$relPath))) then
-            xs:anyURI(concat($project-static-baseuri,$relPath))
-        else if (util:binary-doc-available(concat($template-dir,$relPath))) then
-              xs:anyURI(concat($template-baseuri,$relPath))
-         else if (util:binary-doc-available(concat($config:app-root,$relPath))) then
-              xs:anyURI(concat($config:app-root-collection,$relPath))
-        else xs:anyURI($relPath)
+    let $project-template-dir := config:param-value($model, 'project-template-dir'),
+        $project-template-baseuri:= config:param-value($model, 'project-template-baseuri'),
+        $project-static-dir := config:param-value($model, 'project-static-dir'),
+        $project-static-baseuri:= config:param-value($model, 'project-static-baseuri'),
+        $project-data-dir := config:param-value($model, 'project-data-dir'),
+        $project-data-baseuri:= config:param-value($model, 'project-data-baseuri'),
+        $template-dir := config:param-value($model, 'template-dir'),
+        $template-baseuri := config:param-value($model, 'template-baseuri')
+
+    let $dirs:=(    $project-template-dir||$relPath,
+                    $project-static-dir||$relPath,
+                    $project-data-dir||$relPath,
+                    $template-dir||$relPath,
+                    $config:app-root-collection||$relPath)
     
-    }
-    
+    let $base-uris:=(   $project-template-baseuri||$relPath,
+                        $project-static-baseuri||$relPath,
+                        $project-data-baseuri||$relPath,
+                        $template-baseuri||$relPath,
+                        $config:app-root-collection||$relPath)
+    return
+        let $available:=
+            for $i at $pos in $dirs 
+            let $is-binary-doc:=util:is-binary-doc($i)
+            return
+                switch (true())
+                    case ($is-binary-doc and util:binary-doc-available(xs:anyURI($i))) return $base-uris[$pos]
+                    case (doc-available($i)) return $base-uris[$pos]
+                    default return ()
+        return 
+            if (exists($available))
+            then xs:anyURI($available)
+            else xs:anyURI($relPath)
 };
 
 (:~
- : Returns the scripts and links required by the modules as configured in the project-config
- either put code directly into :  `<container key="html-head">`
- or if a module is mentioned in the config, its config is checked for <container key="html-head" >
- 
- :)
-declare function config:html-head($node as node(), $model as map(*)) {
- 
-    let $head := $model("config")//container[@key='html-head']
-    
-    return $head/*
+ : Fetches XHTML-snippets from the project to be inserted into the <head> of the page-template. 
+ : 
+ : either put code directly into :  `<container key="html-head">`
+ : or if a module is mentioned in the config, its config is checked for <container key="html-head" >
+ : 
+ : @return zero or more XHTML fragment 
+~:)
+declare function config:html-head($node as node(), $model as map(*)) as element()* {
+   ($model("config")//mets:file[@USE='projectHtmlHead']/mets:FContent/mets:xmlData/*,
+    $model("config")//container[@key='html-head']/*)
 };
 
 
 
 (:~
  : Returns the repo.xml descriptor for the current application.
+ : 
+ : @return the repo.xml descriptor for the running cr-xq instance.
  :)
 declare function config:repo-descriptor() as element(repo:meta) {
     $config:repo-descriptor
@@ -174,10 +185,22 @@ declare function config:repo-descriptor() as element(repo:meta) {
 
 (:~
  : Returns the expath-pkg.xml descriptor for the current application.
+ :
+ : @return the expath-pkg.xml descriptor for the running cr-xq instance.
  :)
 declare function config:expath-descriptor() as element(expath:package) {
     $config:expath-descriptor
 };
+
+
+
+
+
+
+
+
+
+
 
 declare %templates:wrap function config:app-title($node as node(), $model as map(*)) as text() {
     $config:expath-descriptor/expath:title/text()
@@ -192,31 +215,21 @@ declare %templates:wrap function config:app-description($node as node(), $model 
  : in the application descriptors.
  :)
 declare function config:app-info($node as node(), $model as map(*)) {
-  (:  let $expath := config:expath-descriptor()
-    let $repo := config:repo-descriptor()
-    return :)
-    (:{
-                for $attr in ($expath/@*, $expath/*, $repo/*)
-                where $attr/string() != ""
-                return
-                    <tr>
-                        <td>{node-name($attr)}:</td>
-                        <td>{$attr/string()}</td>
-                    </tr>
-            }:)
-        <table class="table table-bordered table-striped">
-             {   for $key in config:param-keys($model)
-                order by $key
-            return <tr><td>{$key}</td><td>{config:param-value($node, $model,'','',$key)}</td></tr>
-            }
-        </table>
+    <table class="table table-bordered table-striped">{
+        for $key in config:param-keys($model)
+        order by $key
+        return 
+            <tr>
+                <td>{$key}</td>
+                <td>{config:param-value($node, $model,'','',$key)}</td>
+            </tr>
+    }</table>
 };
 
 (:~ lists all parameter keys in the configuration file
  :  sorted alphabetically
- :)
+~:)
  declare function config:param-keys($config as map(*)*) as xs:string* {
-
     let $config := $config("config")
     let $special-params := ('app-root', 'app-root-collection', 'base-url', 'project-dir', 'template-dir', 'template-baseuri',
                 'project-template-dir', 'project-template-baseuri', 
@@ -232,7 +245,7 @@ declare function config:app-info($node as node(), $model as map(*)) {
 };
 
 
-(:~ returns a value for given parameter reading from the config and the request
+(:~ Lookup function for values in the current configuration and request. T
  : Following precedence levels:
  : <ol>
  : <li>a few special parameters regarding project and template collections</li>
@@ -242,79 +255,122 @@ declare function config:app-info($node as node(), $model as map(*)) {
  : <li>config parameter for given module (config:module/param)</li>
  : <li>global config param (config:param)</li>
  :  </ol>
+ : 
  : @param strict only returns a value if it exists for given level of precedence (module) 
- : @returns either the string-value of the @value-attribute or the content of the param-node (in that order)
+ : @return either the string-value of the @value-attribute or the content of the param-node (in that order)
  :)
 declare function config:param-value($node as node()*, $model as map(*)*, $module-key as xs:string, $function-key as xs:string, $param-key as xs:string, $strict as xs:boolean) as item()* {
 
     let $node-id := $node/xs:string(@id)
-    let $config := $model("config")
+    let $config :=  $model("config"),
+        $mets :=    $config/self::mets:mets[@TYPE='cr-xq project']
     
-    let $param-special := if ($param-key='app-root') then
-                                $config:app-root
-                          else if ($param-key='app-root-collection') then
-                                $config:app-root-collection
-                          else if ($param-key='request-uri') then
-                                xs:string(request:get-uri())
-                          else if ($param-key='request-url') then
-                                xs:string(request:get-url())
-                          else if ($param-key='base-url') then
-                                concat(string-join(tokenize(request:get-url(),'/')[position() != last()],'/'),'/')
-                          else if ($param-key='project-dir') then
-                                concat(util:collection-name($config[1]),'/')
-                          else if ($param-key='project-static-dir') then
-                                  let $project-dir:= util:collection-name($config[1])
-                                  return concat($project-dir, "/", $config:project-static-dir)
-                          else if ($param-key='project-static-baseuri') then
-                                  let $project-id:= $config//param[xs:string(@key)='project-id'][parent::config]
-                                  return concat($config-params:projects-baseuri, $project-id, "/", $config:project-static-dir)
-                          else if ($param-key='project-template-dir') then
-                                  let $project-dir:= util:collection-name($config[1])
-                                  let $template := $config//param[xs:string(@key)='template'][parent::config]
-                                return concat($project-dir, '/', $config:templates-dir, $template,'/')
-                          else if ($param-key='project-template-baseuri') then
-                                  let $project-id:= $config//param[xs:string(@key)='project-id'][parent::config]
-                                  let $template := $config//param[xs:string(@key)='template'][parent::config]
-                                return concat($config-params:projects-baseuri, $project-id, '/', $config:templates-dir, $template,'/')
-                          else if ($param-key='template-dir') then
-                                  let $template := $config//param[xs:string(@key)='template'][parent::config]
-                                return concat($config:app-root, '/', $config:templates-dir, $template,'/')
-                          else if ($param-key='template-baseuri') then
-                                  let $template := $config//param[xs:string(@key)='template'][parent::config]
-                                return concat($config:templates-baseuri, $template,'/')
-                          else if ($param-key='project-data-baseuri') then
-                                  let $project-id:= $config//param[xs:string(@key)='project-id'][parent::config]
-                                  let $data-path:= $config//param[xs:string(@key)='data-path'][parent::config]
-                                return concat($config-params:projects-baseuri, $project-id, '/', $data-path)
-                          else ()
+    let $param-special:=
+        switch($param-key)
+            case "app-root"                 return $config:app-root
+            case "app-root-collection"      return $config:app-root-collection
+            case "request-uri"              return xs:string(request:get-uri())
+            case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/'
+            case "project-dir"              return util:collection-name($config[1])||"/"
+            case "project-static-dir"       return 
+                                                let $project-dir:= util:collection-name($config[1])
+                                                return concat($project-dir, "/", $config:project-static-dir)
+            case "project-static-baseuri"   return
+                                                let $project-id:=$mets/xs:string(@OBJID)
+                                                return $config-params:projects-baseuri||$project-id||"/"||$config:project-static-dir
+            case 'project-template-dir'     return
+                                                let $project-dir:= util:collection-name($config[1])
+                                                let $template := $config//param[@key='template']
+                                                return concat($project-dir, '/', $config:templates-dir, $template,'/')
+            case 'project-template-baseuri' return
+                                                let $project-id:=$mets/xs:string(@OBJID)
+                                                let $template := $config//param[@key='template']
+                                                return $config-params:projects-baseuri||$project-id||'/'||$config:templates-dir||$template||'/'
+            case 'template-dir'             return
+                                                let $template := $config//param[@key='template']
+                                                return $config:app-root||'/'||$config:templates-dir||$template||'/'
+            case 'template-baseuri'         return
+                                                let $template := $config//param[@key='template']
+                                                return $config:templates-baseuri||$template||'/'
+            case 'project-data-baseuri'     return
+                                                let $project-id:=$mets/xs:string(@OBJID)
+                                                let $data-path:=config:common-path-from-FLocat($model,'projectData')
+                                                return $config-params:projects-baseuri||$project-id||'/'||$data-path
+            case 'visibility'               return 
+                                                let $ace:=$mets//sm:ace[@who='other']
+                                                return 
+                                                    if ($ace/(@access_type='DENIED' and starts-with(@mode,'r')))
+                                                    then 'protected'
+                                                    else 'unprotected'
+            case 'users'                    return
+                                                let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
+                                                    $users:=        $ace[@target='USER']/@who,
+                                                    $groups:=       $ace[@target='GROUP']/@who,
+                                                    $group-members:=for $g in $groups
+                                                                    return
+                                                                        if (sm:group-exists($g))
+                                                                        then sm:get-group-members($g)
+                                                                        else ()
+                                                return ($users,$group-members)
+            default                         return ()
+            
     
     let $param-request := request:get-parameter($param-key,'')
     let $param-container := $config//container[@key=$node-id]/function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
     let $param-function := $config//function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
     let $param-module := $config//module[xs:string(@key)=$module-key]/param[xs:string(@key)=$param-key]
-(:    let $param-global:= $config//param[xs:string(@key)=$param-key][parent::config]:)
     let $param-global:= $config//param[xs:string(@key)=$param-key]
     
     (: $strict currently only implemented for module :)
-    let $param := if ($strict) then
-                           if ($module-key ne '' and  exists($param-module)) then $param-module[1]
-                           else ""
-                    else 
-                    if ($param-special != '') then $param-special[1]
-                        else if ($param-request != '') then $param-request[1]
-                        else if (exists($param-container)) then $param-container[1]
-                        else if (exists($param-function)) then $param-function[1]
-                           else if (exists($param-module)) then $param-module[1]
-                              else if (exists($param-global)) then $param-global[1]
-                              else ""
+    let $param := 
+        if ($strict) 
+        then
+            if ($module-key ne '' and  exists($param-module)) 
+            then $param-module[1]
+            else ""
+        else
+            switch(true())
+                case ($param-special != '')     return $param-special[1]
+                case ($param-request != '')     return $param-request[1]
+                case (exists($param-container)) return $param-container[1]
+                case (exists($param-function))  return $param-function[1]
+                case (exists($param-module))    return $param-module[1]
+                case (exists($param-global))    return $param-global[1]
+                default                         return ""
     
-    let $param-value := if ($param instance of text() or $param instance of xs:string) then $param
-                           else if (exists($param/@value)) then $param/xs:string(@value)
-                           else if (exists($param/*)) then $param/*
-                           else $param/text()
-                           
+    let $param-value := 
+        switch(true())
+            case ($param instance of text() or $param instance of xs:string) return $param
+            case (exists($param/@value))    return $param/xs:string(@value)
+            case (exists($param/*))         return $param/*
+            default                         return $param/text()               
    return ($param-value)
     
+};
+
+
+(:~
+ : This functions generates a data-path parameter by looking for common path to all files listed in project-data mets:fileGrp.
+ : It is needed for compatability reasons as <code>config:param-value()</code> has to provide a 'project-data-dir' param which
+ : was formerly hardcoded in conf.xml. With the METS-based project catalog, this is not necessary any more, strictly speaking.
+ : 
+ : Beware: This obviously only works, when all the data listed in project.xml share a common path.
+ : 
+ : @param $model a map with a "config" key, which provides the project's project.xml setup.
+ : @result returns a path common to all project data files or the empty sequence if there's no common path. 
+~:)
+declare function config:common-path-from-FLocat($model as map(*), $fileGrpID as xs:string) as xs:string? {
+    let $config:=   $model("config"),
+        $data:=     $config//mets:fileGrp[@ID=$fileGrpID]//mets:FLocat/xs:string(@xlink:href)
+    
+    let $tokenized:=for $d in $data return tokenize($d,'/'),
+        $pathSteps:=for $t in $tokenized
+                    where count(index-of($tokenized,$t)) eq count($data)
+                    return $t
+    return 
+        if (exists(distinct-values($pathSteps)))
+        then string-join(distinct-values($pathSteps[.!='']),'/')
+        else ()
 };
 
 (:~ override the full-function, without (later added) $strict-parameter (set to false()   
@@ -331,28 +387,37 @@ declare function config:param-value($model as map(*), $param-key as xs:string) a
 
 
 
-(:~ gets both the project and module configs
-  : @param $project project identifier
- :)
-declare function config:config($project as xs:string) {
-  (config:project-config($project), config:module-config())
+(:~ 
+ : Fetches the configuration (<code>project.xml</code>) of the requested project 
+ : plus the configuration files (<code>config.xml</code>) of all modules.
+ :
+ : This function is called by templates:init() where it is used to pass all available 
+ : configuration down to the eXist HTML templating function.  
+ :
+ : @param $project Project ID
+ : @return
+~:)
+declare function config:config($project as xs:string) as item()* {
+    let $project-config:=   config:project-config($project),
+        $module-config:=    config:module-config()
+    return ($project-config, $module-config)
 };
 
-(:~ tries to resolve to the project-specific config file
-    first tries to look for a 'config.xml' file in the project-dir,
-    if not found, searches based on the project-id all configs in projects-dir
-    <param key="project-id">ccv</param>
-  : @param $project project identifier
+(:~ Gets the catalog file for the given project. 
+ : <b>Beware:</b> Former fall-back mechanisms have been deprecated.
+ : 
+ : @param $project project identifier
+ : @return config element with relevant parameters.
  :)
-declare function config:project-config($project as xs:string) {
-       let $project-config-path := concat($config-params:projects-dir, $project, "/config.xml")
-      
-        let $project-config := if (doc-available($project-config-path)) then doc($project-config-path) 
-                else 
-                   collection($config-params:projects-dir)//config[param[xs:string(@key)='project-id'][.=$project]]
-                    
-        return $project-config
-        
+declare function config:project-config($project as xs:string) as element()* {
+    let $project := collection($config-params:projects-dir)//mets:mets[@OBJID eq $project],
+        (:$data:=     $project//mets:techMD[@GROUPID='config.xml']/mets:mdWrap/mets:xmlData/*:)
+        $data := $project
+    return 
+        $data
+        (:if (exists($data))
+        then element config {$data}
+        else ():)
 };
 
 
@@ -365,29 +430,36 @@ declare function config:project-config($project as xs:string) {
 @returns the ids of all projects 
 :)
 declare function config:list-projects() {
-       collection($config-params:projects-dir)//config/param[xs:string(@key)='project-id']/text()
+       collection($config-params:projects-dir)//mets:mets/xs:string(@OBJID)
 };
 
 
-(:~ lists all existing modules (i.e. present in the modules-colleciton) :)
-declare function config:list-modules() {
+(:~
+ : Lists the names of currently available modules. 
+ : This function simply lists the children in the cr-xq's 'modules'-collection as defined in $config:modules-dir.  
+ :
+ : @return sequence of modules' names 
+~:)
+declare function config:list-modules() as xs:string* {
        xmldb:get-child-collections($config:modules-dir)
 };
 
 
-(:~ tries to find module-specific configurations
-  : @returns a sequence of module-config docs 
- :)
-declare function config:module-config() as item()* {
-    for $coll in xmldb:get-child-collections($config:modules-dir)
-          return if (doc-available(concat($config:modules-dir, $coll, "/config.xml"))) 
-          then doc(concat($config:modules-dir, $coll, "/config.xml"))else ()
+(:~ Fetches configuration files for all avaiable modules.
+ : This function tries to locate the file 'conf.xml' in each of the modules' collection 
+ : found by <code>config:list:modules()</code>. 
+ : 
+ : @returns a sequence of module-config documents. 
+~:)
+declare function config:module-config() as item()* { 
+    for $module in config:list-modules()
+    return doc($config:modules-dir||$module||"/config.xml")
 };
 
-(:~ checks if there is a config-file for given project
-  : @param $project project identifier
- :)
+(:~ checks if there is a cr-catalog file for given project
+ :  
+ : @param $project project identifier
+~:)
 declare function config:project-exists($project as xs:string) {
-       let $project-config-path := concat($config-params:projects-dir, $project, "/config.xml")
-       return doc-available($project-config-path)
+    exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
 };
