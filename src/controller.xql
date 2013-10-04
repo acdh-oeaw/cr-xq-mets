@@ -120,7 +120,12 @@ let $template-id := config:param-value($project-config-map,'template')
 ~:)
 let $file-type := tokenize($exist:resource,'\.')[last()]
 
-
+(:~
+ : The variable <code>$web-resources</code> contains filename suffixes of thos file types whose
+ : actual location in the database should be autogmagically resolved by config:resolve-template-to-uri().
+ : This is used to serve files which reside in 'templates'.  
+~:)
+let $web-resources := ('js', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'eot')
 
 (: remove project from the path to the resource needed for web-resources (css, js, ...) :)
 let $rel-path := 
@@ -238,7 +243,7 @@ switch (true())
      : Requests for facsimilia which are likely to reside somewhere else, are prefixed 
      : with a "/facs" url-step, and are resolved by the facswiewer module. 
     ~:)
-    case ($file-type = ('js', 'css', 'png', 'jpg', 'gif', 'pdf')) return
+    case ($file-type = $web-resources) return
         (: If the request is made from a module (with separate path-step (currently only /get) :)
         let $corr-rel-path := 
             if (starts-with($rel-path, "/get")) 
