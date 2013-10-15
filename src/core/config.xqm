@@ -132,12 +132,11 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
         $project-data-baseuri:= config:param-value($model, 'project-data-baseuri'),
         $template-dir := config:param-value($model, 'template-dir'),
         $template-baseuri := config:param-value($model, 'template-baseuri')
-
     let $dirs:=(    $project-template-dir||$relPath,
                     $project-static-dir||$relPath,
                     $project-data-dir||$relPath,
                     $template-dir||$relPath,
-                    $config:app-root-collection||$relPath)
+                    $config:app-root||$relPath)
     
     let $base-uris:=(   $project-template-baseuri||$relPath,
                         $project-static-baseuri||$relPath,
@@ -244,6 +243,30 @@ declare function config:app-info($node as node(), $model as map(*)) {
     
 };
 
+(:~ Helper function which reads mets:file element and returns either the value from FContent or the @xlink:href uri from FLocat. If both are provided, the former is returned.
+ :
+ : @param element(mets:file) 
+ : @return uri or xmldata
+~:)
+declare function config:mets-file($file as element(mets:file)?) as item()* {
+    switch (true())
+        case (not(exists($file))) return ()
+        case (exists($file/mets:FContent/mets:xmlData)) return
+            $file/mets:FContent/mets:xmlData/*
+        case (exists($file/mets:FLocat)) return
+            let $uri:=$file/mets:FLocat/@xlink:href
+            return config:db-to-relative-path(xs:string($uri))
+        default return ()
+};
+
+(:~
+ : Returns the relative path of a project resource as needed by the config module.  
+~:)
+declare function config:db-to-relative-path($path as xs:string) as xs:string {
+    let $steps:=tokenize($path,'/')
+    return ($steps[position() eq count($steps)-1]||"/"||$steps[last()])
+};
+
 
 (:~ Lookup function for values in the current configuration and request. T
  : Following precedence levels:
@@ -263,7 +286,8 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
 
     let $node-id := $node/xs:string(@id)
     let $config :=  $model("config"),
-        $mets :=    $config/self::mets:mets[@TYPE='cr-xq project']
+        $mets :=    $config/descendant-or-self::mets:mets[@TYPE='cr-xq project'],
+        $crProjectParameters:= $mets//mets:techMD[@ID='crProjectParameters']/mets:mdWrap/mets:xmlData
     
     let $param-special:=
         switch($param-key)
@@ -271,30 +295,34 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
             case "app-root-collection"      return $config:app-root-collection
             case "request-uri"              return xs:string(request:get-uri())
             case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/'
-            case "project-dir"              return util:collection-name($config[1])||"/"
+            case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
-                                                let $project-dir:= util:collection-name($config[1])
+                                                let $project-dir:= util:collection-name($config[self::mets:mets])
                                                 return concat($project-dir, "/", $config:project-static-dir)
             case "project-static-baseuri"   return
                                                 let $project-id:=$mets/xs:string(@OBJID)
                                                 return $config-params:projects-baseuri||$project-id||"/"||$config:project-static-dir
             case 'project-template-dir'     return
-                                                let $project-dir:= util:collection-name($config[1])
-                                                let $template := $config//param[@key='template']
-                                                return concat($project-dir, '/', $config:templates-dir, $template,'/')
+                                                let $project-dir:= util:collection-name($config[self::mets:mets])
+                                                let $template := $crProjectParameters/param[@key='template']
+                                                return $project-dir||'/'||$config:templates-dir||$template||'/'
             case 'project-template-baseuri' return
                                                 let $project-id:=$mets/xs:string(@OBJID)
-                                                let $template := $config//param[@key='template']
-                                                return $config-params:projects-baseuri||$project-id||'/'||$config:templates-dir||$template||'/'
+                                                let $template := $crProjectParameters/param[@key='template']
+                                                return $config-params:projects-baseuri||$project-id||'/'||$config:templates-dir||$template||"/"
             case 'template-dir'             return
-                                                let $template := $config//param[@key='template']
-                                                return $config:app-root||'/'||$config:templates-dir||$template||'/'
+                                                let $template := $crProjectParameters/param[@key='template']
+                                                return $config:app-root||'/'||$config:templates-dir||$template||"/"
             case 'template-baseuri'         return
-                                                let $template := $config//param[@key='template']
-                                                return $config:templates-baseuri||$template||'/'
-            case 'project-data-baseuri'     return
+                                                let $template := $crProjectParameters/param[@key='template']
+                                                return $config:templates-baseuri||$template||"/"
+            case 'project-data-dir'     return
                                                 let $project-id:=$mets/xs:string(@OBJID)
                                                 let $data-path:=config:common-path-from-FLocat($model,'projectData')
+                                                return $config-params:projects-baseuri||$project-id||'/'||$data-path
+            case 'project-data-baseuri'     return
+                                                let $project-id:=$mets/xs:string(@OBJID)
+                                                let $data-path:=config:common-path-from-FLocat($model,'projectData')||"/"
                                                 return $config-params:projects-baseuri||$project-id||'/'||$data-path
             case 'visibility'               return 
                                                 let $ace:=$mets//sm:ace[@who='other']
@@ -303,6 +331,8 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
                                                     then 'protected'
                                                     else 'unprotected'
             case 'users'                    return
+                                                (: sm:get-group-members-function need to be executed as a logged in user :)
+                                                let $login:=        xmldb:login($config:app-root,"cr-xq","cr=xq!")
                                                 let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
                                                     $users:=        $ace[@target='USER']/@who,
                                                     $groups:=       $ace[@target='GROUP']/@who,
@@ -310,8 +340,14 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
                                                                     return
                                                                         if (sm:group-exists($g))
                                                                         then sm:get-group-members($g)
-                                                                        else ()
-                                                return ($users,$group-members)
+                                                                        else (),
+                                                    $allowed-users:=    ($group-members,$users)
+                                                return string-join($allowed-users,',')
+            
+            case 'teaser-text'              return config:mets-file($mets//mets:file[@USE='projectTeaserText'])
+            case 'logo-image'               return config:mets-file($mets//mets:file[@USE='projectLogoImage']) 
+            case 'logo-text'                return config:mets-file($mets//mets:file[@USE='projectLogoLink'])
+            case 'mappings'                 return $mets//mets:techMD[@ID='crProjectMappings']/mets:mdWrap/mets:xmlData/map
             default                         return ()
             
     
@@ -330,7 +366,7 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
             else ""
         else
             switch(true())
-                case ($param-special != '')     return $param-special[1]
+                case ($param-special != '')     return $param-special
                 case ($param-request != '')     return $param-request[1]
                 case (exists($param-container)) return $param-container[1]
                 case (exists($param-function))  return $param-function[1]
@@ -420,6 +456,29 @@ declare function config:project-config($project as xs:string) as element()* {
         else ():)
 };
 
+
+(:~
+ : Getter function for a cr-project's mappings.
+ :
+ : @param $item: input. We accept a strings or elements() as well as a map. This may contain one of the following keys:
+ : <ol>
+ :      <li>'config': the 'classic' config with project and module-wide configuration</li>
+ :      <li>'mets': the cr-project file of the project</li>
+ :      <li>'mappings': a <map> of this specific project</li>
+ : </ol>
+ : @result: one or more <map> elements 
+ ~:)
+declare function config:mappings($item as item()) as element(map)* {
+    typeswitch ($item)
+        case map()          return 
+                                ($item("config")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
+                                $item("mets")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
+                                $item("mappings"))[1]
+        case xs:string      return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
+        case text()         return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
+        case element()      return $item//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
+        default             return ()
+};
 
 (:~ lists all defined projects based on the project-id param in the config.
  :  this would only read the projects in separate folders:
