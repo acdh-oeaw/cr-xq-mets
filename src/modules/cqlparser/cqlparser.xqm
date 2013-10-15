@@ -13,7 +13,7 @@ import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "/
 
 (:declare variable $cql:transform-doc := doc("XCQL2Xpath.xsl");:)
 declare variable $cql:transform-doc := doc(concat(system:get-module-load-path(),"/XCQL2Xpath.xsl"));
-
+declare variable $cql:log := util:log("INFO",$cql:transform-doc);
 (:~ use the extension module CQLParser (using cql-java library)
 to parse the expression and return the xml version  of the parse-tree
 or a diagnostic, on parsing error
@@ -43,22 +43,32 @@ declare function cql:cql-to-xcql($cql-expression as xs:string) {
 declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:string)  as item() {
     let $xcql := cql:cql-to-xcql($cql-expression)
 (:    return transform:transform ($xcql, $cql:transform-doc, <parameters><param name="mappings-file" value="{repo-utils:config-value('mappings')}" /></parameters>):)
-    return if (not($xcql instance of element(diagnostics))) then
-                transform:transform ($xcql, $cql:transform-doc, <parameters><param name="x-context" value="{$x-context}" /></parameters> )
-             else $xcql 
-  
+    return 
+        if (not($xcql instance of element(diagnostics))) 
+        then
+            let $parameters:=<parameters><param name="x-context" value="{$x-context}" /></parameters>
+            return transform:transform ($xcql, $cql:transform-doc, $parameters)
+        else $xcql
 };
 
-(:~ a version that accepts mappings-file as param, but complains if the file does not exist
+(:~ a version that accepts mappings-element(s) as param
 :)
-declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:string, $mappings as xs:string)  as item() {
-    let $xcql := if (doc-available($mappings)) then  cql:cql-to-xcql($cql-expression)
+declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:string, $mappings as element(map)*)  as item() {
+    let $xcql :=    if (exists($mappings)) 
+                    then cql:cql-to-xcql($cql-expression)
                     else diag:diagnostics("mappings-missing", $mappings)
-      return if (not($xcql[1] instance of element(diagnostics))) then                
-                transform:transform ($xcql, $cql:transform-doc, 
-                    <parameters><param name="x-context" value="{$x-context}" />
-                        <param name="mappings-file" value="{$mappings}" /></parameters> )
-                else $xcql
+    return 
+        if ($xcql[1] instance of element(diagnostics))
+        then $xcql
+        else 
+            let $input:=        <wrapper>
+                                    <query>{$xcql}</query>
+                                    <mappings>{$mappings}</mappings>
+                                </wrapper> 
+            let $parameters:=   <parameters>
+                                    <param name="x-context" value="{$x-context}"/>
+                                </parameters> 
+            return transform:transform($input, $cql:transform-doc,$parameters)
 };
 
 declare function cql:xcql2xpath ($xcql as node(), $x-context as xs:string)  as xs:string {
