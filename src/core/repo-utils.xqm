@@ -1,10 +1,12 @@
 xquery version "3.0";
 module namespace repo-utils = "http://aac.ac.at/content_repository/utils";
-
+declare namespace mets="http://www.loc.gov/METS/";
+declare namespace xlink="http://www.w3.org/1999/xlink";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../modules/diagnostics/diagnostics.xqm";
 import module namespace request="http://exist-db.org/xquery/request";
 
+import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 (:~ HELPER functions - configuration, caching, data-access
 :)
 
@@ -45,11 +47,11 @@ let $sys-config := if (doc-available($repo-utils:sys-config-file)) then doc($rep
 };
 
 declare function repo-utils:config-value($config, $key as xs:string) as xs:string? {
-    ($config/config[not(xs:string(@type)='system' or xs:string(@type)='module')]//(param|property)[xs:string(@key)=$key],
-      $config/config[xs:string(@type)='module']//(param|property)[xs:string(@key)=$key],
-      $config/config[xs:string(@type)='system']//(param|property)[xs:string(@key)=$key],
-      $config//(param|property)[xs:string(@key)=$key]  (: accept also top-level param|property :)
-      )[1]
+    let $project-config:=$config/config[not(xs:string(@type)='system' or xs:string(@type)='module')]//(param|property)[xs:string(@key)=$key],
+        $module-config:=$config/config[xs:string(@type)='module']//(param|property)[xs:string(@key)=$key],
+        $system-config:=$config/config[xs:string(@type)='system']//(param|property)[xs:string(@key)=$key],
+        $top-level-config:=$config//(param|property)[xs:string(@key)=$key]
+    return ($project-config,$module-config,$system-config,$top-level-config)[1]
 };
 
 declare function repo-utils:config-values($config, $key as xs:string) as xs:string* {
@@ -66,51 +68,46 @@ declare function repo-utils:config-values($config, $key as xs:string) as xs:stri
 :)
 (:~ Get value of a param based on a key, from config or from request-param (precedence) :)
 declare function repo-utils:param-value($config, $key as xs:string, $default as xs:string) as xs:string* {
-    
     let $param := request:get-parameter($key, $default)
-    return if ($param) then $param else $config//(param|property)[@key=$key]
+    return 
+        if ($param) 
+        then $param 
+        else $config//(param|property)[@key=$key]
 };
 
-(:~ returns db-collection (as nodeset) based on the identifier in x-context, looked up in the mapping or default collection as defined in config 
-
-@returns nodeset of given context 
- if no x-context match or no context provided returns default collection from the config (data.path ) 
- (if available, otherwise again empty result)
-
-WATCHME: changed to lax handling of the context (if no match - go to default)
-        gives better recall, but may confuse - alternatively: strict: empty result if x-context does not match 
-TODO: accept $x-context as xs:string*
-:)
+(:~ This function returns a node set consisting of all available documents of the project as listed in mets:fileGrp[@USE="Project Data"]     
+ : 
+ : @param $x-context: The CR-Context
+ : @param $config: The mets-config of the project
+~:)
 declare function repo-utils:context-to-collection($x-context as xs:string, $config) as node()* {
-(:      let $mappings := doc(repo-utils:config-value($config, 'mappings')):)
-      let $dbcoll-path := repo-utils:context-to-collection-path($x-context, $config)
-    return if ($dbcoll-path eq "" ) then ()
-                else collection($dbcoll-path)                    
+    let $dbcoll-path := repo-utils:context-to-collection-path($x-context, $config)
+    let $docs:= 
+        if ($dbcoll-path = "" ) then ()
+        else
+            for $p in $dbcoll-path
+            return
+                if (ends-with($p,'.xml'))
+                then doc($p)
+                else ()
+     return ($docs)
 };
 
-(:~ returns path to db-collection (as nodeset) based on the identifier in x-context, 
-looked up in the mapping or default data.path as defined in config
-
-@returns dbcoll-path of given context
- if no x-context match or no context provided returns default collection from the config (data.path ) 
- (if available, otherwise again empty result)
-
-WATCHME: changed to lax handling of the context (if no match - go to default)
-        gives better recall, but may confuse - alternatively: strict: empty result if x-context does not match
-changed again: only give default if x-context is empty string or 'default'-string.        
-T
-:)
-declare function repo-utils:context-to-collection-path($x-context as xs:string, $config) as xs:string {
-      let $mappings:= doc(repo-utils:config-value($config, 'mappings'))
-    return    (: if ($x-context) then :) 
-            if (exists($mappings//map[xs:string(@key) eq $x-context]/@path)) then 
-                    $mappings//map[xs:string(@key) eq $x-context]/xs:string(@path)
-                (: else "" :)
-                  else if (exists(repo-utils:config-value($config, 'data.path')) and 
-                            ($x-context = ('', 'default'))) then  
-                        repo-utils:config-value($config, 'data.path')
-                  else ""
+(:~ This function returns paths to all available data files of the given project.  
+ :
+ : @param $x-context: The CR-Context
+ : @param $config: The mets-config of the project
+~:)
+declare function repo-utils:context-to-collection-path($x-context as xs:string, $config) as xs:string* {
+    let $projectData:=$config//mets:fileGrp[@USE="Project Data"]//mets:file/mets:FLocat
+    return 
+        for $d in $projectData/@xlink:href return
+            if (doc-available($d)) 
+            then xs:string($d)
+            else ()
 };
+
+
 
 (:~ Get the resource by PID/handle/URL or some known identifier.
   TODO: NOT ADAPTED YET! (taken from CMD)
@@ -277,7 +274,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
                            return $item
 	       return $res
 	    case (contains($format, $repo-utils:responseFormatHTML)) return
-	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config ),
+	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config),
 	           $xslParams:=    <parameters>
 	                               <param name="format" value="{$format}"/>
               			           <param name="operation" value="{$operation}"/>
@@ -291,10 +288,12 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
               			       </parameters>
 	       let $res := if (exists($xslDoc)) 
 	                   then transform:transform($item,$xslDoc, $xslParams)
-	                   else diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
+	                   else 
+	                       let $log:=util:log("ERROR", "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
+	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
 	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html")
 	       return $res
-	   default
+	   default return
 	       let $option := util:declare-option("exist:serialize", "method=xml media-type=application/xml")
 	       return $item
 };
@@ -320,7 +319,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
  : @param $config the global configuration map.
  : @return zero or one XSL documents 
 ~:)
-declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node(xsl:stylesheet)? {        
+declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node()? {        
     let $scripts-paths := repo-utils:config-values($config, 'scripts.path'),
         $xsldoc :=  for $scripts-path in $scripts-paths
                     return 
