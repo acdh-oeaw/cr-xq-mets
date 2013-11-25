@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://exist-db.org/xquery/apps/config">
+    <paths>
+        <!-- root path -->
+        <path key="projects" xml:id="projects">/db/cr-projects</path>
+        <path key="data" xml:id="data">/db/cr-data</path>
+        <path key="master" xml:id="master" base="#data"/>
+        <path key="metadata" base="#data">_md</path>
+        <path key="indexes" base="#data">_indexes</path>
+        <path key="lookuptables" base="#data">_lookuptables</path>
+        <path key="workingcopies" base="#data">_workingcopies</path>
+        <path key="resourcefragments" base="#data">_resourcefragments</path>
+        <path key="templates" base="#data"/>
+    </paths>
+</config>

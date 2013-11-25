@@ -2,9 +2,16 @@ xquery version "3.0";
 module namespace repo-utils = "http://aac.ac.at/content_repository/utils";
 declare namespace mets="http://www.loc.gov/METS/";
 declare namespace xlink="http://www.w3.org/1999/xlink";
+declare namespace fcs = "http://clarin.eu/fcs/1.0";
+declare namespace cr="http://aac.ac.at/content_repository";
+
+
+
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../modules/diagnostics/diagnostics.xqm";
 import module namespace request="http://exist-db.org/xquery/request";
+import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
+import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 (:~ HELPER functions - configuration, caching, data-access
@@ -38,6 +45,24 @@ declare function repo-utils:base-url($config as item()*) as xs:string* {
 let $url := request:get-uri()
     return $url
 };  
+
+
+(:~
+ : Helper function which programmatically defines prefix-namespace-bindings 
+ : in a project map.
+ : 
+ : @param $config: the config of the current project.
+~:)
+declare function repo-utils:declare-namespaces($config as item()*) as empty() {
+    let $mappings:=config:mappings($config),
+        $namespaces:=$mappings//namespaces
+    return 
+        for $ns in $namespaces/ns
+        let $prefix:=$ns/@prefix,
+            $namespace-uri:=$ns/@uri
+        let $log:=util:log("INFO", "declaring namespace "||$prefix||"='"||$namespace-uri||"'")
+        return util:declare-namespace(xs:string($prefix), xs:anyURI($namespace-uri))
+};
 
 declare function repo-utils:config($config-file as xs:string) as node()* {
 let $sys-config := if (doc-available($repo-utils:sys-config-file)) then doc($repo-utils:sys-config-file) else (),
@@ -106,8 +131,59 @@ declare function repo-utils:context-to-collection-path($x-context as xs:string, 
             then xs:string($d)
             else ()
 };
+(:~
+ : Retrieves the id of the resourcefragment(s) a given element is part of.
+ : 
+ : @param $resource-pid: the PID of the resource to be looked into
+ : @param $x-elementID: the internal cr:id of the element to be looked up
+ : @param $x-context: the context/project
+ : @param $config: the mets-config of the project 
+ : @return one or more resourcefragment-pids 
+~:)
+declare function repo-utils:element-pid-to-resourcefragment-pid($resource-pid as xs:string, $x-element-pid as xs:string, $x-context as xs:string, $config) as xs:string* {
+    let $tables-path:=$config//param[@key='lookuptable.path']/xs:string(.)
+    let $lookup-table:=repo-utils:get-from-cache($x-context||"-"||$resource-pid||".xml",$tables-path,$config)
+    let $fragments:=$lookup-table//fcs:ResourceFragment[cr:id=$x-element-pid]
+    return $fragments/xs:string(@pid)
+};
 
+(:~ This function returns paths to all available resources of the given project by looking at the 
+ : projects struct map.
+ : 
+ : a resource may consist of 
+ :      - a single xml instance 
+ :      - multiple fragment instances, which constitute the resource in sum
+ : 
+ : Here we only sum up only the the _full_ resources.  
+ :
+ : @param $x-context: The CR-Context
+ : @param $config: The mets-config of the project
+ : @return 
+~:)
+declare function repo-utils:resources-in-project($x-context as xs:string, $config)  {
+    let $projectResources:=project:get-resources($config//mets:mets)
+    return 
+    for $d in $projectResources return
+        if ($d/mets:fptr/@FILEID) 
+        then 
+            let $resource-pid := xs:string($d/@ID) 
+            let $fileID:=xs:string($d/mets:fptr/@FILEID)
+            let $file:=$config//mets:file[@ID eq $fileID]
+            return 
+                if (doc-available($file/mets:FLocat/@xlink:href))
+                then 
+                    map{
+                        "resource-pid" := $resource-pid,
+                        "content" := doc($file/mets:FLocat/@xlink:href)
+                    }
+                else util:log("INFO","document "||$file||" not available")
+        else ()
+};
 
+declare function repo-utils:fileuri-to-resource-pid($filepath as xs:string, $x-context as xs:string, $config) as xs:string? {
+    let $fileID:=$config//mets:file[mets:FLocat/@xlink:href eq $filepath]/@ID
+    return $config//mets:div[@TYPE='resource' and mets:fptr/@FILEID eq $fileID]/xs:string(@ID) 
+};
 
 (:~ Get the resource by PID/handle/URL or some known identifier.
   TODO: NOT ADAPTED YET! (taken from CMD)
@@ -138,31 +214,48 @@ declare function repo-utils:is-in-cache($doc-name as xs:string,$config) as xs:bo
 
 declare function repo-utils:get-from-cache($doc-name as xs:string,$config) as item()* {
     let $path := fn:concat(repo-utils:config-value($config, 'cache.path'), "/", $doc-name)
-    
-    return 
-        try {
-           if (doc-available($path)) then
-            fn:doc($path)
-            else ()
-        } catch * {         
-           if (util:binary-doc-available($path)) then
-                util:binary-doc($path)
-           else ()
-        }
+    return repo-utils:get-from-cache($doc-name, $path,$config)
 };
 
-(:~ Store the data in cache. Uses own writer-account
-:)
+declare function repo-utils:get-from-cache($doc-name as xs:string,$path,$config) as item()* {
+    if (util:is-binary-doc($path))
+    then util:binary-doc($path)
+    else fn:doc($path)
+};
+
+(:~ 
+ : Store the data in Cache, which is set in the parameter "cache.path" in the config. 
+ : The function uses its own writer-account. 
+ :  
+ : @param $doc-name: the filename of the resource to create/update.
+ : @param $data: the data to store
+ : @param $config: the config for the current project  
+~:)
 declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node(),$config) as item()* {
-  
-  let $clarin-writer := fn:doc(repo-utils:config-value($config, 'writer.file')),
-  $cache-path := repo-utils:config-value($config, 'cache.path'),
-  $dummy := xdb:login($cache-path, $clarin-writer//write-user/text(), $clarin-writer//write-user-cred/text()),
-  $store := (: util:catch("org.exist.xquery.XPathException", :) xdb:store($cache-path, $doc-name, $data), (: , ()) :)
-  $stored-doc := if ( util:is-binary-doc(concat($cache-path, "/", $doc-name))) then util:binary-doc(concat($cache-path, "/", $doc-name))
-                        else fn:doc(concat($cache-path, "/", $doc-name))
+  repo-utils:store-in-cache($doc-name,$data,repo-utils:config-value($config, 'cache.path'))
+};
+
+(:~ 
+ : Store the data in Cache to the specified collection. 
+ : The function uses its own writer-account. 
+ :  
+ : @param $doc-name: the filename of the resource to create/update.
+ : @param $cache-collection: the name of the collection (non-existent collections will be created)
+ : @param $data: the data to store
+ : @param $config: the config for the current project  
+~:)
+declare function repo-utils:store-in-cache($doc-name as xs:string, $cache-path as xs:string, $data as node(),$config) as item()* {
+  let   $clarin-writer := fn:doc(repo-utils:config-value($config, 'writer.file')),
+        $dummy := xdb:login($cache-path, $clarin-writer//write-user/text(), $clarin-writer//write-user-cred/text()),
+        $mkcol :=   if (xmldb:collection-available($cache-path))
+                    then ()
+                    else local:mkcol-recursive(tokenize($cache-path,'/')[1],tokenize($cache-path,'/')[position() gt 1]),
+        $store := xdb:store($cache-path, $doc-name, $data), 
+        $stored-doc := 
+            if (util:is-binary-doc(concat($cache-path, "/", $doc-name))) 
+            then util:binary-doc(concat($cache-path, "/", $doc-name))
+            else fn:doc(concat($cache-path, "/", $doc-name))
   return $stored-doc
-(:  ():)
 };
 
 
@@ -356,19 +449,19 @@ declare function repo-utils:if-absent ( $arg as item()* , $value as item()* )  a
 
 
 (: Helper function to recursively create a collection hierarchy. :)
-declare function repo-utils:mkcol($collection, $path) {
+declare function repo-utils:mkcol($collection as xs:string, $path as xs:string) {
     local:mkcol-recursive($collection, tokenize($path, "/"))
 };
 
 declare function local:mkcol-recursive($collection, $components) {
-    if (exists($components)) then
+    if (exists($components)) 
+    then
         let $newColl := concat($collection, "/", $components[1])
         return (
             xdb:create-collection($collection, $components[1]),
             local:mkcol-recursive($newColl, subsequence($components, 2))
         )
-    else
-        ()
+    else ()
 };
 
 

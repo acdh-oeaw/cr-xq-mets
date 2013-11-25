@@ -18,26 +18,6 @@ declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
 
-declare variable $config:templates-dir := "templates/";
-declare variable $config:modules-dir := $config:app-root||"/modules/";
-declare variable $config:project-static-dir := "static/";
-declare variable $config:templates-baseuri:= $config:app-root-collection||$config:templates-dir;
-declare variable $config:repo-descriptor := doc($config:app-root||"/repo.xml")/repo:meta;
-declare variable $config:expath-descriptor := doc($config:app-root||"/expath-pkg.xml")/expath:package;
-
-(:~
- : Returns the xml resource by resolving the relative path $relPath using the current application context. 
- : If the app resides in the file system, the resource will be loaded from there. 
- :
- : @param $relPath the relative path to the xml resource
- : @return the xml resource  
- :)
-declare function config:resolve($relPath as xs:string) as document-node()? {
-    if (starts-with($config:app-root, "/db")) 
-    then doc($config:app-root||"/"||$relPath)
-    else doc("file://"||$config:app-root||"/"||$relPath)
-};
-
 (:~
  : Contains the uri of the application root collection, determined from the current module load path.
  ~:)
@@ -64,6 +44,136 @@ declare variable $config:app-root :=
 ~:)  
 declare variable $config:app-root-collection := concat( '/', (tokenize($config:app-root, '/'))[not(.='')][position()=last()], '/');
 
+
+
+declare variable $config:cr-config-filename := "conf.xml";
+declare variable $config:cr-config := doc($config:app-root||"/"||$config:cr-config-filename);
+
+declare variable $config:templates-dir := "templates/";
+declare variable $config:modules-dir := $config:app-root||"/modules/";
+declare variable $config:project-static-dir := "static/";
+declare variable $config:templates-baseuri:= $config:app-root-collection||$config:templates-dir;
+declare variable $config:repo-descriptor := doc($config:app-root||"/repo.xml")/repo:meta;
+declare variable $config:expath-descriptor := doc($config:app-root||"/expath-pkg.xml")/expath:package;
+
+declare variable $config:default-data-path := "/db/cr-data/";
+declare variable $config:default-workingcopy-path := config:path("workingcopy");
+declare variable $config:default-resourcefragments-path := config:path("resourcefragments");
+declare variable $config:default-lookuptable-path := config:path("lookuptables");
+
+declare variable $config:PROJECT_DATA_FILEGRP_ID:="projectData";
+declare variable $config:PROJECT_STRUCTMAP_ID:="cr-data";
+declare variable $config:PROJECT_STRUCTMAP_TYPE:="internal";
+declare variable $config:PROJECT_RESOURCE_DIV_TYPE:="resource";
+declare variable $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE:="resourcefragment";
+
+(: Project Account naming conventions :)
+declare variable $config:PROJECT_ACCOUNTS_ADMIN_ACCOUNTNAME_PREFIX:= "";
+declare variable $config:PROJECT_ACCOUNTS_ADMIN_ACCOUNTNAME_SUFFIX:= "Admin";
+declare variable $config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_PREFIX:= "";
+declare variable $config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_SUFFIX:= "";
+
+
+declare variable $config:PROJECT_STATUS_AVAILABLE :=    "available";
+declare variable $config:PROJECT_STATUS_REVISION :=     "under revision";
+declare variable $config:PROJECT_STATUS_REMOVED :=      "removed"; 
+declare variable $config:PROJECT_STATUS_RESTRICTED :=   "restricted";
+
+declare variable $config:PROJECT_DMDSEC_ID := "projectDMD";
+declare variable $config:PROJECT_AMDSEC_ID := "projectAMD";
+declare variable $config:PROJECT_MAPPINGS_ID := "projectMappings";
+declare variable $config:PROJECT_PARAMETERS_ID := "projectParameters";
+declare variable $config:PROJECT_MODULECONFIG_ID := "moduleConfig";
+declare variable $config:PROJECT_RIGHTSMD_ID := "projectLicense";
+declare variable $config:PROJECT_ACL_ID := "projectACL";
+
+(:~
+ : This variable stores the content of the @USE attribute on the <fileGrp> element,
+ : which contains all <file>s of a resource.  
+~:)
+declare variable $config:PROJECT_RESOURCE_FILEGRP_USE:="RESOURCE FILES";
+(:~
+ : The variable <code></code> stores the content of the @USE attribute on the <file> element,
+ : which contains the working copy of a resources.  
+~:)
+declare variable $config:RESOURCE_WORKINGCOPY_FILE_USE:="WORKING COPY";
+declare variable $config:RESOURCE_MASTER_FILE_USE:="MASTER";
+declare variable $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE:="EXTRACTED RESOURCEFRAGMENTS";
+declare variable $config:RESOURCE_LOOKUPTABLE_FILE_USE:="LOOKUP TABLE";
+
+declare variable $config:RESOURCE_WORKINGCOPY_FILEID_SUFFIX:="_wc";
+declare variable $config:RESOURCE_RESOURCEFRAGMENT_FILEID_SUFFIX:="_fragments";
+declare variable $config:RESOURCE_MASTER_FILEID_SUFFIX:="_master";
+declare variable $config:RESOURCE_LOOKUPTABLE_FILEID_SUFFIX:="_lt";
+
+(:~
+ : Declaration of XML element names and namespaces for stored resource fragments and lookup tables. 
+~:)
+declare variable $config:RESOURCE_RESOURCE_ELEMENT_NSURI:="http://clarin.eu/fcs/1.0";
+declare variable $config:RESOURCE_RESOURCE_ELEMENT_NAME:="resource";
+declare variable $config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NSURI:=$config:RESOURCE_RESOURCE_ELEMENT_NSURI;
+declare variable $config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NAME:="resourceFragment";
+declare variable $config:RESOURCE_LOOKUPTABLE_ELEMENT_NSURI:=$config:RESOURCE_RESOURCE_ELEMENT_NSURI;
+declare variable $config:RESOURCE_LOOKUPTABLE_ELEMENT_NAME:="lookupTable";
+
+
+(:~
+ : Prefixes to prepend to the filename of a resource, when storing working copies, 
+ : lookup tables and extracted resource fragments. 
+~:)
+declare variable $config:RESOURCE_WORKINGCOPY_FILENAME_PREFIX := "wc-";
+declare variable $config:RESOURCE_LOOKUPTABLE_FILENAME_PREFIX := "lt-";
+declare variable $config:RESOURCE_RESOURCEFRAGMENT_FILENAME_PREFIX := "frg-";
+
+
+
+declare variable $config:app-version := $config:expath-descriptor/xs:string(@version);
+declare variable $config:app-name-full := $config:expath-descriptor/xs:string(@name);
+declare variable $config:app-name-abbreviation := $config:expath-descriptor/xs:string(@abbrev);
+
+
+declare function config:path-relative-to-absolute ($path as element(config:path)) as xs:string? {
+    if (starts-with($path,'/'))
+    then $path
+    else config:path-relative-to-absolute($path, ())
+};
+
+declare function config:path-relative-to-absolute($path as element(config:path), $steps-before as element(config:path)*) as xs:string? {
+    if (starts-with($path,'/'))
+    then string-join(($path,reverse($steps-before)),'/')
+    else
+        let $parent:= $config:cr-config//config:path[@xml:id eq substring-after($path/@base,'#')]
+        return
+            if (exists($parent))
+            then config:path-relative-to-absolute($parent,($steps-before,$path))
+            else string-join(($path,reverse($steps-before)),'/')
+};
+
+declare variable $config:paths as map := 
+    map:new(for $p in $config:cr-config//config:path
+            return map:entry($p/@key, data($p)))
+;
+
+declare function config:path($key as xs:string) as xs:string? {
+    let $path:=$config:cr-config//config:path[@key eq $key]
+    return
+        if (exists($path))
+        then config:path-relative-to-absolute($path)
+        else ()
+};
+
+(:~
+ : Returns the xml resource by resolving the relative path $relPath using the current application context. 
+ : If the app resides in the file system, the resource will be loaded from there. 
+ :
+ : @param $relPath the relative path to the xml resource
+ : @return the xml resource  
+ :)
+declare function config:resolve($relPath as xs:string) as document-node()? {
+    if (starts-with($config:app-root, "/db")) 
+    then doc($config:app-root||"/"||$relPath)
+    else doc("file://"||$config:app-root||"/"||$relPath)
+};
 
 (:~
  : Extended resolver. Tries to locate the requested XML resource in the following locations:
@@ -446,21 +556,15 @@ declare function config:config($project as xs:string) as item()* {
  : @return config element with relevant parameters.
  :)
 declare function config:project-config($project as xs:string) as element()* {
-    let $project := collection($config-params:projects-dir)//mets:mets[@OBJID eq $project],
-        (:$data:=     $project//mets:techMD[@GROUPID='config.xml']/mets:mdWrap/mets:xmlData/*:)
-        $data := $project
-    return 
-        $data
-        (:if (exists($data))
-        then element config {$data}
-        else ():)
+    let $project := collection($config-params:projects-dir)//mets:mets[@OBJID eq $project]
+    return $project
 };
 
 
 (:~
  : Getter function for a cr-project's mappings.
  :
- : @param $item: input. We accept a strings or elements() as well as a map. This may contain one of the following keys:
+ : @param $item: input. We accept strings or elements() as well as a map. This may contain one of the following keys:
  : <ol>
  :      <li>'config': the 'classic' config with project and module-wide configuration</li>
  :      <li>'mets': the cr-project file of the project</li>
@@ -468,16 +572,17 @@ declare function config:project-config($project as xs:string) as element()* {
  : </ol>
  : @result: one or more <map> elements 
  ~:)
-declare function config:mappings($item as item()) as element(map)* {
-    typeswitch ($item)
-        case map()          return 
-                                ($item("config")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
-                                $item("mets")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
-                                $item("mappings"))[1]
-        case xs:string      return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
-        case text()         return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
-        case element()      return $item//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
-        default             return ()
+declare function config:mappings($config as item()*) as element(map)* {
+    for $item in $config return 
+        typeswitch ($item)
+            case map()          return 
+                                    ($item("config")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
+                                    $item("mets")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
+                                    $item("mappings"))[1]
+            case xs:string      return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
+            case text()         return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
+            case element()      return $item//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
+            default             return ()
 };
 
 (:~ lists all defined projects based on the project-id param in the config.

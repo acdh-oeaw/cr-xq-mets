@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Project Administration</title>
+    </head>
+    <body>
+        <div data-template="templates:parameter-set" data-template-param="project-id">
+            <div data-template="templates:include" data-template-path="navbar.html"/>
+            <div data-template="templates:include" data-template-path="sidebar.html"/>
+        </div>
+        <div data-template="templates:parameter-unset" data-template-param="project-id">
+            <div class="alert alert-error">
+                <p>Missing parameter $project-id</p>
+            </div>
+        </div>
+    </body>
+</html>
