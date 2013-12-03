@@ -1,7 +1,7 @@
 xquery version "3.0";
 (:~
  : A set of helper functions to access the application context from
- : within a module.
+ : within a module. 
  :
  : Based on config.xqm provided by the exist:templating system 
  : extended to recognize multiple projects and templates and project-specific configuration
@@ -66,6 +66,7 @@ declare variable $config:PROJECT_STRUCTMAP_ID:="cr-data";
 declare variable $config:PROJECT_STRUCTMAP_TYPE:="internal";
 declare variable $config:PROJECT_RESOURCE_DIV_TYPE:="resource";
 declare variable $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE:="resourcefragment";
+declare variable $config:PROJECT_PID_NAME:="project-pid";
 
 (: Project Account naming conventions :)
 declare variable $config:PROJECT_ACCOUNTS_ADMIN_ACCOUNTNAME_PREFIX:= "";
@@ -92,6 +93,7 @@ declare variable $config:PROJECT_ACL_ID := "projectACL";
  : which contains all <file>s of a resource.  
 ~:)
 declare variable $config:PROJECT_RESOURCE_FILEGRP_USE:="RESOURCE FILES";
+declare variable $config:PROJECT_RESOURCE_FILEGRP_SUFFIX:="_files";
 (:~
  : The variable <code></code> stores the content of the @USE attribute on the <file> element,
  : which contains the working copy of a resources.  
@@ -106,6 +108,8 @@ declare variable $config:RESOURCE_RESOURCEFRAGMENT_FILEID_SUFFIX:="_fragments";
 declare variable $config:RESOURCE_MASTER_FILEID_SUFFIX:="_master";
 declare variable $config:RESOURCE_LOOKUPTABLE_FILEID_SUFFIX:="_lt";
 
+declare variable $config:RESOURCE_DMDID_SUFFIX:="_dmd";
+declare variable $config:RESOURCE_PID_NAME:="resource-pid";
 (:~
  : Declaration of XML element names and namespaces for stored resource fragments and lookup tables. 
 ~:)
@@ -117,6 +121,8 @@ declare variable $config:RESOURCE_LOOKUPTABLE_ELEMENT_NSURI:=$config:RESOURCE_RE
 declare variable $config:RESOURCE_LOOKUPTABLE_ELEMENT_NAME:="lookupTable";
 
 
+declare variable $config:RESOURCEFRAGMENT_PID_NAME:="resourcefragment-pid";
+
 (:~
  : Prefixes to prepend to the filename of a resource, when storing working copies, 
  : lookup tables and extracted resource fragments. 
@@ -124,7 +130,11 @@ declare variable $config:RESOURCE_LOOKUPTABLE_ELEMENT_NAME:="lookupTable";
 declare variable $config:RESOURCE_WORKINGCOPY_FILENAME_PREFIX := "wc-";
 declare variable $config:RESOURCE_LOOKUPTABLE_FILENAME_PREFIX := "lt-";
 declare variable $config:RESOURCE_RESOURCEFRAGMENT_FILENAME_PREFIX := "frg-";
+declare variable $config:RESOURCE_DMD_FILENAME_PREFIX := "md-";
 
+declare variable $config:cr-writer-accountname :=   if (doc-available("../modules/access-control/writer.xml"))
+                                                    then doc("../modules/access-control/writer.xml")/write/xs:string(write-user)
+                                                    else "cr-writer";
 
 
 declare variable $config:app-version := $config:expath-descriptor/xs:string(@version);
@@ -576,12 +586,12 @@ declare function config:mappings($config as item()*) as element(map)* {
     for $item in $config return 
         typeswitch ($item)
             case map()          return 
-                                    ($item("config")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
-                                    $item("mets")//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/map,
+                                    ($item("config")//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/map,
+                                    $item("mets")//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/map,
                                     $item("mappings"))[1]
-            case xs:string      return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
-            case text()         return config:project-config($item)//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
-            case element()      return $item//mets:techMD[@ID="crProjectMappings"]/mets:mdWrap[1]/mets:xmlData/*
+            case xs:string      return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/*
+            case text()         return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/*
+            case element()      return $item//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/*
             default             return ()
 };
 

@@ -1,9 +1,9 @@
 xquery version "3.0";
 (:~ 
-: This module provides functions for managing cr-xq projects, including:
+: This module provides functions for managing cr-xq objects (so called 'projects'), including:
 : <ul>
 :   <li>creation, modification, deletion</li> 
-:   <li>import and export</li>
+:   <li>import, export and exchange</li>
 :   <li>validation and sanity checking</li>
 : </ul>
 :
@@ -28,41 +28,13 @@ declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace metsrights = "http://cosimo.stanford.edu/sdr/metsrights/";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
-(: namespaces for method and property interfaces:)
-(:~
- : The function definitions in this module serve two purposes: First, they provide the low-level 
- : code to access and manipulate projects in the content repository.
- : 
- : Secondly, they define public interfaces to each project, representing 'getter' functions as 
- : so called project 'properties' and 'setter' functions as project 'methods'.
- :
- : The mapping between those two aspects is implemented with function annotations: Each function 
- : which provides the endpoint for a "project property" has the following annotations:
- :
- :      %property:name("public name")
- :      %property:realm("public|protected")
- :      %property:group("myProjectAdmin"|...)
- :
- : Project methods are described by the same annotations, yet in they own "method" namespace:
- :
- :      %method:name("public name")
- :      %method:realm("public|protected")
- :      %method:group("myProjectAdmin"|...)
- :
- : The "realm" annotation describes whether the project's property or method is publicly available ("public") 
- : or some kind of authorization is needed ("protected"). If protected, the 'group' annotation specifies a 
- : eXist user group which the calling user is required to be member of.
- :
- : The public interface to the project object is provided by 'project.xql'.  
-~:)
-declare namespace method = "http://aac.ac.at/content_repository/project/method";
-declare namespace property = "http://aac.ac.at/content_repository/project/property";
+declare namespace rest="http://exquery.org/ns/restxq";
 
 (: declaration of helper namespaces for better code structuring :)
 declare namespace param="userinput.parameters";
 declare namespace this="current.object";
 
-declare variable $project:defined-status := map {
+declare variable $project:status-map := map {
     $config:PROJECT_STATUS_AVAILABLE     := 1,
     $config:PROJECT_STATUS_REVISION      := 2,
     $config:PROJECT_STATUS_RESTRICTED    := 3,
@@ -74,46 +46,55 @@ declare variable $project:default-template as element(mets:mets) := if (doc-avai
 (:~
  : generated the id for a new project
 ~:)
-declare function project:generate-id() as xs:string {
-    substring(replace(util:uuid(),'-',''),1,10)    
+declare %private function project:generate-id() as xs:string {
+    'o'||translate(util:uuid(),' :','_')    
 };
 
-declare function project:sanitize-id($id as xs:string) as xs:string {
-    replace($id,'[\s*-\.]','')
+declare %private function project:sanitize-id($project-pid as xs:string) as xs:string {
+    let $replace:=translate($project-pid,' :','_')
+    return 
+        xs:string(
+            if (not(matches($replace,'\p{L}'))) 
+            then 'o'||$replace 
+            else $replace
+        )
 };
 
 
 (:~
  : sets up two accounts plus personal groups: one with the name of the project,
- : a read-only account for public access and one admin account with full rights 
+ : a read-only account for public access, and one admin account with full rights 
  : to all project resources.
- : The initial passwords are set to the value of $id. These are to be 
+ : The initial passwords are set to the project-id. These are to be 
  : changed at the first login.
+ : Returns true if the creation was successful, otherwise the empty sequence 
 ~:)
-declare %private function project:create-accounts($id) {
-    let $usernames:=(project:useraccountname($id),project:adminaccountname($id))
-    let $new:=  for $username in $usernames return
-                    let $password:=$id,
-                        $groups:=()
-                    return
-                        if (sm:user-exists($username))
-                        then sm:passwd($username,$password)
-                        else sm:create-account($username,$password,$groups)
+declare %private function project:create-accounts($project-pid as xs:string) as xs:boolean? {
+    let $usernames:=(project:usersaccountname($project-pid),project:adminsaccountname($project-pid))
+    let $new:=  
+        for $username in $usernames return
+            let $password:=$project-pid,
+                $groups:=()
+            return
+                if (sm:user-exists($username))
+                then (sm:passwd($username,$password),true())
+                else (sm:create-account($username,$password,$groups),sm:user-exists($username))
     return ()
 };
 
 (:~
- : deletes the two project accounts.
+ : deletes the two project accounts. Returns true if the deletion was successful.
 ~:)
-declare %private function project:remove-accounts($id) {
-    let $usernames:=(project:useraccountname($id),project:adminaccountname($id))
+declare %private function project:remove-accounts($project-pid as xs:string) as empty(){
+    let $usernames:=(project:usersaccountname($project-pid),project:adminsaccountname($project-pid))
     return 
         for $username in $usernames return
             if (sm:user-exists($username))
             then 
-                (sm:remove-account($username),
-                sm:remove-group($username))
-            else ()
+                let $rm-group := sm:remove-group($username),
+                    $rm-account:= sm:remove-account($username)
+                return ()
+            else util:log("INFO", "user "||$username||" does not exist.")
 };
 
 
@@ -122,109 +103,171 @@ declare %private function project:remove-accounts($id) {
 :
 : @return mets:mets
 ~:)
-declare %method:name("new") %method:realm("protected") %method:group("projectadmins")  function project:new() {
-    let $defaultTpl:=$project:default-template
+declare 
+    %rest:POST
+    %rest:path("/cr_xq")
+function project:new() {
+    let $defaultTpl:=       $project:default-template
     return project:new($defaultTpl,())
 };
 
 
-declare %method:name("new") %method:realm("protected") %method:group("projectadmins")  function project:new($id as xs:string) {
+declare
+    %rest:POST
+    %rest:path("/cr_xq/{$project-pid}")
+function project:new($project-pid as xs:string) {
     let $defaultTpl:=$project:default-template
-    return project:new($defaultTpl,$id)
+    return project:new($defaultTpl,$project-pid)
 };
 (:~
 : Instanciates a new project, based on a given template at $template, and stores it in the database.
 :
 : @param $mets:template the template to create the mets-file from 
-: @param $id the name of the project (one Token), if empty id will be generated by project:generate-id() 
-: @return the new entry, or, if the project with $id already existed, the empty sequence.  
+: @param $project-pid the name of the project (one Token), if empty id will be generated by project:generate-id() 
+: @return the new entry, or, if the project with $project-pid already existed, the empty sequence.  
 ~:)
-declare %method:name("new") %method:realm("protected") %method:group("projectadmins") function project:new($data as element(mets:mets),$id as xs:string?) as element(mets:mets)? {
-   if (project:get($id))
+declare
+    %rest:PUT("{$data}")
+    %rest:path("/cr_xq/{$project-pid}")
+function project:new($data as element(mets:mets),$project-pid as xs:string?) as element(mets:mets)?  {
+   if (project:get($project-pid))
    then ()
    else 
-        let $this:id:=            (project:sanitize-id($id),project:generate-id())[1]
-        let $setup-accounts:=        project:create-accounts($this:id)
-        let $prepare-structure:=     project:structure($this:id,"prepare")
-        let $project-stored:=        project:store($this:id,$data)
-        let $doc:=                   doc($project-stored)
-        let $sw_name :=              $config:app-name-abbreviation||" ("||$config:app-name-full||")",
-            $version:=               $config:app-version,
-            $instance :=             $config:app-root
-        let $sw_note :=              "instance at "||$instance||"; version "||$version
-        let $update-record:=         (update value $doc/mets:mets/@OBJID with $this:id,
-                                     update value $doc//mets:metsHdr/@CREATEDATE with current-dateTime(),
-                                     update value $doc//mets:metsHdr/@RECORDSTATUS with $config:PROJECT_STATUS_REVISION,
-                                     update value $doc//mets:metsHdr/mets:agent[@ROLE='CREATOR' and @OTHERTYPE='SOFTWARE']/mets:note with $sw_note,
-                                     update value $doc//mets:metsHdr/mets:agent[@ROLE='CREATOR' and @OTHERTYPE='SOFTWARE']/mets:name with $sw_name,
-                                     update value $doc//mets:metsHdr/mets:agent[@ROLE='CREATOR' and @TYPE='INDIVIDUAL']/mets:name with xmldb:get-current-user())
-        
-                                         
-        return project:get($this:id)
+        let $this:id:=      (project:sanitize-id($project-pid),project:generate-id())[1]
+        let $this:project:=     
+            let $xsl:=              doc($config:app-root||'/core/'||'initProject.xsl')
+            let $sw_name :=         $config:app-name-abbreviation||" ("||$config:app-name-full||")"
+            let $sw_note :=         "instance at "||$config:app-root||"; version "||$config:app-version
+            let $xslParams:=        <parameters>
+                                        <param name="OBJID" value="{$this:id}"/>
+                                        <param name="CREATEDATE" value="{current-dateTime()}"/> 
+                                        <param name="RECORDSTATUS" value="{$config:PROJECT_STATUS_REVISION}"/>
+                                        <param name="CREATOR.SOFTWARE.NOTE" value="{$sw_note}"/>
+                                        <param name="CREATOR.SOFTWARE.NAME" value="{$sw_name}"/>
+                                        <param name="CREATOR.INDIVIDUAL.NAME" value="{xmldb:get-current-user()}"/>
+                                    </parameters>
+            let $seed-template := transform:transform($data,$xsl,$xslParams)
+            return $seed-template
+        let $project-stored:=        project:store($this:id,$this:project)
+        return
+            if ($project-stored!='')
+            then
+                let $project-collection:=   project:collection($this:id)
+                let $setup-accounts:=        project:create-accounts($this:id)
+                let $users-groupname :=      project:usersaccountname($this:id),
+                    $admin-groupname :=      project:adminsaccountname($this:id),
+                    $set-permissions:=       ((: set permissions on project.xml document :)
+                                              sm:chown($project-stored,$admin-groupname),
+                                              sm:chgrp($project-stored,$admin-groupname),
+                                              sm:chmod($project-stored,'rwxrwxr-x'),
+                                              sm:add-user-ace($project-stored, $users-groupname, true(), 'r-x'),
+                                              sm:add-group-ace($project-stored, $users-groupname, true(), 'r-x'),
+                                              sm:add-user-ace($project-stored, $config:cr-writer-accountname, true(), 'rwx'),
+                                              sm:add-user-ace($project-stored, "cr-xq", true(), 'rwx'),
+                                              
+                                              (: set permissions on {$cr-projects}/project collection :)
+                                              sm:chown($project-collection,$admin-groupname),
+                                              sm:chgrp($project-collection,$admin-groupname),
+                                              sm:chmod($project-collection,'rwxrwxr-x'),
+                                              sm:add-user-ace($project-collection, $users-groupname, true(), 'r-x'),
+                                              sm:add-group-ace($project-collection, $users-groupname, true(), 'r-x'),
+                                              sm:add-user-ace($project-collection, $config:cr-writer-accountname, true(), 'rwx'),
+                                              sm:add-user-ace($project-collection, "cr-xq", true(), 'rwx'))
+                let $prepare-structure:=     project:structure($this:id,"prepare")
+                let $content-acl :=          project:acl($this:id,project:default-acl($this:id))
+                return project:get($this:id)
+            else 
+                util:log("INFO","Project "||$this:id||" could not be instanciated.")
 };
 
-declare %property:name("label") %property:realm("public") function project:label($id as xs:string) as xs:string? {
-    project:get($id)/xs:string(@LABEL)
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/label")
+function project:label($project-pid as xs:string) as xs:string? {
+    project:get($project-pid)/xs:string(@LABEL)
 }; 
 
-declare %method:name("label") %method:realm("protected") %method:group("projectadmins","projecteditors") function project:label($id as xs:string, $data as xs:string?) as empty() {
-    let $current := project:get($id)/@LABEL
+declare
+    %rest:PUT("{$data}")
+    %rest:path("/cr_xq/{$project-pid}/label")
+function project:label($project-pid as xs:string, $data as xs:string?) as empty() {
+    let $current := project:get($project-pid)/@LABEL
     return update value $current with $data
 }; 
 
-declare %property:name("available") %property:realm("public") function project:available($id as xs:string) as xs:boolean {
-    project:status($id) = $config:PROJECT_STATUS_AVAILABLE
+declare function project:available($project-pid as xs:string) as xs:boolean {
+    project:status($project-pid) = $config:PROJECT_STATUS_AVAILABLE
 };
 
-declare %method:name("dump") %method:realm("protected") %method:group("projectadmins") function project:get($id as xs:string) as element(mets:mets)? {
-    let $mets:= if (exists(collection(config:path("projects"))//mets:mets[@OBJID eq $id]))
-                then collection(config:path("projects"))//mets:mets[@OBJID eq $id]
-                else collection("/db")//mets:mets[@OBJID eq $id]
-    return $mets 
+(:~
+ : Getter function for projects: Every cr_xq object must have a repository-wide unique PID of type xs:string, 
+ : which is stored in mets:mets/@OBJID.
+ : The lookup is performed first in the path configured as config:path("projects"), 
+ : if this lookup returns nothing, the lookup context is extended to the database root.
+ :
+ : @param $project-pid the PID of the project to look up.
+ : @return zero or one cr_xq object.
+~:)
+declare 
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}")
+function project:get($project-pid as xs:string) as element(mets:mets)? {
+    let $project := collection(config:path("projects"))//mets:mets[xs:string(@OBJID) = xs:string($project-pid)]
+    return
+        if (count($project) gt 1)
+        then 
+            let $log:=(util:log("INFO","project-id corruption: found more than 1 project with id "||$project-pid||"."),for $p in $project return base-uri($p))
+            return $project[1]
+        else $project
 };
 
-declare %property:name("projectusers")  %property:realm("protected") %property:group("projectadmins") function project:useraccountname($id as xs:string) as xs:string {
-    $config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_PREFIX||$id||$config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_SUFFIX
+declare function project:usersaccountname($project-pid as xs:string) as xs:string {
+    $config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_PREFIX||$project-pid||$config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_SUFFIX
 };
 
-declare %property:name("projectadmins")  %property:realm("protected") %property:group("projectadmins") function project:adminaccountname($id as xs:string) as xs:string {
-    $config:PROJECT_ACCOUNTS_ADMIN_ACCOUNTNAME_PREFIX||$id||$config:PROJECT_ACCOUNTS_ADMIN_ACCOUNTNAME_SUFFIX
+declare function project:adminsaccountname($project-pid as xs:string) as xs:string {
+    $config:PROJECT_ACCOUNTS_ADMIN_ACCOUNTNAME_PREFIX||$project-pid||$config:PROJECT_ACCOUNTS_ADMIN_ACCOUNTNAME_SUFFIX
 };
 
 (:~
  : Prepares the structure for a new project or deletes the data of an existing one
 ~:)
-declare %private function project:structure($id as xs:string, $action as xs:string) {
-    let $admin-accountname := project:adminaccountname($id),
-        $admin-groupname := project:adminaccountname($id),
-        $users-accountname := project:useraccountname($id),
-        $users-groupname := project:useraccountname($id)
+declare %private function project:structure($project-pid as xs:string, $action as xs:string) {
+    let $admin-accountname := project:adminsaccountname($project-pid),
+        $admin-groupname := project:adminsaccountname($project-pid),
+        $users-accountname := project:usersaccountname($project-pid),
+        $users-groupname := project:usersaccountname($project-pid)
     let $paths:=(
-        config:path("data"),
-        config:path("workingcopies"),
-        config:path("lookuptables"),
-        config:path("resourcefragments"),
-        config:path("metadata")
+        project:path($project-pid,"data"),
+        project:path($project-pid,"workingcopies"),
+        project:path($project-pid,"lookuptables"),
+        project:path($project-pid,"resourcefragments"),
+        project:path($project-pid,"metadata")
     )
     return
     switch($action)
     case 'prepare' return 
         for $p in $paths return
-            let $uri := xs:anyURI($p||"/"||$id) 
-            let $mk := repo-utils:mkcol($p,$id),
+            let $uri := xs:anyURI($p),
+                (:paths returned by project:path() are always up to the project's specific collection, 
+    so we strip the last step here:)
+                $col := replace($p,$project-pid||"/?$","")
+            let $mk :=  repo-utils:mkcol($col,$project-pid),
                 $set-owner := sm:chown($uri, $admin-accountname),
                 $set-group := sm:chgrp($uri, $admin-groupname),
-                $set-acls:= (sm:add-group-ace($uri, $users-groupname, true(), 'rx'),
-                            sm:add-group-ace($uri, $users-groupname, false(), 'w'),
-                            sm:add-group-ace($uri, $users-groupname, true(), 'rx'),
-                            sm:add-group-ace($uri, $users-groupname, false(), 'w'))
+                $set-acls:= (
+                             sm:add-group-ace($uri, $users-groupname, true(), 'rx'),
+                             sm:add-group-ace($uri, $users-groupname, true(), 'rx'),
+                             sm:add-group-ace($uri, $users-groupname, false(), 'w'),
+                             sm:add-user-ace($uri, "cr-xq", true(), 'rwx'),
+                             sm:add-user-ace($uri, $config:cr-writer-accountname, true(), 'rwx'))
             return ()
     case 'remove' return
-        let $paths:= (config:path("data")||"/"||$id,
-                    config:path("workingcopies")||"/"||$id,
-                    config:path("lookuptables")||"/"||$id,
-                    config:path("resourcefragments")||"/"||$id,
-                    config:path("metadata")||"/"||$id)
+        let $paths:= (config:path("data")||"/"||$project-pid,
+                    config:path("workingcopies")||"/"||$project-pid,
+                    config:path("lookuptables")||"/"||$project-pid,
+                    config:path("resourcefragments")||"/"||$project-pid,
+                    config:path("metadata")||"/"||$project-pid)
         return 
             for $p in $paths 
             return 
@@ -235,16 +278,51 @@ declare %private function project:structure($id as xs:string, $action as xs:stri
 };
 
 (:~
+ : returns the paths to various contents of a project by configuration. 
+ : This function does not check existence of collections, nor does it 
+ : check whether the paths are registered in the mets object. It can be 
+ : used as a constructor function for new resources.
+~:)
+declare function project:path($project-pid as xs:string, $key as xs:string) as xs:string? {
+    let $project-config:=project:parameters($project-pid)//param[@key=$key||".path"]/xs:string(.),
+        $global-key := 
+            switch($key)
+                case "workingcopy" return "workingcopies"
+                case "lookuptable" return "lookuptables"
+                case "master"       return "data"
+                case "resourcefragment"       return "resourcefragments"
+                default return $key
+    let $default := config:path($global-key)
+    return 
+        switch(true())
+            case exists($project-config) return $project-config
+            case exists($default)        return $default||"/"||$project-pid
+            default                      return ()
+};
+
+(:~
  : Stores the project's mets record in the database and returns the path 
- : to the newly created file.
+ : to the newly created document. The base path is either read from the mets record
+ : param 'project.home' or set by config:path('projects')
  : 
  : @param $mets:record the mets:file
  : @return database path to the new file 
 ~:)
-declare %private function project:store($id as xs:string, $mets:record as element(mets:mets)) as xs:string? {
-    let $base :=    config:path('projects'),
-        $mkdir:=    repo-utils:mkcol($base,$id)
-    return xmldb:store($base||"/"||$id,"project.xml",$mets:record)
+declare %private function project:store($project-pid as xs:string, $mets:record as element(mets:mets)) as xs:string? {
+    let $col :=     replace($mets:record//param[@key='project.home'],$project-pid||"/?$",'')
+    let $base :=    if ($col!='') then $col else config:path('projects'),
+        $mkdir:=    repo-utils:mkcol($base,$project-pid)
+    let $path:=     try {
+                        xmldb:store($base||"/"||$project-pid,"project.xml",$mets:record)
+                    } catch * {
+                        ()
+                    }
+    return 
+        if ($path='')
+        then
+            let $rm-col := xmldb:remove($base||"/"||$project-pid) 
+            return util:log("INFO","Could not store project "||$project-pid||" to collection "||$base||".") 
+        else $path
 };
 
 (:~
@@ -261,11 +339,10 @@ declare function project:import($archive as document-node()) as xs:anyURI? {
 (:~
 : Renames the project and its data, setting a new identifier and renaming the 
 : collection structure.
-:
-: @param 
+: 
 : @return the uri of the new project collection containing the cr-catalog.
 ~:)
-declare function project:rename($id) as element(mets:mets) {
+declare function project:rename($project-pid as xs:string, $newId as xs:string) as element(mets:mets) {
     () (:TODO:)
 };
 
@@ -276,31 +353,31 @@ declare function project:rename($id) as element(mets:mets) {
 : @param $config the uri of the cr-catalog to be exported
 : @return the self-contained cr-archive.
 ~:)
-declare function project:export($config as xs:anyURI) as document-node()? {
+declare function project:export($project-pid as xs:string) as document-node()? {
     ()(:TODO:)
 };
 
-declare function project:transfer($id as xs:string, $host as xs:anyURI) as xs:boolean {
+declare function project:transfer($project-pid as xs:string, $host as xs:anyURI) as xs:boolean {
     ()(:TODO:)
 };
 
 
-declare %property:name("collection") %property:realm("protected") %property:group("projectadmin") function project:collection($id as xs:string) as xs:string? {
-    util:collection-name(project:get($id))
+declare function project:collection($project-pid as xs:string) as xs:string? {
+    util:collection-name(project:get($project-pid))
 };
 
 (:~
  : Returns the path to a project's mets records by retrieving via its @OBJID.
  : This enables us to set the projects own path in its mets:techMD-section. 
 ~:)
-declare %property:name("uri") %property:realm("protected") %property:group("projectadmin")  function project:filepath($id as xs:string) as xs:string? {
-    base-uri(project:get($id))
+declare function project:filepath($project-pid as xs:string) as xs:string? {
+    base-uri(project:get($project-pid))
 };
 
-declare function project:filepath($id as xs:string) as xs:string? {
-    if (exists(collection(config:path("projects"))//mets:mets[@OBJID = $id]))
-    then base-uri(collection(config:path("projects"))//mets:mets[@OBJID = $id])
-    else base-uri(collection("/db")//mets:mets[@OBJID = $id])
+declare function project:filepath($project-pid as xs:string) as xs:string? {
+    if (exists(collection(config:path("projects"))//mets:mets[@OBJID = $project-pid]))
+    then base-uri(collection(config:path("projects"))//mets:mets[@OBJID = $project-pid])
+    else base-uri(collection("/db")//mets:mets[@OBJID = $project-pid])
 };
 
 (:~
@@ -309,34 +386,43 @@ declare function project:filepath($id as xs:string) as xs:string? {
 : @param $config the uri of the cr-catalog to be removed
 : @return true if projec 
 ~:)
-declare %method:name("purge") %method:realm("restricted") %method:group("projectadmins") function project:purge($id as xs:string) as empty() {
-    project:purge($id,())
+declare
+    %rest:DELETE
+    %rest:path("/cr_xq/{$project-pid}")
+function project:purge($project-pid as xs:string) as empty() {
+    project:purge($project-pid,())
 };
 
 (:~
 : removes the cr-project from the content repository, possibly also removing the project's data.
 : 
 : @param $config the uri of the cr-catalog to be removed
-: @param $delete-data should the project's data be removed?
-: @return true if projec
+: @param $delete-data should the project's data be removed? (default: 'no')
+: @return empty()
 ~:)
-declare %method:name("purge") %method:realm("restricted") %method:group("projectadmins") function project:purge($id as xs:string, $delete-data as xs:boolean?) as empty() {
-   if (exists(project:get($id)))
+declare
+    %rest:DELETE
+    %rest:query-param("delete-data", "{$delete-data}")
+    %rest:path("/cr_xq/{$project-pid}")
+function project:purge($project-pid as xs:string, $delete-data as xs:boolean*) as empty() {
+   if (exists(project:get($project-pid)))
    then
         let $delete-data := ($delete-data,false())[1]
         return
              if ($delete-data)
              then     
                   let $base :=          config:path('projects')
-                  let $rm-structure :=  project:structure($id,'remove'),
-                      $rm-indizes :=    for $x in xmldb:get-child-resources(config:path("indexes"))[starts-with(.,"index-"||$id)]
+                  let $rm-structure :=  project:structure($project-pid,'remove'),
+                      $rm-indizes :=    for $x in xmldb:get-child-resources(config:path("indexes"))[starts-with(.,"index-"||$project-pid)]
                                         return xmldb:remove(config:path("indexes"),$x)
-                  let $project-dir :=    project:collection($id),
+                  let $project-dir :=    project:collection($project-pid),
                       $rm-project-dir := if ($project-dir!='') then xmldb:remove($project-dir) else ()
-                  let $rm-accounts :=   project:remove-accounts($id)
+                  let $log :=           util:log("INFO","current user: "||xmldb:get-current-user())
+                  let $log :=           util:log("INFO","project-dir: "||$project-dir)
+                  let $rm-accounts :=   project:remove-accounts($project-pid)
                   return ()
               else 
-                 let $update-status := project:status($id,'removed')
+                 let $update-status := project:status($project-pid,'removed')
                  return ()
     else ()
 };
@@ -346,9 +432,12 @@ declare %method:name("purge") %method:realm("restricted") %method:group("project
 (:~
  : sets the status of the project
 ~:)
-declare %method:name("status") %method:realm("restricted") %method:group("projectadmins") function project:status($id as xs:string, $data as xs:string) as empty() {
-    let $project:=          project:get($id),
-        $definedStatus :=   map:keys($project:defined-status)
+declare 
+    %rest:path("/cr_xq/{$project-pid}/status")
+    %rest:PUT("{$data}")
+function project:status($project-pid as xs:string, $data as xs:string) as empty() {
+    let $project:=          project:get($project-pid),
+        $definedStatus :=   map:keys($project:status-map)
     return
         if ($data = $definedStatus and exists($project))
         then update value $project/mets:metsHdr/@RECORDSTATUS with $data
@@ -358,26 +447,35 @@ declare %method:name("status") %method:realm("restricted") %method:group("projec
 (:~
  : gets the status of the project, empty string if project does not exist
 ~:)
-declare %property:name("status") %property:realm("public") function project:status($id as xs:string) as xs:string? {
-    let $project:=project:get($id)
+declare 
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/status")
+function project:status($project-pid as xs:string) as xs:string? {
+    let $project:=project:get($project-pid)
     return $project/mets:metsHdr/xs:string(@RECORDSTATUS)
 };
 
 (:~
  : gets the status of the project as a numerical code
 ~:)
-declare %property:name("status-code") %property:realm("public") function project:status-code($id as xs:string) as xs:integer? {
-    let $status:=project:status($id)
-    return xs:integer(map:get($project:defined-status,$status))
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/status-code")
+function project:status-code($project-pid as xs:string) as xs:integer? {
+    let $status:=project:status($project-pid)
+    return xs:integer(map:get($project:status-map,$status))
 };
 
 (:~
  : sets the status of the project as a numerical code 
 ~:)
-declare %method:name("status-code") %method:realm("restricted") %method:group("projectadmins") function project:status-code($id as xs:string, $data as xs:integer) as empty() {
-    let $project:=          project:get($id),
-        $definedStatus :=   for $k in map:keys($project:defined-status)
-                            let $val:=map:get($project:defined-status,$k)
+declare 
+    %rest:path("/cr_xq/{$project-pid}/status-code")
+    %rest:PUT("{$data}")
+function project:status-code($project-pid as xs:string, $data as xs:integer) as empty() {
+    let $project:=          project:get($project-pid),
+        $definedStatus :=   for $k in map:keys($project:status-map)
+                            let $val:=map:get($project:status-map,$k)
                             return 
                                 if ($val = $data) 
                                 then $k
@@ -395,8 +493,11 @@ declare %method:name("status-code") %method:realm("restricted") %method:group("p
  : 
  : @param $config the mets-config of a project 
 ~:)
-declare function project:get-resources($id as xs:string) as element(mets:div)* {
-    let $doc:=project:get($id)
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/resources")
+function project:resources($project-pid as xs:string) as element(mets:div)* {
+    let $doc:=project:get($project-pid)
     let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
     return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
 };
@@ -406,21 +507,30 @@ declare function project:get-resources($id as xs:string) as element(mets:div)* {
  : 
  : @param $config the mets-config of a project 
 ~:)
-declare %property:name("resource-pids") %property:realm("public") function project:get-resource-pids($id as xs:string) as xs:string* {
-    let $resources:=project:get-resources($id)
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/resource-pids")
+function project:resource-pids($project-pid as xs:string) as xs:string* {
+    let $resources:=project:resources($project-pid)
     return $resources/xs:string(@ID)
 };
 
 
 (: getter and setter for dmdSec, i.e. the project's MODS record :)
-declare %property:name("dmd") %property:realm("public") function project:dmd($id as xs:string) as element(mods:mods){
-    let $doc:=project:get($id)
+declare 
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/dmd")
+function project:dmd($project-pid as xs:string) as element(mods:mods){
+    let $doc:=project:get($project-pid)
     return $doc//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]//mods:mods
 };
 
-declare %method:name("dmd") %method:realm("restricted") %method:group("projectadmins") function project:dmd($id as xs:string, $data as element(mods:mods)) as empty() {
-    let $doc:=      project:get($id),
-        $current:=  project:dmd($id)
+declare
+    %rest:path("/cr_xq/{$project-pid}/dmd")
+    %rest:PUT("{$data}")
+function project:dmd($project-pid as xs:string, $data as element(mods:mods)) as empty() {
+    let $doc:=      project:get($project-pid),
+        $current:=  project:dmd($project-pid)
     return 
         if (exists($current))
         then 
@@ -437,14 +547,20 @@ declare %method:name("dmd") %method:realm("restricted") %method:group("projectad
 
 
 (: getter and setter for mappings :)
-declare %property:name("mappings") %property:realm("public") function project:mappings($id as xs:string) as element(map)? {
-    let $doc:=project:get($id)
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/mappings") 
+function project:mappings($project-pid as xs:string) as element(map)? {
+    let $doc:=project:get($project-pid)
     return $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/*
 };
 
-declare %method:name("mappings") %method:realm("restricted") %method:group("projectadmins") function project:mappings($id as xs:string, $data as element(map)) as empty() {
-    let $doc:=      project:get($id),
-        $current:=  project:mappings($id)
+declare
+    %rest:path("/cr_xq/{$project-pid}/mappings")
+    %rest:PUT("{$data}")
+function project:mappings($project-pid as xs:string, $data as element(map)) as empty() {
+    let $doc:=      project:get($project-pid),
+        $current:=  project:mappings($project-pid)
     return 
         if (exists($current))
         then
@@ -459,14 +575,20 @@ declare %method:name("mappings") %method:realm("restricted") %method:group("proj
 };
 
 (: getter and setter for project parameters :)
-declare %property:name("parameters") %property:realm("public") function project:parameters($id as xs:string) as element(param)? {
-    let $doc:=project:get($id)
+declare 
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/parameters") 
+function project:parameters($project-pid as xs:string) as element(param)? {
+    let $doc:=project:get($project-pid)
     return $doc//mets:techMD[@ID=$config:PROJECT_PARAMETERS_ID]/mets:mdWrap/mets:xmlData/param
 };
 
-declare %method:name("parameters") %method:realm("restricted") %method:group("projectadmins") function project:parameters($id as xs:string, $data as element(param)*) as empty() {
-    let $doc:=      project:get($id),
-        $current:=  project:parameters($id)
+declare
+    %rest:path("/cr_xq/{$project-pid}/parameters")
+    %rest:PUT("{$data}")
+function project:parameters($project-pid as xs:string, $data as element(param)*) as empty() {
+    let $doc:=      project:get($project-pid),
+        $current:=  project:parameters($project-pid)
     return 
         if (exists($current))
         then 
@@ -483,14 +605,20 @@ declare %method:name("parameters") %method:realm("restricted") %method:group("pr
 
 (: getter and setter for a project's module configuration :)
 (: TODO WRITE ACTUAL PATHS AT PROJECT INITIALIZATION :)
-declare %property:name("moduleconfig") %property:realm("public") function project:moduleconfig($id as xs:string) as element(module)* {
-    let $doc:=project:get($id)
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/moduleconfig")
+function project:moduleconfig($project-pid as xs:string) as element(module)* {
+    let $doc:=project:get($project-pid)
     return $doc//mets:techMD[@ID=$config:PROJECT_MODULECONFIG_ID]/mets:mdWrap/mets:xmlData/module
 };
 
-declare %method:name("moduleconfig") %method:realm("restricted") %method:group("projectadmins") function project:moduleconfig($id as xs:string, $data as element(module)*) as empty() {
-    let $doc:=      project:get($id),
-        $current:=  project:moduleconfig($id)
+declare
+    %rest:path("/cr_xq/{$project-pid}/moduleconfig")
+    %rest:PUT("{$data}")
+function project:moduleconfig($project-pid as xs:string, $data as element(module)*) as empty() {
+    let $doc:=      project:get($project-pid),
+        $current:=  project:moduleconfig($project-pid)
     return 
         if (exists($current))
         then 
@@ -509,17 +637,34 @@ declare %method:name("moduleconfig") %method:realm("restricted") %method:group("
                     into $doc//mets:amdSec[@ID eq $config:PROJECT_AMDSEC_ID]
 };
 
+declare %private function project:default-acl($project-pid as xs:string) as element(sm:permission) {
+    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="{project:adminsaccountname($project-pid)}" group="{project:adminsaccountname($project-pid)}" mode="rwx------">
+        <sm:acl entries="3">
+            <!-- sm:ace/@who='other' _must_ be present  -->
+            <sm:ace index="0" target="GROUP" who="other" access_type="DENIED" mode="rwx"/>
+            <sm:ace index="1" target="GROUP" who="{project:adminsaccountname($project-pid)}" access_type="ALLOWED" mode="rwx"/>
+            <sm:ace index="2" target="GROUP" who="{project:usersaccountname($project-pid)}" access_type="ALLOWED" mode="r-x"/>
+        </sm:acl>
+    </sm:permission>
+};
+
 
 (: getter and setter for rightsMD :)
 (: TODO settle for a metadata format, for now we assume METSRIGHTS :)
-declare %property:name("license") %property:realm("public") function project:license($id as xs:string) as element(metsrights:RightsDeclarationMD)? {
-    let $doc:=project:get($id)
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/license")
+function project:license($project-pid as xs:string) as element(metsrights:RightsDeclarationMD)? {
+    let $doc:=project:get($project-pid)
     return $doc//mets:rightsMD[@ID=$config:PROJECT_RIGHTSMD_ID]/mets:mdWrap/mets:xmlData/metsrights:RightsDeclarationMD
 };
 
-declare %method:name("license") %method:realm("restricted") %method:group("projectadmins") function project:license($id as xs:string, $data as element(metsrights:RightsDeclarationMD)?) as empty() {
-    let $doc:=      project:get($id),
-        $current:=  project:license($id)
+declare
+    %rest:path("/cr_xq/{$project-pid}/license")
+    %rest:PUT("{$data}")
+function project:license($project-pid as xs:string, $data as element(metsrights:RightsDeclarationMD)?) as empty() {
+    let $doc:=      project:get($project-pid),
+        $current:=  project:license($project-pid)
     return 
         if (exists($current))
         then 
@@ -535,43 +680,41 @@ declare %method:name("license") %method:realm("restricted") %method:group("proje
 
 
 (:~ describes the project's Access Control List in eXist's ACL format
- : @param $id the id of the project to query
+ : @param $project-pid the id of the project to query
  : @return the Project's ACL in XML notation. 
 :)
 (: TODO settle for a metadata format, for now we assume eXist's ACL notation :)
-declare %property:name("acl") %property:realm("public") function project:acl($id as xs:string) as element(sm:permission)? {
-    let $doc:=project:get($id)
-    return $doc//mets:rightsMD[@ID=$config:PROJECT_ACL_ID]/mets:mdWrap/mets:xmlData/sm:permission
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/acl")
+function project:acl($project-pid as xs:string) as element(sm:permission)? {
+    let $doc:=project:get($project-pid)
+    return $doc//mets:rightsMD[@ID eq $config:PROJECT_ACL_ID]/mets:mdWrap/mets:xmlData/sm:permission
 };
 
-declare %method:name("acl") %method:realm("restricted") %method:group("projectadmins") function project:acl($id as xs:string, $data as element(sm:permission)?) as empty() {
-    let $doc:=      project:get($id),
-        $current:=  project:acl($id),
-        $tpl :=     <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="{project:adminaccountname($id)}" group="{project:adminaccountname($id)}" mode="rwx------">
-                        <sm:acl entries="3">
-                            <!-- sm:ace/@who='other' _must_ be present  -->
-                            <sm:ace index="0" target="GROUP" who="other" access_type="DENIED" mode="rwx"/>
-                            <sm:ace index="1" target="GROUP" who="{project:adminaccountname($id)}" access_type="ALLOWED" mode="rwx"/>
-                            <sm:ace index="2" target="GROUP" who="{project:useraccountname($id)}" access_type="ALLOWED" mode="r-x"/>
-                        </sm:acl>
-                    </sm:permission>
+declare 
+    %rest:path("/cr_xq/{$project-pid}/acl")
+    %rest:PUT("{$data}")
+function project:acl($project-pid as xs:string, $data as element(sm:permission)?) as empty() {
+    let $doc:=      project:get($project-pid),
+        $current:=  project:acl($project-pid)
     let $insert:= 
         if (exists($current))
         then 
             if (exists($data)) 
             then update replace $current with $data
-            else update replace $current with $tpl
+            else update replace $current with project:default-acl($project-pid)
         else
             if (exists($doc//mets:rightsMD[@ID=$config:PROJECT_ACL_ID]))
             then update value $doc//mets:rightsMD[@ID=$config:PROJECT_ACL_ID]
                  with <mdWrap MDTYPE="OTHER" OTHERMDTYPE="EXISTACL" xmlns="http://www.loc.gov/METS/"><xmlData>{$data}</xmlData></mdWrap>
             else update insert <techMD ID="{$config:PROJECT_ACL_ID}" xmlns="http://www.loc.gov/METS/" GROUPID="config.xml"><mdWrap MDTYPE="OTHER" OTHERMDTYPE="EXISTACL"><xmlData>{$data}</xmlData></mdWrap></techMD> into $doc//mets:amdSec[@ID eq $config:PROJECT_AMDSEC_ID]
     return 
-        if (project:acl($id)//sm:ace[@target eq 'GROUP' and @who eq 'other'])
+        if (project:acl($project-pid)//sm:ace[@target eq 'GROUP' and @who eq 'other'])
         then ()
         else
             (: we have to make sure that there is an ACL entry for GROUP 'other' :)
-            let $updated:=project:acl($id),
+            let $updated:=project:acl($project-pid),
                 $number := $updated/sm:acl/xs:integer(@entries),
                 $newNumber := xs:integer($number) + 1
             return 

@@ -278,13 +278,11 @@ let $content:=
                                 case ($id!='') return project:new($id)
                                 default return project:new()
                         case "resource" return 
-                            let $r-pid:=resource:new($data,$project-pid)
-                            return 
-                                if (local:get-parameter("makeDerivates") = true())
-                                then 
-                                    let $path-to-master:=resource:path($r-pid,$project-pid,'master')
-                                    return rf:generate($r-pid,$path-to-master,$project-pid)
-                                else $r-pid
+                            let $resource-pid:=
+                                if (local:get-parameter("prepareData") = true())
+                                then resource:new($data,$project-pid, true())
+                                else resource:new($data,$project-pid, false())
+                            return resource:get($resource-pid,$project-pid)
                         default return ()
                         
                 (: GET only serves static properties :)

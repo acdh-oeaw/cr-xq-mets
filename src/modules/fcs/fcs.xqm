@@ -38,6 +38,7 @@ import module namespace kwic = "http://exist-db.org/xquery/kwic";
 import module namespace cmdcheck = "http://clarin.eu/cmd/check" at  "../cmd/cmd-check.xqm";
 import module namespace cql = "http://exist-db.org/xquery/cql" at "../cqlparser/cqlparser.xqm";
 import module namespace facs = "http://www.oeaw.ac.at/icltt/cr-xq/facsviewer" at "../facsviewer/facsviewer.xqm";
+import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "../../core/wc.xqm";
 
 declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
@@ -156,7 +157,6 @@ declare function fcs:repo($config) as item()* {
    return  repo-utils:serialise-as($result, $x-format, $operation, $config)
    
 };
-
 
 (:~ OBSOLETED ! 
 Strictly speaking not part of the FCS-protocol, 
@@ -439,6 +439,25 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $index-xpath as 
    	  return $data
 };
 
+declare function fcs:exec-query($data as map(*)*, $xpath-query as xs:string?) as map()+ {
+    fcs:exec-query($data,$xpath-query,())
+};
+
+declare function fcs:exec-query($data as map(*)*, $xpath-query as xs:string?, $flags as map()?) as map()* {
+    if ($xpath-query!='')
+    then 
+        for $d in $data("data") 
+        return
+            let $matches:= util:eval("$d"||$xpath-query)
+            return
+                map {
+                    "resource-id":=$d,
+                    "matches" := $matches,
+                    "count" := count($matches)
+                }
+    else ()
+};
+
 (:~ 
  : Main search function that handles the searchRetrieve-operation request)
  :
@@ -452,40 +471,41 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $index-xpath as 
 ~:)
 declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*, $startRecord as xs:integer, $maximumRecords as xs:integer, $x-dataview as xs:string*, $config) as item()* {
         let $start-time := util:system-dateTime()
-        let $data := repo-utils:context-to-collection($x-context, $config) 
+        let $data := () 
         let $xpath-query := fcs:transform-query ($query, $x-context, $config, true())
-        let $results := if ($xpath-query instance of text() or $xpath-query instance of xs:string) 
-                        then util:eval(concat("($data)",translate($xpath-query,'&amp;','?')))
-                        else ()
-        let	$result-count := fn:count($results),         
-            $ordered-result := fcs:sort-result($results, $query, $x-context, $config),                              
-            $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),
-            $seq-count := fn:count($result-seq),        
-            $end-time := util:system-dateTime()
-            
-        let $xpath-query-no-base-elem := fcs:transform-query ($query, $x-context, $config, false()),
-            $match-seq := util:eval(concat("($data)", $xpath-query-no-base-elem)),
-            
-        (: Currently existdb does not support match-highlighting of attribute values, a limitation we have to work around.
-           We repeat the query without ascending/descending to the base element, so we suppose to get the original attribute
-           nodes which we feed to add-exist-match  :)
-           $add-match-tags-on-attributes:=
-                let $results-no-base-elem:=util:eval("($data)"||$xpath-query-no-base-elem)
-                for $hit in $results-no-base-elem return
-                    if ($hit instance of attribute())
-                    then fcs:add-exist-match(($hit/ancestor-or-self::*[@xml:id])[1],$hit)
-                    else (),
-             (: fcs:highlight-result() takes the sequence _with_ base elements and the sequence of matching nodes and tries to put 
-                the matches into the results by node value equality. :)
-             $result-seq-match:= fcs:highlight-result($result-seq, $match-seq, $x-context, $config),
-             $query-matches:=$add-match-tags-on-attributes,
-             $query-matches-expanded:=util:expand($query-matches)//exist:match,
-             $records :=
-               <sru:records>{
-                    for $rec at $pos in $result-seq-match
-         	        let $orig-data := $result-seq[$pos]
-         	        let $rec-data := fcs:format-record-data($orig-data, $rec, $query-matches-expanded, $x-dataview, $x-context, $config)
-                    return 
+        let $results-per-resource := fcs:exec-query($data,$xpath-query)
+        let	$result-count := fn:sum(for $map in $results-per-resource return $map("count"))
+        let $records := 
+            <sru:records>{
+                for $r in $results-per-resource return
+                    let $resource-data := map{"resource-pid":=$r("resource-pid")}
+                    let $ordered-result := fcs:sort-result($r("matches"), $query, $x-context, $config)
+                    let $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),
+                        $seq-count := fn:count($result-seq),        
+                        $end-time := util:system-dateTime()
+                        
+                    let $xpath-query-no-base-elem := fcs:transform-query ($query, $x-context, $config, true()),
+                        $match-seq :=   fcs:exec-query($data,$xpath-query-no-base-elem),
+                        
+                    (: Currently existdb does not support match-highlighting of attribute values, a limitation we have to work around.
+                       We repeat the query without ascending/descending to the base element, so we suppose to get the original attribute
+                       nodes which we feed to add-exist-match  :)
+                         $add-match-tags-on-attributes:=
+                            (:let $results-no-base-elem:=util:eval("($data)"||$xpath-query-no-base-elem):)
+                            for $hit in $match-seq("matches") return
+                                if ($hit instance of attribute())
+                                then fcs:add-exist-match(($hit/ancestor-or-self::*[@xml:id])[1],$hit)
+                                else (),
+                            (: fcs:highlight-result() takes the sequence _with_ base elements and the sequence of matching nodes and tries to put 
+                                the matches into the results by node value equality. :)
+                            $result-seq-match:= fcs:highlight-result($result-seq, $match-seq, $x-context, $config),
+                            $query-matches:=$add-match-tags-on-attributes,
+                            $query-matches-expanded:=util:expand($query-matches)//exist:match
+                        return
+                            for $rec at $pos in $result-seq-match
+         	                  let $orig-data := $result-seq[$pos]
+         	                  let $rec-data := fcs:format-record-data($orig-data, $rec, $query-matches-expanded, $x-dataview, $x-context, $config, $resource-data)
+                               return 
          	          <sru:record>
          	              <sru:recordSchema>http://clarin.eu/fcs/1.0/Resource.xsd</sru:recordSchema>
          	              <sru:recordPacking>xml</sru:recordPacking>
@@ -527,7 +547,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                                 <sru:baseUrl>{repo-utils:config-value($config, "base.url")}</sru:baseUrl>
                             </sru:echoedSearchRetrieveRequest>
                             <sru:extraResponseData>
-                              	<fcs:returnedRecords>{$seq-count}</fcs:returnedRecords>
+                              	<fcs:returnedRecords>{$maximumRecords}</fcs:returnedRecords>
                                 <fcs:numberOfMatches>{ () (: count($match) :)}</fcs:numberOfMatches>
                                 <fcs:duration>{($end-time - $start-time, $end-time2 - $end-time) }</fcs:duration>
                                 <fcs:transformedQuery>{ $xpath-query }</fcs:transformedQuery>
@@ -540,8 +560,8 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                         </sru:searchRetrieveResponse>
 };
 
-declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
-    fcs:format-record-data($record-data, $record-data, (), $data-view, $x-context, $config)
+declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {
+    fcs:format-record-data($record-data, $record-data, (), $data-view, $x-context, $config,$resource-data)
 };
 
 (:~ generates the inside of one record according to fcs/Resource.xsd 
@@ -552,19 +572,9 @@ all based on mappings and parameters (data-view)
                     if not providable, setting the same data as in $record-data-input works mostly (expect, when you want to move out of the base_elem)
 @param $record-data-input the base-element with the match hits inside (marked with exist:match) 
 :)
-declare function fcs:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $query-matches as element(exist:match)*, $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
+declare function fcs:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $query-matches as element(exist:match)*, $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {
     let $title := fcs:apply-index($orig-sequence-record-data, "title",$x-context, $config)
-	let $filepath:= base-uri($orig-sequence-record-data),
-	    $FLocat:= $config//mets:FLocat[xs:string(@xlink:href)=$filepath],
-	    $DMDID:=$FLocat/ancestor-or-self::*[exists(@DMDID)]/xs:string(@DMDID)
-	let $resource-pid := 
-	       let $dmdSec:=$config//mets:dmdSec[@ID=$DMDID]
-	       let $md:=   switch (true())
-                           case (exists($dmdSec/mets:mdRef)) return doc($dmdSec/mets:mdRef/@xlink:href)/*
-                           case (exists($dmdSec/mets:mdWrap)) return $dmdSec/mets:mdWrap/mets:xmlData/*
-                           default return ()
-           let $pid:= fcs:get-pid($md)
-           return $pid 
+	let $resource-pid:=$resource-data("resource-pid")
 	
 	let $resourcefragment-pid :=   fcs:apply-index($orig-sequence-record-data, "resourcefragment-pid",$x-context, $config)
     let $matches-to-highlight:=    for $m in (tokenize(request:get-parameter('x-highlight',''),','),$query-matches)
@@ -706,21 +716,34 @@ and then applies a stylesheet
 @returns XPath version of the CQL-query, or diagnostics bubbling up the call-chain if parse-error! 
 :)
 declare function fcs:transform-query($cql-query as xs:string, $x-context as xs:string, $config, $ignore-base-element as xs:boolean) as item() {
-    let $mappings := config:mappings($x-context),    
+    let $mappings := config:mappings($x-context),
+        $log := util:log("INFO",$mappings),    
         $xpath-query := cql:cql2xpath($cql-query, $x-context, $mappings),
+        $return_match := 
+                        let $indexes:=  
+                            for $key in cql:cql-to-xcql($cql-query)//searchClause/index
+                            return 
+                                if (exists($mappings))
+                                then $mappings//index[@key eq $key]/@return_match='true'
+                                else false()
+                        let $some_index_requires_existMatch:=some $x in $indexes satisfies $x=true()
+                        return $some_index_requires_existMatch 
     
         (: ignore base_elem if any of the indexes we search in requires this by having @ignore_base_elem='true' on its definition :)
-        $ignore_base_elem := 
+    let $ignore_base_elem := 
                         let $indexes:=  for $key in cql:cql-to-xcql($cql-query)//searchClause/index
                                         return 
                                             if (exists($mappings))
-                                            then $mappings//index[@key eq $key]/@ignore_base_elem='true'
+                                            then $mappings//index[@key eq $key]/(@ignore_base_elem='true' or @return_match='true')
                                             else false()
                         let $some_index_requires_ignore:=some $x in $indexes satisfies $x=true()
                         return $some_index_requires_ignore 
     (: if there was a problem with the parsing the query  don't evaluate :)
-    let $final-xpath :=    if ($ignore-base-element and ($xpath-query instance of text() or $xpath-query instance of xs:string) and not($ignore_base_elem)) 
-                            then
+    let $final-xpath := switch(true())
+                            case $return_match
+                                return "util:expand("||$xpath-query||")//exist:match"
+                                
+                            case ($ignore-base-element and ($xpath-query instance of text() or $xpath-query instance of xs:string) and not($ignore_base_elem)) return
                                 let $context-map        := fcs:get-mapping("",$x-context, $config),
                                     $default-mappings   := fcs:get-mapping("", 'default', $config )
         (:                    $index-map := $context-map/index[xs:string(@key) eq $index],
@@ -742,7 +765,8 @@ declare function fcs:transform-query($cql-query as xs:string, $x-context as xs:s
                         
                                 let $base-elem-xpath:=fcs:base-element-to-xpath($cql-query,$x-context,$config,$ignore-base-element)
                                 return $xpath-query||'/'||$base-elem-xpath
-                            else $xpath-query
+                            default 
+                                return $xpath-query
       return $final-xpath
  };
  
@@ -851,7 +875,7 @@ declare function fcs:get-mapping($index as xs:string, $x-context as xs:string+, 
     let $mappings :=    typeswitch($config)
                             case element()  return config:param-value(map{"config":=$config}, 'mappings')
                             case map()      return config:param-value($config, 'mappings')
-                            default         return (),
+                            default         return $config[descendant-or-self::map],
         $context-map := if (exists($mappings//map[xs:string(@key) = $x-context])) 
                         then $mappings//map[xs:string(@key) = $x-context]
 (:                            else $mappings//map[xs:string(@key) = 'default'],:)
@@ -1086,7 +1110,8 @@ declare function fcs:add-exist-match($ancestor as node(), $match as node()) {
 
 
 declare function fcs:highlight-matches-in-copy($copy as element(), $exist-matches as element(exist:match)+) as element() {
-   let  $stylesheet:=   doc('highlight-matches.xsl'),
+    let $stylesheet-file := "highlight-matches.xsl",
+        $stylesheet:=   doc($stylesheet-file),
         $nodes:=        $exist-matches/ancestor-or-self::*[@xml:id and count(descendant::*) lt 5][1],
         $xsl-input:=    <fcs:query-result>
                             <fcs:matches>{$nodes}</fcs:matches>
@@ -1095,5 +1120,5 @@ declare function fcs:highlight-matches-in-copy($copy as element(), $exist-matche
    return 
             if (exists($stylesheet)) 
             then transform:transform($xsl-input,$stylesheet,())/* 
-            else ()
+            else util:log("ERROR","stylesheet "||$stylesheet-file||" not available.")
 }; 

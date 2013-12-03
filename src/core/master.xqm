@@ -19,49 +19,49 @@ declare namespace cr="http://aac.ac.at/content_repository";
 (:~
  :  @return the mets:file-Element of the Master File.
 ~:)
-declare function master:get($param:resource-pid as xs:string, $param:project-id as xs:string) as element(mets:file)? {
-    let $mets:record:=config:config($param:project-id),
-        $mets:resource:=resource:get($param:resource-pid,$param:project-id),
-        $mets:resource-files:=resource:get-resourcefiles($param:resource-pid,$param:project-id)
+declare function master:get($resource-pid as xs:string, $project-pid as xs:string) as element(mets:file)? {
+    let $mets:record:=config:config($project-pid),
+        $mets:resource:=resource:get($resource-pid,$project-pid),
+        $mets:resource-files:=resource:files($resource-pid,$project-pid)
     let $mets:master:=$mets:resource-files/mets:file[@USE eq $config:RESOURCE_MASTER_FILE_USE]
     return $mets:master
 };
 
+(:~
+ : The path to a resource's master file. This is based upon the resource's mets entry, so 
+ : the master must be already registered with it. 
+ :
+ : @param $resource-pid: the pid of the resource to store
+ : @param $project-id: the id of the project the resource belongs to
+ : @return the db path to the file
+~:)
+declare function master:path($resource-pid as xs:string, $project-pid as xs:string) as xs:string? {
+    let $master:=master:get($resource-pid,$project-pid),
+        $master:locat:=$master/mets:FLocat/@xlink:href
+    return
+        if ($master)
+        then xs:string($master:locat)
+        else ()
+};
 
 (:~
  : Gets a master file for a resource as a document-node and stores it to the project's data directory. It does *not* register it with the resource.
  : 
  : @param $content: the content of the resource 
  : @param $filename: the filename of the resource to store.
- : @param $param:resource-pid: the pid of the resource to store
+ : @param $resource-pid: the pid of the resource to store
  : @param $project-id: the id of the project the resource belongs to
+ : @return the db path to the file
 ~:)
-declare function master:store($content as document-node(), $param:filename as xs:string?, $param:resource-pid as xs:string?, $param:project-id as xs:string) as element(mets:file)? {
-    let $master:filename := ($param:filename,$param:resource-pid)[1]
-    let $master:targetpath:= resource:path($param:resource-pid,$param:project-id,'master')
-    let $store:= xmldb:store($master:targetpath,$master:filename,$content)
+declare function master:store($data as document-node(), $resource-pid as xs:string?, $project-pid as xs:string) as xs:string? {
+    let $this:filename := $resource-pid||".xml"
+    let $master:targetpath:= resource:path($resource-pid,$project-pid,'master')
+    let $store:= repo-utils:store-in-cache($this:filename,$master:targetpath,$data,config:config($project-pid)), 
+        $this:filepath:=$master:targetpath||"/"||$this:filename
     return 
-        if (doc-available($master:targetpath||"/"||$this:filename))
-        then $master:targetpath||"/"||$this:filename
-        else util:log("INFO", "master doc of resource "||$param:resource-pid||" could not be stored at "||$master:targetpath)
-};
-
-(:~
- : Gets a master file for a resource from a temporary upload path or as 
- : a document-node and moves it to the project's data directory. It does *not* register it with the resource.
- : 
- : @param $param:tmppath: the full path to the uploaded resource file.
- : @param $param:resource-pid: the pid of the resource 
-~:)
-declare function master:store($param:tmppath as xs:string, $param:resource-pid as xs:string, $param:project-id as xs:string) as element(mets:file)? {
-    let $this:filename := tokenize($param:tmppath,'/')[last()],
-        $this:collection:= substring-before($param:tmppath,$this:filename)
-    let $master:targetpath:= resource:path($param:resource-pid,$param:project-id,'master')
-    let $mv:= xmldb:move($this:collection,$master:targetpath,$this:filename)
-    return 
-        if (doc-available($master:targetpath||"/"||$this:filename))
-        then $master:targetpath||"/"||$this:filename
-        else util:log("INFO", "master doc of resource "||$param:resource-pid||" could not be moved to its targetpath "||$master:targetpath)
+        if (doc-available($this:filepath))
+        then $this:filepath
+        else util:log("INFO", "master doc of resource "||$resource-pid||" could not be stored at "||$master:targetpath)
 };
 
 (:~

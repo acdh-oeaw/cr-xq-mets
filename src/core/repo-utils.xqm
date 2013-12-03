@@ -102,11 +102,11 @@ declare function repo-utils:param-value($config, $key as xs:string, $default as 
 
 (:~ This function returns a node set consisting of all available documents of the project as listed in mets:fileGrp[@USE="Project Data"]     
  : 
- : @param $x-context: The CR-Context
+ : @param $project-pid: The CR-Context
  : @param $config: The mets-config of the project
 ~:)
-declare function repo-utils:context-to-collection($x-context as xs:string, $config) as node()* {
-    let $dbcoll-path := repo-utils:context-to-collection-path($x-context, $config)
+declare function repo-utils:context-to-collection($project-pid as xs:string, $config) as node()* {
+    let $dbcoll-path := repo-utils:context-to-collection-path($project-pid, $config)
     let $docs:= 
         if ($dbcoll-path = "" ) then ()
         else
@@ -120,10 +120,10 @@ declare function repo-utils:context-to-collection($x-context as xs:string, $conf
 
 (:~ This function returns paths to all available data files of the given project.  
  :
- : @param $x-context: The CR-Context
+ : @param $project-pid: The CR-Context
  : @param $config: The mets-config of the project
 ~:)
-declare function repo-utils:context-to-collection-path($x-context as xs:string, $config) as xs:string* {
+declare function repo-utils:context-to-collection-path($project-pid as xs:string, $config) as xs:string* {
     let $projectData:=$config//mets:fileGrp[@USE="Project Data"]//mets:file/mets:FLocat
     return 
         for $d in $projectData/@xlink:href return
@@ -136,18 +136,18 @@ declare function repo-utils:context-to-collection-path($x-context as xs:string, 
  : 
  : @param $resource-pid: the PID of the resource to be looked into
  : @param $x-elementID: the internal cr:id of the element to be looked up
- : @param $x-context: the context/project
+ : @param $project-pid: the context/project
  : @param $config: the mets-config of the project 
  : @return one or more resourcefragment-pids 
 ~:)
-declare function repo-utils:element-pid-to-resourcefragment-pid($resource-pid as xs:string, $x-element-pid as xs:string, $x-context as xs:string, $config) as xs:string* {
+declare function repo-utils:element-pid-to-resourcefragment-pid($resource-pid as xs:string, $x-element-pid as xs:string, $project-pid as xs:string, $config) as xs:string* {
     let $tables-path:=$config//param[@key='lookuptable.path']/xs:string(.)
-    let $lookup-table:=repo-utils:get-from-cache($x-context||"-"||$resource-pid||".xml",$tables-path,$config)
+    let $lookup-table:=repo-utils:get-from-cache($project-pid||"-"||$resource-pid||".xml",$tables-path,$config)
     let $fragments:=$lookup-table//fcs:ResourceFragment[cr:id=$x-element-pid]
     return $fragments/xs:string(@pid)
 };
-
-(:~ This function returns paths to all available resources of the given project by looking at the 
+(:
+(\:~ This function returns paths to all available resources of the given project by looking at the 
  : projects struct map.
  : 
  : a resource may consist of 
@@ -156,12 +156,12 @@ declare function repo-utils:element-pid-to-resourcefragment-pid($resource-pid as
  : 
  : Here we only sum up only the the _full_ resources.  
  :
- : @param $x-context: The CR-Context
+ : @param $project-pid: The CR-Context
  : @param $config: The mets-config of the project
  : @return 
-~:)
-declare function repo-utils:resources-in-project($x-context as xs:string, $config)  {
-    let $projectResources:=project:get-resources($config//mets:mets)
+~:\)
+declare function repo-utils:resources-in-project($project-pid as xs:string, $config)  {
+    let $projectResources:=project:resources($config//mets:mets)
     return 
     for $d in $projectResources return
         if ($d/mets:fptr/@FILEID) 
@@ -178,9 +178,9 @@ declare function repo-utils:resources-in-project($x-context as xs:string, $confi
                     }
                 else util:log("INFO","document "||$file||" not available")
         else ()
-};
+};:)
 
-declare function repo-utils:fileuri-to-resource-pid($filepath as xs:string, $x-context as xs:string, $config) as xs:string? {
+declare function repo-utils:fileuri-to-resource-pid($filepath as xs:string, $project-pid as xs:string, $config) as xs:string? {
     let $fileID:=$config//mets:file[mets:FLocat/@xlink:href eq $filepath]/@ID
     return $config//mets:div[@TYPE='resource' and mets:fptr/@FILEID eq $fileID]/xs:string(@ID) 
 };
@@ -463,22 +463,3 @@ declare function local:mkcol-recursive($collection, $components) {
         )
     else ()
 };
-
-
-
-(:
-testing when trying to log import 2012-10-24 - not used
-declare function repo-utils:write-log ($action as xs:string, $dataset as xs:string) {
-
-			let $log-doc := repo-utils:config 
-			let $data := <log timestamp="{$timestamp}">{current-dateTime()}
-			             </log>
-			  return	xmldb:store($data-path, "test.log", $data )
-			  
-	let $time := util:system-dateTime()	
-    let $upd-dummy :=  
-        update insert <xpath key="{$xpath/@key}" label="{$xpath/@label}" dur="{$duration}">{$answer}</xpath> into $result-doc/result
-
-    return $result-doc
-			  
-};:)

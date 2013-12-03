@@ -1,8 +1,10 @@
 xquery version "3.0";
 
-module namespace tbl="http://aac.ac.at/content_repository/lookuptable";
+module namespace ltb = "http://aac.ac.at/content_repository/lookuptable";
+
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm"; 
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
+import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 
@@ -12,53 +14,69 @@ declare namespace cr="http://aac.ac.at/content_repository";
  : Getter / setter / storage functions for lookuptables.
 ~:)
 
-declare variable $tbl:default-path := $config:default-lookuptable-path;
-declare variable $tbl:filename-prefix := $config:RESOURCE_LOOKUPTABLE_FILENAME_SUFFIX; 
+declare variable $ltb:default-path := $config:default-lookuptable-path;
+declare variable $ltb:filename-prefix := $config:RESOURCE_LOOKUPTABLE_FILENAME_PREFIX; 
 
 
-(:~
+(:~ Creates a lookup table from resourcefragments.   
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return the path to the lookup table
 ~:)
-declare function tbl:create($resource-pid as xs:string,$project-id as xs:string) as xs:string? {
-    let $rf:file:= rf:get-data($resource-pid, $project-id)
-    let $tbl:path-param:=($config//param[@key='lookup-tables.path'],$tbl:default-path)[1],
-        $tbl:path := replace($tbl:path-param,'/$',''),
-        $tbl:filename:=$tbl:filename-prefix||$filename
-    
-    let $tbl:container :=
-                    <fcs:lookup-table context="{$project}" pid="{$resource-pid}" created="{current-dateTime()}" filepath="{$path}" filemodified="{xmldb:last-modified($collection,$filename)}">{
-                        for $fragment in $fragments-extracted
-                        return 
-                            <fcs:ResourceFragment context="{$project}" resource-pid="{$resource-pid}" resourcefragment-pid="{$fragment/@resourcefragment-pid}">{
-                                for $cr:id in $fragment//@cr:id 
-                                return <cr:id>{$cr:id}</cr:id>
-                            }</fcs:ResourceFragment>
-                    }</fcs:lookup-table>,
-                $store-table:=repo-utils:store-in-cache($table-filename,$table-path,$table-doc,$config)
-    return $tbl:path||"/"||$tbl:filename
+declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:string) as xs:string? {
+    let $rf:data:=          
+            let $rf:dump := rf:dump($resource-pid, $project-pid)
+            return
+                if (exists($rf:dump))
+                then $rf:dump
+                else 
+                    let $rf:path:= rf:generate($resource-pid,$project-pid)
+                    return doc($rf:path)
+    let $rf:filename :=     util:document-name($rf:data),
+        $rf:collection :=   util:collection-name($rf:data)
+    let $ltb:path:=        
+            let $path := (resource:path($resource-pid,$project-pid,"lookuptable"),project:path($project-pid,"lookuptables"))[1]
+            return replace($path,'/$',''),
+        $ltb:filename:=  $ltb:filename-prefix||$resource-pid||".xml"
+    let $ltb:container :=
+        element {QName($config:RESOURCE_LOOKUPTABLE_ELEMENT_NSURI,$config:RESOURCE_LOOKUPTABLE_ELEMENT_NAME)} {
+            attribute project-pid {$project-pid},
+            attribute resource-pid {$resource-pid},
+            attribute created {current-dateTime()},
+            attribute origin {base-uri($rf:data)},
+            attribute originmodified {xmldb:last-modified($rf:collection,$rf:filename)},
+            for $fragment in $rf:data//*[local-name(.) eq $config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NAME and namespace-uri(.) eq $config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NSURI]
+            return
+                element {QName($config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NSURI,$config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NAME)} {
+                    attribute project-pid {$project-pid},
+                    attribute resource-pid {$resource-pid},
+                    attribute resourcefragment-pid {$fragment/@resourcefragment-pid},
+                    for $part-id in $fragment//@cr:id return <cr:id>{xs:string($part-id)}</cr:id>
+                }
+        }
+    let $ltb:store := repo-utils:store-in-cache($ltb:filename,$ltb:path,$ltb:container,config:config($project-pid))
+    return base-uri($ltb:store)
 };
 
 (:~
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return the path to the working copy
 ~:)
-declare function tbl:new(){
-()
+declare function ltb:add($resource-pid as xs:string, $project-pid as xs:string) as xs:string? {
+    ()
 };
 
 (:~
  : gets the mets:file entry for the lookuptable.
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return the mets:file entry for the lookuptable.
 ~:)
-declare function tbl:get(){
+declare function ltb:get(){
 ()
 };
 
@@ -66,10 +84,10 @@ declare function tbl:get(){
  : gets the data for the lookuptable as a document-node()
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return the mets:file entry for the lookuptable.
 ~:)
-declare function tbl:get-data() as document-node()? {
+declare function ltb:dump() as document-node()? {
 ()
 };
 
@@ -77,10 +95,10 @@ declare function tbl:get-data() as document-node()? {
  : gets the database-path to the lookuptable 
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return the mets:file entry for the lookuptable.
 ~:)
-declare function tbl:get-path() as xs:string? {
+declare function ltb:get-path() as xs:string? {
     ()
 };
 
@@ -88,10 +106,10 @@ declare function tbl:get-path() as xs:string? {
  : removes the lookuptable.
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return empty()
 ~:)
-declare function tbl:remove(){
+declare function ltb:remove(){
 ()
 };
 
@@ -99,10 +117,10 @@ declare function tbl:remove(){
  : removes the lookuptable.
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return the path to the working copy
 ~:)
-declare function tbl:remove(){
+declare function ltb:remove(){
 ()
 };
 
@@ -110,9 +128,9 @@ declare function tbl:remove(){
  : removes the data of a lookuptable.
  : 
  : @param $resource-pid the pid of the resource 
- : @param $project-id the id of the project to work in
+ : @param $project-pid the id of the project to work in
  : @return the path to the working copy
 ~:)
-declare function tbl:remove-data(){
+declare function ltb:remove-data(){
 ()
 };

@@ -1,7 +1,8 @@
-xquery version "1.0";
+xquery version "3.0";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace config="http://exist-db.org/xquery/apps/config-params" at "core/config.xql";
+import module namespace project="http://aac.ac.at/content_repository/project" at "core/project.xqm";
 
 (: The following external variables are set by the repo:deploy function :)
 
@@ -28,15 +29,17 @@ declare function local:mkcol($collection, $path) {
     local:mkcol-recursive($collection, tokenize($path, "/"))
 };
 
-(:let $projects-dir := 
+declare variable $local:cr-writer:=doc($dir||"/modules/access-control/writer.xml")/write;
 
-return
-:)
 (: setup projects-dir :)
 local:mkcol("", $config:projects-dir),
-(: seed default project :)
-xmldb:copy(concat($target,"/project.template"),$config:projects-dir),
-xmldb:rename(concat($config:projects-dir,"project.template"),"default"),
 (: store the collection configuration :)
 local:mkcol("/db/system/config", $target),
-xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf")
+xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
+
+(: we need two system users for the data maangement :)
+(: TODO merge these into one? :)
+sm:create-account($local:cr-writer/xs:string(write-user),$local:cr-writer/xs:string(write-user-cred),()),
+sm:create-account("cr-xq","cr-xq",()),
+sm:create-group("cr-admin","cr-xq","admin"),
+project:new("defaultProject")

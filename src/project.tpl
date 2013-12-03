@@ -85,11 +85,8 @@
         <rightsMD ID="projectACL" GROUPID="config.xml">
             <mdWrap MDTYPE="OTHER" OTHERMDTYPE="EXISTACL">
                 <xmlData>
-                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="admin" group="dba" mode="rwxr-xr-x">
-                        <sm:acl entries="1">
-                            <!-- sm:ace/@who='other' _must_ be present  -->
-                            <sm:ace index="0" target="GROUP" who="other" access_type="DENIED" mode="rwx"/>
-                        </sm:acl>
+                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="noone" group="nogroup" mode="---------">
+                        <!-- this is just a template and will be filled by project:new() -->
                     </sm:permission>
                 </xmlData>
             </mdWrap>
