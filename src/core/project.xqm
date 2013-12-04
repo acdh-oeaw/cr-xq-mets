@@ -131,7 +131,7 @@ declare
     %rest:path("/cr_xq/{$project-pid}")
 function project:new($data as element(mets:mets),$project-pid as xs:string?) as element(mets:mets)?  {
    if (project:get($project-pid))
-   then ()
+   then util:log("INFO","Project "||$this:id||" already exists.")
    else 
         let $this:id:=      (project:sanitize-id($project-pid),project:generate-id())[1]
         let $this:project:=     
@@ -163,7 +163,9 @@ function project:new($data as element(mets:mets),$project-pid as xs:string?) as 
                                               sm:add-user-ace($project-stored, $users-groupname, true(), 'r-x'),
                                               sm:add-group-ace($project-stored, $users-groupname, true(), 'r-x'),
                                               sm:add-user-ace($project-stored, $config:cr-writer-accountname, true(), 'rwx'),
-                                              sm:add-user-ace($project-stored, "cr-xq", true(), 'rwx'),
+                                              if (sm:user-exists("cr-xq"))
+                                              then sm:add-user-ace($project-stored, "cr-xq", true(), 'rwx')
+                                              else (),
                                               
                                               (: set permissions on {$cr-projects}/project collection :)
                                               sm:chown($project-collection,$admin-groupname),
@@ -172,7 +174,9 @@ function project:new($data as element(mets:mets),$project-pid as xs:string?) as 
                                               sm:add-user-ace($project-collection, $users-groupname, true(), 'r-x'),
                                               sm:add-group-ace($project-collection, $users-groupname, true(), 'r-x'),
                                               sm:add-user-ace($project-collection, $config:cr-writer-accountname, true(), 'rwx'),
-                                              sm:add-user-ace($project-collection, "cr-xq", true(), 'rwx'))
+                                              if (sm:user-exists("cr-xq"))
+                                              then sm:add-user-ace($project-collection, "cr-xq", true(), 'rwx')
+                                              else ())
                 let $prepare-structure:=     project:structure($this:id,"prepare")
                 let $content-acl :=          project:acl($this:id,project:default-acl($this:id))
                 return project:get($this:id)
@@ -259,7 +263,9 @@ declare %private function project:structure($project-pid as xs:string, $action a
                              sm:add-group-ace($uri, $users-groupname, true(), 'rx'),
                              sm:add-group-ace($uri, $users-groupname, true(), 'rx'),
                              sm:add-group-ace($uri, $users-groupname, false(), 'w'),
-                             sm:add-user-ace($uri, "cr-xq", true(), 'rwx'),
+                             if (sm:user-exists("cr-xq"))
+                             then sm:add-user-ace($uri, "cr-xq", true(), 'rwx')
+                             else (),
                              sm:add-user-ace($uri, $config:cr-writer-accountname, true(), 'rwx'))
             return ()
     case 'remove' return
