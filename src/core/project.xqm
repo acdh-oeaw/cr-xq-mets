@@ -14,7 +14,7 @@ xquery version "3.0";
 : It is designed to be used with a version of the cr-xq content 
 : repository from September 2013 or later.
 :
-: @author Daniel Schopper, daniels.schopper@oeaw.ac.at
+: @author Daniel Schopper
 : @version 0.1
 : @see http://www.github.com/vronk/SADE/docs/crProject-readme.md
 ~:)
@@ -41,7 +41,7 @@ declare variable $project:status-map := map {
     $config:PROJECT_STATUS_REMOVED       := 4
 };
 
-declare variable $project:default-template as element(mets:mets) := if (doc-available(config:path('mets.template'))) then doc(config:path('mets.template'))/mets:mets else doc($config:app-root||"/project.tpl")/mets:mets;
+declare variable $project:default-template as element(mets:mets) := if (doc-available(config:path('mets.template'))) then doc(config:path('mets.template'))/mets:mets else doc($config:app-root||"/project.xml")/mets:mets;
 
 (:~
  : generated the id for a new project
@@ -131,7 +131,7 @@ declare
     %rest:path("/cr_xq/{$project-pid}")
 function project:new($data as element(mets:mets),$project-pid as xs:string?) as element(mets:mets)?  {
    if (project:get($project-pid))
-   then util:log("INFO","Project "||$this:id||" already exists.")
+   then util:log("INFO","Project "||$project-pid||" already exists.")
    else 
         let $this:id:=      (project:sanitize-id($project-pid),project:generate-id())[1]
         let $this:project:=     
@@ -148,7 +148,7 @@ function project:new($data as element(mets:mets),$project-pid as xs:string?) as 
                                     </parameters>
             let $seed-template := transform:transform($data,$xsl,$xslParams)
             return $seed-template
-        let $project-stored:=        project:store($this:id,$this:project)
+        let $project-stored as xs:string :=  project:store($this:id,$this:project)
         return
             if ($project-stored!='')
             then
