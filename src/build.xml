@@ -40,6 +40,9 @@
                 token="@projects.dir@" 
                 property="projects.dir"/>
             <replacefilter 
+                token="@data.dir@" 
+                property="data.dir"/>
+            <replacefilter 
                 token="@app.name@" 
                 property="app.name"/>
         </replace>

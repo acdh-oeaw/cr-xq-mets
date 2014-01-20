@@ -4,3 +4,4 @@ app.name=SADE
 app.uri=http://telota.de/sade
 app.version=0.3
 projects.dir=sade-projects
+data.dir=cr-data

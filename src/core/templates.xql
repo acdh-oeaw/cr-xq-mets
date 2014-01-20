@@ -33,7 +33,7 @@ declare variable $templates:TYPE_ERROR := QName("http://exist-db.org/xquery/temp
 :)
 declare function templates:apply($content as node()+, $resolver as function(xs:string) as item()?, $model as map(*)?,
     $configuration as map(*)?) {
-    let $model := if ($model) then $model else map:new()
+    let $model := if (exists($model)) then $model else map:new()
     let $configuration := 
         if (exists($configuration)) then 
             map:new(($configuration, map { "resolve" := $resolver }))
@@ -282,7 +282,9 @@ declare %private function templates:cast($values as item()*, $targetType as xs:s
  : @param $project project-identifier
  :)
 declare function templates:init($node as node(), $model as map(*), $project as xs:string?) {
-       map { "config" := config:config($project) }
+       map {
+        "config" := config:config($project) 
+       }
 };
  
 
