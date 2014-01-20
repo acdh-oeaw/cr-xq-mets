@@ -79,6 +79,18 @@ declare function resource:generate-pid($project-pid as xs:string, $random-seed a
 
 declare
     %rest:POST("{$data}")
+    %rest:path("/cr_xq/{$project-pid}/newResource-with-label")
+    %rest:header-param("resource-label", "{$resource-label}")
+function resource:new($data as document-node(), $resource-label as xs:string) {
+    let $log := util:log("INFO","*** UPLOADED DATA ***")
+    let $log := util:log("INFO",$data/*)
+    let $log := util:log("INFO",$resource-label)
+    let $project-pid := resource:generate-pid($project-pid,$resource-label)
+    return resource:new($data,$project-pid,())
+};
+
+declare
+    %rest:POST("{$data}")
     %rest:path("/cr_xq/{$project-pid}/newResource")
 function resource:new($data as document-node(), $project-pid as xs:string){
     resource:new($data,$project-pid,())
