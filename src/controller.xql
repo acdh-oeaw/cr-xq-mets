@@ -7,13 +7,13 @@ xquery version "3.0";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "core/config.xqm";
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+import module namespace projectAdmin="http://aac.ac.at/content_repository/projectAdmin" at "modules/projectAdmin/projectAdmin.xqm";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
-
 (:~
  : The variable <code>$params</code> holds contextual request parameters. 
  : Tokenizing the $exist:path by slashes we expect the following structure:   
@@ -33,7 +33,7 @@ let $params := tokenize($exist:path, '/')
  : 
  : @see $domain   
 ~:)
-let $cr-instance := $params[1]
+let $cr-instance := $params[1]  
 
 (:~
  : The variable <code>$project</code> holds the ID of the current project. 
@@ -188,8 +188,8 @@ switch (true())
             return
             if (not(request:get-attribute($domain||".user")=$allowed-users)) 
             then
-                let $log:=util:log("INFO",'user='||request:get-attribute($domain||".user"))
-                return
+(:                let $log:=util:log("INFO",'user='||request:get-attribute($domain||".user")):)
+(:                return:)
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$exist:controller}/modules/access-control/login.html"/>
                     <view>
@@ -265,7 +265,50 @@ switch (true())
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$path}" />        
                 </dispatch>
-                
+
+
+    (:~
+     : projectAdmin module
+    ~:)
+    case ($module = "projectAdmin" ) return
+        let $user := request:get-attribute($domain||".user")
+        let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
+        return
+            let $target := 
+            	(: requests for xql endpoints (like store.xql) are passed on, 
+            	everything else is forwarded to the main xquery projectAdmin.xql :)
+            	if (ends-with($exist:resource, "xql"))
+            	then $exist:resource
+            	else "projectAdmin.xql"
+            let $url := $exist:controller||"/modules/"||$module||"/"||$target
+            let $path-steps := tokenize($exist:path,'/'), 
+                $form := projectAdmin:form($path-steps[4]),
+                $form-id :=  if (exists($form))
+                             then $path-steps[4]
+                             else false()
+            let $project := $path-steps[2]
+            let $log := util:log("INFO",$target)
+            let $log := util:log("INFO",$form-id)
+            return
+                switch(true())
+                    case ($form-id or $target != 'projectAdmin.xql') return
+                        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
+                            <forward url="{$url}">
+                                <add-parameter name="project" value="{$project}"/>
+                                <add-parameter name="user" value="{$user}"/>
+                                <add-parameter name="path" value="{$path}"/>
+                                <add-parameter name="exist-path" value="{$exist:path}"/>
+                                <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                             </forward>
+                        </dispatch>
+                    
+                    default return
+                        (:let $log := util:log("INFO","redirecting to "||$exist:controller||$exist:path||"/start")
+                        let $log:= for $i in ("$exist:path","$exist:root","$exist:prefix","$exist:controller","$exist:resource")
+                        return util:log("INFO",$i||" "||util:eval($i)):)
+                        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
+                            <redirect url="/exist/{$exist:prefix}{$exist:controller}/{$project}/projectAdmin/start"/>
+                        </dispatch>
       
     (:~
      : Requests for a specific module are forwarded after having checked user authorization. 
@@ -300,14 +343,18 @@ switch (true())
         then
             let $user := request:get-attribute($domain||".user")
             let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
-            return  
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{$exist:controller}/modules/{$module}/{$module}.xql">
+            return
+            	let $target := $module||".xql"
+            	let $url := $exist:controller||"/modules/"||$module||"/"||$target
+            	return 
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
+                    <forward url="{$url}">
                         <add-parameter name="project" value="{$project}"/>
                         <add-parameter name="user" value="{$user}"/>
+                        <add-parameter name="path" value="{$path}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
                         <add-parameter name="exist-resource" value="{$exist:resource}"/>
-                    </forward>    	
+                    </forward>
                 </dispatch>
             (: login :)
             else ()
