@@ -32,8 +32,8 @@ function app:init($node as node(), $model as map(*), $project as xs:string?) {
         get-uri {request:get-uri()}<br/>
         config:app-root {$config:app-root}<br/>
         
-</p>
-};:)
+</p>:)
+(:};:)
 
 declare 
     %templates:wrap
@@ -54,14 +54,12 @@ config:param-value($model, 'project-title')
 declare 
     %templates:wrap
 function app:logo($node as node(), $model as map(*)) {
-
     let $logo-image := config:param-value($model, 'logo-image')
     let $logo-link := config:param-value($model, 'logo-link')
-    
-    return <a href="{$logo-link}" target="_blank">
-                    <img src="{$logo-image}" class="logo right"/>
-                </a>
-           
+    return 
+        <a xmlns="http://www.w3.org/1999/xhtml" href="{$logo-link}" target="_blank">
+            <img src="{$logo-image}" class="logo right"/>
+        </a>
 };
 
 
@@ -104,9 +102,15 @@ function app:list-projects($node as node(), $model as map(*), $filter as xs:stri
                                           
                     
 (:                                let $teaser := config:param-value($config-map, 'teaser'):)
-                    return if ($visibility != 'private') then <div class="teaser" xmlns="http://www.w3.org/1999/xhtml"><img class="teaser" src="{$teaser-image}" /> <h3><a href="{$link}" >{$title}</a></h3>
-                                     {$teaser-text}
-                            </div> else ()
+                    return 
+                        if ($visibility != 'private') 
+                        then 
+                            <div class="teaser" xmlns="http://www.w3.org/1999/xhtml">
+                                <img class="teaser" src="{$teaser-image}" />
+                                <h3><a href="{$link}">{$title}</a></h3>
+                                {$teaser-text}
+                            </div> 
+                        else ()
 
 (:    return $projects:)
 };
