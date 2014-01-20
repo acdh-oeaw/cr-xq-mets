@@ -29,19 +29,16 @@ declare namespace metsrights = "http://cosimo.stanford.edu/sdr/metsrights/";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
 declare namespace rest="http://exquery.org/ns/restxq";
+declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
 (: declaration of helper namespaces for better code structuring :)
 declare namespace param="userinput.parameters";
 declare namespace this="current.object";
 
-declare variable $project:status-map := map {
-    $config:PROJECT_STATUS_AVAILABLE     := 1,
-    $config:PROJECT_STATUS_REVISION      := 2,
-    $config:PROJECT_STATUS_RESTRICTED    := 3,
-    $config:PROJECT_STATUS_REMOVED       := 4
-};
-
-declare variable $project:default-template as element(mets:mets) := if (doc-available(config:path('mets.template'))) then doc(config:path('mets.template'))/mets:mets else doc($config:app-root||"/project.xml")/mets:mets;
+declare variable $project:default-template as element(mets:mets) := 
+    if (doc-available(config:path('mets.template'))) 
+    then doc(config:path('mets.template'))/mets:mets 
+    else doc($config:app-root||"/project.xml")/mets:mets;
 
 (:~
  : generated the id for a new project
@@ -96,7 +93,6 @@ declare %private function project:remove-accounts($project-pid as xs:string) as 
                 return ()
             else util:log("INFO", "user "||$username||" does not exist.")
 };
-
 
 (:~
 :  Instanciates a new project.
@@ -157,20 +153,20 @@ function project:new($data as element(mets:mets),$project-pid as xs:string?) as 
                 let $users-groupname :=      project:usersaccountname($this:id),
                     $admin-groupname :=      project:adminsaccountname($this:id),
                     $set-permissions:=       ((: set permissions on project.xml document :)
-                                              sm:chown($project-stored,$admin-groupname),
-                                              sm:chgrp($project-stored,$admin-groupname),
-                                              sm:chmod($project-stored,'rwxrwxr-x'),
-                                              sm:add-user-ace($project-stored, $users-groupname, true(), 'r-x'),
-                                              sm:add-group-ace($project-stored, $users-groupname, true(), 'r-x'),
-                                              sm:add-user-ace($project-stored, $config:cr-writer-accountname, true(), 'rwx'),
+                                              sm:chown(xs:anyURI($project-stored),$admin-groupname),
+                                              sm:chgrp(xs:anyURI($project-stored),$admin-groupname),
+                                              sm:chmod(xs:anyURI($project-stored),'rwxrwxr-x'),
+                                              sm:add-user-ace(xs:anyURI($project-stored), $users-groupname, true(), 'r-x'),
+                                              sm:add-group-ace(xs:anyURI($project-stored), $users-groupname, true(), 'r-x'),
+                                              sm:add-user-ace(xs:anyURI($project-stored), $config:cr-writer-accountname, true(), 'rwx'),
                                               if (sm:user-exists("cr-xq"))
-                                              then sm:add-user-ace($project-stored, "cr-xq", true(), 'rwx')
+                                              then sm:add-user-ace(xs:anyURI($project-stored), "cr-xq", true(), 'rwx')
                                               else (),
                                               
                                               (: set permissions on {$cr-projects}/project collection :)
-                                              sm:chown($project-collection,$admin-groupname),
-                                              sm:chgrp($project-collection,$admin-groupname),
-                                              sm:chmod($project-collection,'rwxrwxr-x'),
+                                              sm:chown(xs:anyURI($project-collection),$admin-groupname),
+                                              sm:chgrp(xs:anyURI($project-collection),$admin-groupname),
+                                              sm:chmod(xs:anyURI($project-collection),'rwxrwxr-x'),
                                               sm:add-user-ace($project-collection, $users-groupname, true(), 'r-x'),
                                               sm:add-group-ace($project-collection, $users-groupname, true(), 'r-x'),
                                               sm:add-user-ace($project-collection, $config:cr-writer-accountname, true(), 'rwx'),
@@ -187,16 +183,21 @@ function project:new($data as element(mets:mets),$project-pid as xs:string?) as 
 declare
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/label")
-function project:label($project-pid as xs:string) as xs:string? {
-    project:get($project-pid)/xs:string(@LABEL)
+    %output:method("xml")
+    %output:media-type("text/xml")
+function project:label($project-pid as xs:string) as element(data) {
+    let $doc := project:get($project-pid)
+    return <data request="/cr_xq/{$project-pid}/label" datatype="xs:string">{$doc/xs:string(@LABEL)}</data>
 }; 
+
 
 declare
     %rest:PUT("{$data}")
     %rest:path("/cr_xq/{$project-pid}/label")
-function project:label($project-pid as xs:string, $data as xs:string?) as empty() {
+function project:label($project-pid as xs:string, $data as document-node()) as document-node() {
     let $current := project:get($project-pid)/@LABEL
-    return update value $current with $data
+    let $update := update value $current with xs:string($data)
+    return $data
 }; 
 
 declare function project:available($project-pid as xs:string) as xs:boolean {
@@ -441,13 +442,15 @@ function project:purge($project-pid as xs:string, $delete-data as xs:boolean*) a
 declare 
     %rest:path("/cr_xq/{$project-pid}/status")
     %rest:PUT("{$data}")
-function project:status($project-pid as xs:string, $data as xs:string) as empty() {
+function project:status($project-pid as xs:string, $data as document-node()) as document-node()? {
     let $project:=          project:get($project-pid),
-        $definedStatus :=   map:keys($project:status-map)
+        $definedStatus :=   project:statusmap()
     return
-        if ($data = $definedStatus and exists($project))
-        then update value $project/mets:metsHdr/@RECORDSTATUS with $data
-        else ()
+        if (exists($project))
+        then 
+            let $update := update value $project/mets:metsHdr/@RECORDSTATUS with xs:string($data)
+            return $data
+        else util:log("INFO","unknown project '"||$project-pid||"'.")
 };
 
 (:~
@@ -456,10 +459,23 @@ function project:status($project-pid as xs:string, $data as xs:string) as empty(
 declare 
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/status")
-function project:status($project-pid as xs:string) as xs:string? {
+function project:status($project-pid as xs:string) as element(data) {
     let $project:=project:get($project-pid)
-    return $project/mets:metsHdr/xs:string(@RECORDSTATUS)
+    let $status:=$project/mets:metsHdr/xs:string(@RECORDSTATUS)
+    return <data request="/cr_xq/{$project-pid}/status" datatype="xs:string">{$status}</data>
 };
+
+declare %private function project:statusmap() as map() {
+    map:new(
+        for $s at $pos in (
+            $config:PROJECT_STATUS_AVAILABLE,
+            $config:PROJECT_STATUS_REVISION,
+            $config:PROJECT_STATUS_RESTRICTED,
+            $config:PROJECT_STATUS_REMOVED)
+        return map:entry($s, $pos)
+    )
+};
+
 
 (:~
  : gets the status of the project as a numerical code
@@ -467,10 +483,13 @@ function project:status($project-pid as xs:string) as xs:string? {
 declare
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/status-code")
-function project:status-code($project-pid as xs:string) as xs:integer? {
-    let $status:=project:status($project-pid)
-    return xs:integer(map:get($project:status-map,$status))
+function project:status-code($project-pid as xs:string) as element(data) {
+    let $status:=project:status($project-pid),
+        $code := map:get(project:statusmap(),$status)
+    return <data request="/cr_xq/{$project-pid}/status-code" datatype="xs:integer">{$code}</data>
 };
+
+
 
 (:~
  : sets the status of the project as a numerical code 
@@ -480,8 +499,8 @@ declare
     %rest:PUT("{$data}")
 function project:status-code($project-pid as xs:string, $data as xs:integer) as empty() {
     let $project:=          project:get($project-pid),
-        $definedStatus :=   for $k in map:keys($project:status-map)
-                            let $val:=map:get($project:status-map,$k)
+        $definedStatus :=   for $k in map:keys(project:statusmap())
+                            let $val:=map:get(project:statusmap(),$k)
                             return 
                                 if ($val = $data) 
                                 then $k
@@ -492,6 +511,17 @@ function project:status-code($project-pid as xs:string, $data as xs:integer) as 
         else ()
 };
 
+declare
+    %rest:GET
+    %rest:path("/cr_xq/status-list") 
+function project:list-defined-status() as element(status){
+    <list>{
+        for $name in map:keys(project:statusmap())
+        let $code := map:get(project:statusmap(),$name)
+        order by $code ascending
+        return <status code="{$code}">{$name}</status>
+    }</list>
+};
 
 
 (:~
@@ -505,7 +535,7 @@ declare
 function project:resources($project-pid as xs:string) as element(mets:div)* {
     let $doc:=project:get($project-pid)
     let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
-    return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
+    return <data>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</data>
 };
 
 (:~
@@ -522,6 +552,34 @@ function project:resource-pids($project-pid as xs:string) as xs:string* {
 };
 
 
+(: getter and setter for mets Header :)
+declare 
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/metsHdr")
+function project:metsHdr($project-pid as xs:string) as element(mets:metsHdr){
+    let $doc:=project:get($project-pid)
+    return $doc/mets:metsHdr
+};
+
+declare
+    %rest:path("/cr_xq/{$project-pid}/metsHdr")
+    %rest:PUT("{$data}")
+function project:metsHdr($project-pid as xs:string, $data as element(mets:metsHdr)) as empty() {
+    let $doc:=      project:get($project-pid),
+        $current:=  project:metsHdr($project-pid)
+    let $update := 
+        if (exists($current))
+        then 
+            if (exists($data))
+            then update replace $current with $data
+            else update delete $current
+        else update insert $data into $doc
+    return ()
+};
+
+
+
+
 (: getter and setter for dmdSec, i.e. the project's MODS record :)
 declare 
     %rest:GET
@@ -535,9 +593,10 @@ declare
     %rest:path("/cr_xq/{$project-pid}/dmd")
     %rest:PUT("{$data}")
 function project:dmd($project-pid as xs:string, $data as element(mods:mods)) as empty() {
+    let $log := util:log("INFO",xmldb:get-current-user())
     let $doc:=      project:get($project-pid),
         $current:=  project:dmd($project-pid)
-    return 
+    let $update := 
         if (exists($current))
         then 
             if (exists($data))
@@ -547,7 +606,8 @@ function project:dmd($project-pid as xs:string, $data as element(mods:mods)) as 
             if (exists($doc//mets:dmdSec[@ID = $config:PROJECT_DMDSEC_ID]))
             then update value $doc//mets:dmdSec[@ID = $config:PROJECT_DMDSEC_ID] 
                  with <mdWrap MDTYPE="MODS" xmlns="http://www.loc.gov/METS/"><xmlData>{$data}</xmlData></mdWrap>
-            else update insert <dmdSec ID="{$config:PROJECT_DMDSEC_ID}" xmlns="http://www.loc.gov/METS/"><mdWrap MDTYPE="MODS"><xmlData>{$data}</xmlData></mdWrap></dmdSec> following $doc//mets:metsHdr 
+            else update insert <dmdSec ID="{$config:PROJECT_DMDSEC_ID}" xmlns="http://www.loc.gov/METS/"><mdWrap MDTYPE="MODS"><xmlData>{$data}</xmlData></mdWrap></dmdSec> following $doc//mets:metsHdr
+    return ()
 };
 
 
