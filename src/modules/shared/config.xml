@@ -3,8 +3,8 @@
     <module key="shared"/>
     <container key="html-head">
         /* added by shared-module */
-        <script type="text/javascript" src="modules/shared/scripts/js/webtoolkit.sprintf.js"/>
-        <script type="text/javascript" src="modules/shared/scripts/js/query_input/qi_cql.js"/>
-        <script type="text/javascript" src="modules/shared/scripts/js/query_input/CQLConfig.js"/>
+        <script xmlns="http://www.w3.org/1999/xhtml" type="text/javascript" src="modules/shared/scripts/js/webtoolkit.sprintf.js"/>
+        <script xmlns="http://www.w3.org/1999/xhtml" type="text/javascript" src="modules/shared/scripts/js/query_input/qi_cql.js"/>
+        <script xmlns="http://www.w3.org/1999/xhtml" type="text/javascript" src="modules/shared/scripts/js/query_input/CQLConfig.js"/>
     </container>
 </config>
