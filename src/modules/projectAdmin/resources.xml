@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binds xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:mets="http://www.loc.gov/METS/">
+    <xf:bind ref="instance('resources')/mets:div[@TYPE='resource']" id="resources"/>
+    <xf:instance id="newResource">
+        <resource name=""/>
+    </xf:instance>
+    <xf:instance id="new-resource-load-uri">
+        <uri/>
+    </xf:instance>
+    <xf:bind ref="instance('newResource')/@name" id="newResource-name"/>
+    <xf:bind ref="instance('newResource')" id="newResource-data"/>
+    
+  <!--  <xf:bind 
+        ref="instance('newResource')/@pid" 
+        id="newResource-pid" 
+        calculate="lower-case(replace(instance('newResource')/@name,'(^[[1-9]\s]+)?[\s\.:;\\\|/]+',''))" 
+        readonly="true()"/>-->
+    <xf:submission id="uploadResource" method="post" bind="newResource-data" replace="none">
+        <xf:resource ref="instance('new-resource-load-uri')"/>
+        <xf:header>
+            <xf:name>resource-label</xf:name>
+            <xf:value bind="newResource-name"/>
+        </xf:header>
+    </xf:submission>
+</binds>

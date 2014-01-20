@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<conf xmlns:xf="http://www.w3.org/2002/xforms" key="projectAdmin">
+    <languages>
+        <lang xml:id="en">English</lang>
+        <lang xml:id="de" default="true">German</lang>
+    </languages>
+    <functions>
+        <function form="start">project:metsHdr</function>
+        <function form="data">project:mappings</function>
+    </functions>
+    <i18n>
+        <common>
+            <labels xml:lang="en">
+                <label key="form-save">save</label>
+                <label key="form-reset">reset</label>
+                <label key="project-id">Project ID</label>
+                <label key="project-label">Project Label</label>
+                <label key="project-status">Project Status</label>
+                <label key="ipowner">Intellectual property owner</label>
+                <label key="type">Type</label>
+            </labels>
+            <labels xml:lang="de">
+                <label key="form-save">speichern</label>
+                <label key="form-reset">zurücksetzen</label>
+                <label key="project-id">Projekt Identifikator</label>
+                <label key="project-label">Projektbezeichnung</label>
+                <label key="project-status">Projekt Status</label>
+                <label key="ipowner">Rechteinhaber</label>
+                <label key="type">Typ</label>
+            </labels>
+        </common>
+        <form xml:id="start">
+            <labels xml:lang="en">
+                <label key="form-title">Start</label>
+            </labels>
+            <labels xml:lang="de">
+                <label key="form-title">Start</label>
+            </labels>
+        </form>
+        <form xml:id="dmd">
+            <labels xml:lang="en">
+                <label key="form-title">Metadata</label>
+                <label key="title">project title</label>
+                <label key="language">project language</label>
+                <label key="abstract">abstract</label>
+                <label key="team">team</label>
+                <label key="role">role</label>
+                <label key="familyname">family name</label>
+                <label key="givenname">given name</label>
+                <label key="typeOfResource">Resource Type</label>
+            </labels>
+            <labels xml:lang="de">
+                <label key="form-title">Metadaten</label>
+                <label key="form-save">speichern</label>
+                <label key="form-reset">zurücksetzen</label>
+                <label key="title">Name des Projekts</label>
+                <label key="language">Sprache des Inhalts</label>
+                <label key="abstract">Zusammenfassung</label>
+                <label key="team">Mitarbeiter</label>
+                <label key="role">Rolle</label>
+                <label key="familyname">Nachname</label>
+                <label key="givenname">Vorname</label>
+                <label key="typeOfResource">Projekt Typ</label>
+            </labels>
+        </form>
+    </i18n>
+</conf>

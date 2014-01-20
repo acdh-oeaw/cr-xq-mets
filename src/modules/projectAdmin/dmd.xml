@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binds xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms">
+    <xf:instance id="person-template">
+        <name xmlns="http://www.loc.gov/mods/v3">
+            <namePart type="family"/>
+            <namePart type="given"/>
+            <role>
+                <roleTerm type="text"/>
+            </role>
+        </name>
+    </xf:instance>
+    
+
+    <!-- bind to existing data -->
+    <xf:bind id="title" ref="instance('dmd')/mods:titleInfo/mods:title"/>
+    <xf:bind id="persons" ref="instance('dmd')/mods:name"/>
+    <xf:bind id="abstract" ref="instance('dmd')/mods:abstract"/>
+    <xf:bind id="language" ref="instance('dmd')/mods:language/mods:languageTerm"/>
+    <xf:bind id="typeOfResource" ref="instance('dmd')/mods:typeOfResource"/>
+
+    <!-- bind to form labels -->
+    <xf:bind id="label-title" ref="instance('labels')//label[@key='title']"/>
+    <xf:bind id="label-role" ref="instance('labels')//label[@key='role']"/>
+    <xf:bind id="label-familyname" ref="instance('labels')//label[@key='familyname']"/>
+    <xf:bind id="label-givenname" ref="instance('labels')//label[@key='givenname']"/>
+    <xf:bind id="label-abstract" ref="instance('labels')//label[@key='abstract']"/>
+    <xf:bind id="label-language" ref="instance('labels')//label[@key='language']"/>
+    <xf:bind id="label-typeOfResource" ref="instance('labels')//label[@key='typeOfResource']"/>
+</binds>

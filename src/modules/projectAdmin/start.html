@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms">
+    <xf:group>
+        <h3>Project Properties</h3>
+        <div style="margin-bottom: 35px;">
+            <xf:group appearance="bf:verticalTable">
+                <xf:output bind="project-id" readonly="true">
+                    <xf:label bind="label-project-id"/>
+                </xf:output>
+                <xf:output bind="project-createdate" readonly="true">
+                    <xf:label>Created: </xf:label>
+                </xf:output>
+            </xf:group>
+        </div>
+        <xf:group appearance="bf:verticalTable">
+            <xf:input bind="project-label" incremental="true">
+                <xf:label bind="label-project-label"/>
+            </xf:input>
+            <xf:input bind="ipowner">
+                <xf:label bind="label-ipowner"/>
+            </xf:input>
+            <!-- items as specified by METS profile -->
+            <xf:select1 bind="ipowner-type">
+                <xf:label bind="label-type"/>
+                <xf:item>
+                    <xf:label>INDIVIDUAL</xf:label>
+                    <xf:value>INDIVIDUAL</xf:value>
+                </xf:item>
+                <xf:item>
+                    <xf:label>ORGANIZATION</xf:label>
+                    <xf:value>ORGANIZATION</xf:value>
+                </xf:item>
+                <xf:item>
+                    <xf:label>OTHER</xf:label>
+                    <xf:value>OTHER</xf:value>
+                </xf:item>
+            </xf:select1>
+            <xf:select1 bind="project-status" appearance="minimal">
+                <xf:label bind="label-project-status"/>
+                <xf:itemset ref="instance('status-list')/status">
+                    <xf:label ref="text()"/>
+                    <xf:value ref="text()"/>
+                </xf:itemset>
+            </xf:select1>
+        </xf:group>
+    </xf:group>
+    
+   
+    <!-- reset + save buttons -->
+    <div style="margin-top: 25px;">
+        <!--<xf:submit submission="save">
+            <xf:label bind="label-form-save"/>
+        </xf:submit>-->
+        <xf:trigger ev:event="DOMActivate">
+            <xf:label bind="label-form-save"/>
+            <xf:action>
+                <xf:send submission="save-project-label"/>
+                <xf:send submission="save"/>
+            </xf:action>
+        </xf:trigger>
+        <xf:trigger ev:event="DOMActivate">
+            <xf:label bind="label-form-reset"/>
+            <xf:reset model="model" ev:event="DOMActivate"/>
+        </xf:trigger>
+    </div>
+</div>

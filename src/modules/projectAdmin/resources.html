@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms">
+    <h1>Project Resources</h1>
+    <xf:group>
+        <xf:group>
+            <xf:trigger appearance="minimal">
+                <xf:label>Manage</xf:label>
+                <xf:toggle case="manage"/>
+            </xf:trigger> | <xf:trigger appearance="minimal">
+                <xf:label>Edit</xf:label>
+                <xf:toggle case="edit"/>
+            </xf:trigger> | <xf:trigger appearance="minimal">
+                <xf:label>Resource Fragments</xf:label>
+                <xf:toggle case="fragments"/>
+            </xf:trigger> | <xf:trigger appearance="minimal">
+                <xf:label>Images</xf:label>
+                <xf:toggle case="images"/>
+            </xf:trigger>
+        </xf:group>
+    </xf:group>
+    <xf:switch>
+        <xf:case id="manage">
+            <h3>Manage Resources</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Label</th>
+                        <th>ID</th>
+                        <!--<th>Filename</th>
+                        <th>Created</th>-->
+                        <th/>
+                    </tr>
+                </thead>
+                <tbody xf:repeat-bind="resources" id="resources-repeat">
+                    <tr>
+                        <td>
+                            <xf:input ref="@LABEL"/>
+                        </td>
+                        <td>
+                            <xf:output ref="@ID"/>
+                        </td>
+                        <td/>
+                    </tr>
+                </tbody>
+            </table>
+            <xf:trigger>
+                <xf:label>Create New Resource</xf:label>
+                <xf:toggle case="createNewResource"/>
+            </xf:trigger>
+        </xf:case>
+        <xf:case id="edit">
+            <h3>Edit</h3>
+        </xf:case>
+        <xf:case id="fragments">
+            <h3>Resource Fragments</h3>
+        </xf:case>
+        <xf:case id="images">
+            <h3>Images</h3>
+        </xf:case>
+    </xf:switch>
+    <div style="margin-top: 35px;">
+        <xf:switch>
+            <xf:case id="hide"/>
+            <xf:case id="createNewResource">
+                <h4>New Resource</h4>
+                <xf:input bind="newResource-name">
+                    <xf:label>Resource Name</xf:label>
+                </xf:input>
+                <xf:upload mediatype="text/xml" bind="newResource-data"/>
+                <xf:group>
+                    <xf:trigger>
+                        <xf:label>Store</xf:label>
+                        <xf:action>
+                            <xf:setvalue ref="instance('new-resource-load-uri')" value="concat('/exist/restxq/cr_xq/',instance('instance-project-id')/@OBJID,'/newResource-with-label')"/>
+                            <xf:send submission="uploadResource"/>
+                            <xf:message ref="instance('new-resource-load-uri')"/>
+                        </xf:action>
+                    </xf:trigger>
+                </xf:group>
+            </xf:case>
+        </xf:switch>
+    </div>
+    
+    <!-- reset + save buttons -->
+    <div style="margin-top: 45px;">
+        <xf:submit submission="save">
+            <xf:label bind="label-form-save"/>
+        </xf:submit>
+        <xf:trigger ev:event="DOMActivate">
+            <xf:label bind="label-form-reset"/>
+            <xf:reset model="model" ev:event="DOMActivate"/>
+        </xf:trigger>
+    </div>
+</div>

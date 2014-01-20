@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms">
+    <xf:group>
+        <xf:trigger id="t-tabBasic" appearance="minimal">
+            <xf:label>Basic Metadata</xf:label>
+            <xf:toggle case="tabBasic"/>
+            <xf:action>
+                <xf:setvalue ref="instance('help-output')" value="instance('help')//xhtml:div[@id='help-dmd-basic']"/>
+            </xf:action>
+        </xf:trigger>
+        <span> | </span>
+        <xf:trigger id="t-tabPersons" appearance="minimal">
+            <xf:label>Persons</xf:label>
+            <xf:toggle case="tabPersons"/>
+            <xf:action>
+                <xf:setvalue ref="instance('help-output')" value="instance('help')//xhtml:div[@id='help-dmd-persons']"/>
+            </xf:action>
+        </xf:trigger>
+        <xf:switch id="switch1">
+            <xf:case id="tabBasic" selected="true">
+                <xf:label>Basic Metadata</xf:label>
+                <div class="caseContent">
+                    <h3>Basic Metadata</h3>
+                    <xf:group appearance="full">
+                        <xf:input bind="title">
+                            <xf:label bind="label-title"/>
+                        </xf:input>
+                        <xf:input bind="language">
+                            <xf:label bind="label-language"/>
+                        </xf:input>
+                        <xf:select1 bind="typeOfResource" required="true">
+                            <xf:label bind="label-typeOfResource"/>
+                            <xf:item>
+                                <xf:value>text</xf:value>
+                                <xf:label>text</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>cartographic</xf:value>
+                                <xf:label>cartographic</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>notated music</xf:value>
+                                <xf:label>notated music</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>sound recording</xf:value>
+                                <xf:label>sound recording</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>sound recording-musical</xf:value>
+                                <xf:label>sound recording-musical</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>sound recording-nonmusical</xf:value>
+                                <xf:label>sound recording-nonmusical</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>still image</xf:value>
+                                <xf:label>still image</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>moving image</xf:value>
+                                <xf:label>moving image</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>three dimensional object</xf:value>
+                                <xf:label>three dimensional object</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>software, multimedia</xf:value>
+                                <xf:label>software, multimedia</xf:label>
+                            </xf:item>
+                            <xf:item>
+                                <xf:value>mixed material</xf:value>
+                                <xf:label>mixed material</xf:label>
+                            </xf:item>
+                        </xf:select1>
+                        <xf:textarea bind="abstract" incremental="true">
+                            <xf:label bind="label-abstract"/>
+                        </xf:textarea>
+                    </xf:group>
+                </div>
+            </xf:case>
+            <xf:case id="tabPersons">
+                <xf:label>Persons</xf:label>
+                <div class="caseContent">
+                    <h3>Persons</h3>
+                    <table class="table">
+                        <thead>
+                            <th>
+                                <xf:label bind="label-role"/>
+                            </th>
+                            <th>
+                                <xf:label bind="label-familyname"/>
+                            </th>
+                            <th>
+                                <xf:label bind="label-givenname"/>
+                            </th>
+                        </thead>
+                        <tbody id="persons-repeat" xf:repeat-bind="persons">
+                            <tr>
+                                <td>
+                                    <xf:input ref="mods:role/mods:roleTerm"/>
+                                </td>
+                                <td>
+                                    <xf:input ref="mods:namePart[@type='family']"/>
+                                </td>
+                                <td>
+                                    <xf:input ref="mods:namePart[@type='given']"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <xf:group appearance="minimal" class="action-buttons">
+                        <xf:trigger>
+                            <xf:label>Add Person</xf:label>
+                            <xf:action>
+                                <xf:insert nodeset="instance('dmd')/*" origin="instance('person-template')" position="after"/>
+                            </xf:action>
+                        </xf:trigger>
+                        <xf:trigger>
+                            <xf:label>Remove</xf:label>
+                            <xf:action>
+                                <xf:delete bind="persons" at="index('persons-repeat')"/>
+                            </xf:action>
+                        </xf:trigger>
+                    </xf:group>
+                </div>
+            </xf:case>
+        </xf:switch>
+    </xf:group>
+    <!-- reset + save buttons -->
+    <div style="margin-top: 25px;">
+        <xf:submit submission="save">
+            <xf:label bind="label-form-save"/>
+        </xf:submit>
+        <xf:trigger ev:event="DOMActivate">
+            <xf:label bind="label-form-reset"/>
+            <xf:reset model="model" ev:event="DOMActivate"/>
+        </xf:trigger>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binds xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:mets="http://www.loc.gov/METS/">
+    <xf:instance id="status-list" resource="/exist/restxq/cr_xq/status-list"/>
+    <xf:submission id="save-project-label" resource="/exist/restxq/cr_xq/{$project-pid}/label" bind="project-label" method="put" replace="instance"/>
+    
+    
+    <!-- bind to form elements -->
+    <xf:bind ref="instance('start')/@RECORDSTATUS" id="project-status"/>
+    <xf:bind ref="instance('start')/@CREATEDATE" id="project-createdate" calculate="if (. castable as xs:dateTime) then format-dateTime(xs:dateTime(.), '[FNn] [MNn] [D], [Y] [H01]:[m01]:[s01] UTC', 'en', (), ()) else ." readonly="true"/>
+    <xf:bind ref="instance('start')/mets:agent[@ROLE='IPOWNER']/mets:name" id="ipowner"/>
+    <xf:bind ref="instance('start')/mets:agent[@ROLE='IPOWNER']/@TYPE" id="ipowner-type"/>
+        
+        
+    <!-- bind to form labels -->
+    <xf:bind ref="instance('labels')//label[@key='project-label']" id="label-project-label"/>
+    <xf:bind ref="instance('labels')//label[@key='project-id']" id="label-project-id"/>
+    <xf:bind ref="instance('labels')//label[@key='project-status']" id="label-project-status"/>
+    <xf:bind ref="instance('labels')//label[@key='ipowner']" id="label-ipowner"/>
+    <xf:bind ref="instance('labels')//label[@key='type']" id="label-type"/>
+</binds>

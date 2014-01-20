@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binds xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms">
+    <!-- templates -->
+    <xf:instance id="namespaces-template">
+        <ns prefix="" uri=""/>
+    </xf:instance>
+    <xf:instance id="index-template">
+        <index index-type="default" use="" key="">
+            <path/>
+        </index>
+    </xf:instance>
+    <!-- bind to form labels -->
+    <xf:bind nodeset="instance('data')/namespaces/ns" id="namespaces"/>
+    <xf:bind nodeset="instance('data')/map/index" id="indexes"/>
+    <xf:bind nodeset="instance('data')/map/index/path" required="true()"/>
+    <xf:bind ref="instance('data')/map/index[@key='resourcefragment-pid']" required="true()"/>
+    <xf:bind ref="instance('data')/map/index[@key='resourcefragment-pid']/@key" readonly="true()"/>
+    <xf:bind ref="instance('data')/map/index[@key='cql.serverChoice']" required="true()"/>
+    <xf:bind ref="instance('data')/map/index[@key='cql.serverChoice']/@key" readonly="true()"/>
+</binds>
