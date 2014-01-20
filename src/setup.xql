@@ -29,17 +29,21 @@ declare function local:mkcol($collection, $path) {
     local:mkcol-recursive($collection, tokenize($path, "/"))
 };
 
-declare variable $local:cr-writer:=doc($dir||"/modules/access-control/writer.xml")/write;
+declare variable $local:cr-writer:=doc($target||"/modules/access-control/writer.xml")/write;
 
 (: setup projects-dir :)
 local:mkcol("", $config:projects-dir),
+local:mkcol("", $config:data-dir),
 (: store the collection configuration :)
 local:mkcol("/db/system/config", $target),
 xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
 
 (: we need two system users for the data maangement :)
 (: TODO merge these into one? :)
-sm:create-account($local:cr-writer/xs:string(write-user),$local:cr-writer/xs:string(write-user-cred),()),
-sm:create-account("cr-xq","cr-xq",()),
+util:log("INFO", "** setting up writer account **"),
+sm:create-account(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred),()),
+util:log("INFO", "** setting up cr-xq system account **"),
+sm:create-account("cr-xq","cr=xq!",()),
 sm:create-group("cr-admin","cr-xq","admin"),
+util:log("INFO", "** setting up default project 'defaultProject' **"),
 project:new("defaultProject")
