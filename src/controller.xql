@@ -2,6 +2,7 @@ xquery version "3.0";
 (:~
  : Main rewrite controller for the cr-xq content repository.
  :  
+ : @author Daniel Schopper 
  : @author vronk
 ~:)
 
@@ -14,6 +15,7 @@ declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
+
 (:~
  : The variable <code>$params</code> holds contextual request parameters. 
  : Tokenizing the $exist:path by slashes we expect the following structure:   
@@ -141,13 +143,16 @@ let $rel-path :=
  :
  : Defaults to <code>false()</code> when the parameter 'visibility' in the projects's 
  : configuration file (<code>project.xml</code>) is not set or has a value other than 'protected'.
+  
+  FIXME: this is inconsistent with the implementation in config:param:value that operates on security-manager information
 ~:)
 let $protected := config:param-value($project-config-map,'visibility')='protected'
 
 (:~
  : The varible <code>$allowed-users</code> holds a sequence of user names which 
  : have rights to accses the requested project. These are set as comma separated values
- : in the project's configuration file (<code>project.xml</code>).   
+ : in the project's configuration file (<code>project.xml</code>).
+ : FIXME: this is inconsistent with the implementation in config:param:value that operates on security-manager information
 ~:)
 let $allowed-users := tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
 
