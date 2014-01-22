@@ -448,13 +448,18 @@ declare function repo-utils:if-absent ( $arg as item()* , $value as item()* )  a
  } ;
 
 
-(: Helper function to recursively create a collection hierarchy. :)
+(: Helper function to recursively create a collection hierarchy. 
+xmldb:create-collection actually obviously can do this - no need for recursive call (anymore?) :)
 declare function repo-utils:mkcol($collection as xs:string, $path as xs:string) {
-    local:mkcol-recursive($collection, tokenize($path, "/"))
+   xmldb:create-collection($collection, $path)
+(:    local:mkcol-recursive($collection, tokenize($path, "/")):)
 };
 
+(:~
+OBSOLETED by xmldb:create-collection()
+:)
 declare function local:mkcol-recursive($collection, $components) {
-    if (exists($components)) 
+    if (exists($components) and exists($collection)) 
     then
         let $newColl := concat($collection, "/", $components[1])
         return (

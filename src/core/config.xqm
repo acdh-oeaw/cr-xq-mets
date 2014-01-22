@@ -14,6 +14,7 @@ import module namespace templates="http://exist-db.org/xquery/templates" at "tem
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
 declare namespace mets="http://www.loc.gov/METS/";
+declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
@@ -407,7 +408,7 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
     let $node-id := $node/xs:string(@id)
     let $config :=  $model("config"),
         $mets :=    $config/descendant-or-self::mets:mets[@TYPE='cr-xq project'],
-        $crProjectParameters:= $mets//mets:techMD[@ID='crProjectParameters']/mets:mdWrap/mets:xmlData
+        $crProjectParameters:= $mets//mets:techMD[@ID=$config:PROJECT_PARAMETERS_ID]/mets:mdWrap/mets:xmlData
     
     let $param-special:=
         switch($param-key)
@@ -464,10 +465,13 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
                                                     $allowed-users:=    ($group-members,$users)
                                                 return string-join($allowed-users,',')
             
+            case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]//mets:xmlData/*
+            case 'project-title'            return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]//mets:xmlData//mods:title/text()
+            case 'mappings'                 return $mets//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/map
             case 'teaser-text'              return config:mets-file($mets//mets:file[@USE='projectTeaserText'])
             case 'logo-image'               return config:mets-file($mets//mets:file[@USE='projectLogoImage']) 
             case 'logo-text'                return config:mets-file($mets//mets:file[@USE='projectLogoLink'])
-            case 'mappings'                 return $mets//mets:techMD[@ID='crProjectMappings']/mets:mdWrap/mets:xmlData/map
+            
             default                         return ()
             
     

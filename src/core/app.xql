@@ -2,6 +2,7 @@ module namespace app="http://sade/app";
 
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace project = "http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 (:
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
@@ -35,20 +36,13 @@ function app:init($node as node(), $model as map(*), $project as xs:string?) {
 </p>:)
 (:};:)
 
+(:~ reads project title from project-dmd  :)
 declare 
     %templates:wrap
 function app:title($node as node(), $model as map(*)) {
 (:    $model("config")//param[xs:string(@key)='project-title']:)
 config:param-value($model, 'project-title')
-(:    <p>exist:root {request:get-attribute("$exist:root")}<br/>
-        exist:resource {request:get-attribute("$exist:resource")}<br/>
-        exist:path {request:get-attribute("$exist:path")}<br/>
-        exist:controller {request:get-attribute("$exist:controller")}<br/>
-        exist:prefix {request:get-attribute("$exist:prefix")}<br/>
-        get-uri {request:get-uri()}<br/>
-        config:app-root {$config:app-root}<br/>
-        
-</p>:)
+ 
 };
 
 declare 
