@@ -185,9 +185,9 @@ declare
     %rest:path("/cr_xq/{$project-pid}/label")
     %output:method("xml")
     %output:media-type("text/xml")
-function project:label($project-pid as xs:string) as element(data) {
+function project:label($project-pid as xs:string) as xs:string? {
     let $doc := project:get($project-pid)
-    return <data request="/cr_xq/{$project-pid}/label" datatype="xs:string">{$doc/xs:string(@LABEL)}</data>
+    return $doc/xs:string(@LABEL)
 }; 
 
 
@@ -257,7 +257,7 @@ declare %private function project:structure($project-pid as xs:string, $action a
                 (:paths returned by project:path() are always up to the project's specific collection, 
     so we strip the last step here:)
                 $col := replace($p,$project-pid||"/?$","")
-            let $mk :=  repo-utils:mkcol($col,$project-pid),
+            let $mk :=  repo-utils:mkcol("/",$col||"/"||$project-pid),
                 $set-owner := sm:chown($uri, $admin-accountname),
                 $set-group := sm:chgrp($uri, $admin-groupname),
                 $set-acls:= (
@@ -459,10 +459,10 @@ function project:status($project-pid as xs:string, $data as document-node()) as 
 declare 
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/status")
-function project:status($project-pid as xs:string) as element(data) {
+function project:status($project-pid as xs:string) as xs:string? {
     let $project:=project:get($project-pid)
     let $status:=$project/mets:metsHdr/xs:string(@RECORDSTATUS)
-    return <data request="/cr_xq/{$project-pid}/status" datatype="xs:string">{$status}</data>
+    return $status
 };
 
 declare %private function project:statusmap() as map() {
@@ -483,10 +483,10 @@ declare %private function project:statusmap() as map() {
 declare
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/status-code")
-function project:status-code($project-pid as xs:string) as element(data) {
+function project:status-code($project-pid as xs:string) as xs:integer? {
     let $status:=project:status($project-pid),
         $code := map:get(project:statusmap(),$status)
-    return <data request="/cr_xq/{$project-pid}/status-code" datatype="xs:integer">{$code}</data>
+    return $code
 };
 
 
@@ -535,7 +535,7 @@ declare
 function project:resources($project-pid as xs:string) as element(mets:div)* {
     let $doc:=project:get($project-pid)
     let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
-    return <data>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</data>
+    return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
 };
 
 (:~
@@ -556,7 +556,7 @@ function project:resource-pids($project-pid as xs:string) as xs:string* {
 declare 
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/metsHdr")
-function project:metsHdr($project-pid as xs:string) as element(mets:metsHdr){
+function project:metsHdr($project-pid as xs:string) as element(mets:metsHdr) {
     let $doc:=project:get($project-pid)
     return $doc/mets:metsHdr
 };
