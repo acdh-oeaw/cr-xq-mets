@@ -79,14 +79,16 @@ declare function resource:generate-pid($project-pid as xs:string, $random-seed a
 
 declare
     %rest:POST("{$data}")
-    %rest:path("/cr_xq/{$project-pid}/newResource-with-label")
+    %rest:path("/cr_xq/{$project-pid}/newResourceWithLabel")
     %rest:header-param("resource-label", "{$resource-label}")
-function resource:new($data as document-node(), $resource-label as xs:string) {
+function resource:new-with-label($data as document-node(), $project-pid as xs:string, $resource-label as xs:string*) {
     let $log := util:log("INFO","*** UPLOADED DATA ***")
     let $log := util:log("INFO",$data/*)
-    let $log := util:log("INFO",$resource-label)
-    let $project-pid := resource:generate-pid($project-pid,$resource-label)
-    return resource:new($data,$project-pid,())
+    let $log := util:log("INFO","$resource-label: "||$resource-label)
+    let $log := util:log("INFO","$user: "||xmldb:get-current-user())
+    let $resource-pid := resource:new($data,$project-pid, ()),
+        $set-label := resource:label(document {<cr:data>{$resource-label}</cr:data>},$resource-pid,$project-pid)
+    return true()
 };
 
 declare
@@ -481,3 +483,25 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
 };
 
 
+declare
+    %rest:GET
+    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/label")
+function resource:label($project-pid as xs:string, $resource-pid as xs:string) as element(cr:response) {
+    let $resource := resource:get($resource-pid, $project-pid)
+    return <cr:response path="/cr_xq/{$project-pid}/{$resource-pid}/label" datatype="xs:string">{$resource/xs:string(@LABEL)}</cr:response>
+};
+
+declare
+    %rest:PUT("{$data}")
+    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/label")
+function resource:label($data as document-node(), $resource-pid as xs:string, $project-pid as xs:string) as element(cr:response)? {
+    let $resource := resource:get($resource-pid, $project-pid)
+    let $update :=   
+        if ($data/* instance of element(cr:data))
+        then (update value $resource/@LABEL with xs:string($data), true())
+        else false()
+    return 
+        if ($update)
+        then <cr:response path="/cr_xq/{$project-pid}/{$resource-pid}/label" datatype="xs:string">{$resource/xs:string(@LABEL)}</cr:response>
+        else ()
+};
