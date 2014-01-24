@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms">
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:cr="http://aac.ac.at/content_repository">
     <xf:group>
         <xf:trigger id="t-tabBasic" appearance="minimal">
             <xf:label>Basic Metadata</xf:label>
-            <xf:toggle case="tabBasic"/>
+            <xf:toggle case="tabbasic"/>
             <xf:action>
                 <xf:setvalue ref="instance('help-output')" value="instance('help')//xhtml:div[@id='help-dmd-basic']"/>
             </xf:action>
@@ -11,13 +11,13 @@
         <span> | </span>
         <xf:trigger id="t-tabPersons" appearance="minimal">
             <xf:label>Persons</xf:label>
-            <xf:toggle case="tabPersons"/>
+            <xf:toggle case="tabpersons"/>
             <xf:action>
                 <xf:setvalue ref="instance('help-output')" value="instance('help')//xhtml:div[@id='help-dmd-persons']"/>
             </xf:action>
         </xf:trigger>
-        <xf:switch id="switch1">
-            <xf:case id="tabBasic" selected="true">
+        <xf:switch id="tabSwitch">
+            <xf:case id="tabbasic" selected="true">
                 <xf:label>Basic Metadata</xf:label>
                 <div class="caseContent">
                     <h3>Basic Metadata</h3>
@@ -81,7 +81,7 @@
                     </xf:group>
                 </div>
             </xf:case>
-            <xf:case id="tabPersons">
+            <xf:case id="tabpersons">
                 <xf:label>Persons</xf:label>
                 <div class="caseContent">
                     <h3>Persons</h3>
@@ -97,7 +97,7 @@
                                 <xf:label bind="label-givenname"/>
                             </th>
                         </thead>
-                        <tbody id="persons-repeat" xf:repeat-bind="persons">
+                        <tbody id="persons-repeat" xf:repeat-bind="names">
                             <tr>
                                 <td>
                                     <xf:input ref="mods:role/mods:roleTerm"/>
@@ -121,7 +121,7 @@
                         <xf:trigger>
                             <xf:label>Remove</xf:label>
                             <xf:action>
-                                <xf:delete bind="persons" at="index('persons-repeat')"/>
+                                <xf:delete bind="names" at="index('persons-repeat')"/>
                             </xf:action>
                         </xf:trigger>
                     </xf:group>

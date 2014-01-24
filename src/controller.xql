@@ -292,10 +292,34 @@ switch (true())
                              then $path-steps[4]
                              else false()
             let $project := $path-steps[2]
-            let $log := util:log("INFO",$target)
-            let $log := util:log("INFO",$form-id)
             return
                 switch(true())
+                    case $target = "store.xql" return
+                        let $parameters := 
+                            let $maps := 
+                                (for $p in request:get-parameter-names() 
+                                    let $value := request:get-parameter($p,"")
+                                    return 
+                                        if ($value!='') 
+                                        then () 
+                                        else map:entry($p,$value),
+                                 for $h in request:get-header-names()
+                                    let $val := request:get-header($h)
+                                    return 
+                                        if ($val!='') 
+                                        then () 
+                                        else map:entry($h,$val),
+                                  map:entry("project-pid",$project)
+                                 )
+                            return map:new($maps)
+                        let $process := projectAdmin:store(request:get-data(),$parameters)
+                        return $process
+                        
+                    case $target = "get.xql" return
+                        let $entity := request:get-parameter("entity",""),
+                            $log := util:log("INFO", $entity)
+                        return projectAdmin:data($project, $entity)
+                    
                     case ($form-id or $target != 'projectAdmin.xql') return
                         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
                             <forward url="{$url}">
@@ -308,9 +332,8 @@ switch (true())
                         </dispatch>
                     
                     default return
-                        (:let $log := util:log("INFO","redirecting to "||$exist:controller||$exist:path||"/start")
-                        let $log:= for $i in ("$exist:path","$exist:root","$exist:prefix","$exist:controller","$exist:resource")
-                        return util:log("INFO",$i||" "||util:eval($i)):)
+                        let $log := util:log("INFO", "redirected request to /exist/"||$exist:prefix||$exist:controller||"/"||$project||"/projectAdmin/start")
+                        return
                         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
                             <redirect url="/exist/{$exist:prefix}{$exist:controller}/{$project}/projectAdmin/start"/>
                         </dispatch>

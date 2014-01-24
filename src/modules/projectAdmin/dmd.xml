@@ -12,11 +12,11 @@
     
 
     <!-- bind to existing data -->
-    <xf:bind id="title" ref="instance('dmd')/mods:titleInfo/mods:title"/>
-    <xf:bind id="persons" ref="instance('dmd')/mods:name"/>
-    <xf:bind id="abstract" ref="instance('dmd')/mods:abstract"/>
-    <xf:bind id="language" ref="instance('dmd')/mods:language/mods:languageTerm"/>
-    <xf:bind id="typeOfResource" ref="instance('dmd')/mods:typeOfResource"/>
+    <xf:bind id="title" ref="instance('dmd')/mods:mods/mods:titleInfo/mods:title"/>
+    <xf:bind id="names" nodeset="instance('dmd')/mods:mods/mods:name"/>
+    <xf:bind id="abstract" ref="instance('dmd')/mods:mods/mods:abstract"/>
+    <xf:bind id="language" ref="instance('dmd')/mods:mods/mods:language/mods:languageTerm"/>
+    <xf:bind id="typeOfResource" ref="instance('dmd')/mods:mods/mods:typeOfResource"/>
 
     <!-- bind to form labels -->
     <xf:bind id="label-title" ref="instance('labels')//label[@key='title']"/>

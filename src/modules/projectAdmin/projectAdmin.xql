@@ -46,7 +46,7 @@ let $html:=
     xmlns:ev="http://www.w3.org/2001/xml-events">
     <head>
     <script type="text/javascript" src="../../shared-resources/resources/scripts/jquery/jquery-1.7.1.min.js"></script>
-    <link rel="stylesheet" type="text/javascript" href="../../shared-resources/resources/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="../../shared-resources/resources/css/bootstrap.min.css"/>
         <script type="text/javascript" src="../../shared-resources/resources/scripts/bootstrap.min.js"></script>
         <style type="text/css"><![CDATA[
             body {
@@ -121,27 +121,15 @@ let $html:=
             </xf:instance>
             <xf:bind id="project-id" ref="instance('instance-project-id')/@OBJID" readonly="true"/>
             
-            <xf:instance id="instance-project-label" resource="/exist/restxq/cr_xq/{$project-pid}/label"/>
+            <xf:instance id="instance-project-label" resource="get.xql?entity=project-label&amp;project-pid={$project-pid}"/>
             <xf:bind id="project-label" ref="instance('instance-project-label')" readonly="false"/>
             
             <!-- main form data + submission -->
             {(projectAdmin:labels($form,$lang),
-              projectAdmin:data($project-pid, $form),
+              projectAdmin:instancedata($project-pid, $form),
               projectAdmin:help($form,$lang),   
               projectAdmin:bind($project-pid,$form,$vars))}
-	        <xf:submission replace="instance" resource="store.xql" id="save" method="post" ref="instance('{$form}')">
-	           <xf:header>
-		        	<xf:name>project-pid</xf:name>
-		        	<xf:value>{$project-pid}</xf:value>
-	        	</xf:header>
-	        	<xf:header>
-		        	<xf:name>form</xf:name>
-		        	<xf:value>{$form}</xf:value>
-	        	</xf:header>
-		        <xf:header>
-		        	<xf:name>user-id</xf:name>
-		        	<xf:value>{ xmldb:get-current-user() }</xf:value>
-	        	</xf:header>
+	        <xf:submission replace="instance" resource="store.xql?entity={$form}" id="save" method="post" ref="instance('{$form}')">
 	        	<xf:message level="ephemeral" ev:event="xforms-submit-error">Submission failed</xf:message>
 	    		<xf:message level="ephemeral" ev:event="xforms-submit-done">Submission successful</xf:message>
 	        </xf:submission>
@@ -150,12 +138,17 @@ let $html:=
 	        <xf:instance id="help-output" xmlns="">
                  <div xmlns="http://www.w3.org/1999/xhtml"/>
              </xf:instance>
-             {if ($section!='')
+             {if ($section!='' and exists($form-data//xf:case[@id = 'tab'||$section]))
              then 
                 <xf:action xmlns:ev="http://www.w3.org/2001/xml-events" ev:event="xforms-ready">
-                   <xf:setvalue ref="instance('help-output')" value="instance('help')//xhtml:div[@id='help-{$form}-{$section}']"/>
+                   <xf:setvalue ref="instance('help-output')" value="instance('help')/xhtml:div[@id='help-{$form}-{$section}']/xhtml:p"/>
+                   <xf:toggle case="tab{$section}" id="tabSwitch"/>
                </xf:action>
-             else ()}
+             else
+             	<xf:action xmlns:ev="http://www.w3.org/2001/xml-events" ev:event="xforms-ready">
+                   <xf:setvalue ref="instance('help-output')" value="instance('help')/self::xhtml:div[@id='help-{$form}']/xhtml:p"/>
+               </xf:action>
+             }
             
             <!-- basic GUI element labels -->
             <xf:bind id="form-title" ref="instance('labels')//label[@key='form-title']"/>

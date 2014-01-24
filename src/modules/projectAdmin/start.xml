@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<binds xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:mets="http://www.loc.gov/METS/">
+<binds xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:mets="http://www.loc.gov/METS/" xmlns:ev="http://www.w3.org/2001/xml-events">
     <xf:instance id="status-list" resource="/exist/restxq/cr_xq/status-list"/>
-    <xf:submission id="save-project-label" resource="/exist/restxq/cr_xq/{$project-pid}/label" bind="project-label" method="put" replace="instance"/>
-    
+    <xf:submission id="save-project-label" resource="store.xql" bind="project-label" method="post" replace="instance">
+        <xf:message ev:event="xforms-submit-done" level="ephemeral">Saved "Project Label"</xf:message>
+        <xf:message ev:event="xforms-submit-error" level="ephemeral">An error occured saving "Project Label"</xf:message>
+    </xf:submission>
     
     <!-- bind to form elements -->
-    <xf:bind ref="instance('start')/@RECORDSTATUS" id="project-status"/>
-    <xf:bind ref="instance('start')/@CREATEDATE" id="project-createdate" calculate="if (. castable as xs:dateTime) then format-dateTime(xs:dateTime(.), '[FNn] [MNn] [D], [Y] [H01]:[m01]:[s01] UTC', 'en', (), ()) else ." readonly="true"/>
-    <xf:bind ref="instance('start')/mets:agent[@ROLE='IPOWNER']/mets:name" id="ipowner"/>
-    <xf:bind ref="instance('start')/mets:agent[@ROLE='IPOWNER']/@TYPE" id="ipowner-type"/>
+    <xf:bind ref="instance('start')/mets:metsHdr/@RECORDSTATUS" id="project-status"/>
+    <xf:bind ref="instance('start')/mets:metsHdr/@CREATEDATE" id="project-createdate" calculate="if (. castable as xs:dateTime) then format-dateTime(xs:dateTime(.), '[FNn] [MNn] [D], [Y] [H01]:[m01]:[s01] UTC', 'en', (), ()) else ." readonly="true"/>
+    <xf:bind ref="instance('start')/mets:metsHdr/mets:agent[@ROLE='IPOWNER']/mets:name" id="ipowner"/>
+    <xf:bind ref="instance('start')/mets:metsHdr/mets:agent[@ROLE='IPOWNER']/@TYPE" id="ipowner-type"/>
         
         
     <!-- bind to form labels -->

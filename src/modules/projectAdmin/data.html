@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms">
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events">
     <h1>Data Structure</h1>
     <div style="margin-bottom:25px;">
         <h3>Namespace Definitions</h3>
@@ -73,8 +73,8 @@
                             </xf:trigger>
                             <xf:trigger appearance="minimal">
                                 <xf:label>[edit]</xf:label>
-                                <xf:insert context="instance('data')/map/index[index('index-repeat')]" if="not(@index-type)" origin="instance('index-template')/@index-type"/>
-                                <xf:toggle case="edit"/>
+                                <xf:insert context="instance('data')/map/map/index[index('index-repeat')]" if="not(@index-type)" origin="instance('index-template')/@index-type"/>
+                                <xf:toggle case="editMappings"/>
                                 <xf:setfocus control="editIndexPath"/>
                             </xf:trigger>
                             <xf:trigger appearance="minimal">
@@ -92,11 +92,11 @@
         </table>
 
         <!-- Editing -->
-        <xf:switch>
+        <xf:switch id="indexEditor">
             <xf:case id="hide">
                 <div style="margin: 25px 0 35px 45px;"/>
             </xf:case>
-            <xf:case id="edit">
+            <xf:case id="editMappings">
                 <div style="border:1px solid black; margin: 25px 0 35px 45px; padding: 10px; ">
                     <h3>Edit Index Definition</h3>
                     <xf:group ref="instance('data')//index[index('index-repeat')]">
