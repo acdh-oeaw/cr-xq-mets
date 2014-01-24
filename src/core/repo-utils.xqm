@@ -413,11 +413,11 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
  : @return zero or one XSL documents 
 ~:)
 declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node()? {        
-    let $scripts-paths := repo-utils:config-values($config, 'scripts.path'),
+    let $scripts-paths := config:path('scripts'),
         $xsldoc :=  for $scripts-path in $scripts-paths
                     return 
-                        let $operation-format-xsl:= $scripts-path||repo-utils:config-value($config, $operation||'-'||$format||".xsl"),
-                            $operation-xsl:= $scripts-path||repo-utils:config-value($config, $operation||".xsl")
+                        let $operation-format-xsl:= $scripts-path||'/'||repo-utils:config-value($config, $operation||'-'||$format||".xsl"),
+                            $operation-xsl:= $scripts-path||'/'||repo-utils:config-value($config, $operation||".xsl")
                         return 
                         switch(true())
                             case (doc-available($operation-format-xsl)) return doc($operation-format-xsl)

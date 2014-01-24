@@ -11,5 +11,6 @@
         <path key="workingcopies" base="#data">_workingcopies</path>
         <path key="resourcefragments" base="#data">_resourcefragments</path>
         <path key="templates" base="#data"/>
+        <path key="scripts" xml:id="scripts" base="#app-root">modules/cs-xsl</path>
     </paths>
 </config>

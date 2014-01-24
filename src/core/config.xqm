@@ -19,6 +19,7 @@ declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
 
+
 (:~
  : Contains the uri of the application root collection, determined from the current module load path.
  ~:)
@@ -39,6 +40,8 @@ declare variable $config:app-root :=
         else $rawPath
     return substring-before($modulePath, "/core")
 ;
+
+declare variable $config:app-root-key := 'app-root';
 
 (:~ 
  : extracting the context collection of the application 
@@ -153,10 +156,12 @@ declare function config:path-relative-to-absolute($path as element(config:path),
     if (starts-with($path,'/'))
     then string-join(($path,reverse($steps-before)),'/')
     else
-        let $parent:= $config:cr-config//config:path[@xml:id eq substring-after($path/@base,'#')]
+        let $parent-id := substring-after($path/@base,'#')
+        let $parent:= $config:cr-config//config:path[@xml:id eq $parent-id]
         return
             if (exists($parent))
             then config:path-relative-to-absolute($parent,($steps-before,$path))
+            else if ($parent-id eq $config:app-root-key) then string-join(($config:app-root,$path,reverse($steps-before)),'/')  
             else string-join(($path,reverse($steps-before)),'/')
 };
 
@@ -453,19 +458,21 @@ declare function config:param-value($node as node()*, $model as map(*)*, $module
                                                     else 'unprotected'
             case 'users'                    return
                                                 (: sm:get-group-members-function need to be executed as a logged in user :)
-                                                let $login:=        xmldb:login($config:app-root,"cr-xq","cr=xq!")
+(:                                                let $login:=        xmldb:login($config:app-root,"cr-xq","cr=xq!"):)
                                                 let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
                                                     $users:=        $ace[@target='USER']/@who,
                                                     $groups:=       $ace[@target='GROUP']/@who,
                                                     $group-members:=for $g in $groups
                                                                     return
-                                                                        if (sm:group-exists($g))
-                                                                        then sm:get-group-members($g)
-                                                                        else (),
+                                                                        system:as-user("cr-xq","cr=xq!",
+                                                                            if (sm:group-exists($g))
+                                                                            then sm:get-group-members($g)
+                                                                            else ()
+                                                                        ),
                                                     $allowed-users:=    ($group-members,$users)
                                                 return string-join($allowed-users,',')
             
-            case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]//mets:xmlData/*
+            case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]//mets:xmlData
             case 'project-title'            return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]//mets:xmlData//mods:title/text()
             case 'mappings'                 return $mets//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/map
             case 'teaser-text'              return config:mets-file($mets//mets:file[@USE='projectTeaserText'])
