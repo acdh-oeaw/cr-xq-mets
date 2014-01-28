@@ -22,12 +22,15 @@ xquery version "3.0";
 module namespace project = "http://aac.ac.at/content_repository/project";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
+import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 
 declare namespace mets = "http://www.loc.gov/METS/";
 declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace metsrights = "http://cosimo.stanford.edu/sdr/metsrights/";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
+declare namespace fcs = "http://clarin.eu/fcs/1.0";
+declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace rest="http://exquery.org/ns/restxq";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
@@ -538,15 +541,67 @@ function project:resources($project-pid as xs:string) as element(mets:div)* {
     return <data>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</data>
 };
 
-(:~ reads the resource sequence from the project-configuration, wrapped in mets:structMap element 
+(:~ reads the resource sequence from the project-configuration
+CHECK: need wrapped in mets:structMap element or just sequence? 
 @param $project if $project is string, it is treated as project-id and the project-config is fetched otherwise treated as already resolved project-config document
 :)
-declare function project:list-resources($project) as element(mets:structMap)* {
+declare function project:list-resources($project) as element(mets:div)* {
     let $doc:=if ($project instance of xs:string) then project:get($project)
                    else $project
                    
     let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
-    return <mets:structMap>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</mets:structMap>
+(:    return <mets:structMap>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</mets:structMap>:)
+
+
+    
+  return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
+
+};
+
+declare function project:list-resources-resolved($project) as element(sru:searchRetrieveResponse)* {
+       
+     let $start-time := util:system-dateTime()
+       
+    let $doc:=if ($project instance of xs:string) then project:get($project)
+                   else $project
+
+    let $ress := project:list-resources($doc)
+    let $project-id := $doc/@OBJID
+    let $count := count($ress)
+    let $resources := for $res in $ress
+        let $dmd := resource:dmd($res, $project )            
+        return <fcs:Resource pid="{$res/@ID}" >
+                 <fcs:DataView type="metadata" >{$dmd}</fcs:DataView>
+               </fcs:Resource>
+    
+     let $end-time := util:system-dateTime()
+(:<sru:baseUrl>{repo-utils:config-value($config, "base.url")}</sru:baseUrl>:)
+return <sru:searchRetrieveResponse>
+            <sru:version>1.2</sru:version>
+            <sru:numberOfRecords>{$count}</sru:numberOfRecords>
+                            <sru:echoedSearchRetrieveRequest>
+                                <sru:version>1.2</sru:version>
+                                <sru:query>*</sru:query>
+                                <fcs:x-context>{$project-id}</fcs:x-context>
+                                <fcs:x-dataview>metadata</fcs:x-dataview>
+                                <sru:startRecord>1</sru:startRecord>
+                                <sru:maximumRecords>0</sru:maximumRecords>
+                            </sru:echoedSearchRetrieveRequest>
+                            <sru:extraResponseData>
+                              	<fcs:returnedRecords>{$count}</fcs:returnedRecords>                                
+                                <fcs:duration>{$end-time - $start-time }</fcs:duration>                                
+                            </sru:extraResponseData>
+                            <sru:records>
+                            {for $res at $pos in $resources
+                                    return  <sru:record>
+                                	              <sru:recordSchema>http://clarin.eu/fcs/1.0/Resource.xsd</sru:recordSchema>
+                                	              <sru:recordPacking>xml</sru:recordPacking>
+                                	              <sru:recordData>{$res}</sru:recordData>
+                                	              <sru:recordPosition>{$pos}</sru:recordPosition>
+                                	              <sru:recordIdentifier>{xs:string($res/@pid)}</sru:recordIdentifier>
+                                	          </sru:record> }                                	          
+                             </sru:records>                            
+                        </sru:searchRetrieveResponse>
 };
 
 (:~
@@ -599,6 +654,7 @@ function project:metsHdr($project-pid as xs:string, $data as element(mets:metsHd
         else update insert $data into $doc
     return ()
 };
+
 
 
 

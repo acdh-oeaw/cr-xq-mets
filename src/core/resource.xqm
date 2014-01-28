@@ -12,7 +12,7 @@ declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
 
- 
+
 
 (: declaration of helper namespaces for better code structuring :)
 declare namespace param="userinput.parameters";
@@ -144,9 +144,8 @@ function resource:new($data as document-node(), $project-pid as xs:string, $make
                     else util:log("INFO","New resource "||$this:resource-pid||" could not be created.")
 };
 
-(:~ 
-: Returns the structMap entry for the resource
-~:)
+(:~ Returns the structMap entry for the resource
+:)
 declare
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/entry")

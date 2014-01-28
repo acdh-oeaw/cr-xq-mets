@@ -3,6 +3,7 @@ module namespace app="http://sade/app";
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace project = "http://aac.ac.at/content_repository/project" at "project.xqm";
+import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "repo-utils.xqm";
 
@@ -53,6 +54,20 @@ function app:info ($node as node(), $model as map(*), $key, $x-format) {
 };
 
 
+declare 
+    %templates:wrap    
+    %templates:default("x-format", "html")
+function app:list-resources($node as node(), $model as map(*), $x-format) {
+    
+(:    let $structMap := project:list-resources($model("config")):)
+    let $ress := project:list-resources-resolved($model("config"))
+    
+    (:for $res in $ress
+        let $dmd := resource:dmd($res, $model("config") ):)            
+        return repo-utils:serialise-as($ress, $x-format, 'resource-list', $model("config"))
+(:    return $dmd:)
+    
+};
 
 declare 
     %templates:wrap
