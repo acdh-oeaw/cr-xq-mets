@@ -2,12 +2,12 @@
 <config type="module">
     <module key="fcs">
         <param key="scripts.url">modules/shared/scripts/</param>
-        
-        <!--<param key="scripts.path">/db/apps/cr-xq/modules/fcs/xsl/</param>-->
+<!--        
+        <!-\-<param key="scripts.path">/db/apps/cr-xq/modules/fcs/xsl/</param>-\->
         <param key="scripts.path">/db/apps/cr-xq/modules/cs-xsl/</param>
         <param key="scan.xsl">fcs/scan2view_v2.xsl</param>
         <param key="scan-json.xsl">fcs/scan2json.xsl</param>
-<!--        <param key="map-scan.xsl">fcs/map2scan.xsl</param>-->
+<!-\-        <param key="map-scan.xsl">fcs/map2scan.xsl</param>-\->
         <param key="map-scan.xsl">fcs/map2sru_scan_fcs.resource.xsl</param>
         <param key="searchRetrieve.xsl">fcs/result2view_v2.xsl</param>
         <param key="explain.xsl">fcs/explain2view_v2.xsl</param>
@@ -16,12 +16,13 @@
         <param key="xml.xsl">misc/xml2view.xsl</param>
         <param key="html.xsl">misc/html2view.xsl</param>
         <param key="test.xsl">misc/test2view.xsl</param>
-         <!--<param key="html.xsl">misc/html2view.xsl</param>
+        <param key="projectDMD.xsl">mods/MODS3-4_HTML_XSLT1-0.xsl</param>
+         <!-\-<param key="html.xsl">misc/html2view.xsl</param>
          
          <param key="table.xsl">misc/xml2htmltable.xsl</param>
          <param key="default.xsl">misc/xml2view.xsl</param>
-         -->
-        <param key="terms.xsl">misc/terms2view.xsl</param>
+         -\->
+        <param key="terms.xsl">misc/terms2view.xsl</param>-->
     </module>
     <container key="html-head"/>
 </config>
