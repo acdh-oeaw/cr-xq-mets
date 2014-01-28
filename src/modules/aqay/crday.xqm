@@ -18,7 +18,8 @@ declare namespace cr=   "http://aac.ac.at/content-repository";
 
 declare variable $crday:docTypeTerms := "Termset";
 declare variable $crday:defaultMaxDepth:= 8;
-(: just analyze a subsequence of: :)
+(: just analyze a subsequence of: 
+can be overriden with the request-param: maxItems :)
 declare variable $crday:maxAyRecords:= 1000;  
 declare variable $crday:restrictAyRecordsSize:= true();
 
