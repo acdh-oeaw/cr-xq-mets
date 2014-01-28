@@ -185,9 +185,9 @@ declare
     %rest:path("/cr_xq/{$project-pid}/label")
     %output:method("xml")
     %output:media-type("text/xml")
-function project:label($project-pid as xs:string) as xs:string? {
+function project:label($project-pid as xs:string) as element(data) {
     let $doc := project:get($project-pid)
-    return $doc/xs:string(@LABEL)
+    return <data request="/cr_xq/{$project-pid}/label" datatype="xs:string">{$doc/xs:string(@LABEL)}</data>
 }; 
 
 
@@ -459,10 +459,10 @@ function project:status($project-pid as xs:string, $data as document-node()) as 
 declare 
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/status")
-function project:status($project-pid as xs:string) as xs:string? {
+function project:status($project-pid as xs:string) as element(data) {
     let $project:=project:get($project-pid)
     let $status:=$project/mets:metsHdr/xs:string(@RECORDSTATUS)
-    return $status
+    return <data request="/cr_xq/{$project-pid}/status" datatype="xs:string">{$status}</data>
 };
 
 declare %private function project:statusmap() as map() {
@@ -483,10 +483,10 @@ declare %private function project:statusmap() as map() {
 declare
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/status-code")
-function project:status-code($project-pid as xs:string) as xs:integer? {
+function project:status-code($project-pid as xs:string) as element(data) {
     let $status:=project:status($project-pid),
         $code := map:get(project:statusmap(),$status)
-    return $code
+    return <data request="/cr_xq/{$project-pid}/status-code" datatype="xs:integer">{$code}</data>
 };
 
 
@@ -535,7 +535,18 @@ declare
 function project:resources($project-pid as xs:string) as element(mets:div)* {
     let $doc:=project:get($project-pid)
     let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
-    return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
+    return <data>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</data>
+};
+
+(:~ reads the resource sequence from the project-configuration, wrapped in mets:structMap element 
+@param $project if $project is string, it is treated as project-id and the project-config is fetched otherwise treated as already resolved project-config document
+:)
+declare function project:list-resources($project) as element(mets:structMap)* {
+    let $doc:=if ($project instance of xs:string) then project:get($project)
+                   else $project
+                   
+    let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
+    return <mets:structMap>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</mets:structMap>
 };
 
 (:~
@@ -548,15 +559,27 @@ declare
     %rest:path("/cr_xq/{$project-pid}/resource-pids")
 function project:resource-pids($project-pid as xs:string) as xs:string* {
     let $resources:=project:resources($project-pid)
-    return $resources/xs:string(@ID)
+    return $resources//@ID
 };
+
+(:~ returns the resource-pids based on the resource sequence from the project-configuration, wrapped in mets:structMap element 
+@param $project if $project is string, it is treated as project-id and the project-config is fetched otherwise treated as already resolved project-config document
+:)
+declare function project:list-resource-pids($project) as xs:string* {
+    let $doc:=if ($project instance of xs:string) then project:get($project)
+                   else $project
+                   
+    let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
+    return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]/xs:string(@ID)
+};
+
 
 
 (: getter and setter for mets Header :)
 declare 
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/metsHdr")
-function project:metsHdr($project-pid as xs:string) as element(mets:metsHdr) {
+function project:metsHdr($project-pid as xs:string) as element(mets:metsHdr){
     let $doc:=project:get($project-pid)
     return $doc/mets:metsHdr
 };

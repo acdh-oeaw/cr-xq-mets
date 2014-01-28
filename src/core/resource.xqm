@@ -12,6 +12,8 @@ declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
 
+ 
+
 (: declaration of helper namespaces for better code structuring :)
 declare namespace param="userinput.parameters";
 declare namespace this="current.object";
@@ -142,8 +144,8 @@ function resource:new($data as document-node(), $project-pid as xs:string, $make
                     else util:log("INFO","New resource "||$this:resource-pid||" could not be created.")
 };
 
-(:~
- : Returns the structMap entry for the resource
+(:~ 
+: Returns the structMap entry for the resource
 ~:)
 declare
     %rest:GET
@@ -325,13 +327,21 @@ declare function resource:add-master($master-filepath as xs:string, $resource-pi
     return $store-file
 };
 
-(: getter and setter for dmdSec, i.e. the resources's descriptive metadata :)
+(:~ getter and setter for dmdSec, i.e. the resources's descriptive metadata :)
 declare
     %rest:GET
     %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/dmd")
-function resource:dmd($resource-pid as xs:string,$project-pid as xs:string) as element()? {
-    let $dmdID :=   resource:get($resource-pid, $project-pid)/@DMDID,
-        $dmdSec :=  doc(project:filepath($project-pid))//id($dmdID) 
+function resource:dmd-from-id($resource-pid as xs:string,$project-pid as xs:string) as element()? {
+    resource:dmd(resource:get($resource-pid, $project-pid), doc(project:filepath($project-pid)))
+};
+ 
+(:~ if reference to $resource and $project-config already available, skip the id-based resolution :) 
+declare function resource:dmd($resource, $project ) as element()? {
+    let $resource-pid :=   $resource/@ID,
+        $dmdID :=   $resource/@DMDID,
+      (: workaround via attribute, as the id()-function did not work - ?
+        $dmdSec :=  doc(project:filepath($project-pid))//id($dmdID) :)
+        $dmdSec :=  $project//*[@ID=$dmdID]
     return
         if (exists($dmdSec))
         then 
