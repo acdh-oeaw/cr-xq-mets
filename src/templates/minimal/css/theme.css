@@ -1,19 +1,19 @@
 /* ************** */
 /* THEME = setting fonts and colors */
 
-
 html {    line-height: 1.5em; }
-
 html, body, table{ 
     font-size: 12px; 
     font-family: Helvetica, Tahoma, "Segoe UI", sans-serif;
     
 }	
 
-#header {
-    background-color: #fafaff;
-    border-bottom: 1px solid #014172;
+/*#header {
+    background-color: #FFF6DC;    
+    border: 1px solid #A8A7A3;
+    padding: 0.5em;
 }
+*/
 
 #site-name {
     font-family: Helvetica, Tahoma, Verdana, sans-serif; 
@@ -21,11 +21,9 @@ html, body, table{
     font-weight: bold;
     color: #014172; /* #c00000;*/    
 }
-
 a, a:link, a:hover {
     color: #c00000;
 }
-
 input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button {
     border:  1px solid #A6C9E2;
 }
@@ -35,5 +33,56 @@ img.teaser { float:left; margin-right: 1em; margin-bottom: 1em;}
  
 label, .label, .cmds-elem-prop .label { font-size: 0.9em; color: #014172; font-style: italic; }
 
+.kwic em , .hilight { 
+    font-size: 1.1em; font-weight: bold;  margin: 0 0.2em;
+}
 
-.kwic em , .hilight { font-size: 1.1em; font-weight: bold;  margin: 0 0.2em;}
+tr.record-top td {
+    border-top: 1px solid #A8A7A3; /* #C6C5C3;*/ 
+}
+
+/* command icons */
+/*.cmd {
+	display: inline-block;
+	width: 12px;
+	height: 12px;	
+	background: no-repeat center center;
+	margin: 0px 1px;
+	position: relative;
+	top: 2px;
+	border: 1px solid #fafaff;
+
+}  */
+.cmd-wrapper { display:inline-block;}
+
+a.cmd { width: auto; height:auto; top: 0px; }
+.cmd:hover { border: 1px solid #A6C9E2;	}
+/*#submit-query { background: url("imgs/cdb-icon-load.png") no-repeat 2px center #D0E5F5; padding-left: 14px; color:#014172; } */ 
+.cmd_add { background-image: url("imgs/cdb-icon-add.png");}
+/*.cmd_add_and { background-image: url("imgs/icon_add_and.png");}
+.cmd_add_or { background-image: url("imgs/icon_add_or.png");} 
+.cmd_close { background-image: url("imgs/cdb-icon-del.png");}*/
+.cmd_columns { background-image: url("imgs/cdb-icon-columns.png");}
+.cmd_del { 	background-image: url("imgs/cdb-icon-del.png");}
+/*.cmd_detail { background-image: url("imgs/cdb-icon-detail.png");}*/
+.cmd_down {	background-image: url("imgs/cdb-icon-down.png"); }
+.cmd_filter { background-image: url("imgs/cdb-icon-filter.png"); }
+.cmd_get { background-image: url("imgs/icon_get.gif");}
+.cmd_info { background-image: url("imgs/cdb-icon-info.png");}
+.cmd_query {	background-image: url("imgs/cdb-icon-load.png");}
+.cmd_load {	background-image: url("imgs/cdb-icon-load.png");}
+.cmd_publish { background-image: url("imgs/cdb-icon-publish.png");}
+.cmd_reload {	background-image: url("imgs/cdb-icon-load.png");}
+.cmd_resubmit {	background-image: url("imgs/cdb-icon-.png");}
+.cmd_save { background-image: url("imgs/cdb-icon-save.png");}
+.cmd_savenew { background-image: url("imgs/cdb-icon-savenew.png");}
+/* .cmd_sc_delete { background-image: url("imgs/cdb-icon-del.png");} */
+.cmd_up { background-image: url("imgs/cdb-icon-up.png");}
+
+/*
+.cmd_prev { background-image: url("imgs/cdb-icon-prev.png");}
+.cmd_next { background-image: url("imgs/cdb-icon-next.png");}
+.navigation .prev { display: inline-block; background: url("imgs/cdb-icon-prev.png") no-repeat center right; padding-right:1.2em; }
+.navigation .next { display: inline-block; background: url("imgs/cdb-icon-next.png") no-repeat center left; padding-left:1.2em; margin-left:0.5em;}
+*/
+
