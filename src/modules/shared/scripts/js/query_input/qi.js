@@ -62,6 +62,11 @@ $.fn.QueryInput = function (options)
                 case "selectone":
                   new_input = genCombo(key, param);    
                   break;
+               case "multiselect":
+                  var elems = genMultiselect(key, param);
+                  new_input = elems[0];
+                  new_widget = elems[1];
+                  break; 
                 case "autocomplete":
                   new_input = genAutocomplete (key, param);    
                   break;
@@ -119,6 +124,7 @@ $.fn.QueryInput = function (options)
          
         var input = $("<input />");
          $(input).attr("name",key);
+         if (param_settings.size) $(input).attr("size",param_settings.size);
          
         return input;
     }
@@ -193,6 +199,38 @@ $.fn.QueryInput = function (options)
         }
          
         return input;
+    }
+
+/** generate a multiselect*/ 
+    function genMultiselect (key, param_settings) {
+    
+        var parent = $("<div/>");
+       var select = $("<select multiple='multiple' id='widget-" + key + "' />");
+         select.attr("name",key);         
+            //select.attr("id", settings.input_prefix + key)
+        parent.append(select);
+            
+       if (param_settings.static_source) {
+              //var scanURL = settings.fcs_source +  param_settings.index
+              var source_url = param_settings.static_source.replace(/&amp;/g,'&');
+              // if static source - try to retrieve the data 
+              $.getJSON(source_url, function(data) {
+                    param_settings.values = data.terms
+                    param_settings.values.forEach(function(v) { $(select).append("<option value='" + v.value +"' >" + v.label + "</option>") });
+                    //console.log($(input).autocomplete().source);
+              });
+        
+             //param_settings.source = fcsScan;
+        } else if (param_settings.values) {
+            //    $(input).autocomplete(param_settings);
+            param_settings.values.forEach(function(v) { $(select).append("<option value='" + v +"' >" + v + "</option>") });
+        } else { /* if no values,  rather make a textbox out of it? */ 
+          //select = 
+        }
+        
+        select.attr("id", settings.input_prefix + key)
+        select.chosen(param_settings);
+        return [select,parent.find("#input_context_chosen")];
     }
 
     
