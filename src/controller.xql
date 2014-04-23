@@ -16,6 +16,12 @@ declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
 
+
+
+(:~ if debug=controller - divert to debugging controller
+if debug set at all (possible config:app-info() is activated in the UI (depends on the template)
+:)
+let $debug := request:get-parameter("debug", '')
 (:~
  : The variable <code>$params</code> holds contextual request parameters. 
  : Tokenizing the $exist:path by slashes we expect the following structure:   
@@ -50,9 +56,9 @@ let $project :=
     if (config:project-exists($params[2])) 
     then $params[2]
     else 
-        if (config:project-exists(request:get-parameter('project',"default"))) 
-        then request:get-parameter('project',"default")
-        else "default"
+        if (config:project-exists(request:get-parameter('project',$config:DEFAULT_PROJECT_ID))) 
+        then request:get-parameter('project',$config:DEFAULT_PROJECT_ID)
+        else $config:DEFAULT_PROJECT_ID
 
 (:~ if x-context parameter not set, set project-id as x-context :)
 let $x-context := request:get-parameter("x-context", $project)
@@ -90,7 +96,8 @@ let $full-config :=  config:config($project),
 ~:)
 let $module := 
         if ($params[3] = config:list-modules()) 
-        then $params[3] 
+        then $params[3]            
+        else if ($project = $config:DEFAULT_PROJECT_ID) then $params[2]
         else ''
 
 (:~
@@ -156,8 +163,20 @@ let $protected := config:param-value($project-config-map,'visibility')='protecte
  : in the project's configuration file (<code>project.xml</code>).
  : FIXME: this is inconsistent with the implementation in config:param:value that operates on security-manager information
 ~:)
-let $allowed-users := tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
+(:let $allowed-users := 'guest' :)
+let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
 
+let $project-dir := config:param-value($project-config-map,'project-dir')
+(:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
+let $domain:= "org.exist.login"
+let $db-user := request:get-attribute($domain||".user")
+(:let $db-user := xmldb:get-current-user():)
+let $shib-user := config:shib-user()
+let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+                    let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
+                    return 'shib'
+                    else $db-user
+let $user-may := ($user=$allowed-users)
 (:~
  : The variable <code>$domain</code> holds the name of the login domain to which the users  
  : of the current cr-xq instance will be logged into.
@@ -166,7 +185,10 @@ let $allowed-users := tokenize(config:param-value($full-config-map,'users'),'\s*
  :
  : @see call to login:set-user() below.    
 ~:)
-let $domain:=   "at.ac.aac.exist."||$cr-instance
+
+let $exist-resource-index := if ($exist:path eq "/" or $rel-path eq "/") 
+            then 'index.html' 
+            else $exist:resource 
 
 return         
 
@@ -175,11 +197,39 @@ switch (true())
      : Requests for the bases of the cr-xq instance or a cr-project are redirected 
      : to the 'index.html' view.         
     ~:)
-    case ($exist:path eq "/" or $rel-path eq "/") return 
-        (: forward root (project) path to index.html :)
+    case ($debug='controller') return 
+(:        <DEBUG>{$exist-resource-index, '-', $exist:resource }</DEBUG>:)
+         <DEBUG >USER exists db-user: {exists($db-user)}; project-dir: {$project-dir}; usermay: {$user-may}; user:{$user}; shib-user:{$shib-user}
+         <allowed-users>{$allowed-users}</allowed-users>
+         <current-user >{($db-user,xmldb:get-current-user())}</current-user>
+         <attrs>{string-join(request:attribute-names(),', ')}</attrs>
+         </DEBUG>
+         
+(:        <DEBUG>module: {$module}, project: {$project} </DEBUG>:)
+    (:case (($exist:path eq "/" or $rel-path eq "/" ) return 
+        (\: forward root (project) path to index.html :\)
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <redirect url="index.html"/>
+            <redirect url="index.html"/>    
         </dispatch>
+    :)    (:let $path := config:resolve-template-to-uri($project-config-map, "index.html")
+        return <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <forward url="{$path}" />    
+                    <view>
+                        <forward url="{$exist:controller}/core/view.xql" >
+                            <add-parameter name="project" value="{$project}"/>
+                            <add-parameter name="x-context" value="{$x-context}"/>
+                            <add-parameter name="exist-path" value="{$exist:path}"/>
+                            <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                            <add-parameter name="exist-controller" value="{$exist:controller}"/>
+                            <add-parameter name="exist-root" value="{$exist:root}"/>
+                            <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
+                        </forward>
+                           <error-handler>
+                   			<forward url="{$exist:controller}/error-page.html" method="get"/>
+                   			<forward url="{$exist:controller}/core/view.xql"/>
+                   		</error-handler>
+                    </view>
+                </dispatch>:)
         
     (:~
      : Requests that should be proxied 
@@ -199,14 +249,15 @@ switch (true())
     (:~
      : Requests for HTML views are handled by the templating system after check for user authorization. 
     ~:)
-    case (ends-with($exist:resource, ".html")) return
+    case (ends-with($exist-resource-index, ".html")) return
         (: this is a sequence of two steps, delivering result XOR (either one or the other) :)
         (: step 1: only delivers a result if the project's visibility is protected :)
         (if ($protected) 
         then 
             let $login:=login:set-user($domain, (), false())
             return
-            if (not(request:get-attribute($domain||".user")=$allowed-users)) 
+            (:if (not(request:get-attribute($domain||".user")=$allowed-users)):) 
+            if (not($user-may))            
             then
 (:                let $log:=util:log("INFO",'user='||request:get-attribute($domain||".user")):)
 (:                return:)
@@ -217,7 +268,7 @@ switch (true())
                             <add-parameter name="project" value="{$project}"/>
                             <add-parameter name="x-context" value="{$x-context}"/>
                             <add-parameter name="exist-path" value="{$exist:path}"/>
-                            <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                            <add-parameter name="exist-resource" value="{$exist-resource-index}"/>
                             <add-parameter name="exist-controller" value="{$exist:controller}"/>
                             <add-parameter name="exist-root" value="{$exist:root}"/>
                             <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
@@ -231,10 +282,10 @@ switch (true())
         else (), 
        
        (: step 2: only delivers result if login is not necessary (i.e. project not protected or user already logged-in) :)
-       if (not($protected) or request:get-attribute($domain||".user")=$allowed-users) 
+       if (not($protected) or $user-may) 
        then
-            let $user := request:get-attribute($domain||".user")
-            let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
+(:            let $user := request:get-attribute($domain||".user"):)
+            let $path := config:resolve-template-to-uri($project-config-map, if ($exist-resource-index='index.html') then $exist-resource-index else $rel-path   )
             return  
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$path}" />    
@@ -293,7 +344,7 @@ switch (true())
      : projectAdmin module
     ~:)
     case ($module = "projectAdmin" ) return
-        let $user := request:get-attribute($domain||".user")
+(:        let $user := request:get-attribute($domain||".user"):)
         let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
         return
             let $target := 
@@ -361,9 +412,10 @@ switch (true())
     case (not($module='')) return
         (if ($module-protected) 
         then 
+            (: CHECK: $logout ?? :)
             let $logout:= login:set-user($domain, (), false())
             return
-                if (not(request:get-attribute($domain||".user")=$module-users)) 
+                if (not($user-may)) 
                 then
                     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                         <forward url="{$exist:controller}/modules/access-control/login.html"/>
@@ -384,9 +436,9 @@ switch (true())
         (: not protected, so also go to second part :)
         else (), 
         
-        if (not($module-protected) or request:get-attribute($domain||".user")=$module-users) 
+        if (not($module-protected) or $user-may) 
         then
-            let $user := request:get-attribute($domain||".user")          
+(:            let $user := request:get-attribute($domain||".user")          :)
             (: used by get-module :)          
             let $corr-rel-path := if (starts-with($rel-path, "/"||$module)) 
                                   then substring-after($rel-path, "/"||$module) 
@@ -403,6 +455,7 @@ switch (true())
                         <add-parameter name="path" value="{$path}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
                         <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                        <add-parameter name="exist-controller" value="{$exist:controller}"/>
                         <add-parameter name="exist-root" value="{$exist:root}"/>
                          <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
                          <add-parameter name="rel-path" value="{$corr-rel-path}"/>
@@ -449,26 +502,28 @@ switch (true())
         </dispatch>
     
 
-    case (starts-with($rel-path, "/get")) return
-        let $id := request:get-parameter ('id',substring-after($rel-path,'/get/'))
-        let $format := request:get-parameter ('format','xml')
+   (: case (starts-with($rel-path, "/get")) return
+        let $id := request:get-parameter ('id',substring-before(substring-after($rel-path,'/get/'),'/'))
+        let $format := request:get-parameter('format','xml')
         return
             if ($format='xml') 
             then
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{$exist:controller}/modules/viewer/get.xql">
+                    <forward url="{$exist:controller}/modules/get/get.xql">
                         <add-parameter name="resource-id" value="{$id}"/>
                         <add-parameter name="project" value="{$project}"/>
+                        <add-parameter name="rel-path" value="{$rel-path}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
                         <add-parameter name="exist-resource" value="{$exist:resource}"/>
                     </forward>
                 </dispatch>
              else
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{$exist:controller}/modules/viewer/get.xql">
+                    <forward url="{$exist:controller}/modules/get/get.xql">
                         <add-parameter name="resource-id" value="{$id}"/>
                         <add-parameter name="project" value="{$project}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
+                        <add-parameter name="rel-path" value="{$rel-path}"/>
                         <add-parameter name="exist-resource" value="{$exist:resource}"/>
                     </forward>
                     <view>
@@ -482,7 +537,7 @@ switch (true())
                         </forward>
                     </view>
                 </dispatch>
-        
+        :)
     default return
     (:~
      : everything else is passed through 
