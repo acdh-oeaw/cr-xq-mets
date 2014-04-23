@@ -4,6 +4,7 @@ import module namespace templates="http://exist-db.org/xquery/templates" at "tem
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace project = "http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
+import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "repo-utils.xqm";
 
@@ -68,6 +69,21 @@ function app:list-resources($node as node(), $model as map(*), $x-format) {
 (:    return $dmd:)
     
 };
+
+
+declare 
+    %templates:wrap    
+    %templates:default("x-format", "html")
+function app:toc($node as node(), $model as map(*), $x-format) {
+    
+    let $project-pid := $model('config')/xs:string(@OBJID)
+    let $struct := resource:get-toc-resolved($project-pid)
+                
+    return repo-utils:serialise-as($struct, $x-format, 'structMap', $model("config"))
+   
+};
+
+
 
 declare 
     %templates:wrap
