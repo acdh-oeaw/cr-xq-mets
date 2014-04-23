@@ -21,6 +21,21 @@ function app:title($node as node(), $model as map(*)) {
  
 };
 
+(:~  generates an html-snippet for the templates (with current user and login/logout links)
+:)
+declare 
+    %templates:wrap
+function app:user ($node as node(), $model as map(*)) {
+
+    let $back-url := replace(replace(request:get-url(),'http:','https:'),'exist2/apps/cr-xq-mets','lrp')
+
+    let $shib-user := config:shib-user()
+    let $user := if ($shib-user) then $shib-user else xmldb:get-current-user()                                     
+    return <div id="user" >user: <span class="current-user">{$user}</span><br/> 
+        <a href="https://clarin.oeaw.ac.at/Shibboleth.sso/Login?target={$back-url}">Log on</a>|
+        <a href="https://clarin.oeaw.ac.at/Shibboleth.sso/Logout">Log off</a></div>
+};
+
 declare 
     %templates:wrap
 function app:logo($node as node(), $model as map(*)) {
@@ -59,10 +74,14 @@ declare
     %templates:wrap    
     %templates:default("x-format", "html")
 function app:list-resources($node as node(), $model as map(*), $x-format) {
-    
+   
+   let $log := util:log-app("INFO",$config:app-name,"app:list-resources") 
 (:    let $structMap := project:list-resources($model("config")):)
-    let $ress := project:list-resources-resolved($model("config"))
-    
+    (: project/resource:* couldn't correctly handle the config sequence chaos as is in $model("config") 
+    so rather give them just the project-pid :) 
+    let $project-pid := config:param-value($model("config"),$config:PROJECT_PID_NAME)    
+    let $ress := project:list-resources-resolved($project-pid)
+    let $log := util:log-app("INFO",$config:app-name,"app:list-resources-END")
     (:for $res in $ress
         let $dmd := resource:dmd($res, $model("config") ):)            
         return repo-utils:serialise-as($ress, $x-format, 'resource-list', $model("config"))
