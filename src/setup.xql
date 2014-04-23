@@ -43,7 +43,7 @@ xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf")
 util:log("INFO", "** setting up writer account **"),
 if (not(sm:user-exists(xs:string($local:cr-writer/write-user)))) then sm:create-account(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred),()) else sm:passwd(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred)),
 util:log("INFO", "** setting up cr-xq system account **"),
-if (not(sm:user-exists("cr-xq"))) then sm:create-account("cr-xq","cr=xq!",()) else sm:passwd("cr-xq","cr=xq!"),
-if (not(sm:group-exists("cr-admin"))) then sm:create-group("cr-admin","cr-xq","admin") else (),
+if (not(sm:user-exists($config:system-account-user))) then sm:create-account($config:system-account-user,$config:system-account-pwd,()) else sm:passwd($config:system-account-user,$config:system-account-pwd),
+if (not(sm:group-exists("cr-admin"))) then sm:create-group("cr-admin",$config:system-account-user,"admin") else (),
 util:log("INFO", "** setting up default project 'defaultProject' **"),
 project:new("defaultProject")
