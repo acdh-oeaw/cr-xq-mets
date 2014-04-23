@@ -1,29 +1,27 @@
 /*********************/
-/* basic page/blocks layout */ 
-
-
-/* wireframe for debugging */
-/*div {border:1px dotted grey; }*/
-
-
+/* basic page/blocks layout */
+/* wireframe for debugging */ /*div {border:1px dotted grey; }*/
 body{
-    margin:10px;
+margin:10px;
 }
-
-
 /* ********************* */
 /* header */
-
-#header {
-       margin-bottom: 1em;
-       height: 70px;       
+#header{
+margin-bottom:1em;
+height:70px;
 }
-
-#site-name { display:inline; padding-left: 20px; position:absolute; top:20px;}
-#logo { display:block; padding-top: 10px; float: left;}
-
+#site-name{
+    display:inline;
+    padding-left:20px;
+    position:absolute;
+    top:20px;
+}
+#logo{
+    display:block;
+    padding-top:10px;
+    float:left;
+}
 /*#top-menu {position: absolute; top: 50px; display:inline-block; padding-left: 20px; left:30%; }
-
 
 #query-input { padding: 4px;  max-width:700px;  }
 #repositories {margin: 6px 0px; }
@@ -31,52 +29,139 @@ body{
 #user {text-align: right;}
 #welcome {max-width: 600px; padding: 10px;}
 */
-
 /* ********** */
-/* navigation */
+/* menu */
+#menu{
+    display:inline;
+}
+#top-menu{
+    display:inline;
+    position:absolute;
+    top:50px;
+}
+#top-menu li{
+    display:inline;
+    padding:0 1em;
+    background:none;
+}
 
-#navigation {display:inline; }
-#top-menu {display:inline; position: absolute; top: 50px; }
-#top-menu li { display: inline; padding: 0 1em; background: none;}
+#user {float:right;}
+
+/* set the box-model to border for easier widths setting */
+#navigation, #main, #detail,
+.static-text, .intro-image{
+    float:left;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    box-sizing:border-box;
+    -moz-background-clip:padding-box !important;
+    -webkit-background-clip:padding-box !important;
+    background-clip:padding-box !important;
+/*    border:1px dashed red;*/
+    margin-right: 1%; 
+}
 
 
-#sidebar { width: 20%; min-width: 150px;  float: left;}
+#navigation{
+    width:24%;
+    min-width:150px;
+    float:left;
+    /*margin-right:1em; */
+}
 /*#left-menu {float: left; width:250px; height:500px; overflow:auto;}*/
-
 
 
 /*******************/
 /* main */
+#main{
+    /* margin-left:2em; */
+    float:left; 
+    width:29%; /* + 1% margin-right */
+}
 
-#main {margin-left: 2em; float:left; width: 75%;} 
+.static-text{
+    float:left;
+    width:40%;
+    max-width:600px;
+    padding:10px;
+    margin-left: 5%;
+/*    clear:both;*/
+}
 
+.intro-image {
+    float: left;
+    padding: 30px;
+    width: 40%;
+}
 
-#welcome {max-width: 600px; padding: 10px; clear:both;}
+.intro-image img { width: 100%; }
+
 /*.listing {max-width: 600px;}*/
+#results{
+    float:left;
+}
 
-#results { float: left;}
+.result-header .note {display:none;}
+
+.result-navigation {float:right;}
+
 /*#content, #main {float: left;}*/
-
 /*******************/
 /* detail */
 
+#detail{
+/*    float:right;*/
+    width:45%;
+    margin-right:0;
+}
+#detail .navigation {float:right;}
 
-#detail  {float:right; width: 40%; }
+#detail .data-view.full, #detail .data-view.facs {
+     width: 45%;
+    float:left;
+}
+
+/* helper to finish off floating sequences */
+.div-after {
+    clear:both;    
+}
+
+#detail .data-view img {
+    width: 100%;    
+}
+
+
 /* padding-top: 5em;
 			#impressum {float:left; margin-left: 2%; width:60%; }
 			#detail {float:right; width:36%; display:none; }
 			#detail-front {float:right; width:35%; margin-top:7em; margin-left:3%;}
 */
-
 /* customize jquery-ui*/
+.ui-widget{
+    font-size:1em;
+    font-family:inherit;
+}
+.ui-accordion .ui-accordion-content{
+    padding:4px 8px;
+}
+.ui-widget-header{
+    padding-left:6px;
+}
+.ui-widget-content{
+    padding:6px;
+}
+.ui-dialog{
+    padding:0px;
+}
+.ui-dialog .ui-dialog-titlebar{
+    padding:0 0 0 6px;
+}
 
-.ui-widget {font-size: 1em; font-family: inherit;}
-.ui-accordion .ui-accordion-content { 	padding: 4px 8px; }
-.ui-widget-header { padding-left: 6px; }
-.ui-widget-content { padding: 6px;	}
-.ui-dialog {padding: 0px;}
-.ui-dialog .ui-dialog-titlebar { padding: 0 0 0 6px; }
-
+@media print {
+/*	ul { list-style-type: disc;	} */	
+	button {display:none;}
+    .select-layout {display:none}
+}
 
 /*
  * .ui-accordion .ui-accordion-header { 	padding-left: 12px; }
