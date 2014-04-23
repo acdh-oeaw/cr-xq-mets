@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:sru="http://www.loc.gov/zing/srw/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fcs="http://clarin.eu/fcs/1.0" version="2.0">
-    
-    
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:cr="http://aac.ac.at/content_repository" xmlns:sru="http://www.loc.gov/zing/srw/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fcs="http://clarin.eu/fcs/1.0" version="2.0">
+
+
     <!--
         two tasks (in separate calls, managed by $mode-param):
         1. produces an index by grouping content	
@@ -11,10 +11,14 @@
     <xsl:param name="mode" select="'aggregate'"/>
     <xsl:param name="sort" select="'text'"/>
     <xsl:param name="filter" select="''"/>
-    <xsl:param name="filter-mode" select="if (ends-with($filter,'*')) then 'starts-with' else 'contains'"/> <!-- contains, starts-with -->
+    <xsl:param name="filter-mode" select="if (ends-with($filter,'*')) then 'starts-with' else 'contains'"/>
+    <!-- contains, starts-with -->
     <xsl:param name="start-item" select="1"/>
     <xsl:param name="response-position" select="1"/>
-    <xsl:param name="max-items" select="100"/> <!-- if max-items=0 := return all -->
+    <xsl:param name="max-items" select="100"/>
+    <xsl:param name="x-context"/>
+    <!-- if max-items=0 := return all -->
+    <xsl:output indent="yes"/>
     <xsl:template match="/">
         <!--		
             <params mode="{$mode}" sort="{$sort}"  /> -->
@@ -25,13 +29,15 @@
                     <!--                    don't go descendants-axis, because of nested terms
                         <xsl:apply-templates mode="subsequence" select=".//sru:terms"/>-->
                     <xsl:apply-templates mode="subsequence" select="sru:scanResponse/sru:terms"/>
-                    <xsl:copy-of select="sru:scanResponse/sru:extraResponseData"/>
+                    <!-- dont copy the sru:terms on next level they are handled recursively in subsequence-mode -->
+                    <xsl:copy-of select="sru:scanResponse/sru:extraResponseData/*[not(local-name()='terms')]"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:variable name="terms">
                         <xsl:apply-templates/>
                     </xsl:variable>
-                    <xsl:copy-of select="$terms"/>
+                    <!--                    <xsl:sequence select="$terms"/>-->
+                    <xsl:apply-templates/>
                     <sru:extraResponseData>
                         <fcs:countTerms>
                             <xsl:value-of select="count($terms//sru:term)"/>
@@ -50,45 +56,19 @@
         </sru:scanResponse>
     </xsl:template>
     <xsl:template match="nodes[*]">
-        <xsl:variable name="nodes" select="*"/>
-        <xsl:variable name="count-text" select="count($nodes/text()[.!=''])"/>
-        <!-- FIXME: this is not correct, because it counts individual text-nodes.
-            if there are nodes with subnodes, text in every child is counted extra-->
-        <xsl:variable name="distinct-text-count" select="count(distinct-values($nodes/text()))"/>
         <sru:terms>
             <xsl:copy-of select="@*"/>
             <xsl:choose>
-                <xsl:when test="$sort='text'">
-                    <xsl:for-each-group select="$nodes" group-by=".//text()">
-                        <xsl:sort select=".//text()" data-type="text" order="ascending"/>
-                        <!--                        <xsl:sort select="count(current-group())" data-type="number" order="descending"/>-->
-                        <sru:term>
-                            <sru:value>
-                                <xsl:value-of select=".//text()"/>
-                            </sru:value>
-                            <sru:numberOfRecords>
-                                <xsl:value-of select="count(current-group())"/>
-                            </sru:numberOfRecords>
-                        </sru:term>
-                    </xsl:for-each-group>
+                <xsl:when test="group">
+                    <xsl:apply-templates/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:for-each-group select="$nodes" group-by=".//text()">
-                        <xsl:sort select="count(current-group())" data-type="number" order="descending"/>
-                        <sru:term>
-                            <sru:value>
-                                <xsl:value-of select=".//text()"/>
-                            </sru:value>
-                            <sru:numberOfRecords>
-                                <xsl:value-of select="count(current-group())"/>
-                            </sru:numberOfRecords>
-                        </sru:term>
-                    </xsl:for-each-group>
+                    <xsl:call-template name="group"/>
                 </xsl:otherwise>
             </xsl:choose>
         </sru:terms>
     </xsl:template>
-    
+
     <!-- if filter by default use only filtered data, except when sort=text and either filter mode = starts-with (only sensible result )
         or the response-position is other than 1 (needed for navigation scan)
         than use the subsequence of the data-set, starting from first filter-matching term +/- response-position  -->
@@ -97,14 +77,12 @@
         <!-- position of the matching term within the index, if there is a filter -->
         <xsl:variable name="filtered" select="./sru:term[if ($filter!='') then if ($filter-mode='starts-with') then (starts-with(lower-case(sru:value),substring-before(lower-case($filter),'*')) or starts-with(lower-case(sru:displayTerm),substring-before(lower-case($filter),'*'))) else (contains(lower-case(sru:value), lower-case($filter)) or contains(lower-case(sru:displayTerm), lower-case($filter)))  else true()]"/>
         <xsl:variable name="match-position" select="count(sru:term[.=$filtered[1]]/preceding-sibling::sru:term)"/>
-        
+
         <!--        <xsl:message><xsl:value-of select="$match-position" /></xsl:message>-->
-        <xsl:message>scan-clause: <xsl:value-of select="$scan-clause"/>
-            filter: <xsl:value-of select="$filter"/>
-            only-filtered: <xsl:value-of select="$only-filtered"/>
-            count: <xsl:value-of select="count($filtered)"/>
+        <xsl:message>scan-clause: <xsl:value-of select="$scan-clause"/> filter: <xsl:value-of select="$filter"/> only-filtered: <xsl:value-of select="$only-filtered"/> count:
+                <xsl:value-of select="count($filtered)"/>
         </xsl:message>
-        
+
         <!-- expect ordered data 
             except for cmd.profile ! -->
         <xsl:variable name="ordered">
@@ -117,7 +95,8 @@
                                 <xsl:copy-of select="."/>
                             </xsl:for-each>
                         </xsl:when>
-                        <xsl:otherwise> <!-- sort=size -->
+                        <xsl:otherwise>
+                            <!-- sort=size -->
                             <xsl:for-each select="$filtered">
                                 <xsl:sort select="sru:numberOfRecords" data-type="number" order="descending"/>
                                 <xsl:copy-of select="."/>
@@ -135,11 +114,11 @@
         </xsl:variable>
         <xsl:message>ordered: <xsl:value-of select="count($ordered/*)"/>
         </xsl:message>
-        
+
         <!-- 		<xsl:variable name="count-items" select="count($filtered)" />-->
         <xsl:copy>
             <!--            <xsl:copy-of select="@*" />-->
-            
+
             <!--			<xsl:attribute name="count_items" select="if (xs:integer($count-items) > xs:integer($max-items)) then $max-items else $count-items" /> -->
             <!--            <xsl:message>cnt:<xsl:value-of select="count($ordered/*)"/>-match:<xsl:value-of select="$match-position"/>-start:<xsl:value-of select="$effective-start-item"/>-end:<xsl:value-of select="$effective-end-item"/>
                 </xsl:message>-->
@@ -157,8 +136,8 @@
             <xsl:copy-of select="*[not(local-name()='extraTermData')]"/>
             <!-- <xsl:attribute name="pos" select="position()"/> -->
             <sru:extraTermData>
-<!--                pass pre-existing sru:extraTermData through-->                
-                <xsl:copy-of select="sru:extraTermData/*"/>
+                <!--                pass pre-existing sru:extraTermData through-->
+                <xsl:copy-of select="sru:extraTermData/*[not(local-name()='terms')]"/>
                 <fcs:position>
                     <xsl:value-of select="position() + $start-pos"/>
                 </fcs:position>
@@ -166,5 +145,94 @@
                 <xsl:apply-templates select="sru:extraTermData/sru:terms" mode="subsequence"/>
             </sru:extraTermData>
         </xsl:copy>
+    </xsl:template>
+    <xsl:template match="group">
+        <sru:term>
+            <sru:value>
+                <xsl:value-of select="@value"/>
+            </sru:value>
+            <sru:displayTerm>
+                <xsl:value-of select="if(@label) then @label else @value"/>
+            </sru:displayTerm>
+            <sru:extraTermData>
+                <!--<cr:type>
+                    <xsl:value-of select="@facet"/>
+                </cr:type>-->
+                <xsl:choose>
+                    <xsl:when test="v">
+                        <xsl:variable name="terms" as="item()*">
+                            <xsl:call-template name="group"/>
+                        </xsl:variable>
+                        <xsl:message select="'here'"/>
+                        <xsl:message select="count($terms)"/>
+                        <fcs:countTerms>
+                            <xsl:value-of select="count($terms)"/>
+                        </fcs:countTerms>
+                        <fcs:position>
+                            <xsl:number/>
+                        </fcs:position>
+                        <sru:terms>
+                            <xsl:sequence select="$terms"/>
+                        </sru:terms>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <fcs:countTerms>
+                            <xsl:value-of select="count(*)"/>
+                        </fcs:countTerms>
+                        <fcs:position>
+                            <xsl:number/>
+                        </fcs:position>
+                        <sru:terms>
+                            <xsl:apply-templates/>
+                        </sru:terms>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </sru:extraTermData>
+        </sru:term>
+    </xsl:template>
+    <xsl:template name="group">
+        <xsl:variable name="count-text" select="count(*/text()[.!=''])"/>
+        <!-- FIXME: this is not correct, because it counts individual text-nodes.
+            if there are nodes with subnodes, text in every child is counted extra-->
+        <xsl:variable name="distinct-text-count" select="count(distinct-values(*/text()))"/>
+        <xsl:choose>
+            <xsl:when test="$sort='text'">
+                <xsl:for-each-group select="v" group-by="normalize-space(.)">
+                    <xsl:sort select="xs:string(.)" data-type="text" order="ascending"/>
+                    <!--                        <xsl:sort select="count(current-group())" data-type="number" order="descending"/>-->
+                    <sru:term>
+                        <sru:value>
+                            <xsl:value-of select=".//text()"/>
+                        </sru:value>
+                        <xsl:if test="exists(.//@displayTerm)">
+                            <sru:displayTerm>
+                                <xsl:value-of select="(current-group()//@displayTerm)[1]"/>
+                            </sru:displayTerm>
+                        </xsl:if>
+                        <sru:numberOfRecords>
+                            <xsl:value-of select="count(current-group())"/>
+                        </sru:numberOfRecords>
+                    </sru:term>
+                </xsl:for-each-group>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:for-each-group select="v" group-by="normalize-space(.)">
+                    <xsl:sort select="count(current-group())" data-type="number" order="descending"/>
+                    <sru:term>
+                        <sru:value>
+                            <xsl:value-of select=".//text()"/>
+                        </sru:value>
+                        <xsl:if test="exists(.//@displayTerm)">
+                            <sru:displayTerm>
+                                <xsl:value-of select="(current-group()//@displayTerm)[1]"/>
+                            </sru:displayTerm>
+                        </xsl:if>
+                        <sru:numberOfRecords>
+                            <xsl:value-of select="count(current-group())"/>
+                        </sru:numberOfRecords>
+                    </sru:term>
+                </xsl:for-each-group>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 </xsl:stylesheet>
