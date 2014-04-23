@@ -15,10 +15,10 @@
     <xsl:param name="default-analyzer-class">org.apache.lucene.analysis.standard.StandardAnalyzer</xsl:param>
     <xsl:template match="/map">
         <xsl:variable name="range-indexes" as="item()+">
-            <xsl:apply-templates select="//index[@index-type!='fulltext' or not(@index-type)]"/>
+            <xsl:apply-templates select="//index[@index-type!='ft' or not(@index-type)]"/>
         </xsl:variable>
         <xsl:variable name="fulltext-indexes" as="item()+">
-            <xsl:apply-templates select="//index[@index-type='fulltext'][path/node()]"/>
+            <xsl:apply-templates select="//index[@index-type='ft'][path/node()]"/>
         </xsl:variable>
         <collection>
             <index xmlns:cr="http://aac.ac.at/content_repository" xmlns:fcs="http://clarin.eu/fcs/1.0">
@@ -50,7 +50,7 @@
     <xsl:template match="/map/namespaces/ns">
         <xsl:namespace name="{@prefix}" select="@uri"/>
     </xsl:template>
-    <xsl:template match="index[@index-type='fulltext']">
+    <xsl:template match="index[@index-type='ft']">
         <xsl:for-each select="@use">
             <text qname="{index:qnamesFromPath(.)}"/>
         </xsl:for-each>
