@@ -5,13 +5,19 @@ import module namespace repo-utils = "http://aac.ac.at/content_repository/utils"
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 (:import module namespace master = "http://aac.ac.at/content_repository/master" at "master.xqm";:)
 import module namespace project = "http://aac.ac.at/content_repository/project" at "project.xqm";
+import module namespace handle = "http://aac.ac.at/content_repository/handle" at "../modules/resource/handle.xqm";
+import module namespace toc = "http://aac.ac.at/content_repository/toc" at "toc.xqm";
 import module namespace rf = "http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
+import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "wc.xqm";
+import module namespace lt = "http://aac.ac.at/content_repository/lookuptable" at "lookuptable.xqm";
+import module namespace facs = "http://aac.ac.at/content_repository/facs" at "facs.xqm";
+
 
 declare namespace mets="http://www.loc.gov/METS/";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
-
+declare namespace cmd="http://www.clarin.eu/cmd/";
 
 
 (: declaration of helper namespaces for better code structuring :)
@@ -25,8 +31,9 @@ declare function resource:make-file($fileid as xs:string, $filepath as xs:string
         switch($type)
             case "workingcopy"          return $config:RESOURCE_WORKINGCOPY_FILE_USE
             case "wc"                   return $config:RESOURCE_WORKINGCOPY_FILE_USE
-            case "resourcefragments"    return $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE
+            case "resourcefragments"    return $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE            
             case "fragments"            return $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE
+            case "lookuptable"          return $config:RESOURCE_LOOKUPTABLE_FILE_USE
             case "orig"                 return $config:RESOURCE_MASTER_FILE_USE
             case "master"               return $config:RESOURCE_MASTER_FILE_USE 
             default                     return ()
@@ -40,29 +47,107 @@ declare function resource:make-file($fileid as xs:string, $filepath as xs:string
 };
 
 
-declare 
-    %rest:DELETE
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}")
-function resource:purge($resource-pid as xs:string, $project-pid as xs:string){
+(:~We might want to transform a resource's master document before indexing, extracting fragments etc. 
+ : This can be done by overing the transform templates of the working stylesheet. This function sets the 
+ : path of a XSL file with those templates. 
+~:)
+declare function resource:set-preprocess-xsl-path($path as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+    let $project:= project:get($project-pid),
+        $current-path := resource:get-preprocess-xsl-path($resource-pid,$project-pid),
+        $behavior-by-current-path := $project//mets:behavior[mets:mechanism/@xlink:href = $current-path][@BTYPE = $wc:behavior-btype],
+        $behavior-by-new-path := $project//mets:behavior[mets:mechanism/@xlink:href = $path][@BTYPE = $wc:behavior-btype],
+        $behaviorSec := $project//mets:behaviorSec
+    return 
+        if ($current-path = "")
+        then 
+            (:check whether there exists a new behavior element with the path to be set :)
+            if (exists($behavior-by-new-path))
+            (: if yes, then just add the $resource-pid to the parent::behavior's @STRUCTID attribute :)
+            then 
+                let $structID := $behavior-by-new-path/@STRUCTID
+                return update value $structID with $structID||" "||$resource-pid
+            (: otherwise check if there's a behaviorSec in the mets record :)
+            else
+                let $behaviorSec := $project//mets:behaviorSec,
+                    $new-behaviour := <mets:behavior BTYPE="{$wc:behavior-btype}" STRUCTID="{$resource-pid}">
+                                        <mets:mechanism LOCTYPE="URL" xlink:href="{$path}"/>
+                                      </mets:behavior>
+                return 
+                    if (exists($behaviorSec)) 
+                    then update insert $new-behaviour into $behaviorSec
+                    else update insert <mets:behaviorSec>{$new-behaviour}</mets:behaviorSec> into $project
+                        
+        else 
+             if ($current-path eq $path)
+             then ()
+             else
+                (:check whether there exists a new behavior element with the path to be set :)
+                if (exists($behavior-by-new-path))
+                then 
+                    (: if yes, then just add the $resource-pid to the parent::behavior's @STRUCTID attribute ... :)
+                    let $structID := $behavior-by-new-path/@STRUCTID
+                    let $rm-current := resource:remove-preprocess-xsl-path($resource-pid,$project-pid)
+                    return update value $structID with $structID||" "||$resource-pid
+                else
+                    (: check whether the current behavior element is shared with other resources :)
+                    if ($behavior-by-current-path/@STRUCTID eq $resource-pid)
+                    then update value $behavior-by-current-path/mets:mechanism/@xlink:href with $path
+                    else 
+                        let $rm-current-behavior := resource:remove-preprocess-xsl-path($resource-pid,$project-pid)
+                        let $new-behavior := <mets:behavior BTYPE="{$wc:behavior-btype}" STRUCTID="{$resource-pid}">
+                                                <mets:mechanism LOCTYPE="URL" xlink:href="{$path}"/>
+                                              </mets:behavior>
+                        return 
+                            if (exists($behaviorSec)) 
+                            then update insert $new-behavior into $behaviorSec
+                            else update insert <mets:behaviorSec>{$new-behavior}</mets:behaviorSec> into $project
+};
+
+declare function resource:remove-preprocess-xsl-path($resource-pid as xs:string, $project-pid as xs:string) as empty() {
+    let $project:= project:get($project-pid),
+        $current-path := resource:get-preprocess-xsl-path($resource-pid,$project-pid),
+        $behavior-by-current-path := $project//mets:behavior[mets:mechanism/@xlink:href = $current-path][@BTYPE = $wc:behavior-btype]
+    return
+        if ($behavior-by-current-path/@STRUCTID eq $resource-pid)
+        then
+            if (count($behavior-by-current-path/parent::*/*) eq 1)
+            then update delete $behavior-by-current-path/parent::*
+            else update delete $behavior-by-current-path
+        else update value $behavior-by-current-path/@STRUCTID with string-join(tokenize($behavior-by-current-path/@STRUCTID,'\s+')[. ne $resource-pid],' ')
+            
+};
+
+declare function resource:get-preprocess-xsl-path($resource-pid as xs:string, $project-pid as xs:string) as xs:string? {
+    let $project:= project:get($project-pid)
+    let $xsl-behavior := $project//mets:behavior[@BTYPE = $wc:behavior-btype][some $x in tokenize(@STRUCTID,'\s') satisfies $x eq $resource-pid]
+    return $xsl-behavior/mets:mechanism/xs:string(@xlink:href)
+};
+
+
+declare function resource:purge($resource-pid as xs:string, $project-pid as xs:string) as empty() {
     resource:purge($resource-pid,$project-pid,())
 };
 
-declare
-    %rest:DELETE
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}")
-    %rest:query-param("delete-data","{$delete-data}")
-function resource:purge($resource-pid as xs:string, $project-pid as xs:string, $delete-data as xs:boolean*) as empty() {
-    if ($delete-data)
-    then
-        let $files := resource:files($resource-pid,$project-pid)
-        return  
-            for $f in $files//mets:file/mets:FLocat/@xlink:href
+declare function resource:purge($resource-pid as xs:string, $project-pid as xs:string, $delete-data as xs:boolean*) as empty() {
+    let $files := resource:files($resource-pid,$project-pid)
+    let $remove-data :=  
+        if ($delete-data)
+        then  
+            for $f in $files//mets:file/mets:FLocat/xs:string(@xlink:href)
             return
-                let $filename:=tokenize($f,'/')[last()],
-                    $path := substring-before($f,$filename)
-                return xmldb:remove($filename,$path)
-    else 
-    ()
+                let $filename:= tokenize($f,"/")[last()],
+                    $path :=    substring-before($f,"/"||$filename)
+                return
+                    try {   
+                        xmldb:remove($path,$filename)
+                    } catch * {
+                        ()
+                    }
+        else ()
+    let $remove-prep-xsl-path := resource:remove-preprocess-xsl-path($resource-pid,$project-pid) 
+    let $remove-files := update delete $files 
+    let $remove-div := update delete resource:get($resource-pid,$project-pid)
+    return ()
 };
 
 declare function resource:generate-pid($project-pid as xs:string) as xs:string{
@@ -71,32 +156,26 @@ declare function resource:generate-pid($project-pid as xs:string) as xs:string{
 
 declare function resource:generate-pid($project-pid as xs:string, $random-seed as xs:string?) as xs:string {
     let $project:=  project:get($project-pid),
-        $r-pids:=   $project//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]/@ID
-    let $this:pid := $project-pid||"."||replace(util:uuid($random-seed),'-','')
+        $r-pids:=   $project//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]/@ID,
+        $try-newpid := count($r-pids) + 1.,
+        $this:pid := $project-pid||"."||$try-newpid||$random-seed    
     return 
         if ($this:pid = $r-pids)
-        then resource:generate-pid($project-pid,xs:string(current-dateTime()))
+        then resource:generate-pid($project-pid,substring(util:uuid($random-seed),1,4))
         else $this:pid
 };
 
-declare
-    %rest:POST("{$data}")
-    %rest:path("/cr_xq/{$project-pid}/newResourceWithLabel")
-    %rest:header-param("resource-label", "{$resource-label}")
-function resource:new-with-label($data as document-node(), $project-pid as xs:string, $resource-label as xs:string*) {
-    let $log := util:log("INFO","*** UPLOADED DATA ***")
-    let $log := util:log("INFO",$data/*)
-    let $log := util:log("INFO","$resource-label: "||$resource-label)
-    let $log := util:log("INFO","$user: "||xmldb:get-current-user())
+declare function resource:new-with-label($data as document-node(), $project-pid as xs:string, $resource-label as xs:string*) {
+    let $log := util:log-app("INFO",$config:app-name, "*** UPLOADED DATA ***")
+(:    let $log := util:log-app("INFO",$config:app-name,$data/*):)
+    let $log := util:log-app("INFO",$config:app-name,"$resource-label: "||$resource-label)
+    let $log := util:log-app("INFO",$config:app-name,"$user: "||xmldb:get-current-user())
     let $resource-pid := resource:new($data,$project-pid, ()),
         $set-label := resource:label(document {<cr:data>{$resource-label}</cr:data>},$resource-pid,$project-pid)
-    return true()
+    return $resource-pid
 };
 
-declare
-    %rest:POST("{$data}")
-    %rest:path("/cr_xq/{$project-pid}/newResource")
-function resource:new($data as document-node(), $project-pid as xs:string){
+declare function resource:new($data as document-node(), $project-pid as xs:string){
     resource:new($data,$project-pid,())
 };
 
@@ -113,57 +192,47 @@ function resource:new($data as document-node(), $project-pid as xs:string){
  : @param $project-pid: the id of the cr-project
  : @return the resource-pid of the created resource  
 ~:)
-declare
-    %rest:POST("{$data}")
-    %rest:path("/cr_xq/{$project-pid}/newResource")
-    %rest:query-param("make-fragments","{$make-fragments}")
-function resource:new($data as document-node(), $project-pid as xs:string, $make-fragments as xs:boolean*) as xs:string? {
+declare function resource:new($data as document-node(), $project-pid as xs:string, $make-fragments as xs:boolean*) as xs:string? {
     let $mets:record := project:get($project-pid),
         $mets:projectData := $mets:record//mets:fileGrp[@ID=$config:PROJECT_DATA_FILEGRP_ID],
         $mets:structMap := $mets:record//mets:structMap[@TYPE=$config:PROJECT_STRUCTMAP_TYPE and @ID=$config:PROJECT_STRUCTMAP_ID],
         $this:resource-pid := resource:generate-pid($project-pid) 
     return
         switch (true())
-            case (not(exists($mets:record))) return util:log("INFO","no METS-Record found in config")
-            case (not(exists($mets:projectData))) return util:log("INFO","project data not found in mets-record for project "||$project-pid)
+            case (not(exists($mets:record))) return util:log-app("INFO",$config:app-name,"no METS-Record found in config")
+            case (not(exists($mets:projectData))) return util:log-app("INFO",$config:app-name,"project data not found in mets-record for project "||$project-pid)
             default return 
                 let $master_filepath := resource:master($data, $this:resource-pid, $project-pid)    
                 return
                     if ($master_filepath ne '')
                     then 
                         let $this:fileGrp:= <mets:fileGrp ID="{$this:resource-pid||$config:PROJECT_RESOURCE_FILEGRP_SUFFIX}" USE="{$config:PROJECT_RESOURCE_FILEGRP_USE}"/>,
-                            $this:resource:= <mets:div TYPE="{$config:PROJECT_RESOURCE_DIV_TYPE}" ID="{$this:resource-pid}"/>
+                            $this:resource:= <mets:div TYPE="{$config:PROJECT_RESOURCE_DIV_TYPE}" ID="{$this:resource-pid}" LABEL=""/>
                         let $update-data:= (update insert $this:fileGrp into $mets:projectData,
                                             update insert $this:resource into $mets:structMap/mets:div)
                         let $master_register := resource:add-master($master_filepath, $this:resource-pid, $project-pid)
-                        let $log := util:log("INFO","registered new resource "||$this:resource-pid||" in cr-project "||$project-pid||".")
+                        let $log := util:log-app("INFO",$config:app-name,"registered new resource "||$this:resource-pid||" in cr-project "||$project-pid||".")
                         return
                             if ($make-fragments eq true())
                             then rf:generate($this:resource-pid,$project-pid)
                             else $this:resource-pid
-                    else util:log("INFO","New resource "||$this:resource-pid||" could not be created.")
+                    else util:log-app("INFO",$config:app-name,"New resource "||$this:resource-pid||" could not be created.")
 };
 
 (:~ Returns the structMap entry for the resource
 :)
-declare
-    %rest:GET
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/entry")
-function resource:get($resource-pid as xs:string,$project-pid as xs:string) as element(mets:div)? {
+declare function resource:get($resource-pid as xs:string,$project-pid as xs:string) as element(mets:div)? {
     let $mets:record:=project:get($project-pid)
-    return $mets:record//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE][@ID eq $resource-pid]    
+    return $mets:record//mets:div[@ID eq $resource-pid][@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]    
 };
 
 
 (:~
  : Returns the  mets:fileGrp which contains all files of the given resource. 
 ~:)
-declare
-    %rest:GET
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/files")
-function resource:files($resource-pid as xs:string,$project-pid as xs:string) as element(mets:fileGrp)? {
+declare function resource:files($resource-pid as xs:string,$project-pid as xs:string) as element(mets:fileGrp)? {
     let $mets:record:=project:get($project-pid),
-        $mets:fileGrp-by-id:=$mets:record//mets:fileGrp[@USE=$config:PROJECT_RESOURCE_FILEGRP_USE and xs:string(@ID) eq xs:string($resource-pid||$config:PROJECT_RESOURCE_FILEGRP_SUFFIX)]
+        $mets:fileGrp-by-id:=$mets:record//mets:fileGrp[@USE=$config:PROJECT_RESOURCE_FILEGRP_USE][@ID eq $resource-pid||$config:PROJECT_RESOURCE_FILEGRP_SUFFIX]
     return 
         if (exists($mets:fileGrp-by-id))
         then $mets:fileGrp-by-id
@@ -174,24 +243,46 @@ function resource:files($resource-pid as xs:string,$project-pid as xs:string) as
 };
 
 
+(:~ 
+ : insert or replace mets:files of resources
+ : watch out: facsimile files are handled by the facs.xqm module! 
+~:)
 declare function resource:add-file($file as element(mets:file),$resource-pid as xs:string,$project-pid as xs:string) {
     let $mets:resourceFiles:=resource:files($resource-pid,$project-pid)
     let $this:fileID:=$file/@ID,
-        $mets:file:=$mets:resourceFiles//mets:file[@ID eq $this:fileID]
-    let $log := util:log("INFO",$mets:resourceFiles)
+        $mets:file:=
+            (: we try to locate files via their @USE attribute, as the composition of @IDs might change :)
+            switch (true())
+                case ($file/@USE = $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE) return $mets:resourceFiles//mets:file[@USE eq $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE]
+                case ($file/@USE = $config:RESOURCE_WORKINGCOPY_FILE_USE) return $mets:resourceFiles//mets:file[@USE eq $config:RESOURCE_WORKINGCOPY_FILE_USE]
+                case ($file/@USE = $config:RESOURCE_LOOKUPTABLE_FILE_USE) return $mets:resourceFiles//mets:file[@USE eq $config:RESOURCE_LOOKUPTABLE_FILE_USE]
+                case ($file/@USE = $config:RESOURCE_MASTER_FILE_USE) return $mets:resourceFiles//mets:file[@USE eq $config:RESOURCE_MASTER_FILE_USE]  
+                default return $mets:resourceFiles//mets:file[@ID eq $this:fileID] 
     return
         if (exists($mets:file))
-        then update replace $mets:file with $file
+        then (update delete $mets:file,update insert $file into $mets:resourceFiles)
         else update insert $file into $mets:resourceFiles
 };
 
 declare function resource:add-fragment($div as element(mets:div),$resource-pid as xs:string,$project-pid as xs:string) {
     let $mets:resource:=resource:get($resource-pid,$project-pid)
     let $this:fragmentID:=$div/@ID,
-        $mets:div:=$mets:resource//mets:div[@ID eq $this:fragmentID]
+        $mets:div:=$mets:resource//mets:div[@ID eq $this:fragmentID],
+        $facs := root($mets:div)//mets:fileGrp[@ID = $config:PROJECT_FACS_FILEGRP_ID]//mets:file[@ID = $mets:div/mets:fptr/@FILEID]
     return
         if (exists($mets:div))
-        then update replace $mets:div with $div
+        then 
+            if (exists($facs))
+            then 
+                let $log := util:log-app("INFO",$config:app-name, "mets:div @ID="||$mets:div/@ID||" contains refence to facs "||string-join($facs/@ID,', ')||" - inserting fptrs into generated fragment.")
+                let $replace := update replace $mets:div with $div
+                return 
+                    for $f in $facs
+                    return
+                        if (exists($mets:resource//mets:div[@ID eq $this:fragmentID]/mets:fptr[@FILEID eq $f/@ID]))
+                        then ()
+                        else update insert <mets:fptr FILEID="{$f/@ID}"/> into $mets:resource//mets:div[@ID eq $this:fragmentID]
+            else update replace $mets:div with $div
         else update insert $div into $mets:resource
 };
 
@@ -214,6 +305,11 @@ declare function resource:remove-file($fileid as xs:string,$resource-pid as xs:s
  : @param $key: the key of the data to get
 ~:)
 declare function resource:path($resource-pid as xs:string, $project-pid as xs:string, $key as xs:string) as xs:string? {
+    let $file := resource:file($resource-pid, $project-pid, $key)
+    return $file/mets:FLocat/@xlink:href
+};
+
+declare function resource:file($resource-pid as xs:string, $project-pid as xs:string, $key as xs:string) as element(mets:file)? {
     let $config:=   project:get($project-pid),
         $file:=     resource:files($resource-pid,$project-pid),
         $use:=  
@@ -225,9 +321,10 @@ declare function resource:path($resource-pid as xs:string, $project-pid as xs:st
                 case "workingcopies"    return $config:RESOURCE_WORKINGCOPY_FILE_USE
                 case "lookuptable"      return $config:RESOURCE_LOOKUPTABLE_FILE_USE
                 case "resourcefragments"return $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE
-                default                 return ()
-    return $file/mets:file[@USE=$use]/mets:FLocat/@xlink:href
+                default                 return $key
+    return $file/mets:file[@USE=$use]
 };
+
 
 
 (:~
@@ -240,11 +337,13 @@ declare function resource:get-master($resource-pid as xs:string, $project-pid as
     return $mets:master
 };
 
-declare
-    %rest:GET
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}")
-function resource:master($resource-pid as xs:string, $project-pid as xs:string) as document-node()? {
+declare function resource:master($resource-pid as xs:string, $project-pid as xs:string) as document-node()? {
     let $doc := doc(resource:path($resource-pid,$project-pid,'master'))
+    return $doc
+};
+
+declare function resource:get-data($resource-pid as xs:string, $project-pid as xs:string, $type as xs:string) as document-node()? {
+    let $doc := doc(resource:path($resource-pid,$project-pid,$type))
     return $doc
 };
 
@@ -269,9 +368,9 @@ declare %private function resource:master($data as document-node(), $resource-pi
         let $this:filename := $resource-pid||".xml"
         let $master_targetpath:= project:path($project-pid,'master')
         let $store:= 
-                try {repo-utils:store-in-cache($this:filename,$master_targetpath,$data,project:get($project-pid))
+                try {repo-utils:store($master_targetpath,$this:filename,$data,true(),project:get($project-pid))
                 } catch * {
-                   util:log("INFO", "master doc of resource "||$resource-pid||" could not be stored at "||$master_targetpath) 
+                   util:log-app("ERROR", $config:app-name,"master doc of resource "||$resource-pid||" could not be stored at "||$master_targetpath)
                 }, 
             $this:filepath:=$master_targetpath||"/"||$this:filename
         return 
@@ -292,9 +391,9 @@ declare function resource:store-dmd($data as document-node(), $resource-pid as x
     let $this:filename := $config:RESOURCE_DMD_FILENAME_PREFIX||$resource-pid||".xml"
     let $targetpath:= project:path($project-pid,'metadata')
     let $store:= 
-            try {repo-utils:store-in-cache($this:filename,$master_targetpath,$data,project:get($project-pid))
+            try {repo-utils:store($master_targetpath,$this:filename,$data,true(),project:get($project-pid))
             } catch * {
-               util:log("INFO", "metadata for resource "||$resource-pid||" could not be stored at "||$targetpath) 
+               util:log-app("INFO", $config:app-name,"metadata for resource "||$resource-pid||" could not be stored at "||$targetpath) 
             }, 
         $this:filepath:=$targetpath||"/"||$this:filename
     return 
@@ -327,25 +426,45 @@ declare function resource:add-master($master-filepath as xs:string, $resource-pi
 };
 
 (:~ getter and setter for dmdSec, i.e. the resources's descriptive metadata :)
-declare
-    %rest:GET
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/dmd")
-function resource:dmd-from-id($resource-pid as xs:string,$project-pid as xs:string) as element()? {
-    resource:dmd(resource:get($resource-pid, $project-pid), doc(project:filepath($project-pid)))
+declare function resource:dmd-from-id($resource-pid as xs:string,$project-pid as xs:string) as element()* {
+    resource:dmd((), resource:get($resource-pid, $project-pid), doc(project:filepath($project-pid)))
+};
+
+declare function resource:dmd-from-id($type as xs:string, $resource-pid as xs:string,$project-pid as xs:string) as element()? {
+    resource:dmd($type,resource:get($resource-pid, $project-pid), doc(project:filepath($project-pid)))
 };
  
-(:~ if reference to $resource and $project-config already available, skip the id-based resolution :) 
-declare function resource:dmd($resource, $project ) as element()? {
-    let $resource-pid :=   $resource/@ID,
-        $dmdID :=   $resource/@DMDID,
+ 
+declare function resource:dmd($resource, $project) as element()? {
+    resource:dmd((),$resource,$project)    
+};
+
+(:~ if reference to $resource and $project-config already available, skip the id-based resolution :)
+(:~
+ : @param $type the type of metadata to retrieve ("TEIHDR", "CMDI" etc)
+ : @param $resource the 
+ :)
+declare function resource:dmd($type as xs:string?, $resource, $project) as element()? {
+    (:let $resource-pid :=   typeswitch($resource) case element(mets:div) return $resource/@ID case xs:string return $resource case text() return $resource default return (),
+        $project-pid :=   typeswitch($project) case element(mets:mets) return $project/@OBJID case xs:string return $project case text() return $project case attribute(OBJID) return data($project) default return (),
+        $project := if ($project instance of element(mets:mets)) then $project else project:get($project-pid),
+        $resource := if ($resource instance of element(mets:div)) then $resource else resource:get($resource-pid,$project-pid),:)
+    let $resource-pid := repo-utils:get-record-pid($resource),
+        $resource := repo-utils:get-record($resource),
+        $project-pid := repo-utils:get-record-pid($project),
+        $project := repo-utils:get-record($project)
+    let $dmdID :=   $resource/tokenize(@DMDID,'\s+'),
       (: workaround via attribute, as the id()-function did not work - ?
         $dmdSec :=  doc(project:filepath($project-pid))//id($dmdID) :)
-        $dmdSec :=  $project//*[@ID=$dmdID]
+        $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],
+        $dmdSec :=  if (exists($type) and $type!='') 
+                    then $dmdSecs[*/@MDTYPE = $type and */@MDTYPE != 'OTHER' or */@MDTYPE='OTHER' and */@OTHERMDTYPE = $type] 
+                    else ($dmdSecs[@STATUS='default'],$dmdSecs[1])[1]
     return
         if (exists($dmdSec))
         then 
             typeswitch($dmdSec/*)
-                case element(mets:mdWrap) return $dmdSec//xmlData/*
+                case element(mets:mdWrap) return $dmdSec//mets:xmlData/*
                 case element(mets:mdRef) return 
                     let $location := $dmdSec/mets:mdRef/@xlink:href
                     return 
@@ -354,16 +473,12 @@ declare function resource:dmd($resource, $project ) as element()? {
                         else 
                             if (doc-available($location))
                             then doc($location)/*
-                            else util:log("INFO","The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
-                default return util:log("INFO","Invalid content in Metadata Section for resource "||$resource-pid||".")
-        else util:log("INFO","No Metadata is registered for resource "||$resource-pid||".")
+                            else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
+                default return util:log-app("INFO",$config:app-name,"Invalid content in Metadata Section for resource "||$resource-pid||".")
+        else util:log-app("INFO",$config:app-name,"No Metadata is registered for resource "||$resource-pid||".")
 };
 
-declare
-    %rest:PUT("{$data}")
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/dmd")
-    %rest:query-param("mdtype","{$mdtype}","TEI")
-function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $data as item(), $mdtype as xs:string*) as empty() {
+declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $data as item(), $mdtype as xs:string*) as empty() {
     resource:dmd($resource-pid,$project-pid,$data,$mdtype[1],())
 };
 
@@ -376,10 +491,7 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
  : @param $store-to-db if set to true(), the metdata resource is stored as an independend resource to the database () and only referenced in the mets record (default behaviour), if set to false(), the metadata is inlined in the the project's mets record.   
  : @return empty()
 ~:)
-declare
-    %rest:PUT("{$data}")
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/dmd")
-function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $data as item(), $mdtype as xs:string, $store-to-db as xs:boolean?) as empty() {
+declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $data as item(), $mdtype as xs:string, $store-to-db as xs:boolean?) as empty() {
     let $doc:=          project:get($project-pid),
         $current :=     resource:dmd($resource-pid,$project-pid),
         $data-location:=base-uri($current),
@@ -388,10 +500,10 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
     return 
         switch (true())
             (: wrong declaration of Metadata Format :)
-            case not($mdtype=$resource:mdtypes) return util:log("INFO","invalid value for parameter $mdtype for resource "||$resource-pid)
+            case not($mdtype=$resource:mdtypes) return util:log-app("INFO",$config:app-name,"invalid value for parameter $mdtype for resource "||$resource-pid)
             
             (: $data is not a document, element node or string :)
-            case (not($data instance of document-node()) and not($data instance of element()) and not($data instance of xs:string)) return util:log("INFO","parameter $data has invalid type (resource "||$resource-pid||") allowed are: document-node() or element() for content, or xs:string for db-path.") 
+            case (not($data instance of document-node()) and not($data instance of element()) and not($data instance of xs:string)) return util:log-app("INFO",$config:app-name,"parameter $data has invalid type (resource "||$resource-pid||") allowed are: document-node() or element() for content, or xs:string for db-path.") 
             
             (: $data is empty > remove current content of dmd, external files and references to this dmd :)
             case (not(exists($data)) and exists($current)) return 
@@ -399,7 +511,12 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
                                 then update delete $current
                                 else xmldb:remove(util:collection-name($data),util:document-name($data)),
                     $rm-dmdSec:=update delete $doc//id($dmdid),
-                    $rm-ref-attrs:= update delete $doc//@DMDID[matches(.,'\s*'||$dmdid||'\s*')]
+                    $rm-ref-attrs:= 
+                        for $mdref in $doc//@DMDREF[matches(.,'\s*'||$dmdid||'\s*')] 
+                        return 
+                            if ($mdref = $dmdid) 
+                            then update delete $mdref 
+                            else update value $mdref with replace(.,$dmdid,'') 
                 return ()
             (: update current content or insert new :)
             case (exists($data)) return
@@ -424,7 +541,7 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
                                     case (exists($dmdSec)) return update insert $mdRef into $dmdSec
                                     default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdRef}</dmdSec> preceding $doc//mets:fileSec
                         else 
-                            util:log("INFO", "The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
+                            util:log-app("INFO",$config:app-name,"The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
                     else 
                         (: $data contains metadata content, so we store it to the db and create a new mdRef :)
                         let $mdpath := resource:store-dmd(if ($data instance of document-node()) then $data else document{$data},$resource-pid,$project-pid),
@@ -436,7 +553,7 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
                                     case (exists($dmdSec/node())) return (update delete $dmdSec/node(), update insert $mdRef into $dmdSec)
                                     case (exists($dmdSec)) return update insert $mdRef into $dmdSec
                                     default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdRef}</dmdSec> preceding $doc//mets:fileSec
-                            else util:log("INFO","could not store metadata resource at "||$dmdSec)
+                            else util:log-app("INFO",$config:app-name,"could not store metadata resource at "||$dmdSec)
                 
                 (: move metadata into mets container :)
                 else
@@ -455,7 +572,7 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
                                     default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdWrap}</dmdSec> preceding $doc//mets:fileSec
                             (: ... and delete the external file :)
                             return xmldb:remove(util:collection-name($doc),util:document-name($doc))
-                        else util:log("INFO", "The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
+                        else util:log-app("INFO",$config:app-name, "The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
                     
                     (: $data is metadata content :)
                     else
@@ -492,18 +609,12 @@ function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $da
 };
 
 
-declare
-    %rest:GET
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/label")
-function resource:label($project-pid as xs:string, $resource-pid as xs:string) as element(cr:response) {
+declare function resource:label($resource-pid as xs:string, $project-pid as xs:string) as element(cr:response) {
     let $resource := resource:get($resource-pid, $project-pid)
     return <cr:response path="/cr_xq/{$project-pid}/{$resource-pid}/label" datatype="xs:string">{$resource/xs:string(@LABEL)}</cr:response>
 };
 
-declare
-    %rest:PUT("{$data}")
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/label")
-function resource:label($data as document-node(), $resource-pid as xs:string, $project-pid as xs:string) as element(cr:response)? {
+declare function resource:label($data as document-node(), $resource-pid as xs:string, $project-pid as xs:string) as element(cr:response)? {
     let $resource := resource:get($resource-pid, $project-pid)
     let $update :=   
         if ($data/* instance of element(cr:data))
@@ -513,4 +624,307 @@ function resource:label($data as document-node(), $resource-pid as xs:string, $p
         if ($update)
         then <cr:response path="/cr_xq/{$project-pid}/{$resource-pid}/label" datatype="xs:string">{$resource/xs:string(@LABEL)}</cr:response>
         else ()
+};
+
+
+
+(:~
+ : returns the full logical structure (table of contents if you wish) of a project
+ : as generated into the structMap.logical 
+ : 
+ : @param $resource-pid the pid of the resource 
+ : @param $project-pid the pid of the project
+ : @return   
+~:)
+declare function resource:get-toc($project-pid as xs:string) as element()* {
+let $mets:record := project:get($project-pid)
+    return $mets:record//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE ]/mets:div/mets:div 
+};
+
+declare function resource:get-toc-resolved($project-pid as xs:string) as element()? {
+    let $mets:record := project:get($project-pid),
+        $toc-struct := $mets:record//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE ]/mets:div,
+        $frgs := $mets:record//mets:structMap[@TYPE=$config:PROJECT_STRUCTMAP_TYPE]//mets:div[@TYPE='resourcefragment'], 
+        $resources := $mets:record//mets:structMap[@TYPE=$config:PROJECT_STRUCTMAP_TYPE]//mets:div[@TYPE='resource']
+        
+    return <mets:structMap>{$toc-struct/@*, 
+            for $toc-resource in $toc-struct/mets:div
+                let $res-id := substring-after($toc-resource/@CONTENTIDS, '#')
+                let $res-order := $resources[@ID=$res-id]/data(@ORDER)   
+                let $resolved-toc := for $div in $toc-resource/mets:div
+                                        let $rfid-first := $div/mets:fptr/mets:area/xs:string(@BEGIN),
+                                            $rfid-last :=  $div/mets:fptr/mets:area/xs:string(@END),
+                                            $frg-first := $frgs[@ID=$rfid-first],
+                                            $frg-last := $frgs[@ID=$rfid-last],
+                                            $chapter-frgs := for $frg in $frgs where $frg >> $frg-first and $frg << $frg-last return $frg
+                                        return <mets:div>{$div/@*,$div/*, $frg-first, $chapter-frgs, $frg-last}</mets:div>
+                order by $res-order              
+                return <mets:div ORDER="{$res-order}">{$toc-resource/@*,$resolved-toc}</mets:div>
+           }</mets:structMap>     
+};
+
+
+(:~
+ : returns the logical structure of a resource  
+ : as generated in the structMap.logical 
+ : 
+ : @param $resource-pid the pid of the resource 
+ : @param $project-pid the pid of the project
+ : @return   
+~:)
+declare function resource:get-toc($resource-pid as xs:string, $project-pid as xs:string) as element()? {
+let $toc := resource:get-toc($project-pid),
+    $resource-ref := '#'||$resource-pid,
+    $frgs := resource:get($resource-pid, $project-pid)//mets:div[@TYPE='resourcefragment']
+       
+    let $toc-resource := $toc[@CONTENTIDS=$resource-ref]
+    let $resolved-toc := for $div in $toc-resource/mets:div
+        let $rfid-first := $div/mets:fptr/mets:area/xs:string(@BEGIN),
+            $rfid-last :=  $div/mets:fptr/mets:area/xs:string(@END),
+            $frg-first := $frgs[@ID=$rfid-first],
+            $frg-last := $frgs[@ID=$rfid-last],
+            $chapter-frgs := for $frg in $frgs where $frg >> $frg-first and $frg << $frg-last return $frg
+            return <mets:div>{$div/@*,$div/*, $frg-first, $chapter-frgs, $frg-last}</mets:div>
+  
+    return <mets:div>{$toc-resource/@*,$resolved-toc}</mets:div>
+};
+
+
+(:~
+ : Generates additional structural components (like chapters), i.e. ToC for a given resource,
+ : identifying their position relative to the base resourcefragments (based on lookuptable)
+ : and registers it with the resource's structMap.logical entry.
+ : 
+ : REQUIRES the workingcopy and lookuptable files for given resource to be in place
+ : OBSOLETED BY toc:generate() 
+ 
+ : @param $struct-xpath the xpath for the elements to be treated as structures
+ : @param $struct-type the name of the structure (e.g. 'chapter')
+ : @param $resource-pid the pid of the resource 
+ : @param $project-pid the id of the project
+ : @return the database path to the resourcefragments cache  
+~:)
+declare function resource:generate-toc($struct-xpath as xs:string, $struct-type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as item()* {
+ let $rf-id := $resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_FILEID_SUFFIX(:$config:RESOURCE_RESOURCEFRAGMENT_ID_SUFFIX:)
+ let $wc  := wc:get-data ($resource-pid,$project-pid)
+ let $resource-ref := '#'||$resource-pid
+ let $resource-label := resource:label($resource-pid, $project-pid)
+ 
+ let $divs := for $div in util:eval("$wc"||$struct-xpath)
+        let $div-id := $div/data(@cr:id)
+        (: FIXME: this needs to be configurable :)
+        let $div-label:= $div/data(@n)
+        let $frags := lt:lookup($div-id,$resource-pid,$project-pid)
+            return <mets:div TYPE="{$struct-type}" ID="{$div-id}" LABEL="{$div-label}">
+                    <mets:fptr>
+                        <mets:area FILEID="{$rf-id}" BEGIN="{$frags[1]}" END="{$frags[last()]}" BETYPE="IDREF"/>
+                        </mets:fptr>
+                    </mets:div>
+
+ let $struct-div := <mets:div TYPE="resource" CONTENTIDS="{$resource-ref}" LABEL="{$resource-label/text()}" >{$divs}</mets:div>
+
+
+(:return $struct-div:)
+
+   let $mets:record := project:get($project-pid),
+       $mets:structMap-exists := $mets:record//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE]
+  
+ return (if (not(exists($mets:record))) then util:log-app("INFO",$config:app-name,"no METS-Record found in config for "||$project-pid )
+        else if(exists($mets:structMap-exists)) then 
+                    if (exists($mets:structMap-exists/mets:div/mets:div[@CONTENTIDS=$resource-ref])) then 
+                        update replace $mets:structMap-exists/mets:div/mets:div[@CONTENTIDS=$resource-ref] 
+                               with $struct-div
+                      else 
+                        update insert $struct-div 
+                               into $mets:structMap-exists/mets:div 
+            else update insert <mets:structMap TYPE="{$config:PROJECT_TOC_STRUCTMAP_TYPE}" >
+                                   <mets:div>{$struct-div}</mets:div>
+                               </mets:structMap>
+                        into $mets:record,
+        util:log-app("INFO",$config:app-name,"generated new structure "||$struct-type||" for resource "||$resource-pid||" in cr-project "||$project-pid||"." )
+     )
+};
+
+(:~ recreates working copy, resourcefragments and lookup-tables
+ : @param $resource-pid the pid of the resource 
+ : @param $project-pid the id of the project
+~:)
+declare function resource:refresh-aux-files($resource-pid as xs:string, $project-pid as xs:string){
+    resource:refresh-aux-files((),$resource-pid,$project-pid)
+};
+
+(:~ recreates auxilary files working copy, resourcefragments, lookup-tables and table of content
+ : 
+ : @param $struct-xpath the xpath for the elements to be treated as structures
+ : @param $struct-type the name of the structure (e.g. 'chapter')
+ : @param $resource-pid the pid of the resource 
+ : @param $project-pid the id of the project
+~:)
+declare function resource:refresh-aux-files($toc-indexes as xs:string*, $resource-pid as xs:string, $project-pid as xs:string){
+    let $start-time := current-dateTime()
+    let $log := util:log-app("INFO",$config:app-name,"rebuiling auxiliary files for resource "||$resource-pid||" (project "||$project-pid||")")
+    let $log := util:log-app("INFO",$config:app-name,"please bear with me, this might take a while ... ")
+    let $wc := wc:generate($resource-pid,$project-pid),
+        $rf := rf:generate($resource-pid, $project-pid),
+        $lt := lt:generate($resource-pid,$project-pid)
+    let $toc := 
+        if ($toc-indexes = '')
+        then ()
+        else toc:generate($toc-indexes,$resource-pid,$project-pid)
+    let $stop-time := current-dateTime()
+    let $duration := xs:dateTime($start-time)-xs:dateTime($stop-time)
+    let $log := util:log-app("INFO",$config:app-name,"finished rebuiling auxiliary files for resource "||$resource-pid||" (project "||$project-pid||" in "||minutes-from-duration($duration)||"min.)") 
+    return ()
+};
+
+
+
+declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:string) as element(cmd:CMD)?{
+    resource:dmd("CMDI",$resource-pid,$project-pid)
+};
+
+declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:string, $data as element(cmd:CMD)?) as empty() {
+    let $doc:=      project:get($project-pid),
+        $resoruce := resource:get($resource-pid,$project-pid),
+        $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],
+        $dmdSec :=  $dmdSecs[*/@MDTYPE='OTHER' and */@OTHERMDTYPE = "CMDI"],
+        $dmdSecID := $dmdSec/@ID,
+        $current:=  resource:cmd($resource-pid,$project-pid) 
+    let $location := replace(project:path($project-pid,'metadata'),'/$','')||"/CMDI/"||$resource-pid||".xml"
+    let $update := 
+        if (exists($current))
+        then 
+            if (exists($data))
+            then update replace $current with $data
+            else (update delete $doc//mets:dmdSec[@ID=$dmdSecID],
+                 xmldb:remove(util:collection-name($current),util:document-name($current)))
+        else
+            let $update-mets:= 
+                if (exists($doc//mets:dmdSec[@ID = $dmdSecID]/mets:mdRef[@MDTYPE='OTHER' and @OTHERMDTYPE='CMDI']))
+                then update value $doc//mets:dmdSec[@ID = $dmdSecID]/mets:mdRef[@MDTYPE='OTHER' and @OTHERMDTYPE='CMDI']/@xlink:href 
+                     with $location
+                else update insert 
+                        <dmdSec ID="{$config:PROJECT_DMDSEC_ID}_CMDI" xmlns="http://www.loc.gov/METS/">
+                            <mdRef MDTYPE="OTHER" OTHERMDTYPE="CMDI" xlink:href="{$location}" LOCTYPE="URL"/>
+                        </dmdSec> 
+                     following $doc//mets:metsHdr
+            return xmldb:store(replace(project:path($project-pid,'metadata'),'/$','')||"/CMDI",$resource-pid||".xml",$data)
+    return ()
+};
+
+
+(:~
+ : Returns the handle for the given resource
+ : Handles are stored directly in the CMDI metadata of the resoruce as we cannot 
+ : assign handles without a CMDI record.
+ : 
+ : @param $type: The aspect of the resource to get the handle for (Metadata, Data etc.)
+ : @param $resource-pid: The PID of the resource to attatch the handle to 
+ : @param $project-pid: The PID of the project 
+:)
+declare function resource:get-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:string* {
+    let $cmdi := resource:cmd($resource-pid,$project-pid),
+        $resourceproxy-id := config:param-value((),"pid-resourceproxy-prefix")||$resource-pid
+    return
+        if (exists($cmdi))
+        then
+            switch($type)
+                (: metadata defaults to the CMDI record :)
+                case "metadata" return $cmdi/cmd:Header/cmd:MdSelfLink
+                case "cmdi" return $cmdi/cmd:Header/cmd:MdSelfLink
+                case "data" return $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef
+                case "project" return $cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf
+                default return ()
+        else util:log-app("ERROR",$config:app-name,"No CMDI record found for resource '"||$resource-pid||"' in project '"||$project-pid||"'")
+};
+
+(:~
+ : Updates or creates handle-uris for a resource. The resource's CMDI Record has to be in place for this.
+ : The target url gets constructed automatically.     
+ : @param $type The aspect of the resource the handle should point to. Currently supported are "data" (the raw data of the resource), "cmdi" (the CMDI record of the resource), "teiHdr" (the teiHeader of the resource) or generic "metadata" (defaults to "CMDI")
+ : @param $resoruce-pid the PID of the resource
+ : @param $project-pid the PID of the project 
+~:)
+declare function resource:set-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+    let $cmdi := resource:cmd($resource-pid,$project-pid),
+        $current := resource:get-handle($type,$resource-pid,$project-pid),
+        $resourceproxy-id := config:param-value((),"pid-resourceproxy-prefix")||$resource-pid,
+        (: constructing the URL :)
+        $url :=
+            if ($type = "project")
+            then project:get-handle("cmdi",$project-pid)
+            else 
+                concat(
+                    replace(config:param-value((),"repo-baseurl"),'/$',''),
+                    "/",
+                    $project-pid,
+                    '/get/',
+                    $resource-pid,
+                    switch($type)
+                        case "metadata" return $type
+                        case "cmdi" return "metadata/CMDI"
+                        case "teiHdr" return "metadata/TEIHDR"
+                        default return "data"
+                )
+    return
+        if (exists($current))
+        then handle:update($url,$current,$project-pid)
+        else 
+            if (exists($cmdi))
+            then
+                let $handle-url := handle:create($url,$project-pid)
+                return  
+                    switch($type)
+                        (: type metadata defaults to the CMDI record :)
+                        case "metadata" return resource:set-handle("cmdi",$resource-pid,$project-pid)
+                        
+                        case "cmdi" return 
+                            if (exists($cmdi/cmd:Header/cmd:MdSelfLink))
+                            then update value $cmdi/cmd:Header/cmd:MdSelfLink with $handle-url
+                            else 
+                                if (exists($cmdi/cmd:Header))
+                                then update insert <cmd:MdSelfLink>{$url}</cmd:MdSelfLink> into $cmdi/cmd:Header
+                                    else update insert <cmd:Header><cmd:MdSelfLink>{$handle-url}</cmd:MdSelfLink></cmd:Header> into $cmdi
+                        
+                        
+                        case "data" return
+                            if (exists($cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef))
+                            then update value $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef with $handle-url
+                            else
+                                if (exists($cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource"]))
+                                then update insert <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef> into $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource"]
+                                else 
+                                    if (exists($cmdi/cmd:Resources/cmd:ResourceProxyList))
+                                    then update insert <cmd:ResourceProxy id="{$resourceproxy-id}">
+                                                            <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
+                                                            <cmd:ResourceType>Resource</cmd:ResourceType>
+                                                        </cmd:ResourceProxy>
+                                         into $cmdi/cmd:Resources
+                                    else update insert <cmd:Resources>
+                                                            <cmd:ResourceProxy id="{$resourceproxy-id}">
+                                                                <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
+                                                                <cmd:ResourceType>Resource</cmd:ResourceType>
+                                                            </cmd:ResourceProxy>
+                                                       </cmd:Resources>
+                                         into $cmdi
+                                
+                        case "project" return 
+                            if (exists($cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf))
+                            then update value $cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf with $handle-url
+                            else 
+                                if (exists($cmdi/cmd:Resources/cmd:IsPartOfList))
+                                then update insert <cmd:IsPartOf>{$handle-url}</cmd:IsPartOf> into $cmdi/cmd:Resources/cmd:IsPartOfList
+                                else 
+                                    if (exists($cmdi/cmd:Resources))
+                                    then update insert <cmd:IsPartOfList><cmd:IsPartOf>{$handle-url}</cmd:IsPartOf></cmd:IsPartOfList> into $cmdi/cmd:Resources
+                                    else update insert <cmd:Resources><cmd:IsPartOfList><cmd:IsPartOf>{$handle-url}</cmd:IsPartOf></cmd:IsPartOfList></cmd:Resources> into $cmdi
+                                    
+                        default return util:log-app("INFO",$config:app-name,"Unknown resource aspect '"||$type||"' in resource:set-handle() for resource '"||$resource-pid||"' in project '"||$project-pid||"'.")
+            
+            else util:log-app("ERROR",$config:app-name,"Can't store handle-uri for resource "||$resource-pid||" because of missing CMDI record.")
+};
+
+declare function resource:remove-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+    let $handle-url := resource:get-handle($type,$resource-pid,$project-pid)
+    return handle:remove($handle-url,$project-pid)
 };
