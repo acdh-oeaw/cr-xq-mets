@@ -67,6 +67,7 @@ declare variable $config:default-workingcopy-path := config:path("workingcopy");
 declare variable $config:default-resourcefragments-path := config:path("resourcefragments");
 declare variable $config:default-lookuptable-path := config:path("lookuptables");
 
+declare variable $config:DEFAULT_PROJECT_ID :="defaultProject";
 declare variable $config:PROJECT_DATA_FILEGRP_ID:="projectData";
 declare variable $config:PROJECT_STRUCTMAP_ID:="cr-data";
 declare variable $config:PROJECT_STRUCTMAP_TYPE:="internal";
@@ -440,9 +441,11 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "app-root"                 return $config:app-root
             case "app-root-collection"      return $config:app-root-collection
             case "projects-baseuri"         return $config-params:projects-baseuri            
+            case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
-            case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/'
-            case "project-pid"              return $mets/xs:string(@OBJID)
+(:            case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/':)
+            case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection 
+            case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
                                                 let $project-dir:= util:collection-name($config[self::mets:mets])
@@ -451,7 +454,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                 let $project-id:=$mets/xs:string(@OBJID)
                                                 return $config-params:projects-baseuri||$project-id||"/"||$config:project-static-dir
             
-            case "public-project-baseurl"   return $config:cr-config//param[@key='public-repo-baseurl']||"/"||$mets/xs:string(@OBJID)||"/"
+            case "public-project-baseurl"   return replace($config:cr-config//param[@key='public-repo-baseurl'],'/$','')||"/"||$mets/xs:string(@OBJID)||"/"
             
             case 'project-template-dir'     return
                                                 let $project-dir:= util:collection-name($config[self::mets:mets])
@@ -487,13 +490,14 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                 let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
                                                     $users:=        $ace[@target='USER']/@who,
                                                     $groups:=       $ace[@target='GROUP']/@who,
-                                                    $group-members:=for $g in $groups
+                                                    $group-members:=()
+                                                    (:for $g in $groups
                                                                     return
                                                                         system:as-user("cr-xq","cr=xq!",
                                                                             if (sm:group-exists($g))
                                                                             then sm:get-group-members($g)
                                                                             else ()
-                                                                        ),
+                                                                        ):),
                                                     $allowed-users:=    ($group-members,$users)
                                                 return string-join($allowed-users,',')
             
@@ -506,8 +510,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             
             default                         return ()
             
-    (: dont die, if no request-object available :)
+    
     let $param-request := try { request:get-parameter($param-key,'') } catch * { () }
+    let $param-cr := $config:cr-config//param[@key=$param-key]
     let $param-container := $config//container[@key=$node-id]/function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
     let $param-function := $config//function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
     let $param-module := $config//module[xs:string(@key)=$module-key]/param[xs:string(@key)=$param-key]
@@ -525,6 +530,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             switch(true())
                 case ($param-special != '')     return $param-special
                 case ($param-request != '')     return $param-request[1]
+                case (exists($param-cr))        return $param-cr[1]
                 case (exists($param-container)) return $param-container[1]
                 case (exists($param-repo))      return $param-repo[1]
                 case (exists($param-function))  return $param-function[1]
@@ -682,4 +688,9 @@ declare function config:module-config() as item()* {
 ~:)
 declare function config:project-exists($project as xs:string) {
     exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
+};
+
+declare function config:shib-user() {
+(for $attribute-name in ('cn', 'eppn', 'REMOTE_USER','affiliation')                            
+                                    return request:get-attribute($attribute-name))[1]
 };
