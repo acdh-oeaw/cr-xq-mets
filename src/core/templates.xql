@@ -282,8 +282,8 @@ declare %private function templates:cast($values as item()*, $targetType as xs:s
  : @param $project project-identifier
  :)
 declare function templates:init($node as node(), $model as map(*), $project as xs:string?) {
-       map {
-        "config" := config:config($project) 
+       map { 
+       "config" := config:config($project)      
        }
 };
  
@@ -308,7 +308,9 @@ function templates:include($node as node(), $model as map(*), $path as xs:string
 (:~ extra function for detail-include, to be able to pass a path-param 
 (otherwise it would overwrite also other includes )
 :)
-declare %templates:default("filter", "") 
+declare
+%templates:wrap
+%templates:default("filter", "") 
 function templates:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string) {
     let $content := config:resolve($model, $path-detail)
     let $restricted-content := if ($filter != '' and exists($content)) then 
