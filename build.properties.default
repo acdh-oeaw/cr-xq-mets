@@ -14,6 +14,10 @@ data.dir=cr-data
 system.account.user=cr-xq
 system.account.pwd=cr-xq-pwd
 
+# password for the user "shib" - acting as place-holder for shibboleth authenticated users. 
+shib.user.pwd=shib-user-pwd
+
+
 # allows to exclude individual directories (especially modules) from the build package
 exclude.dirs=modules/admin/**,modules/text-viewer/**
 
