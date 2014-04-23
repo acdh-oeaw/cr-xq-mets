@@ -54,6 +54,8 @@ let $project :=
         then request:get-parameter('project',"default")
         else "default"
 
+(:~ if x-context parameter not set, set project-id as x-context :)
+let $x-context := request:get-parameter("x-context", $project)
 
 (:~
  : The variable <code>$project-config</code> holds the current project's configuration, 
@@ -178,8 +180,21 @@ switch (true())
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <redirect url="index.html"/>
         </dispatch>
-
-
+        
+    (:~
+     : Requests that should be proxied 
+    ~:)
+    case ($exist:resource eq "proxy.xql") return 
+        let $url := request:get-parameter("url",""),
+            $token := util:random()
+        let $session := session:set-attribute($url||"-token",$token)
+        return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{$exist:controller}/proxy.xql">
+                    <add-parameter name="{$url}-token" value="{$token}"/>
+                    <set-header name="Cache-Control" value="no-cache"/>
+                </forward>
+        </dispatch>
 
     (:~
      : Requests for HTML views are handled by the templating system after check for user authorization. 
@@ -200,6 +215,7 @@ switch (true())
                     <view>
                         <forward url="{$exist:controller}/core/view.xql">
                             <add-parameter name="project" value="{$project}"/>
+                            <add-parameter name="x-context" value="{$x-context}"/>
                             <add-parameter name="exist-path" value="{$exist:path}"/>
                             <add-parameter name="exist-resource" value="{$exist:resource}"/>
                             <add-parameter name="exist-controller" value="{$exist:controller}"/>
@@ -225,6 +241,7 @@ switch (true())
                     <view>
                         <forward url="{$exist:controller}/core/view.xql" >
                             <add-parameter name="project" value="{$project}"/>
+                            <add-parameter name="x-context" value="{$x-context}"/>
                             <add-parameter name="user" value="{$user}"/>
                             <add-parameter name="exist-path" value="{$exist:path}"/>
                             <add-parameter name="exist-resource" value="{$exist:resource}"/>
@@ -369,7 +386,11 @@ switch (true())
         
         if (not($module-protected) or request:get-attribute($domain||".user")=$module-users) 
         then
-            let $user := request:get-attribute($domain||".user")
+            let $user := request:get-attribute($domain||".user")          
+            (: used by get-module :)          
+            let $corr-rel-path := if (starts-with($rel-path, "/"||$module)) 
+                                  then substring-after($rel-path, "/"||$module) 
+                                  else $rel-path
             let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
             return
             	let $target := $module||".xql"
@@ -382,6 +403,9 @@ switch (true())
                         <add-parameter name="path" value="{$path}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
                         <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                        <add-parameter name="exist-root" value="{$exist:root}"/>
+                         <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
+                         <add-parameter name="rel-path" value="{$corr-rel-path}"/>
                     </forward>
                 </dispatch>
             (: login :)
