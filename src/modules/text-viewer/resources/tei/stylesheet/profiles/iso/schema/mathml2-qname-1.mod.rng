@@ -36,8 +36,19 @@
     This module is derived from the XHTML Qualified Names Template module.
   -->
   <!-- Section A: XHTML XML Namespace Framework :::::::::::::::::::: -->
-  <!-- XLink ............... --><define name="math_XLINK.xmlns.attrib"><empty/></define>
-  <!-- MathML .............. --><define name="MATHML.xmlns.extra.attrib"><ref name="math_XLINK.xmlns.attrib"/></define><define name="MATHML.xmlns.attrib"><empty/><ref name="MATHML.xmlns.extra.attrib"/></define></grammar><!-- Section B: MathML Qualified Names ::::::::::::::::::::::::::::: --><!--
+  <!-- XLink ............... -->
+    <define name="math_XLINK.xmlns.attrib">
+        <empty/>
+    </define>
+  <!-- MathML .............. -->
+    <define name="MATHML.xmlns.extra.attrib">
+        <ref name="math_XLINK.xmlns.attrib"/>
+    </define>
+    <define name="MATHML.xmlns.attrib">
+        <empty/>
+        <ref name="MATHML.xmlns.extra.attrib"/>
+    </define>
+</grammar><!-- Section B: MathML Qualified Names ::::::::::::::::::::::::::::: --><!--
   9. This section declares parameter entities used to provide
   namespace-qualified names for all MathML element types.
 --><!--

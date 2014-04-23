@@ -102,17 +102,17 @@
 			<arg value="-o${out.dir}/${out.fn}_noUtils.png"/>
 			<arg value="-Tpng"/>
 		</exec>
-<!--
+
 	<echo>generating a separate graph for each module</echo>
 		<ant antfile="${scripts.dir}\build_docs.xml" target="gen-xq-graph-each">
 			<property name="in.dir" location="src" />
 			<property name="title" value="${out.fn}" />
 			<property name="file.prefix" value="../../.." />
-			<!-\-			<property name="parts" value="imports, params, templates, functions" />-\->
+			<!--			<property name="parts" value="imports, params, templates, functions" />-->
 			<property name="out.dir" location="${out.dir}"/>
 			<property name="out.fn" value="${out.fn}"/>
 		</ant>
-		-->
+		
 		
 		
 	</target>

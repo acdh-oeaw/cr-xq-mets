@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" version="2.0" exclude-result-prefixes="tei"><xsl:import href="../../../epub/tei-to-epub.xsl"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p> TEI stylesheet for making ePub from TEI.</p><p>This software is dual-licensed:
+<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="tei">
+    <xsl:import href="../../../epub/tei-to-epub.xsl"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p> TEI stylesheet for making ePub from TEI.</p>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -30,4 +35,10 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: to.xsl 9646 2011-11-05 23:39:08Z rahtz $</p><p>Copyright: 2008, TEI Consortium</p></desc></doc></xsl:stylesheet>
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: to.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
+            <p>Copyright: 2008, TEI Consortium</p>
+        </desc>
+    </doc>
+</xsl:stylesheet>

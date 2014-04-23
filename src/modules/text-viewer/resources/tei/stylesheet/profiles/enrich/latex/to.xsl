@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0"><xsl:import href="../../../latex2/tei.xsl"/><xsl:import href="../../../common2/msdescription.xsl"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p>This software is dual-licensed:
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0">
+    <xsl:import href="../../../latex2/tei.xsl"/>
+    <xsl:import href="../../../common2/msdescription.xsl"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -30,7 +35,24 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: to.xsl 9669 2011-11-07 19:17:54Z rahtz $</p><p>Copyright: 2008, TEI Consortium</p></desc></doc><xsl:param name="reencode">false</xsl:param><xsl:param name="numberBackHeadings">true</xsl:param><xsl:param name="numberFrontHeadings">true</xsl:param><xsl:param name="spaceCharacter">\hspace*{1em}</xsl:param><xsl:param name="classParameters">11pt,twoside</xsl:param><xsl:param name="startNamespace"/><xsl:param name="tocNumberSuffix">.\ </xsl:param><xsl:param name="numberSpacer">\ </xsl:param><xsl:param name="parSkip">3pt</xsl:param><xsl:param name="parIndent">3pt</xsl:param><xsl:variable name="docClass">article</xsl:variable><xsl:template name="latexPreambleHook">
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: to.xsl 9669 2011-11-07 19:17:54Z rahtz $</p>
+            <p>Copyright: 2008, TEI Consortium</p>
+        </desc>
+    </doc>
+    <xsl:param name="reencode">false</xsl:param>
+    <xsl:param name="numberBackHeadings">true</xsl:param>
+    <xsl:param name="numberFrontHeadings">true</xsl:param>
+    <xsl:param name="spaceCharacter">\hspace*{1em}</xsl:param>
+    <xsl:param name="classParameters">11pt,twoside</xsl:param>
+    <xsl:param name="startNamespace"/>
+    <xsl:param name="tocNumberSuffix">.\ </xsl:param>
+    <xsl:param name="numberSpacer">\ </xsl:param>
+    <xsl:param name="parSkip">3pt</xsl:param>
+    <xsl:param name="parIndent">3pt</xsl:param>
+    <xsl:variable name="docClass">article</xsl:variable>
+    <xsl:template name="latexPreambleHook">
 \usepackage{makeidx}
 \makeindex
 \defaultfontfeatures{Scale=MatchLowercase}
@@ -44,8 +66,14 @@ of this software, even if advised of the possibility of such damage.
 %\setmonofont{CourierStd}
 \setsansfont{Myriad Pro}
 \setlength{\headheight}{14pt}
-</xsl:template><xsl:template name="latexBegin"><xsl:text>\makeatletter
-\thispagestyle{plain}</xsl:text><xsl:if test="not(tei:text/tei:front/tei:titlePage)"><xsl:call-template name="printTitleAndLogo"/></xsl:if><xsl:text>\markright{\@title}%
+</xsl:template>
+    <xsl:template name="latexBegin">
+        <xsl:text>\makeatletter
+\thispagestyle{plain}</xsl:text>
+        <xsl:if test="not(tei:text/tei:front/tei:titlePage)">
+            <xsl:call-template name="printTitleAndLogo"/>
+        </xsl:if>
+        <xsl:text>\markright{\@title}%
 \markboth{\@title}{\@author}%
 \fvset{frame=single,numberblanklines=false,xleftmargin=5mm,xrightmargin=5mm}
 \fancyhf{} 
@@ -157,15 +185,99 @@ of this software, even if advised of the possibility of such damage.
      {-1.75ex\@plus -0.5ex \@minus- .2ex}%
      {0.5ex \@plus .2ex}%
      {\reset@font\Large\sffamily}}
-\makeatother </xsl:text><xsl:call-template name="beginDocumentHook"/></xsl:template><xsl:param name="latexGeometryOptions">twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param><xsl:template match="tei:byline"/><xsl:template match="tei:titlePage/tei:note"/><xsl:template match="tei:list"><xsl:if test="parent::tei:item">\mbox{}\\[-10pt] </xsl:if><xsl:apply-imports/></xsl:template><xsl:template name="lineBreak"><xsl:param name="id"/><xsl:text>\mbox{}\newline 
-</xsl:text></xsl:template><xsl:template name="msSection"><xsl:param name="level"/><xsl:param name="heading"/><xsl:param name="implicitBlock">false</xsl:param><xsl:text>
-</xsl:text><xsl:choose><xsl:when test="$level=1">\section</xsl:when><xsl:when test="$level=2">\subsection</xsl:when><xsl:when test="$level=3">\subsubsection</xsl:when><xsl:when test="$level=4">\paragraph</xsl:when></xsl:choose><xsl:text>{</xsl:text><xsl:value-of select="$heading"/><xsl:text>}
-</xsl:text><xsl:choose><xsl:when test="$implicitBlock='true'">
+\makeatother </xsl:text>
+        <xsl:call-template name="beginDocumentHook"/>
+    </xsl:template>
+    <xsl:param name="latexGeometryOptions">twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param>
+    <xsl:template match="tei:byline"/>
+    <xsl:template match="tei:titlePage/tei:note"/>
+    <xsl:template match="tei:list">
+        <xsl:if test="parent::tei:item">\mbox{}\\[-10pt] </xsl:if>
+        <xsl:apply-imports/>
+    </xsl:template>
+    <xsl:template name="lineBreak">
+        <xsl:param name="id"/>
+        <xsl:text>\mbox{}\newline 
+</xsl:text>
+    </xsl:template>
+    <xsl:template name="msSection">
+        <xsl:param name="level"/>
+        <xsl:param name="heading"/>
+        <xsl:param name="implicitBlock">false</xsl:param>
+        <xsl:text>
+</xsl:text>
+        <xsl:choose>
+            <xsl:when test="$level=1">\section</xsl:when>
+            <xsl:when test="$level=2">\subsection</xsl:when>
+            <xsl:when test="$level=3">\subsubsection</xsl:when>
+            <xsl:when test="$level=4">\paragraph</xsl:when>
+        </xsl:choose>
+        <xsl:text>{</xsl:text>
+        <xsl:value-of select="$heading"/>
+        <xsl:text>}
+</xsl:text>
+        <xsl:choose>
+            <xsl:when test="$implicitBlock='true'">
 \par
 	    <xsl:apply-templates/>
 \par
-	</xsl:when><xsl:when test="*"><xsl:apply-templates/></xsl:when><xsl:otherwise>
+	</xsl:when>
+            <xsl:when test="*">
+                <xsl:apply-templates/>
+            </xsl:when>
+            <xsl:otherwise>
 \par
 	    <xsl:apply-templates/>
 \par
-	</xsl:otherwise></xsl:choose></xsl:template><xsl:template name="msInline"><xsl:param name="before"/><xsl:param name="style"/><xsl:param name="after"/><xsl:value-of select="$before"/><xsl:choose><xsl:when test="$style='italic'"><xsl:text>\textit{</xsl:text><xsl:value-of select="normalize-space(.)"/><xsl:text>}</xsl:text></xsl:when><xsl:when test="$style='bold'"><xsl:text>\textbf{</xsl:text><xsl:value-of select="normalize-space(.)"/><xsl:text>}</xsl:text></xsl:when><xsl:otherwise><xsl:value-of select="normalize-space(.)"/></xsl:otherwise></xsl:choose><xsl:value-of select="$after"/></xsl:template><xsl:template name="msBlock"><xsl:param name="style"/><xsl:text>\par </xsl:text><xsl:apply-templates/><xsl:text>\par </xsl:text></xsl:template><xsl:template name="msLabelled"><xsl:param name="before"/><xsl:text>\textit{</xsl:text><xsl:value-of select="$before"/><xsl:text>}: </xsl:text><xsl:value-of select="."/></xsl:template><xsl:template match="tei:teiHeader"><xsl:choose><xsl:when test="not(parent::tei:*)"><xsl:call-template name="mainDocument"/></xsl:when><xsl:otherwise><xsl:apply-templates select="tei:fileDesc"/></xsl:otherwise></xsl:choose></xsl:template><xsl:template match="tei:fileDesc"><xsl:apply-templates select="tei:sourceDesc/tei:msDesc"/></xsl:template></xsl:stylesheet>
+	</xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template name="msInline">
+        <xsl:param name="before"/>
+        <xsl:param name="style"/>
+        <xsl:param name="after"/>
+        <xsl:value-of select="$before"/>
+        <xsl:choose>
+            <xsl:when test="$style='italic'">
+                <xsl:text>\textit{</xsl:text>
+                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:text>}</xsl:text>
+            </xsl:when>
+            <xsl:when test="$style='bold'">
+                <xsl:text>\textbf{</xsl:text>
+                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:text>}</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="normalize-space(.)"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        <xsl:value-of select="$after"/>
+    </xsl:template>
+    <xsl:template name="msBlock">
+        <xsl:param name="style"/>
+        <xsl:text>\par </xsl:text>
+        <xsl:apply-templates/>
+        <xsl:text>\par </xsl:text>
+    </xsl:template>
+    <xsl:template name="msLabelled">
+        <xsl:param name="before"/>
+        <xsl:text>\textit{</xsl:text>
+        <xsl:value-of select="$before"/>
+        <xsl:text>}: </xsl:text>
+        <xsl:value-of select="."/>
+    </xsl:template>
+    <xsl:template match="tei:teiHeader">
+        <xsl:choose>
+            <xsl:when test="not(parent::tei:*)">
+                <xsl:call-template name="mainDocument"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates select="tei:fileDesc"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template match="tei:fileDesc">
+        <xsl:apply-templates select="tei:sourceDesc/tei:msDesc"/>
+    </xsl:template>
+</xsl:stylesheet>

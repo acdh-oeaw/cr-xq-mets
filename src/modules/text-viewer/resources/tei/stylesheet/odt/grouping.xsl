@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mf="http://example.com/mf" exclude-result-prefixes="xs mf" version="2.0"><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p> TEI stylesheet dealing with elements from the core module. </p><p>This software is dual-licensed:
+<xsl:stylesheet xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mf="http://example.com/mf" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="xs mf" version="2.0">
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p> TEI stylesheet dealing with elements from the core module. </p>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -30,7 +34,67 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: grouping.xsl 9646 2011-11-05 23:39:08Z rahtz $</p><p>Copyright: 2008, TEI Consortium</p></desc></doc><xsl:output indent="yes"/><xsl:template match="body"><xsl:copy><xsl:sequence select="mf:group(*, 1, 0)"/></xsl:copy></xsl:template><xsl:function name="mf:group" as="node()*"><xsl:param name="elements" as="element()*"/><xsl:param name="level" as="xs:integer"/><xsl:param name="last-level" as="xs:integer"/><xsl:for-each-group select="$elements" group-starting-with="head[@level = $level]"><xsl:variable name="head" as="element()?" select=".[self::head[@level = $level]]"/><xsl:variable name="tail" as="element()*" select="current-group() except $head"/><xsl:choose><xsl:when test="$head"><xsl:sequence select="mf:nested-divs($head, $tail, $level, $level - $last-level)"/></xsl:when><xsl:otherwise><xsl:choose><xsl:when test="$tail[self::head[@level]]"><xsl:sequence select="mf:group($tail, $level + 1, $last-level)"/></xsl:when><xsl:otherwise><xsl:copy-of select="$tail"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose></xsl:for-each-group></xsl:function><xsl:function name="mf:nested-divs" as="element()*"><xsl:param name="head" as="element()?"/><xsl:param name="tail" as="element()*"/><xsl:param name="level" as="xs:integer"/><xsl:param name="i" as="xs:integer"/><xsl:choose><xsl:when test="$i gt 0"><div><xsl:sequence select="mf:nested-divs($head, $tail, $level, $i - 1)"/></div></xsl:when><xsl:otherwise><xsl:copy-of select="$head"/><xsl:choose><xsl:when test="$tail[self::head[@level]]"><xsl:sequence select="mf:group($tail, $level + 1, $level)"/></xsl:when><xsl:otherwise><xsl:copy-of select="$tail"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose></xsl:function></xsl:stylesheet><!--
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: grouping.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
+            <p>Copyright: 2008, TEI Consortium</p>
+        </desc>
+    </doc>
+    <xsl:output indent="yes"/>
+    <xsl:template match="body">
+        <xsl:copy>
+            <xsl:sequence select="mf:group(*, 1, 0)"/>
+        </xsl:copy>
+    </xsl:template>
+    <xsl:function name="mf:group" as="node()*">
+        <xsl:param name="elements" as="element()*"/>
+        <xsl:param name="level" as="xs:integer"/>
+        <xsl:param name="last-level" as="xs:integer"/>
+        <xsl:for-each-group select="$elements" group-starting-with="head[@level = $level]">
+            <xsl:variable name="head" as="element()?" select=".[self::head[@level = $level]]"/>
+            <xsl:variable name="tail" as="element()*" select="current-group() except $head"/>
+            <xsl:choose>
+                <xsl:when test="$head">
+                    <xsl:sequence select="mf:nested-divs($head, $tail, $level, $level - $last-level)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:choose>
+                        <xsl:when test="$tail[self::head[@level]]">
+                            <xsl:sequence select="mf:group($tail, $level + 1, $last-level)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:copy-of select="$tail"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:for-each-group>
+    </xsl:function>
+    <xsl:function name="mf:nested-divs" as="element()*">
+        <xsl:param name="head" as="element()?"/>
+        <xsl:param name="tail" as="element()*"/>
+        <xsl:param name="level" as="xs:integer"/>
+        <xsl:param name="i" as="xs:integer"/>
+        <xsl:choose>
+            <xsl:when test="$i gt 0">
+                <div>
+                    <xsl:sequence select="mf:nested-divs($head, $tail, $level, $i - 1)"/>
+                </div>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:copy-of select="$head"/>
+                <xsl:choose>
+                    <xsl:when test="$tail[self::head[@level]]">
+                        <xsl:sequence select="mf:group($tail, $level + 1, $level)"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:copy-of select="$tail"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+</xsl:stylesheet><!--
 It has become rather complicated with two functions due to the
 requirement to add missing levels.
 

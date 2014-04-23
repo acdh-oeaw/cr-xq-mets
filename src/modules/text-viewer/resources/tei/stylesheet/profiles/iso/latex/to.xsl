@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink dbk rng tei teix xhtml a html  xs xsl" version="2.0"><xsl:import href="../../../latex2/tei.xsl"/><xsl:import href="../isoutils.xsl"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p>This software is dual-licensed:
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink dbk rng tei teix xhtml a html  xs xsl" version="2.0">
+    <xsl:import href="../../../latex2/tei.xsl"/>
+    <xsl:import href="../isoutils.xsl"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -30,7 +35,22 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: to.xsl 9669 2011-11-07 19:17:54Z rahtz $</p><p>Copyright: 2008, TEI Consortium</p></desc></doc><xsl:param name="reencode">false</xsl:param><xsl:param name="numberBackHeadings">true</xsl:param><xsl:param name="numberFrontHeadings">true</xsl:param><xsl:param name="spaceCharacter">\hspace*{1em}</xsl:param><xsl:param name="classParameters">11pt,twoside</xsl:param><xsl:param name="startNamespace"/><xsl:param name="tocNumberSuffix">.\ </xsl:param><xsl:param name="numberSpacer">\ </xsl:param><xsl:variable name="docClass">article</xsl:variable><xsl:template name="latexPreambleHook">
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: to.xsl 9669 2011-11-07 19:17:54Z rahtz $</p>
+            <p>Copyright: 2008, TEI Consortium</p>
+        </desc>
+    </doc>
+    <xsl:param name="reencode">false</xsl:param>
+    <xsl:param name="numberBackHeadings">true</xsl:param>
+    <xsl:param name="numberFrontHeadings">true</xsl:param>
+    <xsl:param name="spaceCharacter">\hspace*{1em}</xsl:param>
+    <xsl:param name="classParameters">11pt,twoside</xsl:param>
+    <xsl:param name="startNamespace"/>
+    <xsl:param name="tocNumberSuffix">.\ </xsl:param>
+    <xsl:param name="numberSpacer">\ </xsl:param>
+    <xsl:variable name="docClass">article</xsl:variable>
+    <xsl:template name="latexPreambleHook">
 \usepackage{makeidx}
 \makeindex
 \defaultfontfeatures{Scale=MatchLowercase}
@@ -44,8 +64,14 @@ of this software, even if advised of the possibility of such damage.
 %\setmonofont{CourierStd}
 \setsansfont{Myriad Pro}
 \setlength{\headheight}{14pt}
-</xsl:template><xsl:template name="latexBegin"><xsl:text>\makeatletter
-\thispagestyle{plain}</xsl:text><xsl:if test="not(tei:text/tei:front/tei:titlePage)"><xsl:call-template name="printTitleAndLogo"/></xsl:if><xsl:text>\markright{\@title}%
+</xsl:template>
+    <xsl:template name="latexBegin">
+        <xsl:text>\makeatletter
+\thispagestyle{plain}</xsl:text>
+        <xsl:if test="not(tei:text/tei:front/tei:titlePage)">
+            <xsl:call-template name="printTitleAndLogo"/>
+        </xsl:if>
+        <xsl:text>\markright{\@title}%
 \markboth{\@title}{\@author}%
 \fvset{frame=single,numberblanklines=false,xleftmargin=5mm,xrightmargin=5mm}
 \fancyhf{} 
@@ -157,14 +183,160 @@ of this software, even if advised of the possibility of such damage.
      {-1.75ex\@plus -0.5ex \@minus- .2ex}%
      {0.5ex \@plus .2ex}%
      {\reset@font\Large\sffamily}}
-\makeatother </xsl:text><xsl:call-template name="beginDocumentHook"/></xsl:template><xsl:param name="latexGeometryOptions">twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param><xsl:template match="tei:byline"/><xsl:template match="tei:titlePage/tei:note"/><xsl:template match="tei:list"><xsl:if test="parent::tei:item">\mbox{}\\[-10pt] </xsl:if><xsl:apply-imports/></xsl:template><xsl:template name="lineBreak"><xsl:param name="id"/><xsl:text>\mbox{}\newline 
-</xsl:text></xsl:template><xsl:template name="tableHline"/><xsl:template name="makeTable"><xsl:variable name="r"><xsl:value-of select="@rend"/></xsl:variable><xsl:text>{</xsl:text><xsl:if test="$r='rules'">|</xsl:if><xsl:choose><xsl:when test="@xml:id='tab-conformance'"><xsl:text>P{.35\textwidth}llllllll</xsl:text></xsl:when><xsl:when test="@xml:id='tab-content-models'"><xsl:text>P{.25\textwidth}P{.15\textwidth}P{.5\textwidth}</xsl:text></xsl:when><xsl:when test="@xml:id='tab-mods'"><xsl:text>L{.15\textwidth}P{.4\textwidth}L{.35\textwidth}</xsl:text></xsl:when><xsl:when test="@rend='wovenodd'"><xsl:text>L{.15\textwidth}P{.85\textwidth}</xsl:text></xsl:when><xsl:when test="@rend='attList'"><xsl:text>L{.15\textwidth}P{.65\textwidth}</xsl:text></xsl:when><xsl:when test="@rend='attDef'"><xsl:text>L{.1\textwidth}P{.5\textwidth}</xsl:text></xsl:when><xsl:when test="@rend='valList'"><xsl:text>L{.1\textwidth}P{.4\textwidth}</xsl:text></xsl:when><xsl:when test="@preamble"><xsl:value-of select="@preamble"/></xsl:when><xsl:otherwise><xsl:call-template name="makePreamble-complex"/></xsl:otherwise></xsl:choose><xsl:text>}
-</xsl:text><xsl:call-template name="tableHline"/><xsl:choose><xsl:when test="tei:head and not(@rend='display')"><xsl:if test="not(ancestor::tei:table)"><xsl:text>\endfirsthead </xsl:text><xsl:text>\multicolumn{</xsl:text><xsl:value-of select="count(tei:row[1]/tei:cell)"/><xsl:text>}{c}{</xsl:text><xsl:apply-templates mode="ok" select="tei:head"/><xsl:text>(cont.)}\\\hline \endhead </xsl:text></xsl:if><xsl:text>\caption{</xsl:text><xsl:apply-templates mode="ok" select="tei:head"/><xsl:text>}\\ </xsl:text></xsl:when><xsl:otherwise> </xsl:otherwise></xsl:choose><xsl:if test="$r='rules'">\hline </xsl:if><xsl:apply-templates/><xsl:if test="$r='rules'"><xsl:text>\\ \hline </xsl:text></xsl:if></xsl:template><xsl:template match="tei:ident"><xsl:apply-imports/><xsl:if test="@type"><xsl:processing-instruction name="xmltex"><xsl:text>\index{</xsl:text><xsl:value-of select="normalize-space(.)"/><xsl:text> (</xsl:text><xsl:value-of select="@type"/><xsl:text>)}</xsl:text></xsl:processing-instruction></xsl:if></xsl:template><xsl:template name="egXMLEndHook"><xsl:if test="@corresp and id(substring(corresp,2))"><xsl:text>\egxmlcite{</xsl:text><xsl:for-each select="id(substring(corresp,2))"><xsl:text>Source: \cite{</xsl:text><xsl:value-of select="@xml:id"/><xsl:text>}</xsl:text></xsl:for-each><xsl:text>}</xsl:text></xsl:if></xsl:template><xsl:template name="egXMLStartHook"><xsl:for-each select=".//teix:*"><xsl:variable name="Me"><xsl:value-of select="local-name(.)"/></xsl:variable><xsl:text>\index{</xsl:text><xsl:value-of select="$Me"/><xsl:text>=</xsl:text><xsl:text>&lt;</xsl:text><xsl:value-of select="$Me"/><xsl:text>&gt;</xsl:text><xsl:text>|</xsl:text><xsl:choose><xsl:when test="ancestor::tei:div[@xml:id=$Me]"><xsl:text>mainexampleindex</xsl:text></xsl:when><xsl:otherwise><xsl:text>exampleindex</xsl:text></xsl:otherwise></xsl:choose><xsl:text>}</xsl:text><xsl:for-each select="@*"><xsl:choose><xsl:when test="starts-with(name(),'xml:')"/><xsl:otherwise><xsl:text>\index{</xsl:text><xsl:value-of select="name()"/><xsl:text>=@</xsl:text><xsl:value-of select="name()"/><xsl:text>!&lt;</xsl:text><xsl:value-of select="$Me"/><xsl:text>&gt;</xsl:text><xsl:text>|exampleindex}</xsl:text></xsl:otherwise></xsl:choose></xsl:for-each></xsl:for-each></xsl:template><xsl:template name="latexEnd">
+\makeatother </xsl:text>
+        <xsl:call-template name="beginDocumentHook"/>
+    </xsl:template>
+    <xsl:param name="latexGeometryOptions">twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param>
+    <xsl:template match="tei:byline"/>
+    <xsl:template match="tei:titlePage/tei:note"/>
+    <xsl:template match="tei:list">
+        <xsl:if test="parent::tei:item">\mbox{}\\[-10pt] </xsl:if>
+        <xsl:apply-imports/>
+    </xsl:template>
+    <xsl:template name="lineBreak">
+        <xsl:param name="id"/>
+        <xsl:text>\mbox{}\newline 
+</xsl:text>
+    </xsl:template>
+    <xsl:template name="tableHline"/>
+    <xsl:template name="makeTable">
+        <xsl:variable name="r">
+            <xsl:value-of select="@rend"/>
+        </xsl:variable>
+        <xsl:text>{</xsl:text>
+        <xsl:if test="$r='rules'">|</xsl:if>
+        <xsl:choose>
+            <xsl:when test="@xml:id='tab-conformance'">
+                <xsl:text>P{.35\textwidth}llllllll</xsl:text>
+            </xsl:when>
+            <xsl:when test="@xml:id='tab-content-models'">
+                <xsl:text>P{.25\textwidth}P{.15\textwidth}P{.5\textwidth}</xsl:text>
+            </xsl:when>
+            <xsl:when test="@xml:id='tab-mods'">
+                <xsl:text>L{.15\textwidth}P{.4\textwidth}L{.35\textwidth}</xsl:text>
+            </xsl:when>
+            <xsl:when test="@rend='wovenodd'">
+                <xsl:text>L{.15\textwidth}P{.85\textwidth}</xsl:text>
+            </xsl:when>
+            <xsl:when test="@rend='attList'">
+                <xsl:text>L{.15\textwidth}P{.65\textwidth}</xsl:text>
+            </xsl:when>
+            <xsl:when test="@rend='attDef'">
+                <xsl:text>L{.1\textwidth}P{.5\textwidth}</xsl:text>
+            </xsl:when>
+            <xsl:when test="@rend='valList'">
+                <xsl:text>L{.1\textwidth}P{.4\textwidth}</xsl:text>
+            </xsl:when>
+            <xsl:when test="@preamble">
+                <xsl:value-of select="@preamble"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:call-template name="makePreamble-complex"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        <xsl:text>}
+</xsl:text>
+        <xsl:call-template name="tableHline"/>
+        <xsl:choose>
+            <xsl:when test="tei:head and not(@rend='display')">
+                <xsl:if test="not(ancestor::tei:table)">
+                    <xsl:text>\endfirsthead </xsl:text>
+                    <xsl:text>\multicolumn{</xsl:text>
+                    <xsl:value-of select="count(tei:row[1]/tei:cell)"/>
+                    <xsl:text>}{c}{</xsl:text>
+                    <xsl:apply-templates mode="ok" select="tei:head"/>
+                    <xsl:text>(cont.)}\\\hline \endhead </xsl:text>
+                </xsl:if>
+                <xsl:text>\caption{</xsl:text>
+                <xsl:apply-templates mode="ok" select="tei:head"/>
+                <xsl:text>}\\ </xsl:text>
+            </xsl:when>
+            <xsl:otherwise> </xsl:otherwise>
+        </xsl:choose>
+        <xsl:if test="$r='rules'">\hline </xsl:if>
+        <xsl:apply-templates/>
+        <xsl:if test="$r='rules'">
+            <xsl:text>\\ \hline </xsl:text>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template match="tei:ident">
+        <xsl:apply-imports/>
+        <xsl:if test="@type">
+            <xsl:processing-instruction name="xmltex">
+                <xsl:text>\index{</xsl:text>
+                <xsl:value-of select="normalize-space(.)"/>
+                <xsl:text> (</xsl:text>
+                <xsl:value-of select="@type"/>
+                <xsl:text>)}</xsl:text>
+            </xsl:processing-instruction>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template name="egXMLEndHook">
+        <xsl:if test="@corresp and id(substring(corresp,2))">
+            <xsl:text>\egxmlcite{</xsl:text>
+            <xsl:for-each select="id(substring(corresp,2))">
+                <xsl:text>Source: \cite{</xsl:text>
+                <xsl:value-of select="@xml:id"/>
+                <xsl:text>}</xsl:text>
+            </xsl:for-each>
+            <xsl:text>}</xsl:text>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template name="egXMLStartHook">
+        <xsl:for-each select=".//teix:*">
+            <xsl:variable name="Me">
+                <xsl:value-of select="local-name(.)"/>
+            </xsl:variable>
+            <xsl:text>\index{</xsl:text>
+            <xsl:value-of select="$Me"/>
+            <xsl:text>=</xsl:text>
+            <xsl:text>&lt;</xsl:text>
+            <xsl:value-of select="$Me"/>
+            <xsl:text>&gt;</xsl:text>
+            <xsl:text>|</xsl:text>
+            <xsl:choose>
+                <xsl:when test="ancestor::tei:div[@xml:id=$Me]">
+                    <xsl:text>mainexampleindex</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>exampleindex</xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:text>}</xsl:text>
+            <xsl:for-each select="@*">
+                <xsl:choose>
+                    <xsl:when test="starts-with(name(),'xml:')"/>
+                    <xsl:otherwise>
+                        <xsl:text>\index{</xsl:text>
+                        <xsl:value-of select="name()"/>
+                        <xsl:text>=@</xsl:text>
+                        <xsl:value-of select="name()"/>
+                        <xsl:text>!&lt;</xsl:text>
+                        <xsl:value-of select="$Me"/>
+                        <xsl:text>&gt;</xsl:text>
+                        <xsl:text>|exampleindex}</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:for-each>
+        </xsl:for-each>
+    </xsl:template>
+    <xsl:template name="latexEnd">
 \cleardoublepage
 \pdfbookmark[0]{Index}{INDEX}
 \hypertarget{INDEX}{}
 \printindex
-</xsl:template><xsl:template name="numberFrontDiv"><xsl:param name="minimal"/></xsl:template><xsl:template name="generateTitle"><xsl:call-template name="getiso_documentNumber"/><xsl:text>-</xsl:text><xsl:call-template name="getiso_partNumber"/><xsl:text>:</xsl:text><xsl:call-template name="getiso_year"/></xsl:template><xsl:template name="printTitleAndLogo">
+</xsl:template>
+    <xsl:template name="numberFrontDiv">
+        <xsl:param name="minimal"/>
+    </xsl:template>
+    <xsl:template name="generateTitle">
+        <xsl:call-template name="getiso_documentNumber"/>
+        <xsl:text>-</xsl:text>
+        <xsl:call-template name="getiso_partNumber"/>
+        <xsl:text>:</xsl:text>
+        <xsl:call-template name="getiso_year"/>
+    </xsl:template>
+    <xsl:template name="printTitleAndLogo">
 \begin{raggedleft}
 \begin{LARGE}
 \hfill\begin{tabular}{lr}
@@ -191,7 +363,12 @@ STANDARD &amp;\bfseries <xsl:call-template name="getiso_documentNumber"/>-<xsl:c
 \hrule
 
 \tableofcontents
-</xsl:template><xsl:template match="tei:titleStmt/tei:title[@type='main']"><xsl:value-of select="normalize-space(.)"/><xsl:text> </xsl:text></xsl:template><xsl:template name="latexLayout">
+</xsl:template>
+    <xsl:template match="tei:titleStmt/tei:title[@type='main']">
+        <xsl:value-of select="normalize-space(.)"/>
+        <xsl:text> </xsl:text>
+    </xsl:template>
+    <xsl:template name="latexLayout">
 \paperwidth211mm
 \paperheight297mm
 \def\@pnumwidth{1.55em}
@@ -285,5 +462,36 @@ STANDARD &amp;\bfseries <xsl:call-template name="getiso_documentNumber"/>-<xsl:c
 \usepackage[pdftitle={<xsl:call-template name="generateSimpleTitle"/>},
  pdfauthor={<xsl:call-template name="generateAuthor"/>}]{hyperref}
 \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
-<xsl:call-template name="latexPreambleHook"/></xsl:template><xsl:template name="simpleRun"><xsl:param name="text"/><xsl:param name="prefix"/><xsl:param name="italic"/><xsl:value-of select="$prefix"/><xsl:choose><xsl:when test="$italic='true'"><xsl:text>\textit{</xsl:text><xsl:value-of select="$text"/><xsl:text>}</xsl:text></xsl:when><xsl:otherwise><xsl:value-of select="$text"/></xsl:otherwise></xsl:choose></xsl:template><xsl:template name="termNum"><xsl:value-of select="substring-after(../@id,'_')"/><xsl:text> </xsl:text></xsl:template><xsl:template name="block-element"><xsl:param name="pPr"/><xsl:param name="style"/><xsl:param name="select" select="."/><xsl:for-each select="$select"><xsl:text>\par 
-</xsl:text><xsl:apply-templates/></xsl:for-each></xsl:template></xsl:stylesheet>
+<xsl:call-template name="latexPreambleHook"/>
+    </xsl:template>
+    <xsl:template name="simpleRun">
+        <xsl:param name="text"/>
+        <xsl:param name="prefix"/>
+        <xsl:param name="italic"/>
+        <xsl:value-of select="$prefix"/>
+        <xsl:choose>
+            <xsl:when test="$italic='true'">
+                <xsl:text>\textit{</xsl:text>
+                <xsl:value-of select="$text"/>
+                <xsl:text>}</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$text"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template name="termNum">
+        <xsl:value-of select="substring-after(../@id,'_')"/>
+        <xsl:text> </xsl:text>
+    </xsl:template>
+    <xsl:template name="block-element">
+        <xsl:param name="pPr"/>
+        <xsl:param name="style"/>
+        <xsl:param name="select" select="."/>
+        <xsl:for-each select="$select">
+            <xsl:text>\par 
+</xsl:text>
+            <xsl:apply-templates/>
+        </xsl:for-each>
+    </xsl:template>
+</xsl:stylesheet>

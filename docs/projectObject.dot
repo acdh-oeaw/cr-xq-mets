@@ -3,6 +3,7 @@ graph crProject {
 	ratio = auto;
 	//size = "50,50";
 	//resolution=300;
+	rankdir = LR;
 	
 	
 	project -- metsHdr;

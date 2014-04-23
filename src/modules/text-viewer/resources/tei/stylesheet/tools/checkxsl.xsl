@@ -35,6 +35,29 @@ of this software, even if advised of the possibility of such damage.
 $Id: checkxsl.xsl 9646 2011-11-05 23:39:08Z rahtz $
 
 2008, TEI Consortium
---><xsl:output method="text"/><xsl:key name="TEMPLATES" match="xsl:template[@name]" use="1"/><xsl:key name="CALLED_TEMPLATES" match="xsl:call-template[@name]" use="@name"/><xsl:template match="xsl:stylesheet"><xsl:variable name="all"><xsl:copy-of select="xsl:template"/><xsl:call-template name="inclusions"/></xsl:variable><xsl:for-each select="$all"><xsl:for-each select="key('TEMPLATES',1)"><xsl:if test="count(key('CALLED_TEMPLATES',@name))=0">
+-->
+    <xsl:output method="text"/>
+    <xsl:key name="TEMPLATES" match="xsl:template[@name]" use="1"/>
+    <xsl:key name="CALLED_TEMPLATES" match="xsl:call-template[@name]" use="@name"/>
+    <xsl:template match="xsl:stylesheet">
+        <xsl:variable name="all">
+            <xsl:copy-of select="xsl:template"/>
+            <xsl:call-template name="inclusions"/>
+        </xsl:variable>
+        <xsl:for-each select="$all">
+            <xsl:for-each select="key('TEMPLATES',1)">
+                <xsl:if test="count(key('CALLED_TEMPLATES',@name))=0">
 	Template <xsl:value-of select="@name"/> is not used
-      </xsl:if></xsl:for-each></xsl:for-each></xsl:template><xsl:template name="inclusions"><xsl:for-each select="xsl:import|xsl:include"><xsl:for-each select="document(@href)/xsl:stylesheet"><xsl:copy-of select="xsl:template"/><xsl:call-template name="inclusions"/></xsl:for-each></xsl:for-each></xsl:template></xsl:stylesheet>
+      </xsl:if>
+            </xsl:for-each>
+        </xsl:for-each>
+    </xsl:template>
+    <xsl:template name="inclusions">
+        <xsl:for-each select="xsl:import|xsl:include">
+            <xsl:for-each select="document(@href)/xsl:stylesheet">
+                <xsl:copy-of select="xsl:template"/>
+                <xsl:call-template name="inclusions"/>
+            </xsl:for-each>
+        </xsl:for-each>
+    </xsl:template>
+</xsl:stylesheet>

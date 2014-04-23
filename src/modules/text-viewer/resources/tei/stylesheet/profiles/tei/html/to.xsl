@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="tei html" version="2.0">
-    <!-- import base conversion style --><xsl:import href="../../../xhtml2/tei.xsl"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p>This software is dual-licensed:
+    <!-- import base conversion style -->
+    <xsl:import href="../../../xhtml2/tei.xsl"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -31,4 +35,19 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: to.xsl 9329 2011-09-20 09:47:43Z rahtz $</p><p>Copyright: 2008, TEI Consortium</p></desc></doc><xsl:param name="splitLevel">-1</xsl:param><xsl:param name="cssFile"/><xsl:param name="cssInlineFile">../tei.css</xsl:param><xsl:param name="institution"/><xsl:param name="feedbackURL"/><xsl:param name="searchURL"/><xsl:template name="copyrightStatement"/><xsl:param name="parentURL">http://www.tei-c.org/</xsl:param><xsl:param name="parentWords">TEI</xsl:param></xsl:stylesheet>
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: to.xsl 9329 2011-09-20 09:47:43Z rahtz $</p>
+            <p>Copyright: 2008, TEI Consortium</p>
+        </desc>
+    </doc>
+    <xsl:param name="splitLevel">-1</xsl:param>
+    <xsl:param name="cssFile"/>
+    <xsl:param name="cssInlineFile">../tei.css</xsl:param>
+    <xsl:param name="institution"/>
+    <xsl:param name="feedbackURL"/>
+    <xsl:param name="searchURL"/>
+    <xsl:template name="copyrightStatement"/>
+    <xsl:param name="parentURL">http://www.tei-c.org/</xsl:param>
+    <xsl:param name="parentWords">TEI</xsl:param>
+</xsl:stylesheet>

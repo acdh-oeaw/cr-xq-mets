@@ -36,4 +36,33 @@ of this software, even if advised of the possibility of such damage.
 $Id: checkxsl.xsl 9646 2011-11-05 23:39:08Z rahtz $
 
 2008, TEI Consortium
---><xsl:template match="import"><xsl:for-each select="doc(@href)/stylesheet"><xsl:apply-templates/></xsl:for-each></xsl:template><xsl:template match="doc:*"/><xsl:template match="stylesheet"><xsl:copy><xsl:copy-of select="@*"/><xsl:apply-templates/></xsl:copy></xsl:template><xsl:template match="text()|@*|comment()"><xsl:copy-of select="."/></xsl:template><xsl:template match="*"><xsl:copy><xsl:copy-of select="@*"/><xsl:apply-templates/></xsl:copy></xsl:template><xsl:template match="*" mode="import"><xsl:copy><xsl:attribute name="priority">-10</xsl:attribute><xsl:copy-of select="@*"/><xsl:apply-templates/></xsl:copy></xsl:template></xsl:stylesheet>
+-->
+    <xsl:template match="import">
+        <xsl:for-each select="doc(@href)/stylesheet">
+            <xsl:apply-templates/>
+        </xsl:for-each>
+    </xsl:template>
+    <xsl:template match="doc:*"/>
+    <xsl:template match="stylesheet">
+        <xsl:copy>
+            <xsl:copy-of select="@*"/>
+            <xsl:apply-templates/>
+        </xsl:copy>
+    </xsl:template>
+    <xsl:template match="text()|@*|comment()">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+    <xsl:template match="*">
+        <xsl:copy>
+            <xsl:copy-of select="@*"/>
+            <xsl:apply-templates/>
+        </xsl:copy>
+    </xsl:template>
+    <xsl:template match="*" mode="import">
+        <xsl:copy>
+            <xsl:attribute name="priority">-10</xsl:attribute>
+            <xsl:copy-of select="@*"/>
+            <xsl:apply-templates/>
+        </xsl:copy>
+    </xsl:template>
+</xsl:stylesheet>

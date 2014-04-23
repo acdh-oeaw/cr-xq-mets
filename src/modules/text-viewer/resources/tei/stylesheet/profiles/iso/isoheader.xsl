@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" version="1.0"><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p> TEI stylesheet for simplifying TEI ODD markup </p><p>This software is dual-licensed:
+<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" version="1.0">
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p> TEI stylesheet for simplifying TEI ODD markup </p>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -30,5 +34,28 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: isoheader.xsl 9646 2011-11-05 23:39:08Z rahtz $</p><p>Copyright: 2008, TEI Consortium</p></desc></doc><xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
-    <!-- create root element --><xsl:template match="/"><xsl:apply-templates/></xsl:template><xsl:template match="w:hdr"><xsl:element name="hdr"><xsl:attribute name="document_type"><xsl:value-of select="//w:t[preceding-sibling::w:rPr/w:rStyle/@w:val='HeaderDocType']"/></xsl:attribute><xsl:attribute name="document_id_prefix"><xsl:value-of select="//w:t[preceding-sibling::w:rPr/w:rStyle/@w:val='HeaderDocIDPrefix']"/></xsl:attribute><xsl:attribute name="document_id"><xsl:value-of select="//w:t[preceding-sibling::w:rPr/w:rStyle/@w:val='HeaderDocID']"/></xsl:attribute></xsl:element></xsl:template></xsl:stylesheet>
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: isoheader.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
+            <p>Copyright: 2008, TEI Consortium</p>
+        </desc>
+    </doc>
+    <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+    <!-- create root element -->
+    <xsl:template match="/">
+        <xsl:apply-templates/>
+    </xsl:template>
+    <xsl:template match="w:hdr">
+        <xsl:element name="hdr">
+            <xsl:attribute name="document_type">
+                <xsl:value-of select="//w:t[preceding-sibling::w:rPr/w:rStyle/@w:val='HeaderDocType']"/>
+            </xsl:attribute>
+            <xsl:attribute name="document_id_prefix">
+                <xsl:value-of select="//w:t[preceding-sibling::w:rPr/w:rStyle/@w:val='HeaderDocIDPrefix']"/>
+            </xsl:attribute>
+            <xsl:attribute name="document_id">
+                <xsl:value-of select="//w:t[preceding-sibling::w:rPr/w:rStyle/@w:val='HeaderDocID']"/>
+            </xsl:attribute>
+        </xsl:element>
+    </xsl:template>
+</xsl:stylesheet>

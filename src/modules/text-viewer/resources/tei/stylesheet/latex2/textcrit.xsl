@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0" exclude-result-prefixes="a rng tei teix" version="2.0"><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0" exclude-result-prefixes="a rng tei teix" version="2.0">
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p>
     TEI stylesheet
     dealing with elements from the
       textcrit module, making LaTeX output.
-      </p><p>This software is dual-licensed:
+      </p>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -34,6 +38,27 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Copyright: 2011, TEI Consortium</p></desc></doc><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl"><desc><p>Process element app</p><p>Process tei:lem and tei:rdg within tei:app; first, first, rudimentary attempt. Sends lots of information
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Copyright: 2011, TEI Consortium</p>
+        </desc>
+    </doc>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+        <desc>
+            <p>Process element app</p>
+            <p>Process tei:lem and tei:rdg within tei:app; first, first, rudimentary attempt. Sends lots of information
     to a footnote. If a tei:lem is not found, the first tei:rdg is used as the base text. Witness sigils in attribute
-    wit are assumed all to start with # (this should be parametrized).</p></desc></doc><xsl:template name="appReading"><xsl:param name="lemma"/><xsl:param name="lemmawitness"/><xsl:param name="readings"/><xsl:text>\edtext{</xsl:text><xsl:value-of select="$lemma"/><xsl:text>}{\Afootnote{</xsl:text><xsl:copy-of select="$readings"/><xsl:text>}}</xsl:text></xsl:template></xsl:stylesheet>
+    wit are assumed all to start with # (this should be parametrized).</p>
+        </desc>
+    </doc>
+    <xsl:template name="appReading">
+        <xsl:param name="lemma"/>
+        <xsl:param name="lemmawitness"/>
+        <xsl:param name="readings"/>
+        <xsl:text>\edtext{</xsl:text>
+        <xsl:value-of select="$lemma"/>
+        <xsl:text>}{\Afootnote{</xsl:text>
+        <xsl:copy-of select="$readings"/>
+        <xsl:text>}}</xsl:text>
+    </xsl:template>
+</xsl:stylesheet>

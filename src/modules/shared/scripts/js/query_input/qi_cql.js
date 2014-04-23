@@ -8,6 +8,7 @@ function genCQLInput(key, param_settings) {
         var new_input = $("<input />");
             new_input.attr("id",key);
             new_input.attr("name",key);
+            if (param_settings.size) $(new_input).attr("size",param_settings.size);
         
         
         var query_object = new Query(key, param_settings);
@@ -19,7 +20,9 @@ function genCQLInput(key, param_settings) {
         console.log("new_cql_widget.query_object:");
         console.log(new_cql_widget.query_object);
         query_object.widget = new_cql_widget;
-        
+        query_object.updatedCQL = function() {
+            new_input.val(query_object.cql);
+        };
         // add first SC 
         query_object.addSearchClause(null,"");
         
@@ -27,16 +30,23 @@ function genCQLInput(key, param_settings) {
 }
 
 
-/** constructor for a Qurey-object - bascally a set of search clauses (previously: Searchclauseset */
+/** constructor for a Query-object - bascally a set of search clauses (previously: Searchclauseset */
 function Query(key, param_settings) {
     this.key = key;
-    this.cql_config = param_settings.cql_config;
+    this.fcs_config = param_settings.fcs_config;
+    // actual query string in CQL-syntax
+    this.cql = param_settings.cql;  
     
     // the parent widget holding the search-clauses;
     this.widget ={};
     
     this.searchclauses = [];
     this.and_divs = [];
+
+    /** event handler for change of CQL */
+    this.updatedCQL = function() {
+        console.log(this.cql);
+    }
 
     /** add SC relative to an existing one */    
     this.addSearchClause = function(source_clause, rel) {
@@ -78,10 +88,47 @@ function Query(key, param_settings) {
             
         // don't remove the first SC            
         if (!(and_pos==0 && or_pos==0)) {            
-            this.searchclauses[and_pos][or_pos] = null;
+            this.searchclauses[and_pos].splice(or_pos,1);
+            // if and-array is empty remove it as well
+            if (this.searchclauses[and_pos].length == 0) this.searchclauses.splice(and_pos,1);
             source_clause.widget.remove();
          }
     }
+    
+    // generate CQL string from search clauses
+    this.updateCQL = function(){ 
+	   var uncompletequery = false;
+	   var cqltext= "";
+	   
+		for (var i = 0; i < this.searchclauses.length; i++) {
+			if ( i>0) cqltext = cqltext + " and ";
+			if (this.searchclauses.length> 1) cqltext = cqltext + " ( ";
+			for (var j = 0; j < this.searchclauses[i].length; j++) {
+				if ( j>0) cqltext = cqltext + " or ";
+				if (this.searchclauses[i].length > 1) cqltext = cqltext + " ( ";
+				ptext = this.searchclauses[i][j].rendered();
+				if (ptext.length == 0){
+					uncompletequery = true;
+				}
+				cqltext = cqltext + ptext;
+				if (this.searchclauses[i].length > 1) cqltext = cqltext + " ) ";
+			}
+			if (this.searchclauses.length> 1) cqltext = cqltext + " ) ";
+		}
+			
+		if ((i == 1 && j == 1) && (cqltext.substring (0,6) == '* any ')) {
+			cqltext  = cqltext.replace('* any ','');
+		}
+		if (uncompletequery){
+			cqltext = "";
+		}
+		console.log(cqltext);
+		this.cql = cqltext;
+		this.updatedCQL(); //call event handler 
+        return this.cql;
+        
+	}
+    
 }
 
 
@@ -91,62 +138,89 @@ function SearchClause(query_object, and_pos, or_pos) {
       this.or_pos = or_pos;
       this.query_object = query_object;
       this.index = ""
-      this.relation = "";
+      this.relation = "=";
       this.value = "";
+      this.key = query_object.key + '-' + and_pos + '-' + or_pos;
 
-    //make cql_config static to make it accessible from getValues()
-    //cql_config = query_object.cql_config;
+    //make fcs_config static to make it accessible from getValues()
+    //fcs_config = query_object.fcs_config;
 
     /** generate a widget for this SC */
       this.genCQLSearchClauseWidget = function () {
         
          //console.log("genCQLSearchClauseWidget(query_object)");
          //console.log(this.query_object);
+        
+        var currentSC = this; 
+                
          
-        var key= query_object.key; 
         var input_index = $("<input />");
-            input_index.attr("id","cql-" + key + "-index");
-            input_index.attr("name","cql-" + key + "-index")
+            input_index.attr("id","cql-" + this.key + "-index");
+            input_index.attr("name","cql-" + this.key  + "-index")
             input_index.data("sc", this);            
-            // update the value in data-object;
-            input_index.change(function(){ $(this).data("sc").index = $(this).val();  
-                //console.log($(this).data("sc").index + '-' + $(this).val()); 
-                });
+            // update the value in data-object; -> but rather on autocompletechange event
+            //input_index.change(
+                   // function(){ 
+                        //$(this).data("sc").index = $(this).val();  
+                        //query_object.updateCQL();
+                    //    console.log($(this).data("sc").index + '-' + $(this).val()); 
+                // });
             
-        var select_relation = $("<select class=' rel_input'><option value='='>=</option><option value='>'>></option><option value='<'><</option><option value='any'>any</option><option value='contains'>contains</option><option value='all'>all</option></select>");
+        var select_relation = $("<select class='rel_input'><option value='='>=</option><option value='>'>></option><option value='<'><</option><option value='any'>any</option><option value='contains'>contains</option><option value='all'>all</option></select>");
+            select_relation.change(function(){ 
+                    currentSC.relation = $(this).val(); 
+                    query_object.updateCQL();
+                  } );
+                  
         var input_value = $("<input />");
-            input_value.attr("id","cql-" + key + "-value");
-            input_value.attr("name","cql-" + key + "-value");
+            input_value.attr("id","cql-" + this.key + "-value");
+            input_value.attr("name","cql-" + this.key + "-value");
     
            input_value.data("sc", this);            
             // update the value in data-object;
-           input_value.change(function(){ $(this).data("sc").value = $(this).val(); });
+           input_value.change(function(){
+                    //alternatively: $(this).data("sc")        
+                    currentSC.value = $(this).val(); 
+                    query_object.updateCQL();
+                  } );
             
 
-        var new_widget = $("<div id='widget-" + key + "' class='widget-cql'></div>");
+        var new_widget = $("<div id='widget-" + this.key + "-sc' class='widget-cql-sc'></div>");
             new_widget.append(input_index)
                       .append(select_relation)
                       .append(input_value);
     
     // setup autocompletes 
-        if (this.query_object.cql_config) {
+        if (this.query_object.fcs_config) {
             
             // let the autocomplete-select refresh upon loaded index
-            this.query_object.cql_config.onLoaded = function(index) {     input_value.autocomplete( "search");
+            this.query_object.fcs_config.onLoaded = function(index) {     input_value.autocomplete( "search");
                    console.log("onloaded-index:" + index)};
           
-            var indexes =  this.query_object.cql_config.getIndexes();
+            var indexes =  this.query_object.fcs_config.getIndexes();
           //  console.log(indexes);
             
             // setting source on init did not work ??
              //input_index.autocomplete({source: indexes});
              input_index.autocomplete();
              input_index.autocomplete( "option", "source", indexes );
+             input_index.on("autocompletechange", 
+                        function(){ 
+                            currentSC.index = $(this).val();
+                            query_object.updateCQL();
+                            console.log("autocompletechange: " + currentSC.value + '-' + $(this).val()); 
+                });
         //      console.log(input_index.autocomplete( "option", "source" ));
         
              input_value.data("input_index", input_index);
              input_value.autocomplete();
-             input_value.autocomplete( "option", "source", getValues );
+             input_value.autocomplete( "option", "source", this.getValues );
+             input_value.on("autocompletechange", 
+                        function(){ 
+                            currentSC.value = $(this).val();
+                            query_object.updateCQL();
+                            console.log("autocompletechange: " + $(this).data("sc").index + '-' + $(this).val()); 
+                });
         }
         
        new_widget.append(this.genControls()); 
@@ -154,24 +228,34 @@ function SearchClause(query_object, and_pos, or_pos) {
     };
 
 
-    getValues = function(request, response) {
+    this.getValues = function(request, response) {
             
             console.log("request_term:" + request.term);
-            //console.log(this.element.data("sc"));
+            console.log(this.element.data("sc"));
             var sc = this.element.data("sc")
-            values = sc.query_object.cql_config.getValues(sc.index,request.term);
+            values = sc.query_object.fcs_config.getValues(sc.index,request.term);
             //console.log(values);
             if (values.status == 'loading') { response( ["loading..."]) }
                 else  { response(values) };
     };
-    
+
+    this.rendered = function(){ 
+	if (this.index.trim().length == 0 || this.value.trim().length == 0){
+		return "";
+	}
+	//if (this.is_category){
+	//	return "ISOCAT( " + this.category + ") " + this.relation + " " + this.value;
+	//}
+	return this.index.trim().replace(" ","_") + " " + this.relation + " " + this.value;
+};
+
 
     this.genControls = function () {
     
-        var div_controls = $("<span class='controls' />");
-        var cmd_del = $("<span class='cmd cmd_sc_delete' />");
-        var cmd_and = $("<span class='cmd cmd_add_and' />");
-        var cmd_or = $("<span class='cmd cmd_add_or' />");
+        var div_controls = $("<span class='cmd-wrapper controls' />");
+        var cmd_del = $("<span class='ui-icon ui-icon-close cmd_sc_delete' />");
+        var cmd_and = $("<span class='ui-icon cmd_add_and' >&amp;</span>");
+        var cmd_or = $("<span class='ui-icon cmd_add_or' >OR</span>");
         
         div_controls.append(cmd_del).append(cmd_and).append(cmd_or);
         

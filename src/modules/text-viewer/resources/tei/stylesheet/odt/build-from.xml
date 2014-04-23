@@ -21,10 +21,57 @@
   <!--
  Convert odt files to TEI documents.
  -->
-  <!-- Path to ODT file. --><property name="inputFile" value=""/>
-  <!-- Path where the output TEI file will be saved. --><property name="outputFile" value=""/>
-  <!-- which profile --><property name="profile" value="default"/>
-  <!-- which language --><property name="lang" value="en"/>
-  <!-- where does oxygen keep stuff --><property name="oxygenlib" value=""/>
-  <!-- Stylesheet for transformation --><property name="odttotei" value="../profiles/${profile}/odt/from.xsl"/><dirname property="inputFileDir" file="${inputFile}"/><dirname property="outputDir" file="${outputFile}"/><property name="outputTempDir" value="${outputDir}/temp-dir-for-ant"/><path id="classpath"><pathelement path="${java.class.path}"/></path><target name="setup">
-    <!-- Recreate temporary output directory --><delete dir="${outputTempDir}"/><mkdir dir="${outputTempDir}"/></target><target name="dist" depends="convert,mediadir.check,picturecopy,cleanup"/><target name="convert" depends="setup"><unzip src="${inputFile}" dest="${outputTempDir}"/><xslt force="yes" style="${odttotei}" classpath="classpath" in="${outputTempDir}/content.xml" out="${outputFile}"><xmlcatalog><catalogpath><pathelement location="../../../../catalog.xml"/><pathelement location="../../../../../xhtml11/dtd/xhtmlcatalog.xml"/></catalogpath></xmlcatalog><factory name="net.sf.saxon.TransformerFactoryImpl"/><classpath location="${oxygenlib}/saxon9ee.jar"/><param name="dir" expression="${outputTempDir}"/><param name="inputDir" expression="${inputFileDir}"/><param name="mediaDir" expression="Pictures"/></xslt></target><target name="mediadir.check"><condition property="mediadir.exists"><available file="${outputTempDir}/Pictures" type="dir"/></condition></target><target name="picturecopy" if="${mediadir.exists}"><move todir="${outputDir}/Pictures" overwrite="true"><fileset dir="${outputTempDir}/Pictures"/></move></target><target name="cleanup" unless="debug"><delete dir="${outputTempDir}"/></target></project>
+  <!-- Path to ODT file. -->
+    <property name="inputFile" value=""/>
+  <!-- Path where the output TEI file will be saved. -->
+    <property name="outputFile" value=""/>
+  <!-- which profile -->
+    <property name="profile" value="default"/>
+  <!-- which language -->
+    <property name="lang" value="en"/>
+  <!-- where does oxygen keep stuff -->
+    <property name="oxygenlib" value=""/>
+  <!-- Stylesheet for transformation -->
+    <property name="odttotei" value="../profiles/${profile}/odt/from.xsl"/>
+    <dirname property="inputFileDir" file="${inputFile}"/>
+    <dirname property="outputDir" file="${outputFile}"/>
+    <property name="outputTempDir" value="${outputDir}/temp-dir-for-ant"/>
+    <path id="classpath">
+        <pathelement path="${java.class.path}"/>
+    </path>
+    <target name="setup">
+    <!-- Recreate temporary output directory -->
+        <delete dir="${outputTempDir}"/>
+        <mkdir dir="${outputTempDir}"/>
+    </target>
+    <target name="dist" depends="convert,mediadir.check,picturecopy,cleanup"/>
+    <target name="convert" depends="setup">
+        <unzip src="${inputFile}" dest="${outputTempDir}"/>
+        <xslt force="yes" style="${odttotei}" classpath="classpath" in="${outputTempDir}/content.xml" out="${outputFile}">
+            <xmlcatalog>
+                <catalogpath>
+                    <pathelement location="../../../../catalog.xml"/>
+                    <pathelement location="../../../../../xhtml11/dtd/xhtmlcatalog.xml"/>
+                </catalogpath>
+            </xmlcatalog>
+            <factory name="net.sf.saxon.TransformerFactoryImpl"/>
+            <classpath location="${oxygenlib}/saxon9ee.jar"/>
+            <param name="dir" expression="${outputTempDir}"/>
+            <param name="inputDir" expression="${inputFileDir}"/>
+            <param name="mediaDir" expression="Pictures"/>
+        </xslt>
+    </target>
+    <target name="mediadir.check">
+        <condition property="mediadir.exists">
+            <available file="${outputTempDir}/Pictures" type="dir"/>
+        </condition>
+    </target>
+    <target name="picturecopy" if="${mediadir.exists}">
+        <move todir="${outputDir}/Pictures" overwrite="true">
+            <fileset dir="${outputTempDir}/Pictures"/>
+        </move>
+    </target>
+    <target name="cleanup" unless="debug">
+        <delete dir="${outputTempDir}"/>
+    </target>
+</project>

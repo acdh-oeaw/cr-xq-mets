@@ -4,7 +4,9 @@
         <param key="pid-service">http://pid-test.gwdg.de/handles/11022/</param>
         <param key="pid-resolver">http://hdl.handle.net/11022/</param>
         <param key="pid-username">1013-01</param>
-<!-- TODO: hide from param-list!
-            <param key="pid-pwd" type="hidden">-</param>-->
+        <param key="repo-baseuri">http://acdh.oeaw.ac.at/cr/get/</param>
+        <!--<param key="pid-ResourceProxy-id-prefix">at.icltt.cr.</param>-->
+        <param key="pid-resourceproxy-prefix"/>
+        <param key="pid-pwd">********</param>
     </module>
 </config>

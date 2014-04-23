@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" exclude-result-prefixes="tei iso" version="2.0"><xsl:import href="isoutils.xsl"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p>This software is dual-licensed:
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0" exclude-result-prefixes="tei iso" version="2.0">
+    <xsl:import href="isoutils.xsl"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -30,4 +34,51 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: iso2meta.xsl 9646 2011-11-05 23:39:08Z rahtz $</p><p>Copyright: 2008, TEI Consortium</p></desc></doc><xsl:output method="xhtml" encoding="utf-8"/><xsl:key name="DIV" match="tei:div" use="@type"/><xsl:template match="tei:TEI"><html><head><title>Report on ISO document</title><link href="iso.css" rel="stylesheet" type="text/css"/></head><body><h1 class="maintitle">Report on metadata</h1><table><tr><td>Today's date</td><td><xsl:call-template name="whatsTheDate"/></td></tr><xsl:for-each select="key('ALLMETA',1)"><xsl:sort select="@iso:meta"/><tr><td><xsl:value-of select="@iso:meta"/></td><td><xsl:value-of select="key('ISOMETA',@iso:meta)"/></td></tr></xsl:for-each></table></body></html></xsl:template><xsl:template name="block-element"><xsl:param name="select"/><xsl:param name="style"/><xsl:param name="pPr"/><xsl:param name="nop"/><xsl:param name="bookmark-name"/><xsl:param name="bookmark-id"/></xsl:template><xsl:template name="termNum"/></xsl:stylesheet>
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: iso2meta.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
+            <p>Copyright: 2008, TEI Consortium</p>
+        </desc>
+    </doc>
+    <xsl:output method="xhtml" encoding="utf-8"/>
+    <xsl:key name="DIV" match="tei:div" use="@type"/>
+    <xsl:template match="tei:TEI">
+        <html>
+            <head>
+                <title>Report on ISO document</title>
+                <link href="iso.css" rel="stylesheet" type="text/css"/>
+            </head>
+            <body>
+                <h1 class="maintitle">Report on metadata</h1>
+                <table>
+                    <tr>
+                        <td>Today's date</td>
+                        <td>
+                            <xsl:call-template name="whatsTheDate"/>
+                        </td>
+                    </tr>
+                    <xsl:for-each select="key('ALLMETA',1)">
+                        <xsl:sort select="@iso:meta"/>
+                        <tr>
+                            <td>
+                                <xsl:value-of select="@iso:meta"/>
+                            </td>
+                            <td>
+                                <xsl:value-of select="key('ISOMETA',@iso:meta)"/>
+                            </td>
+                        </tr>
+                    </xsl:for-each>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+    <xsl:template name="block-element">
+        <xsl:param name="select"/>
+        <xsl:param name="style"/>
+        <xsl:param name="pPr"/>
+        <xsl:param name="nop"/>
+        <xsl:param name="bookmark-name"/>
+        <xsl:param name="bookmark-id"/>
+    </xsl:template>
+    <xsl:template name="termNum"/>
+</xsl:stylesheet>

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:s="http://www.ascc.net/xml/schematron" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0" exclude-result-prefixes="s a rng tei teix" version="2.0"><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet"><desc><p>TEI stylesheet customization module for LaTeX output.</p><p>This software is dual-licensed:
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:s="http://www.ascc.net/xml/schematron" xmlns:rng="http://relaxng.org/ns/structure/1.0" exclude-result-prefixes="s a rng tei teix" version="2.0">
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
+        <desc>
+            <p>TEI stylesheet customization module for LaTeX output.</p>
+            <p>This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -30,47 +34,118 @@ data, or profits; or business interruption) however caused and on any
 theory of liability, whether in contract, strict liability, or tort
 (including negligence or otherwise) arising in any way out of the use
 of this software, even if advised of the possibility of such damage.
-</p><p>Author: See AUTHORS</p><p>Id: $Id: tei-param.xsl 9646 2011-11-05 23:39:08Z rahtz $</p><p>Copyright: 2011, TEI Consortium</p></desc></doc><xsl:key name="FOOTNOTES" match="tei:note[not(@place)]" use="1"/><xsl:key name="FOOTNOTES" match="tei:note[@place='foot']" use="1"/><xsl:key name="FOOTNOTES" match="tei:note[@place='bottom']" use="1"/><xsl:key name="ENDNOTES" match="tei:note[@place='end']" use="1"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="hook"><desc>[latex] Hook where LaTeX commands can be inserted after 
-the beginning of the document</desc></doc><xsl:template name="beginDocumentHook"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="hook"><desc>[latex] Hook where LaTeX commands can be at start of setup</desc></doc><xsl:template name="latexSetupHook"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="hook"><desc>[latex] Hook where LaTeX commands can be inserted in the
-    preamble before the beginning of the document</desc></doc><xsl:template name="latexPreambleHook"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string"><desc>
+</p>
+            <p>Author: See AUTHORS</p>
+            <p>Id: $Id: tei-param.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
+            <p>Copyright: 2011, TEI Consortium</p>
+        </desc>
+    </doc>
+    <xsl:key name="FOOTNOTES" match="tei:note[not(@place)]" use="1"/>
+    <xsl:key name="FOOTNOTES" match="tei:note[@place='foot']" use="1"/>
+    <xsl:key name="FOOTNOTES" match="tei:note[@place='bottom']" use="1"/>
+    <xsl:key name="ENDNOTES" match="tei:note[@place='end']" use="1"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="hook">
+        <desc>[latex] Hook where LaTeX commands can be inserted after 
+the beginning of the document</desc>
+    </doc>
+    <xsl:template name="beginDocumentHook"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="hook">
+        <desc>[latex] Hook where LaTeX commands can be at start of setup</desc>
+    </doc>
+    <xsl:template name="latexSetupHook"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="hook">
+        <desc>[latex] Hook where LaTeX commands can be inserted in the
+    preamble before the beginning of the document</desc>
+    </doc>
+    <xsl:template name="latexPreambleHook"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string">
+        <desc>
 Optional parameters for documentclass
-</desc></doc><xsl:param name="classParameters">11pt,twoside</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string"><desc>
+</desc>
+    </doc>
+    <xsl:param name="classParameters">11pt,twoside</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string">
+        <desc>
 Logo graphics file
-</desc></doc><xsl:param name="latexLogo"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="output" type="string"><desc>
+</desc>
+    </doc>
+    <xsl:param name="latexLogo"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="output" type="string">
+        <desc>
 URL root where referenced documents are located
-</desc></doc><xsl:param name="baseURL"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="output" type="boolean"><desc>
+</desc>
+    </doc>
+    <xsl:param name="baseURL"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="output" type="boolean">
+        <desc>
 Whether or not to load LaTeX packages which attempt to
 process the UTF-8 characters. Set to "false" if you are
 using XeTeX or similar.
-</desc></doc><xsl:param name="reencode">true</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="userpackage" type="string"><desc>
+</desc>
+    </doc>
+    <xsl:param name="reencode">true</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="userpackage" type="string">
+        <desc>
 The name of a LaTeX style package which should be loaded
-</desc></doc><xsl:param name="userpackage"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="output" type="boolean"><desc>
+</desc>
+    </doc>
+    <xsl:param name="userpackage"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="output" type="boolean">
+        <desc>
 Use real name of graphics files rather than pointers
-</desc></doc><xsl:param name="realFigures">true</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX package setup</p><p>Declaration of the LaTeX packages needed to implement
-    this markup</p></desc></doc><xsl:template name="latexPackages"><xsl:text>
-\usepackage[</xsl:text><xsl:value-of select="$latexPaperSize"/><xsl:text>,</xsl:text><xsl:value-of select="$latexGeometryOptions"/><xsl:text>]{geometry}
+</desc>
+    </doc>
+    <xsl:param name="realFigures">true</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX package setup</p>
+            <p>Declaration of the LaTeX packages needed to implement
+    this markup</p>
+        </desc>
+    </doc>
+    <xsl:template name="latexPackages">
+        <xsl:text>
+\usepackage[</xsl:text>
+        <xsl:value-of select="$latexPaperSize"/>
+        <xsl:text>,</xsl:text>
+        <xsl:value-of select="$latexGeometryOptions"/>
+        <xsl:text>]{geometry}
 \usepackage{framed}
-</xsl:text><xsl:text>
+</xsl:text>
+        <xsl:text>
 \definecolor{shadecolor}{gray}{0.95}
 \usepackage{longtable}
 \usepackage[normalem]{ulem}
 \usepackage{fancyvrb}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
-</xsl:text><xsl:if test="key('ENDNOTES',1)">
+</xsl:text>
+        <xsl:if test="key('ENDNOTES',1)">
   \usepackage{endnotes}
-  <xsl:choose><xsl:when test="key('FOOTNOTES',1)">
+  <xsl:choose>
+                <xsl:when test="key('FOOTNOTES',1)">
       \def\theendnote{\@alph\c@endnote}
-    </xsl:when><xsl:otherwise>
+    </xsl:when>
+                <xsl:otherwise>
       \def\theendnote{\@arabic\c@endnote}
-    </xsl:otherwise></xsl:choose></xsl:if><xsl:text>
+    </xsl:otherwise>
+            </xsl:choose>
+        </xsl:if>
+        <xsl:text>
 \def\Gin@extensions{.pdf,.png,.jpg,.mps,.tif}
-</xsl:text><xsl:choose><xsl:when test="$reencode='true'"><xsl:text>
+</xsl:text>
+        <xsl:choose>
+            <xsl:when test="$reencode='true'">
+                <xsl:text>
 \IfFileExists{tipa.sty}{\usepackage{tipa}}{}
 \usepackage{times}
-</xsl:text></xsl:when></xsl:choose><xsl:if test="not($userpackage='')">
+</xsl:text>
+            </xsl:when>
+        </xsl:choose>
+        <xsl:if test="not($userpackage='')">
   \usepackage{<xsl:value-of select="$userpackage"/>}
-</xsl:if><xsl:text>
+</xsl:if>
+        <xsl:text>
   \pagestyle{fancy} 
 </xsl:text>
 \usepackage[pdftitle={<xsl:call-template name="generateSimpleTitle"/>},
@@ -78,23 +153,57 @@ Use real name of graphics files rather than pointers
 \hyperbaseurl{<xsl:value-of select="$baseURL"/>}
 <xsl:if test="count(key('APP',1))&gt;0">
 \usepackage{ledmac}
-<xsl:call-template name="ledmacOptions"/></xsl:if></xsl:template><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="float"><desc>
+<xsl:call-template name="ledmacOptions"/>
+        </xsl:if>
+    </xsl:template>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="float">
+        <desc>
 When processing a "pb" element, decide what to generate: "active" generates a page break; "visible" genrates a bracketed number (with scissors), and "bracketsonly" generates a bracketed number (without scissors).
-</desc></doc><xsl:param name="pagebreakStyle"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="float"><desc>
+</desc>
+    </doc>
+    <xsl:param name="pagebreakStyle"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="float">
+        <desc>
 When making a table, what width must be constrained to fit,
 as a proportion of the page width.
-</desc></doc><xsl:param name="tableMaxWidth">0.85</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="boolean"><desc>
+</desc>
+    </doc>
+    <xsl:param name="tableMaxWidth">0.85</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="boolean">
+        <desc>
 Whether to number lines of poetry
-</desc></doc><xsl:param name="verseNumbering">false</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="integer"><desc>
+</desc>
+    </doc>
+    <xsl:param name="verseNumbering">false</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="integer">
+        <desc>
 When numbering poetry, how often to put in a line number
-</desc></doc><xsl:param name="everyHowManyLines">5</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string"><desc>
+</desc>
+    </doc>
+    <xsl:param name="everyHowManyLines">5</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout" type="string">
+        <desc>
 When numbering poetry, when to restart the sequence;
 this must be the name of a TEI element
-</desc></doc><xsl:param name="resetVerseLineNumbering">div1</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="userpackage" type="string"><desc>
+</desc>
+    </doc>
+    <xsl:param name="resetVerseLineNumbering">div1</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="userpackage" type="string">
+        <desc>
 Options to pass to the geometry package to set margins etc
-</desc></doc><xsl:param name="latexGeometryOptions">twoside,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="userpackage" type="string"><desc>
+</desc>
+    </doc>
+    <xsl:param name="latexGeometryOptions">twoside,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="userpackage" type="string">
+        <desc>
 Depth of nesting of reference documentation when processing ODD
-</desc></doc><xsl:param name="specLinkDepth">2</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX setup</p><p>The basic LaTeX setup which you should not 
+</desc>
+    </doc>
+    <xsl:param name="specLinkDepth">2</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX setup</p>
+            <p>The basic LaTeX setup which you should not 
 really tinker with unless you really understand  why and how. Note
 that we need to set up a mapping here for Unicode 8421, 10100 and
 10100 to glyphs for backslash and the two curly brackets, to provide literal
@@ -102,12 +211,17 @@ characters. The normal characters remain active for LaTeX commands.
 Note that if $reencode is set to false, no input or output encoding
 packages are loaded, since it is assumed you are using a TeX variant
 capable of dealing with UTF-8 directly.
-</p></desc></doc><xsl:template name="latexSetup"><xsl:call-template name="latexSetupHook"/>
+</p>
+        </desc>
+    </doc>
+    <xsl:template name="latexSetup">
+        <xsl:call-template name="latexSetupHook"/>
 \IfFileExists{xcolor.sty}%
   {\RequirePackage{xcolor}}%
   {\RequirePackage{color}}
 \usepackage{colortbl}
-      <xsl:choose><xsl:when test="$reencode='true'">
+      <xsl:choose>
+            <xsl:when test="$reencode='true'">
 \IfFileExists{utf8x.def}%
  {\usepackage[utf8x]{inputenc}}%
  {\usepackage[utf8]{inputenc}}
@@ -125,7 +239,8 @@ capable of dealing with UTF-8 directly.
 \def\textschwa{\rotatebox{-90}{e}}
 \def\textJapanese{}
 \def\textChinese{}
-</xsl:when><xsl:otherwise>
+</xsl:when>
+            <xsl:otherwise>
 \usepackage{fontspec}
 \usepackage{xunicode}
 \catcode`⃥=\active \def⃥{\textbackslash}
@@ -137,9 +252,12 @@ capable of dealing with UTF-8 directly.
 \setmonofont{<xsl:value-of select="$typewriterFont"/>}
 <xsl:if test="not($sansFont='')">
   \setsansfont{<xsl:value-of select="$sansFont"/>}
-</xsl:if><xsl:if test="not($romanFont='')">
+</xsl:if>
+                <xsl:if test="not($romanFont='')">
   \setromanfont{<xsl:value-of select="$romanFont"/>}
-</xsl:if></xsl:otherwise></xsl:choose>
+</xsl:if>
+            </xsl:otherwise>
+        </xsl:choose>
 \DeclareTextSymbol{\textpi}{OML}{25}
 \usepackage{relsize}
 \def\textsubscript#1{%
@@ -199,22 +317,86 @@ capable of dealing with UTF-8 directly.
 \endgroup
 \mathcode`\_=\string"8000
 \catcode`\_=12\relax
-</xsl:text></xsl:template><xsl:template name="exampleFontSet"><xsl:choose><xsl:when test="$reencode='true'"><xsl:text>\ttfamily\small\selectfont </xsl:text></xsl:when><xsl:when test="../@xml:lang='zh-tw' or       @xml:lang='zh-tw'"><xsl:text>\fontspec{Arial Unicode MS}\small\selectfont </xsl:text></xsl:when><xsl:when test="../@xml:lang='ja' or       @xml:lang='ja'"><xsl:text>\fontspec{Arial Unicode MS}\small\selectfont </xsl:text></xsl:when><xsl:otherwise><xsl:text>\ttfamily\small\selectfont </xsl:text></xsl:otherwise></xsl:choose></xsl:template><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX babel setup</p><p>LaTeX loading of babel with options</p></desc></doc><xsl:template name="latexBabel">
+</xsl:text>
+    </xsl:template>
+    <xsl:template name="exampleFontSet">
+        <xsl:choose>
+            <xsl:when test="$reencode='true'">
+                <xsl:text>\ttfamily\small\selectfont </xsl:text>
+            </xsl:when>
+            <xsl:when test="../@xml:lang='zh-tw' or       @xml:lang='zh-tw'">
+                <xsl:text>\fontspec{Arial Unicode MS}\small\selectfont </xsl:text>
+            </xsl:when>
+            <xsl:when test="../@xml:lang='ja' or       @xml:lang='ja'">
+                <xsl:text>\fontspec{Arial Unicode MS}\small\selectfont </xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>\ttfamily\small\selectfont </xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX babel setup</p>
+            <p>LaTeX loading of babel with options</p>
+        </desc>
+    </doc>
+    <xsl:template name="latexBabel">
 \usepackage[english]{babel}
-</xsl:template><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX paper size</p></desc></doc><xsl:param name="latexPaperSize">a4paper</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string"><desc>Font for literal code</desc></doc><xsl:param name="typewriterFont">DejaVu Sans Mono</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string"><desc>Font for sans-serif</desc></doc><xsl:param name="sansFont"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string"><desc>Font for serif</desc></doc><xsl:param name="romanFont"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string"><desc>Font for gothic</desc></doc><xsl:param name="gothicFont">Lucida Blackletter</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string"><desc>Font for calligraphic</desc></doc><xsl:param name="calligraphicFont">Lucida Calligraphy</xsl:param><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX layout preamble</p><p>All the LaTeX setup which affects page layout</p></desc></doc><xsl:template name="latexLayout"><xsl:choose><xsl:when test="$latexPaperSize='a3paper'">
+</xsl:template>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX paper size</p>
+        </desc>
+    </doc>
+    <xsl:param name="latexPaperSize">a4paper</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string">
+        <desc>Font for literal code</desc>
+    </doc>
+    <xsl:param name="typewriterFont">DejaVu Sans Mono</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string">
+        <desc>Font for sans-serif</desc>
+    </doc>
+    <xsl:param name="sansFont"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string">
+        <desc>Font for serif</desc>
+    </doc>
+    <xsl:param name="romanFont"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string">
+        <desc>Font for gothic</desc>
+    </doc>
+    <xsl:param name="gothicFont">Lucida Blackletter</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="style" type="string">
+        <desc>Font for calligraphic</desc>
+    </doc>
+    <xsl:param name="calligraphicFont">Lucida Calligraphy</xsl:param>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX layout preamble</p>
+            <p>All the LaTeX setup which affects page layout</p>
+        </desc>
+    </doc>
+    <xsl:template name="latexLayout">
+        <xsl:choose>
+            <xsl:when test="$latexPaperSize='a3paper'">
 	 \paperwidth297mm
 	 \paperheight420mm
-       </xsl:when><xsl:when test="$latexPaperSize='a5paper'">	
+       </xsl:when>
+            <xsl:when test="$latexPaperSize='a5paper'">	
 	 \paperwidth148mm
 	 \paperheight210mm
-       </xsl:when><xsl:when test="$latexPaperSize='a4paper'">
+       </xsl:when>
+            <xsl:when test="$latexPaperSize='a4paper'">
 	 \paperwidth210mm
 	 \paperheight297mm
-       </xsl:when><xsl:when test="$latexPaperSize='letterpaper'">
+       </xsl:when>
+            <xsl:when test="$latexPaperSize='letterpaper'">
 	 \paperwidth216mm
 	 \paperheight279mm
-       </xsl:when><xsl:otherwise>
-	 </xsl:otherwise></xsl:choose>       
+       </xsl:when>
+            <xsl:otherwise>
+	 </xsl:otherwise>
+        </xsl:choose>       
 \def\@pnumwidth{1.55em}
 \def\@tocrmarg {2.55em}
 \def\@dotsep{4.5}
@@ -343,17 +525,35 @@ capable of dealing with UTF-8 directly.
   \hypertarget{#1}{}%
   \markright{#2}%
 <xsl:text>
-  \pdfbookmark[</xsl:text><xsl:value-of select="$specLinkDepth"/><xsl:text>]{#2}{#1}%
+  \pdfbookmark[</xsl:text>
+        <xsl:value-of select="$specLinkDepth"/>
+        <xsl:text>]{#2}{#1}%
   \hspace{-0.75in}{\bfseries\fontsize{16pt}{18pt}\selectfont#2}%
   }{}
-      </xsl:text><xsl:call-template name="latexPreambleHook"/></xsl:template><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX setup commands for ledmac package</p></desc></doc><xsl:template name="ledmacOptions">
+      </xsl:text>
+        <xsl:call-template name="latexPreambleHook"/>
+    </xsl:template>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX setup commands for ledmac package</p>
+        </desc>
+    </doc>
+    <xsl:template name="ledmacOptions">
 \renewcommand{\notenumfont}{\bfseries}
 \lineation{page}
 \linenummargin{inner}
 \footthreecol{A}
 \foottwocol{B}
-</xsl:template><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX setup before start of document</p><p>All the LaTeX setup which are executed before the start of
-    the document</p></desc></doc><xsl:template name="latexBegin"><xsl:text>
+</xsl:template>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX setup before start of document</p>
+            <p>All the LaTeX setup which are executed before the start of
+    the document</p>
+        </desc>
+    </doc>
+    <xsl:template name="latexBegin">
+        <xsl:text>
 \makeatletter
 \thispagestyle{empty}
 \markright{\@title}\markboth{\@title}{\@author}
@@ -379,12 +579,25 @@ capable of dealing with UTF-8 directly.
 \fancyfoot[CE]{\thepage}
 \fancyfoot[RE]{\TheID}
 \hypersetup{linkbordercolor=0.75 0.75 0.75,urlbordercolor=0.75 0.75 0.75,bookmarksnumbered=true}
-\fancypagestyle{plain}{\fancyhead{}\renewcommand{\headrulewidth}{0pt}}</xsl:text></xsl:template><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout"><desc><p>LaTeX setup at end of document</p><p>All the LaTeX setup which are executed at the end of
-    the document</p></desc></doc><xsl:template name="latexEnd"/><doc xmlns="http://www.oxygenxml.com/ns/doc/xsl"><desc>[latex] Title banner </desc></doc><xsl:template name="printTitleAndLogo">
+\fancypagestyle{plain}{\fancyhead{}\renewcommand{\headrulewidth}{0pt}}</xsl:text>
+    </xsl:template>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="layout">
+        <desc>
+            <p>LaTeX setup at end of document</p>
+            <p>All the LaTeX setup which are executed at the end of
+    the document</p>
+        </desc>
+    </doc>
+    <xsl:template name="latexEnd"/>
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+        <desc>[latex] Title banner </desc>
+    </doc>
+    <xsl:template name="printTitleAndLogo">
 \makeatletter
 \noindent\parbox[b]{.75\textwidth}{\fontsize{14pt}{16pt}\bfseries\raggedright\sffamily\selectfont \@title}
 \vskip20pt
 \par\noindent{\fontsize{11pt}{13pt}\sffamily\itshape\raggedright\selectfont\@author\hfill\TheDate}
 \vspace{18pt}
 \makeatother
-</xsl:template></xsl:stylesheet>
+</xsl:template>
+</xsl:stylesheet>
