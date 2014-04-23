@@ -108,7 +108,7 @@ declare %private function project:remove-accounts($project-pid as xs:string) as 
 
 
 (:~
-:  Instanciates a new project.
+:  Instantiates a new project.
 :
 : @return mets:mets
 ~:)
