@@ -51,9 +51,11 @@ declare namespace cr="http://aac.ac.at/content_repository";
 (:~
  : Path to the stylesheet which creates the working copy.
 ~:)
-declare variable $wc:path-to-xsl:=      "wc.xsl";
+declare variable $wc:path-to-xsl:=      $config:app-root||"/core/wc.xsl";
 declare variable $wc:default-path:=     $config:default-workingcopy-path;
 declare variable $wc:filename-prefix:=  $config:RESOURCE_WORKINGCOPY_FILENAME_PREFIX;
+
+declare variable $wc:behavior-btype :=  "wc_generation";
 
 (:~
  : Generates a working copy from the $resource-pid, stores it in the database and 
@@ -84,19 +86,25 @@ declare function wc:generate($resource-pid as xs:string, $project-pid as xs:stri
         $master:=           resource:master($resource-pid,$project-pid),
         $master_filename:=  util:document-name($master),
         $wc:filename :=     $wc:filename-prefix||$master_filename
+    let $preprocess-xsl :=  resource:get-preprocess-xsl-path($resource-pid,$project-pid)
     return 
     switch(true())
             case $wc:path eq '' 
                 return util:log("INFO","$wc-path empty!")
             default 
-                return  
+                return 
                     let $xsl-params:=
                                 <parameters>
                                     <param name="resource-pid" value="{$resource-pid}"/>
                                     <param name="project-id" value="{$project-pid}"/>
-                                </parameters>,
-                        $wc:generated:=transform:transform($master,doc($wc:path-to-xsl),$xsl-params),
-                        $store-wc := repo-utils:store-in-cache($wc:filename,$wc:path,$wc:generated,$config),
+                                </parameters>
+                    let $preprocess := 
+                        if ($preprocess-xsl = '' or not(doc-available($preprocess-xsl))) 
+                        then $master 
+                        else (transform:transform($master,doc($preprocess-xsl),()),
+                              util:log-app("INFO",$config:app-name,"resource "||$resource-pid||"(project "||$project-pid||") has been preprocessed by "||$preprocess-xsl))
+                    let $wc:generated := transform:transform($preprocess,doc($wc:path-to-xsl),$xsl-params),
+                        $store-wc := repo-utils:store($wc:path,$wc:filename,$wc:generated,true(),$config),
                         $wc:filepath := base-uri($store-wc),
                         $wc:chown := (sm:chown($wc:filepath,project:adminsaccountname($project-pid)),
                                       sm:chgrp($wc:filepath,project:adminsaccountname($project-pid)),
@@ -171,7 +179,7 @@ declare function wc:get-data($resource-pid,$project-pid) as document-node()? {
     return 
         if (doc-available($wc-path))
         then doc($wc-path)
-        else util:log("INFO","requested working copy  at "||$wc-path||" is not available.")
+        else util:log-app("INFO",$config:app-name,"requested working copy  at "||$wc-path||" is not available.")
 };
 
 
@@ -189,9 +197,6 @@ declare function wc:get-data($resource-pid,$project-pid) as document-node()? {
 ~:)
 declare function wc:add($path as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element(mets:file)? {
     let $mets:resource:=resource:get($resource-pid,$project-pid)
-    let $log := util:log("INFO", "XXXXXXXXXX")
-    let $log := util:log("INFO", $mets:resource)
-    let $log := util:log("INFO", "XXXXXXXXXX")
     let $mets:wc-file:=wc:get($resource-pid,$project-pid),
         (: get the fileptr to an existing wc :)
         $mets:wc-fptr:=$mets:resource//mets:fptr[@FILEID eq $mets:wc-file/@ID]
@@ -204,15 +209,27 @@ declare function wc:add($path as xs:string, $resource-pid as xs:string, $project
         then 
             let $replace-file:=update replace $mets:wc-file with $this:wc-file
             let $replace-fileptr:=update replace $mets:wc-fptr with $this:wc-fptr
-            let $log := util:log("INFO", "mets:wc-file exists")
+            let $log := util:log-app("INFO", $config:app-name, "mets:wc-file exists")
             return $this:wc-file
         else 
-            let $log := util:log("INFO", exists(resource:files($resource-pid,$project-pid)))
-            let $log := util:log("INFO", "resource-pid:" ||$resource-pid||" project-pid: "||$project-pid)
+            let $log := util:log-app("INFO", $config:app-name, exists(resource:files($resource-pid,$project-pid)))
+            let $log := util:log-app("INFO", $config:app-name, "resource-pid:" ||$resource-pid||" project-pid: "||$project-pid)
             let $master := resource:get-master($resource-pid,$project-pid)
             (: we insert the wc <file> right after the resource's master <file> :)
             let $insert-file:= update insert $this:wc-file following $master
             (: we insert the wc <fptr> right after the <fptr> to the resource's master file :)
             let $insert-fileptr:=update insert $this:wc-fptr following $mets:resource/mets:fptr[1]
             return $this:wc-file            
+};
+
+(:~
+ : looks up a specific element in the working copy via it's document-wide unique @cr:id attribute.
+ : @param $cr:id the cr:id of the elment to find
+ : @param $resource-pid the pid of the resource
+ : @param $project-pid: the id of the current project
+ : @return zero or one element in the working copy 
+~:)
+declare function wc:lookup($cr:id as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element()? {
+    let $wc:=wc:get-data($resource-pid,$project-pid)
+    return $wc//*[@cr:id eq $cr:id]
 };
