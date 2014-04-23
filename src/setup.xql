@@ -41,9 +41,9 @@ xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf")
 (: we need two system users for the data maangement :)
 (: TODO merge these into one? :)
 util:log("INFO", "** setting up writer account **"),
-sm:create-account(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred),()),
+if (not(sm:user-exists(xs:string($local:cr-writer/write-user)))) then sm:create-account(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred),()) else sm:passwd(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred)),
 util:log("INFO", "** setting up cr-xq system account **"),
-sm:create-account("cr-xq","cr=xq!",()),
-sm:create-group("cr-admin","cr-xq","admin"),
+if (not(sm:user-exists("cr-xq"))) then sm:create-account("cr-xq","cr=xq!",()) else sm:passwd("cr-xq","cr=xq!"),
+if (not(sm:group-exists("cr-admin"))) then sm:create-group("cr-admin","cr-xq","admin") else (),
 util:log("INFO", "** setting up default project 'defaultProject' **"),
 project:new("defaultProject")
