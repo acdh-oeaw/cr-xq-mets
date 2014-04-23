@@ -12,7 +12,7 @@
         <echo>building: ${app.name}#${app.version}</echo>
         <echo>into: ${build.dir}</echo>
         <mkdir dir="${build.dir}"/>
-        <zip basedir="." destfile="${build.dir}/${app.name}-${app.version}.xar" excludes="${build.dir},${build.dir}/**,**/*.template.*,**/build.*"/>
+        <zip basedir="." destfile="${build.dir}/${app.name}-${app.version}.xar" excludes="${exclude.dirs},${build.dir},${build.dir}/**,**/*.template.*,**/build.*"/>
     </target>
     
     <!-- insert the values from build.properties into the xar meta files: repo.xml and expath-pkg.xml -->  

@@ -5,3 +5,8 @@ app.uri=http://telota.de/sade
 app.version=0.3
 projects.dir=sade-projects
 data.dir=cr-data
+
+exclude.dirs=modules/admin/**,modules/text-viewer/**
+
+# dir where the build_docs.xml lies
+scripts.dir=../utils
