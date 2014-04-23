@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets xmlns="http://www.loc.gov/METS/" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:mets="http://www.loc.gov/METS/" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" OBJID="" LABEL="" TYPE="cr-xq project">
+    <metsHdr CREATEDATE="" RECORDSTATUS="">
+        <agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="SOFTWARE">
+            <name>cr_xq</name>
+            <note/>
+        </agent>
+        <agent ROLE="CREATOR" TYPE="INDIVIDUAL">
+            <name/>
+        </agent>
+    </metsHdr>
+    <dmdSec ID="projectDMD">
+        <mdRef MDTYPE="OTHER" OTHERMDTYPE="CMDI" LOCTYPE="URL" xlink:href=""/>
+    </dmdSec>
+    <amdSec ID="projectAMD">
+        <techMD ID="projectMappings">
+            <mdWrap MDTYPE="OTHER">
+                <xmlData>
+                    <map xmlns="">
+                        <namespaces>
+                            <ns prefix="tei" uri="http://www.tei-c.org/ns/1.0"/>
+                        </namespaces>
+                        <map key="" path="" title="">
+                            <index key="resourcefragment-pid">
+                                <path/>
+                            </index>
+                            <index key="cql.serverChoice" index-type="fulltext">
+                                <path/>
+                            </index>
+                        </map>
+                    </map>
+                </xmlData>
+            </mdWrap>
+        </techMD>
+        <techMD ID="projectParameters" GROUPID="config.xml">
+            <mdWrap MDTYPE="OTHER">
+                <xmlData>
+                    <param xmlns="" key="template"/>
+                </xmlData>
+            </mdWrap>
+        </techMD>
+        <techMD ID="moduleConfig" GROUPID="config.xml">
+            <mdWrap MDTYPE="OTHER">
+                <xmlData>
+                    <module xmlns="" key="fcs">
+                        <param key="default.dataview">kwic</param>
+                        <param key="site.name">Abacus site.name</param>
+                        <param key="cache.path">/db/cr-data/_indexes</param>
+                        <param key="index.prefix">/db/cr-data/_indexes/index_</param>
+                        <param key="scripts.path">/db/cr-projects/abacus/</param>
+                        <param key="scan.xsl">scan2view_custom.xsl</param>
+                        <param key="searchRetrieve.xsl">result2view_v1_custom.xsl</param>
+                    </module>
+                </xmlData>
+            </mdWrap>
+            <mdRef LOCTYPE="URL" MDTYPE="OTHER" xlink:href="/db/cr-projects/abacus/config.xml"/>
+        </techMD>
+        <rightsMD ID="projectLicense">
+            <mdWrap MDTYPE="METSRIGHTS">
+                <xmlData>
+                    <rts:RightsDeclarationMD RIGHTSCATEGORY="PUBLIC DOMAIN"/>
+                </xmlData>
+            </mdWrap>
+        </rightsMD>
+        <rightsMD ID="projectACL" GROUPID="config.xml">
+            <mdWrap MDTYPE="OTHER" OTHERMDTYPE="EXISTACL">
+                <xmlData>
+                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="noone" group="nogroup" mode="---------">
+                        <!-- this is just a template and will be filled by project:new() -->
+                    </sm:permission>
+                </xmlData>
+            </mdWrap>
+        </rightsMD>
+    </amdSec>
+    <fileSec>
+        <fileGrp ID="guiResources" USE="Resources related to the Web Interface">
+            <fileGrp ID="templates" USE="Customized HTML files to override the ones provided by the template"/>
+            <fileGrp ID="fragments" USE="Customized HTML fragments to be included in the GUI"/>
+            <fileGrp ID="static" USE="Static web content (HTML files)"/>
+            <fileGrp ID="images" USE="Static web content (image files)"/>
+            <fileGrp ID="xsl" USE="Customized XSL stylesheets to override the default data rendering"/>
+        </fileGrp>
+        <fileGrp ID="projectImages" USE="Visual representations of the project's data (Facsimile et. alt.)"/>
+        <fileGrp ID="projectData" USE="Project Data"/>
+    </fileSec>
+    <structMap TYPE="internal" ID="cr-data">
+        <div LABEL=""/>
+    </structMap>
+</mets>

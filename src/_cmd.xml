@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cmd:CMD xmlns:ann="http://www.clarin.eu" xmlns:dcr="http://www.isocat.org/ns/dcr" xmlns:cmd="http://www.clarin.eu/cmd/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" CMDVersion="1.1" xsi:schemaLocation="http://www.clarin.eu/cmd/ http://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/profiles/clarin.eu:cr1:p_1345561703620/xsd">
+    <cmd:Header>
+        <cmd:MdCreator/>
+        <cmd:MdCreationDate/>
+        <cmd:MdSelfLink/>
+        <cmd:MdProfile>clarin.eu:cr1:p_1345561703620</cmd:MdProfile>
+        <cmd:MdCollectionDisplayName/>
+    </cmd:Header>
+    <cmd:Resources>
+        <cmd:ResourceProxyList>
+            <cmd:ResourceProxy id="">
+                <cmd:ResourceType mimetype="application/xml">LandingPage</cmd:ResourceType>
+                <cmd:ResourceRef/>
+            </cmd:ResourceProxy>
+        </cmd:ResourceProxyList>
+        <cmd:JournalFileProxyList/>
+        <cmd:ResourceRelationList/>
+    </cmd:Resources>
+    <cmd:Components>
+        <cmd:collection>
+            <cmd:CollectionInfo ComponentId="clarin.eu:cr1:c_1345561703619">
+                <cmd:Name xml:lang="en"/>
+                <cmd:Title xml:lang="en"/>
+                <cmd:Owner xml:lang="en"/>
+                <cmd:ISO639 ComponentId="clarin.eu:cr1:c_1271859438110">
+                    <cmd:iso-639-3-code/>
+                </cmd:ISO639>
+                <cmd:Description>
+                    <cmd:Description xml:lang="en"/>
+                </cmd:Description>
+            </cmd:CollectionInfo>
+            <cmd:License ComponentId="clarin.eu:cr1:c_1345561703649">
+                <cmd:DistributionType>public</cmd:DistributionType>
+                <cmd:LicenseName>CC-by-nc-sa</cmd:LicenseName>
+                <cmd:LicenseURL>http://creativecommons.org/licenses/by-nc-sa/3.0/</cmd:LicenseURL>
+                <cmd:NonCommercialUsageOnly>true</cmd:NonCommercialUsageOnly>
+                <cmd:UsageReportRequired>true</cmd:UsageReportRequired>
+                <cmd:ModificationsRequireRedeposition>false</cmd:ModificationsRequireRedeposition>
+            </cmd:License>
+            <cmd:Contact ComponentId="clarin.eu:cr1:c_1271859438113">
+                <cmd:Person/>
+                <cmd:Address/>
+                <cmd:Email/>
+                <cmd:Organisation/>
+                <cmd:Website/>
+            </cmd:Contact>
+            <cmd:WebReference ComponentId="clarin.eu:cr1:c_1316422391221">
+                <cmd:Website/>
+                <cmd:Description xml:lang="en"/>
+            </cmd:WebReference>
+        </cmd:collection>
+    </cmd:Components>
+</cmd:CMD>
