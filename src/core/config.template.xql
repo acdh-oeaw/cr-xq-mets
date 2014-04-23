@@ -18,3 +18,5 @@ declare variable $config:projects-baseuri:= "/@projects.dir@/";
 declare variable $config:projects-dir := "/db/@projects.dir@/";
 declare variable $config:data-dir := "/db/@data.dir@/";
 declare variable $config:projects-baseuri:= "/@app.name@/../../@projects.dir@/";
+declare variable $config:system-account-user:= "@system.account.user@";
+declare variable $config:system-account-pwd:= "@system.account.pwd@";
