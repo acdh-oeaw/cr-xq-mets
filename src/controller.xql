@@ -169,8 +169,12 @@ let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s
 let $project-dir := config:param-value($project-config-map,'project-dir')
 (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
 let $domain:= "org.exist.login"
+
+(: login:set-user() must go before checking the user :) 
+let $login:=login:set-user($domain, (), false())
+
 let $db-user := request:get-attribute($domain||".user")
-(:let $db-user := xmldb:get-current-user():)
+(:let $db-current-user := xmldb:get-current-user():)
 let $shib-user := config:shib-user()
 let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
                     let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
@@ -201,7 +205,7 @@ switch (true())
 (:        <DEBUG>{$exist-resource-index, '-', $exist:resource }</DEBUG>:)
          <DEBUG >USER exists db-user: {exists($db-user)}; project-dir: {$project-dir}; usermay: {$user-may}; user:{$user}; shib-user:{$shib-user}
          <allowed-users>{$allowed-users}</allowed-users>
-         <current-user >{($db-user,xmldb:get-current-user())}</current-user>
+         <current-user >{($db-user,'-',xmldb:get-current-user())}</current-user>
          <attrs>{string-join(request:attribute-names(),', ')}</attrs>
          </DEBUG>
          
@@ -254,8 +258,8 @@ switch (true())
         (: step 1: only delivers a result if the project's visibility is protected :)
         (if ($protected) 
         then 
-            let $login:=login:set-user($domain, (), false())
-            return
+            (:let $login:=login:set-user($domain, (), false()):)
+(:            return:)
             (:if (not(request:get-attribute($domain||".user")=$allowed-users)):) 
             if (not($user-may))            
             then
