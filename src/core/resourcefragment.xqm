@@ -5,7 +5,9 @@ import module namespace repo-utils = "http://aac.ac.at/content_repository/utils"
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "wc.xqm";
+import module namespace lt = "http://aac.ac.at/content_repository/lookuptable" at "lookuptable.xqm";
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
+import module namespace index="http://aac.ac.at/content_repository/index" at "index.xqm";
 
 import module namespace fcs = "http://clarin.eu/fcs/1.0" at "../modules/fcs/fcs.xqm";
 
@@ -22,8 +24,8 @@ declare variable $rf:element-ns:=   $config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NS
 declare variable $rf:element-name:= $config:RESOURCE_RESOURCEFRAGMENT_ELEMENT_NAME;
 declare variable $rf:default-path:= $config:default-resourcefragments-path;
 
-declare %private function rf:make-div($resourcefragment-pid, $fileid as xs:string) as element(mets:div) {
-    <mets:div TYPE="{$config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE}" ID="{$resourcefragment-pid}">
+declare %private function rf:make-div($resourcefragment-pid, $fileid as xs:string, $label as xs:string?) as element(mets:div) {
+    <mets:div TYPE="{$config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE}" ID="{$resourcefragment-pid}" LABEL="{$label}">
         <mets:fptr>
             <mets:area FILEID="{$fileid}" BEGIN="{$resourcefragment-pid}" END="{$resourcefragment-pid}" BETYPE="IDREF"/>
         </mets:fptr>
@@ -40,7 +42,6 @@ declare %private function rf:make-div($resourcefragment-pid, $fileid as xs:strin
 ~:)
 declare function rf:new($resource-pid as xs:string, $filepath as xs:string,$project-pid as xs:string) as xs:string* {
     let $fragments:=doc($filepath)//*[local-name(.) eq $rf:element-name and namespace-uri(.) eq $rf:element-ns]
-    let $log := util:log("INFO", $fragments)
     let $fragmentfile-id:=$resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_FILEID_SUFFIX
     let $this:fragmentfile:=resource:make-file($fragmentfile-id,$filepath,'fragments')    
     let $register-fragmentfile:= resource:add-file($this:fragmentfile,$resource-pid,$project-pid)
@@ -49,13 +50,13 @@ declare function rf:new($resource-pid as xs:string, $filepath as xs:string,$proj
         then
             for $f in $fragments 
                 let $this:pid:=xs:string($f/@*[name(.) eq $config:RESOURCEFRAGMENT_PID_NAME])
-                let $log:=util:log("INFO","registered resourcefragment "||$this:pid||" with resource "||$resource-pid)
-                let $this:div:=rf:make-div($this:pid,$fragmentfile-id)
+                let $this:label:=xs:string($f/@*[name(.) eq $config:RESOURCEFRAGMENT_LABEL_NAME])                
+                let $log:=util:log-app("INFO",$config:app-name,"registered resourcefragment "||$this:pid||" with resource "||$resource-pid)
+                let $this:div:=rf:make-div($this:pid,$fragmentfile-id, $this:label)
                 let $update:=resource:add-fragment($this:div,$resource-pid,$project-pid)
                 return $this:pid
-        else util:log("INFO","extracted resourcefragments file not found at "||$filepath)
+        else util:log-app("INFO",$config:app-name,"extracted resourcefragments file not found at "||$filepath)
 };
-
 
 
 (:~
@@ -98,7 +99,7 @@ declare function rf:remove($resource-pid as xs:string,$project-pid as xs:string)
             return resource:remove-file($file-id,$resource-pid,$project-pid)
         )
 };
-
+ 
 
 (:~
  : This function removes the data of a resourcefragment container and unregisters it in the resource's mets entry.
@@ -107,7 +108,7 @@ declare function rf:remove($resource-pid as xs:string,$project-pid as xs:string)
  : @param $resource-pid the pid of the resoruce to delete
  : @param $project-pid the pid of the project
  : @return empty sequence
-~:)
+~:) 
 declare function rf:remove-data($resource-pid as xs:string,$project-pid as xs:string) as empty() {
     let $rf:filepath:=  rf:path($resource-pid,$project-pid),  
         $rf:filename:=  tokenize($rf:filepath,'/')[last()],
@@ -125,10 +126,7 @@ declare function rf:remove-data($resource-pid as xs:string,$project-pid as xs:st
  : @param $project-pid the id of the project
  : @return the mets:div entry of the resourcefragment. 
 ~:)
-declare
-    %rest:GET
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/{$resourcefragment-pid}/entry")
-function rf:record($resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element(mets:div)? {
+declare function rf:record($resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element(mets:div)? {
     let $resource:= resource:get($resource-pid, $project-pid)
     return $resource//mets:div[@TYPE eq $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE and @ID eq $resourcefragment-pid]
 };
@@ -152,7 +150,7 @@ declare function rf:file($resource-pid as xs:string, $project-pid as xs:string) 
  : @param $project-pid the id of the project
  : @return   
 ~:)
-declare function rf:path($resource-pid as xs:string, $project-pid as xs:string) as xs:string? {
+declare function rf:path($resource-pid as xs:string, $project-pid as xs:string) as xs:string* {
     let $rf:fileGrp:=resource:files($resource-pid, $project-pid)
     return $rf:fileGrp/mets:file[@USE eq $config:RESOURCE_RESOURCEFRAGMENTS_FILE_USE]/mets:FLocat/@xlink:href
 };
@@ -165,29 +163,56 @@ declare function rf:path($resource-pid as xs:string, $project-pid as xs:string) 
  : @param $project-pid the pid of the project
  : @return   
 ~:)
-declare
-    %rest:GET
-    %rest:path("/cr_xq/{$project-pid}/{$resource-pid}/{$resourcefragment-pid}")
-function rf:get($resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element()? {
+declare function rf:get($resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element()? {
     let $rf:location:=  rf:path($resource-pid, $project-pid),
-        $rf:doc := if (doc-available($rf:location)) then doc($rf:location) else util:log("INFO","Could not locate resourcefragments from "||$rf:location) 
+        $rf:doc := if (doc-available($rf:location)) then doc($rf:location) else util:log-app("INFO",$config:app-name,"Could not locate resourcefragments from "||$rf:location) 
     return util:eval('$rf:doc//*[@'||$config:RESOURCEFRAGMENT_PID_NAME||'="'||$resourcefragment-pid||'"]') 
 };
+
+(:~ Finds the resourcefragmentS(!) containing an element with given @cr:id
+
+ : @param $element-id the id of a xml-element expected inside some resourcefragment
+ : @param $resource-pid the pid of the resource 
+ : @param $project-pid the pid of the project
+ : @return resourcefragment of the containing resourcefragment  
+:)
+declare function rf:lookup($element-id as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element()* {
+(:    rf:dump($resource-pid, $project-pid)/id($element-id)/ancestor::fcs:resourceFragment    :)
+(:    rf:dump($resource-pid, $project-pid)//*[@cr:id eq $element-id]/ancestor::fcs:resourceFragment    :)
+    let $ids := lt:lookup($element-id,$resource-pid,$project-pid)
+    return 
+        for $i in $ids return rf:get($i,$resource-pid,$project-pid)
+};
+
+(:~ Finds the resourcefragmentS(!) containing an element with given @cr:id, returning its IDs
+
+ : @param $element-id the id of a xml-element expected inside some resourcefragment
+ : @param $resource-pid the pid of the resource 
+ : @param $project-pid the pid of the project
+ : @return pid of the containing resourcefragment  
+:)
+declare function rf:lookup-id($element-id as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:string* {
+    (:let $rf := rf:lookup($element-id, $resource-pid, $project-pid)
+    return util:eval('$rf/xs:string(@'||$config:RESOURCEFRAGMENT_PID_NAME||')'):)
+    lt:lookup($element-id,$resource-pid,$project-pid)
+};
+
 
 (:~
  : Dumps the full content of the resourcefragments cache of a resource.
  : 
  : @param $resource-pid the pid of the resource 
  : @param $project-pid the pid of the project
- : @return the content of the resourcefragments chache
+ : @return the content of the resourcefragments chache 
 ~:)
 declare function rf:dump($resource-pid as xs:string, $project-pid as xs:string) as document-node() {
     let $rf:location:=  rf:path($resource-pid, $project-pid)
     return 
         if (doc-available($rf:location))
         then doc($rf:location)
-        else util:log("INFO", "resourcefragments cache document not available at "||$rf:location)
+        else util:log-app("INFO",$config:app-name, "resourcefragments cache document not available at "||$rf:location)
 };
+
 
 (:~
  : Generates the resourcefragments cache for a given resource, stores it to the database and 
@@ -209,36 +234,43 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                                 else 
                                     let $wc:new:= wc:generate($resource-pid,$project-pid)
                                     return wc:get-data($resource-pid,$project-pid),
-        $index-name :=          "resourcefragment-pid",
-        $rf:xpathexpr :=        fcs:index-as-xpath($index-name, $project-pid, $config)
+        $index-name :=          $config:INDEX_RESOURCEFRAGMENT_DELIMITER,
+        $rf:xpathexpr :=        index:index-as-xpath($index-name, $project-pid),        
+        $rf:xpathexpr-label :=        index:index-as-xpath($index-name, $project-pid,'label-only')
     return
         if ($rf:xpathexpr = $index-name)
-        then util:log("INFO", "Could not resolve index name "||$index-name||" in mappings for project "||$project-pid)
+        then util:log-app("INFO",$config:app-name, "Could not resolve index name "||$index-name||" in mappings for project "||$project-pid)
         else 
             let $define-ns:=
                 let $mappings:=     config:mappings($config),
                     $namespaces:=   $mappings//namespaces
-                 let $log:=util:log("INFO",string-join(($namespaces,$rf:xpathexpr)))
                 return 
                     for $ns in $namespaces/ns
                     let $prefix:=   $ns/@prefix,
                         $namespace-uri:=$ns/@uri
-                    let $log:=util:log("INFO", "declaring namespace "||$prefix||"='"||$namespace-uri||"'")
+                    let $log:=util:log-app("INFO",$config:app-name, "declaring namespace "||$prefix||"='"||$namespace-uri||"'")
                     return util:declare-namespace(xs:string($prefix), xs:anyURI($namespace-uri))
            
             (: extract fragments and create wrapper elements for each :)
             let $all-fragments:=util:eval("$working-copy//"||$rf:xpathexpr)
+            
+            (: CHECK: shouldn't this be checked for every $fragment separately :)
             let $fragment-element-has-content:=some $x in $all-fragments satisfies exists($x/node())
             let $fragments-extracted:=
                 for $pb1 at $pos in $all-fragments 
-                    let $id:=$resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_FILEID_SUFFIX||format-number($pos, '00000000')
+(:                    let $id:=$resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_FILEID_SUFFIX||format-number($pos, '00000000'):)
+                    let $id:=$resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_ID_SUFFIX||$pos
+                    let $label := util:eval("$pb1/"||$rf:xpathexpr-label)
                     let $fragment:=
+                    (: CHECK: shouldn't this be checked for every $fragment separately :)
                         if ($fragment-element-has-content)
                         then $pb1
-                        else 
+                        else
+                        let $log:=util:log-app("INFO",$config:app-name,"processing resourcefragment w/ pid="||xs:string($id))
                             let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
-                            return util:parse(util:get-fragment-between($pb1, $pb2, true(), true()))
-                    let $log:=util:log("INFO","processing resourcefragment w/ pid="||xs:string($id))
+                        (: if no subsequent element, dont trying to generate fragment will fail :)
+                            return if (empty($pb2)) then $pb1 
+                                     else util:parse(replace(util:get-fragment-between($pb1, $pb2, true(), true()),'&amp;','&amp;amp;'))                    
                     return
                         element {
                             QName(
@@ -249,6 +281,7 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                             attribute {$config:PROJECT_PID_NAME} {$project-pid},
                             attribute {$config:RESOURCE_PID_NAME} {$resource-pid},
                             attribute {$config:RESOURCEFRAGMENT_PID_NAME} {$id},
+                            attribute {$config:RESOURCEFRAGMENT_LABEL_NAME} {$label},
                             $fragment
                         }
             
@@ -269,14 +302,18 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     }
                     
             (: store the fragments container in the database :)
-            let $rf:path-param :=       (rf:path($resource-pid,$project-pid), project:path($project-pid,"resourcefragments"))[1],
+(:          first returns full path down to file, second one only the collection - complicated to handle in case, the file already exists  
+            let $rf:path-param :=       (rf:path($resource-pid,$project-pid), project:path($project-pid,"resourcefragments"))[1],:)
+            let $rf:path-param :=       project:path($project-pid,"resourcefragments"),
                 $rf:path:=              replace($rf:path-param,'/$',''),
                 $rf:filename:=          $config:RESOURCE_RESOURCEFRAGMENT_FILENAME_PREFIX||$master_filename,
                 $rf:filepath:=          $rf:path||"/"||$rf:filename
-            let $rf:store:=repo-utils:store-in-cache($rf:filename,$rf:path,$rf:container,$config)
-            
+(:            let $rf:store:=repo-utils:store-in-cache($rf:filename,$rf:path,$rf:container,$config)
+                allows to overwrite :)
+              let $rf:store:=repo-utils:store($rf:path,$rf:filename,$rf:container,true(),$config)
             
             (: register resourcefragments with the METS record :)
             let $update-mets:=rf:new($resource-pid,$rf:filepath,$project-pid)
             return $rf:filepath
 };
+
