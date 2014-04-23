@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" id="query-input" class="cmds-ui-block">
-    <!--<div id="querysearch" class="cmds-ui-block init-show">
-        <div class="header ui-widget-header ui-state-default ui-corner-top"> Search </div>
-        <div id="query-input" class="content">
-    </div>-->
+<div xmlns="http://www.w3.org/1999/xhtml" id="query-input">
     <form action="" method="GET">
         <div class="inputrow">
 <!--            <label for="query">Query: </label>-->
-            <input id="input-simplequery" type="text" size="40" name="query" class="templates:form-control"/>
+            <input id="input-simplequery" type="text" name="query" class="templates:form-control"/>
             <button id="submit-query" type="submit">search</button>
+            <div class="cmd-wrapper">
+                <span id="cmd-advanced-query" class="ui-icon ui-icon-zoomin cmd_detail" title="Komplexere Abfragen"/>
+            </div>
         </div>
-<!--        <div id="fcs-query" class="fcs:query-input">
-        </div>-->
-        <!--<div class="inputrow">
-            <label for="x-context">Resource:</label>
-            <select name="x-context" class="templates:form-control">
-                <option value="all">defa</option>
-                <option value="any">Any</option>
-                <option value="phrase">Phrase</option>
-                <option value="near">Near</option>
-            </select>
-        </div>-->
     </form>
+    <div id="qi-advanced" style="display:none"/>
 </div>
