@@ -45,6 +45,12 @@
             <replacefilter 
                 token="@app.name@" 
                 property="app.name"/>
+            <replacefilter 
+                token="@system.account.user@" 
+                property="system.account.user"/>            
+            <replacefilter 
+                token="@system.account.pwd@" 
+                property="system.account.pwd"/>
         </replace>
     </target>
 </project>
