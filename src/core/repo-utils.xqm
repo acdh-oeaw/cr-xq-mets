@@ -632,6 +632,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
                            let $option := util:declare-option("exist:serialize", "method=json media-type=application/json")    
                            return $item
 	       return $res
+	       
 	    case (contains($format, $repo-utils:responseFormatHTML)) return
 	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config),
 	           $xslParams:=    <parameters>
@@ -639,13 +640,15 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
               			           <param name="operation" value="{$operation}"/>
               			           <param name="x-context" value="{$x-context}"/>
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
-              			           <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+                                    <param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
 	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
-	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
-	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
-	                               <param name="site_logo" value="{config:param-value($config, 'site.logo')}"/>
+	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
+	                               <param name="site_name" value="{config:param-value($config, 'site-name')}"/>
+	                               <param name="site_logo" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'site-logo'))}"/>
+	                               <param name="site_url" value="{config:param-value($config, 'public-baseurl')}"/>
               			           {$parameters/param}
               			       </parameters>
+(:                <param name="base_url" value="{config:param-value($config,'base-url')}"/>:)
 	       let $res := if (exists($xslDoc)) 
 	                   then transform:transform($item,$xslDoc, $xslParams)
 	                   else 
@@ -737,7 +740,7 @@ declare function local:mkcol-recursive($collection, $components) {
 };
 
 
-declare function repo-utils:get-record-pid($reference) as xs:string? {
+(:declare function repo-utils:get-record-pid($reference) as xs:string? {
     typeswitch($reference)
         case xs:string return $reference
         case text() return $reference
@@ -750,12 +753,12 @@ declare function repo-utils:get-record-pid($reference) as xs:string? {
 }; 
 
 
-(:~ Returns the METS record of a project or resource, regardless of what 
+(\:~ Returns the METS record of a project or resource, regardless of what 
  : kind of reference (project-pid string, text(), @OBJID, is passed to the function.
  : This allows us to pass either a project-pid, resource-pid or their resolved records in
  : function definitions.
  : @param $reference any item with relation to a resource or a mets record (elements like mets:div, mets:mets, PIDs, document-nodes etc.)
-:)
+:\)
 declare function repo-utils:get-record($reference) as element()? {
     typeswitch($reference)
         case xs:string return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
@@ -766,4 +769,84 @@ declare function repo-utils:get-record($reference) as element()? {
         case element(mets:div) return $reference
         case document-node() return $reference/*
         default return ()
+}; 
+:)
+
+
+
+declare function repo-utils:get-record-pid($reference-param) as xs:string? {
+    for $reference in $reference-param return 
+    typeswitch($reference)
+        case xs:string return 
+            let $log := util:log-app("DEBUG",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+            return $reference
+        
+        case text() return 
+            let $log := util:log-app("DEBUG",$config:app-name,"$reference is text() '"||$reference||"'.")
+            return $reference
+        
+        case attribute(OBJID) return 
+            let $log := util:log-app("DEBUG",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+            return $reference/parent::mets:mets/xs:string(@OBJID)
+        
+        case attribute(ID) return 
+            let $log := util:log-app("DEBUG",$config:app-name,"$reference is @ID '"||$reference||"'.")
+            return $reference/parent::mets:div/xs:string(@ID)
+        
+        case element(mets:mets) return 
+            let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+                return $reference/xs:string(@OBJID)
+                
+        case element(mets:div) return
+            let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+            return $reference/xs:string(@ID)
+            
+        case document-node() return 
+            let $log := util:log-app("DEBUG",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+            return ($reference/mets:mets/xs:string(@OBJID),$reference/mets:div/xs:string(@ID))[1]
+        
+        default return ()
+}; 
+
+
+(:~ Returns the METS record of a project or resource, regardless of what 
+ : kind of reference (project-pid string, text(), @OBJID, is passed to the function.
+ : This allows us to pass either a project-pid, resource-pid or their resolved records in
+ : function definitions.
+ : @param $reference any item with relation to a resource or a mets record (elements like mets:div, mets:mets, PIDs, document-nodes etc.)
+:)
+declare function repo-utils:get-record($reference-param) as element()? {
+    let $references-resolved := 
+        for $reference in $reference-param return  
+        typeswitch($reference)
+            case xs:string return 
+                let $log := util:log-app("DEBUG",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+                return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
+                
+            case text() return 
+                let $log := util:log-app("DEBUG",$config:app-name,"$reference is text() '"||$reference||"'.")
+                return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
+                
+            case attribute(OBJID) return 
+                let $log := util:log-app("DEBUG",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+                return project:get($reference)
+                
+            case attribute(ID) return 
+                let $log := util:log-app("DEBUG",$config:app-name,"$reference is @ID '"||$reference||"'.")
+                return collection(config:path("projects"))//mets:div[@ID = $reference]
+                
+            case element(mets:mets) return 
+                let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+                return $reference
+                
+            case element(mets:div) return 
+                let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+                return $reference
+            
+            case document-node() return 
+                let $log := util:log-app("DEBUG",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+                return ($reference/mets:mets,$reference/mets:div)[1]
+            
+            default return ()
+    return $references-resolved
 }; 
