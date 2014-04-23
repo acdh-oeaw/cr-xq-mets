@@ -18,6 +18,7 @@ declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace cmd="http://www.clarin.eu/cmd/";
+declare namespace oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/";
 
 
 (: declaration of helper namespaces for better code structuring :)
@@ -25,6 +26,8 @@ declare namespace param="userinput.parameters";
 declare namespace this="current.object";
 
 declare variable $resource:mdtypes := ("MARC","MODS","EAD","DC","NISOIMG","LC-AV","VRA","TEIHDR","DDI","FGDC","LOM","PREMIS","PREMIS:OBJECT","PREMIS:AGENT","PREMIS:RIGHTS","PREMIS:EVENT","TEXTMD","METSRIGHTS","ISO 19115:2003 NAP","OTHER");
+
+declare variable $resource:othermdtypes := ("CMDI"); 
 
 declare function resource:make-file($fileid as xs:string, $filepath as xs:string, $type as xs:string) as element(mets:file) {
     let $USE:=
@@ -387,11 +390,11 @@ declare %private function resource:master($data as document-node(), $resource-pi
  : @param $project-id: the id of the project the resource belongs to
  : @return the db path to the file
 ~:)
-declare function resource:store-dmd($data as document-node(), $resource-pid as xs:string?, $project-pid as xs:string) as xs:string? {
+declare function resource:store-dmd($data as document-node(), $mdtype as xs:string,$resource-pid as xs:string?, $project-pid as xs:string) as xs:string? {
     let $this:filename := $config:RESOURCE_DMD_FILENAME_PREFIX||$resource-pid||".xml"
-    let $targetpath:= project:path($project-pid,'metadata')
+    let $targetpath:= replace(project:path($project-pid,'metadata'),'/$','')||"/"||$mdtype
     let $store:= 
-            try {repo-utils:store($master_targetpath,$this:filename,$data,true(),project:get($project-pid))
+            try {repo-utils:store($targetpath,$this:filename,$data,true(),project:get($project-pid))
             } catch * {
                util:log-app("INFO", $config:app-name,"metadata for resource "||$resource-pid||" could not be stored at "||$targetpath) 
             }, 
@@ -456,7 +459,7 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
     let $dmdID :=   $resource/tokenize(@DMDID,'\s+'),
       (: workaround via attribute, as the id()-function did not work - ?
         $dmdSec :=  doc(project:filepath($project-pid))//id($dmdID) :)
-        $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],
+        $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],        
         $dmdSec :=  if (exists($type) and $type!='') 
                     then $dmdSecs[*/@MDTYPE = $type and */@MDTYPE != 'OTHER' or */@MDTYPE='OTHER' and */@OTHERMDTYPE = $type] 
                     else ($dmdSecs[@STATUS='default'],$dmdSecs[1])[1]
@@ -468,9 +471,9 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
                 case element(mets:mdRef) return 
                     let $location := $dmdSec/mets:mdRef/@xlink:href
                     return 
-                        if (util:is-binary-doc($location))
+                        (:if (util:is-binary-doc($location))
                         then ()
-                        else 
+                        else:) 
                             if (doc-available($location))
                             then doc($location)/*
                             else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
@@ -495,12 +498,12 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
     let $doc:=          project:get($project-pid),
         $current :=     resource:dmd($resource-pid,$project-pid),
         $data-location:=base-uri($current),
-        $dmdid :=       $resource-pid||$config:RESOURCE_DMDID_SUFFIX,
-        $dmdSec :=      $doc//id($dmdID)
+        $dmdid :=       $resource-pid||$mdtype||$config:RESOURCE_DMDID_SUFFIX,
+        $dmdSec :=      $doc//mets:dmdSec[@ID = $dmdid]
     return 
         switch (true())
             (: wrong declaration of Metadata Format :)
-            case not($mdtype=$resource:mdtypes) return util:log-app("INFO",$config:app-name,"invalid value for parameter $mdtype for resource "||$resource-pid)
+            case not($mdtype=($resource:mdtypes,$resource:othermdtypes)) return util:log-app("INFO",$config:app-name,"invalid value for parameter $mdtype for resource "||$resource-pid)
             
             (: $data is not a document, element node or string :)
             case (not($data instance of document-node()) and not($data instance of element()) and not($data instance of xs:string)) return util:log-app("INFO",$config:app-name,"parameter $data has invalid type (resource "||$resource-pid||") allowed are: document-node() or element() for content, or xs:string for db-path.") 
@@ -510,7 +513,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                 let $rm-data := if ($data-location eq base-uri($doc)) 
                                 then update delete $current
                                 else xmldb:remove(util:collection-name($data),util:document-name($data)),
-                    $rm-dmdSec:=update delete $doc//id($dmdid),
+                    $rm-dmdSec:=update delete $doc//mets:dmdSec[@ID = $dmdid],
                     $rm-ref-attrs:= 
                         for $mdref in $doc//@DMDREF[matches(.,'\s*'||$dmdid||'\s*')] 
                         return 
@@ -527,14 +530,17 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                     else update insert attribute DMDID {$dmdid} into resource:get($resource-pid,$project-pid)
                 return
                 (: store metadata to database and add a reference in the mets record:)
-                if (exists($store-to-db))
+                if (exists($store-to-db) and $store-to-db)
                 then
                     (: the content of the metdata is already in an external file, so we just set the mdRef (again) :)
                     if ($data instance of xs:string)
                     then  
                         if (doc-available(normalize-space($data)))
                         then 
-                            let $mdRef:= <mdRef MDTYPE="{$mdtype}" LOCTYPE="URL" xmlns="http://www.loc.gov/METS/" xlink:href="{normalize-space($data)}"/>
+                            let $mdRef:= 
+                                if ($mdtype = $resource:mdtypes)
+                                then <mdRef MDTYPE="{$mdtype}" LOCTYPE="URL" xmlns="http://www.loc.gov/METS/" xlink:href="{normalize-space($data)}"/>
+                                else <mdRef MDTYPE="OTHER" OTHERMDTYPE="{$mdtype}" LOCTYPE="URL" xmlns="http://www.loc.gov/METS/" xlink:href="{normalize-space($data)}"/>
                             return
                                 switch(true())
                                     case (exists($dmdSec/node())) return (update delete $dmdSec/node(), update insert $mdRef into $dmdSec)
@@ -544,8 +550,11 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                             util:log-app("INFO",$config:app-name,"The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
                     else 
                         (: $data contains metadata content, so we store it to the db and create a new mdRef :)
-                        let $mdpath := resource:store-dmd(if ($data instance of document-node()) then $data else document{$data},$resource-pid,$project-pid),
-                            $mdRef:= <mdRef MDTYPE="{$mdtype}" LOCTYPE="URL" xmlns="http://www.loc.gov/METS/" xlink:href="{$mdpath}"/>
+                        let $mdpath := resource:store-dmd(if ($data instance of document-node()) then $data else document{$data},$mdtype,$resource-pid,$project-pid),
+                            $mdRef:= 
+                                if ($mdtype = $resource:mdtypes)
+                                then <mdRef MDTYPE="{$mdtype}" LOCTYPE="URL" xmlns="http://www.loc.gov/METS/" xlink:href="{normalize-space($mdpath)}"/>
+                                else <mdRef MDTYPE="OTHER" OTHERMDTYPE="{$mdtype}" LOCTYPE="URL" xmlns="http://www.loc.gov/METS/" xlink:href="{normalize-space($mdpath)}"/>
                         return
                             if ($mdpath!='')
                             then 
@@ -609,9 +618,9 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
 };
 
 
-declare function resource:label($resource-pid as xs:string, $project-pid as xs:string) as element(cr:response) {
+declare function resource:label($resource-pid as xs:string, $project-pid as xs:string) as xs:string? {
     let $resource := resource:get($resource-pid, $project-pid)
-    return <cr:response path="/cr_xq/{$project-pid}/{$resource-pid}/label" datatype="xs:string">{$resource/xs:string(@LABEL)}</cr:response>
+    return $resource/xs:string(@LABEL)[.!=""]
 };
 
 declare function resource:label($data as document-node(), $resource-pid as xs:string, $project-pid as xs:string) as element(cr:response)? {
@@ -785,7 +794,7 @@ declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:str
 
 declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:string, $data as element(cmd:CMD)?) as empty() {
     let $doc:=      project:get($project-pid),
-        $resoruce := resource:get($resource-pid,$project-pid),
+        $resource := resource:get($resource-pid,$project-pid),
         $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],
         $dmdSec :=  $dmdSecs[*/@MDTYPE='OTHER' and */@OTHERMDTYPE = "CMDI"],
         $dmdSecID := $dmdSec/@ID,
@@ -825,100 +834,189 @@ declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:str
 declare function resource:get-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:string* {
     let $cmdi := resource:cmd($resource-pid,$project-pid),
         $resourceproxy-id := config:param-value((),"pid-resourceproxy-prefix")||$resource-pid
+    let $handle := 
+        switch($type)
+            (: metadata defaults to the CMDI record :)
+            case "metadata" return $cmdi/cmd:Header/cmd:MdSelfLink
+            case "CMDI" return $cmdi/cmd:Header/cmd:MdSelfLink
+            case "data" return $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef
+            case "project" return $cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf
+            default return ()
     return
         if (exists($cmdi))
-        then
-            switch($type)
-                (: metadata defaults to the CMDI record :)
-                case "metadata" return $cmdi/cmd:Header/cmd:MdSelfLink
-                case "cmdi" return $cmdi/cmd:Header/cmd:MdSelfLink
-                case "data" return $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef
-                case "project" return $cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf
-                default return ()
+        then $handle[.!=""]
         else util:log-app("ERROR",$config:app-name,"No CMDI record found for resource '"||$resource-pid||"' in project '"||$project-pid||"'")
 };
 
 (:~
  : Updates or creates handle-uris for a resource. The resource's CMDI Record has to be in place for this.
  : The target url gets constructed automatically.     
- : @param $type The aspect of the resource the handle should point to. Currently supported are "data" (the raw data of the resource), "cmdi" (the CMDI record of the resource), "teiHdr" (the teiHeader of the resource) or generic "metadata" (defaults to "CMDI")
+ : @param $type The aspect of the resource the handle should point to. Possible values are limited to: 
+ :     - "data" (the raw data of the resource)
+ :     - "CMDI" (the CMDI record of the resource), 
+ :     - "teiHdr" (the teiHeader of the resource) 
+ :     - "metadata" (default metadata entry, defaults to "CMDI")
+ :     - "project" (declares the resource to be part of a collection or corpus: i.e. sets the "isPartOf" element AND updates the CMDI record of the collection.)
  : @param $resoruce-pid the PID of the resource
  : @param $project-pid the PID of the project 
 ~:)
-declare function resource:set-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function resource:set-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as item()* {
     let $cmdi := resource:cmd($resource-pid,$project-pid),
         $current := resource:get-handle($type,$resource-pid,$project-pid),
-        $resourceproxy-id := config:param-value((),"pid-resourceproxy-prefix")||$resource-pid,
+        $config := config:config($project-pid),
+        $resourceproxy-id := config:param-value($config,"pid-resourceproxy-prefix")||$resource-pid,
         (: constructing the URL :)
-        $url :=
+        $target-url :=
             if ($type = "project")
-            then project:get-handle("cmdi",$project-pid)
+            then 
+                let $project-handle := project:get-handle("CMDI",$project-pid)
+                return 
+                    if ($project-handle!='')
+                    then $project-handle
+                    else 
+                        let $set-handle := project:set-handle("CMDI",$project-pid)
+                        return project:get-handle("CMDI",$project-pid)
             else 
                 concat(
-                    replace(config:param-value((),"repo-baseurl"),'/$',''),
-                    "/",
-                    $project-pid,
-                    '/get/',
-                    $resource-pid,
+                    replace(config:param-value($config,"public-repo-baseurl"),'/$',''),
+(:                    replace(config:param-value(config:module-config(),"public-repo-baseurl"),'/$',''),:)
+                    (:"/",$project-pid,:)
+                    "/get/",$resource-pid,"/",
                     switch($type)
                         case "metadata" return $type
-                        case "cmdi" return "metadata/CMDI"
+                        case "CMDI" return "metadata/CMDI"
                         case "teiHdr" return "metadata/TEIHDR"
                         default return "data"
                 )
     return
         if (exists($current))
-        then handle:update($url,$current,$project-pid)
+        then 
+            let $update-handle := handle:update($target-url,$current,$project-pid)
+            return 
+                if ($type != "CMDI")
+                then ()
+                else 
+                    let $project-cmdi := project:dmd($project-pid)
+                    let $project-handle := project:get-handle("CMDI",$project-pid)
+                    let $set-proxy-in-project-cmdi := 
+                        if (exists($project-cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id = $resource-pid][cmd:ResourceType = "Metadata"][. = $current]))
+                        then ()
+                        else 
+                            if (exists($project-cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id = $resource-pid][cmd:ResourceType = "Metadata"]))
+                            then update value $project-cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id = $resource-pid][cmd:ResourceType = "Metadata"]/cmd:ResourceRef with $current
+                            else   
+                                if (exists($project-cmdi/cmd:Resources/cmd:ResourceProxyList))
+                                then update insert  <cmd:ResourceProxy id="{$resource-pid}">
+                                                        <cmd:ResourceType mimetype="application/xml">Metadata</cmd:ResourceType>
+                                                        <cmd:ResourceRef>{$current}</cmd:ResourceRef>
+                                                    </cmd:ResourceProxy> into $project-cmdi/cmd:Resources/cmd:ResourceProxyList
+                                else util:log-app("ERROR", $config:app-name, "No cmd:ResourceProxyList found in CMD-record "||base-uri($project-cmdi))
+                     let $set-is-part-of :=  
+                        if ($cmdi/cmd:Resources/cmd:IsPrtOfList/cmd:IsPartOf = $project-pid)
+                        then ()
+                        else 
+                            if (exists($cmdi/cmd:Resources/cmd:IsPartOfList))
+                            then update insert <cmd:IsPartOf>{$project-handle}</cmd:IsPartOf> into $cmdi/cmd:Resources/cmd:IsPartOfList
+                            else update insert <cmd:IsPartOfList><cmd:IsPartOf>{$project-handle}</cmd:IsPartOf></cmd:IsPartOfList> into $cmdi/cmd:Resources
+                     return ()
         else 
             if (exists($cmdi))
             then
-                let $handle-url := handle:create($url,$project-pid)
+                let $handle-url := handle:create($target-url,$project-pid)
                 return  
                     switch($type)
                         (: type metadata defaults to the CMDI record :)
-                        case "metadata" return resource:set-handle("cmdi",$resource-pid,$project-pid)
+                        case "metadata" return resource:set-handle("CMDI",$resource-pid,$project-pid)
                         
-                        case "cmdi" return 
-                            if (exists($cmdi/cmd:Header/cmd:MdSelfLink))
-                            then update value $cmdi/cmd:Header/cmd:MdSelfLink with $handle-url
-                            else 
-                                if (exists($cmdi/cmd:Header))
-                                then update insert <cmd:MdSelfLink>{$url}</cmd:MdSelfLink> into $cmdi/cmd:Header
-                                    else update insert <cmd:Header><cmd:MdSelfLink>{$handle-url}</cmd:MdSelfLink></cmd:Header> into $cmdi
+                        case "CMDI" return 
+                            let $set-self-link := 
+                                if (exists($cmdi/cmd:Header/cmd:MdSelfLink))
+                                then update value $cmdi/cmd:Header/cmd:MdSelfLink with $handle-url
+                                else 
+                                    if (exists($cmdi/cmd:Header))
+                                    then update insert <cmd:MdSelfLink>{$handle-url}</cmd:MdSelfLink> into $cmdi/cmd:Header
+                                        else update insert <cmd:Header><cmd:MdSelfLink>{$handle-url}</cmd:MdSelfLink></cmd:Header> into $cmdi
+                            
+                            let $set-proxy-in-project-cmdi :=
+                                let $project-cmdi := project:dmd($project-pid) 
+                                return 
+                                    if (exists($project-cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id = $resource-pid][cmd:ResourceType = "Metadata"][. = $handle-url]))
+                                    then ()
+                                    else 
+                                        if (exists($project-cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id = $resource-pid][cmd:ResourceType = "Metadata"]))
+                                        then update value $project-cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id = $resource-pid][cmd:ResourceType = "Metadata"] with $handle-url
+                                        else   
+                                            if (exists($project-cmdi/cmd:Resources/cmd:ResourceProxyList))
+                                            then update insert  <cmd:ResourceProxy id="{$resource-pid}">
+                                                                    <cmd:ResourceType mimetype="application/xml">Metadata</cmd:ResourceType>
+                                                                    <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
+                                                                </cmd:ResourceProxy> into $project-cmdi/cmd:Resources/cmd:ResourceProxyList
+                                            else util:log-app("ERROR", $config:app-name, "No cmd:ResourceProxyList found in CMD-record "||base-uri($project-cmdi))
+                             
+                             let $project-handle := project:get-handle("CMDI",$project-pid)
+                             return 
+                                if (exists($cmdi/cmd:Resources/cmd:IsPrtOfList/cmd:IsPartOf[. = $project-pid]))
+                                then ()
+                                else 
+                                    if (exists($cmdi/cmd:Resources/cmd:IsPartOfList))
+                                    then update insert <cmd:IsPartOf>{$project-handle}</cmd:IsPartOf> into $cmdi/cmd:Resources/cmd:IsPartOfList
+                                    else update insert <cmd:IsPartOfList><cmd:IsPartOf>{$project-handle}</cmd:IsPartOf></cmd:IsPartOfList> into $cmdi/cmd:Resources
                         
                         
                         case "data" return
-                            if (exists($cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef))
-                            then update value $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef with $handle-url
+                            let $resources := $cmdi/cmd:Resources/cmd:ResourceProxyList
+                            return 
+                            if (exists($resources/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef))
+                            then update value $resources/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource" ]/cmd:ResourceRef with $handle-url
                             else
-                                if (exists($cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource"]))
-                                then update insert <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef> into $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource"]
+                                if (exists($resources/cmd:ResourceProxy[@id eq $resourceproxy-id][cmd:ResourceType = "Resource"]))
+                                then update insert <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef> following $resources/cmd:ResourceProxy[@id eq $resourceproxy-id]/cmd:ResourceType
                                 else 
-                                    if (exists($cmdi/cmd:Resources/cmd:ResourceProxyList))
+                                    if (exists($resources))
                                     then update insert <cmd:ResourceProxy id="{$resourceproxy-id}">
-                                                            <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
                                                             <cmd:ResourceType>Resource</cmd:ResourceType>
+                                                            <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
                                                         </cmd:ResourceProxy>
-                                         into $cmdi/cmd:Resources
+                                         into $resources
                                     else update insert <cmd:Resources>
                                                             <cmd:ResourceProxy id="{$resourceproxy-id}">
-                                                                <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
                                                                 <cmd:ResourceType>Resource</cmd:ResourceType>
+                                                                <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
                                                             </cmd:ResourceProxy>
                                                        </cmd:Resources>
                                          into $cmdi
                                 
-                        case "project" return 
-                            if (exists($cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf))
-                            then update value $cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf with $handle-url
-                            else 
-                                if (exists($cmdi/cmd:Resources/cmd:IsPartOfList))
-                                then update insert <cmd:IsPartOf>{$handle-url}</cmd:IsPartOf> into $cmdi/cmd:Resources/cmd:IsPartOfList
+                        case "project" return
+                            let $set-is-part-of := 
+                                (: WATCHME possibly we want one resource to be part of more than one project :)
+                                if (exists($cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf))
+                                then update value $cmdi/cmd:Resources/cmd:IsPartOfList/cmd:IsPartOf with $handle-url
                                 else 
-                                    if (exists($cmdi/cmd:Resources))
-                                    then update insert <cmd:IsPartOfList><cmd:IsPartOf>{$handle-url}</cmd:IsPartOf></cmd:IsPartOfList> into $cmdi/cmd:Resources
-                                    else update insert <cmd:Resources><cmd:IsPartOfList><cmd:IsPartOf>{$handle-url}</cmd:IsPartOf></cmd:IsPartOfList></cmd:Resources> into $cmdi
-                                    
+                                    if (exists($cmdi/cmd:Resources/cmd:IsPartOfList))
+                                    then update insert <cmd:IsPartOf>{$handle-url}</cmd:IsPartOf> into $cmdi/cmd:Resources/cmd:IsPartOfList
+                                    else 
+                                        if (exists($cmdi/cmd:Resources))
+                                        then update insert <cmd:IsPartOfList><cmd:IsPartOf>{$handle-url}</cmd:IsPartOf></cmd:IsPartOfList> into $cmdi/cmd:Resources
+                                        else update insert <cmd:Resources><cmd:IsPartOfList><cmd:IsPartOf>{$handle-url}</cmd:IsPartOf></cmd:IsPartOfList></cmd:Resources> into $cmdi
+                            
+                            let $update-collection-cmdi := 
+                                let $project-cmdi := project:dmd($project-pid),
+                                    $resource-in-project := $project-cmdi//cmd:ResourceProxy[@id = $resource-pid][cmd:ResourceType="Metadata"]
+                                return
+                                    switch (true())
+                                        case (exists($resource-in-project/cmd:ResourceRef))
+                                            return update value $resource-in-project/cmd:ResourceRef with $handle-url
+                                        case (exists($resource-in-project))
+                                            return update insert <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef> following $resource-in-project/cmd:ResourceType
+                                        case (exists($cmdi/cmd:Resources/cmd:ResourceProxyList)) return
+                                            update insert <cmd:ResourceProxy id="{$resource-pid}">
+                                                            <cmd:ResourceType mimetype="application/xml">Metadata</cmd:ResourceType>
+                                                            <cmd:ResourceRef>{$handle-url}</cmd:ResourceRef>
+                                                          </cmd:ResourceProxy>
+                                            into $cmdi//cmd:ResourceProxyList
+                                        default return util:log-app("ERROR",$config:app-name,"No element cmd:ResourceProxyList found in CMDI Record at "||base-uri($cmdi))
+                           return ()
+                        
                         default return util:log-app("INFO",$config:app-name,"Unknown resource aspect '"||$type||"' in resource:set-handle() for resource '"||$resource-pid||"' in project '"||$project-pid||"'.")
             
             else util:log-app("ERROR",$config:app-name,"Can't store handle-uri for resource "||$resource-pid||" because of missing CMDI record.")
@@ -927,4 +1025,12 @@ declare function resource:set-handle($type as xs:string, $resource-pid as xs:str
 declare function resource:remove-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
     let $handle-url := resource:get-handle($type,$resource-pid,$project-pid)
     return handle:remove($handle-url,$project-pid)
+};
+
+
+declare function resource:dmd2dc($resource-pid as xs:string, $project-pid as xs:string) as element(oai_dc:dc){
+    let $dmd := resource:dmd-from-id($resource-pid,$project-pid),
+        $xsl := doc(config:path("scripts")||"/dc/cmdi2dc.xsl"),
+        $params := <parameters><param name='fedora-pid-namespace-prefix' value="{config:param-value(config:module-config(),'fedora-pid-namespace-prefix')}"/></parameters>
+    return transform:transform($dmd,$xsl,$params)
 };

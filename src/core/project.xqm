@@ -23,6 +23,7 @@ module namespace project = "http://aac.ac.at/content_repository/project";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
+import module namespace handle = "http://aac.ac.at/content_repository/handle" at "../modules/resource/handle.xqm";
 
 declare namespace mets = "http://www.loc.gov/METS/";
 declare namespace mods="http://www.loc.gov/mods/v3";
@@ -37,6 +38,7 @@ declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace rest="http://exquery.org/ns/restxq";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
+declare namespace oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/";
 
 (: declaration of helper namespaces for better code structuring :)
 declare namespace param="userinput.parameters";
@@ -108,7 +110,7 @@ declare %private function project:remove-accounts($project-pid as xs:string) as 
 
 
 (:~
-:  Instantiates a new project.
+:  Instanciates a new project.
 :
 : @return mets:mets
 ~:)
@@ -169,8 +171,7 @@ declare function project:new($data as element(mets:mets),$project-pid as xs:stri
                                         <param name="project-Website" value="{config:param-value($this:project,"public-project-baseurl")}"/>
                                     </parameters>
                     let $cmdi-seed := transform:transform($project:cmdi-template,$xsl,$xs_params)
-                    let $stored := repo-utils:store($cmdi-path,$this:id||".xml",$cmdi-seed,true(),())
-                    return () 
+                    return project:dmd($this:id,$cmdi-seed)
                 let $set-permissions:=       ((: set permissions on project.xml document :)
                                               sm:chown(xs:anyURI($project-stored),$admin-groupname),
                                               sm:chgrp(xs:anyURI($project-stored),$admin-groupname),
@@ -214,16 +215,16 @@ declare function project:new($data as element(mets:mets),$project-pid as xs:stri
                 util:log("INFO","Project "||$this:id||" could not be instanciated.")
 };
 
-declare function project:label($project-pid as xs:string) as element(data) {
+declare function project:label($project-pid as xs:string) as xs:string? {
     let $doc := project:get($project-pid)
-    return <data request="/cr_xq/{$project-pid}/label" datatype="xs:string">{$doc/xs:string(@LABEL)}</data>
+    return$doc/@LABEL[.!='']/xs:string(.)
 }; 
 
 
-declare function project:label($project-pid as xs:string, $data as document-node()) as document-node() {
+declare function project:label($data as xs:string, $project-pid as xs:string) as empty() {
     let $current := project:get($project-pid)/@LABEL
-    let $update := update value $current with xs:string($data)
-    return $data
+    let $update := update value $current with $data
+    return ()
 }; 
 
 declare function project:available($project-pid as xs:string) as xs:boolean {
@@ -554,7 +555,7 @@ declare function project:list-defined-status() as element(status){
 declare function project:resources($project-pid as xs:string) as element(mets:div)* {
     let $doc:=project:get($project-pid)
     let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
-    return <data>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</data>
+    return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
 };
 
 (:~ reads the resource sequence from the project-configuration
@@ -626,7 +627,7 @@ return <sru:searchRetrieveResponse>
 ~:)
 declare function project:resource-pids($project-pid as xs:string) as xs:string* {
     let $resources:=project:resources($project-pid)
-    return $resources//@ID
+    return $resources/@ID
 };
 
 (:~ returns the resource-pids based on the resource sequence from the project-configuration, wrapped in mets:structMap element 
@@ -688,7 +689,7 @@ declare function project:dmd($project, $data as element(cmd:CMD)?) as empty() {
             else (update delete $dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI'],xmldb:remove(util:collection-name($current),util:document-name($current)))
         else
             let $path := 
-                if (exists($dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']/@xlink:href))
+                if (exists($dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']/@xlink:href[.!='']))
                 then $dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']/@xlink:href
                 else replace(project:path($project-pid,'metadata'),'/$','')||"/CMDI/"||$project-pid||".xml"
             let $href-toks := tokenize($path,'/'),
@@ -698,8 +699,10 @@ declare function project:dmd($project, $data as element(cmd:CMD)?) as empty() {
                 $store-data := repo-utils:store($collection,$filename,$data,false(),())
             return 
                 switch(true())
-                    case (exists($dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']/@xlink:href)) 
+                    case (exists($dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']/@xlink:href[. = $path])) 
                         return ()
+                    case (exists($dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']/@xlink:href[. != $path])) 
+                        return update value $dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']/@xlink:href with $path
                     case (exists($dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI'])) 
                         return update insert attribute {"xlink:href"} {$path} into $dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI']
                     case (exists($dmdSec))
@@ -901,15 +904,61 @@ declare function project:acl($project-pid as xs:string, $data as element(sm:perm
 :)
 declare function project:get-handle($type as xs:string, $project-pid as xs:string) as xs:string* {
     let $cmdi := project:dmd($project-pid),
-        $resourceproxy-id := config:param-value((),"pid-resourceproxy-prefix")||$project-pid
+        $config := config:config($project-pid),
+        $resourceproxy-id := config:param-value($config,"pid-resourceproxy-prefix")||$project-pid
     return
         if (exists($cmdi))
         then
             switch($type)
                 (: metadata defaults to the CMDI record :)
                 case "metadata" return $cmdi/cmd:Header/cmd:MdSelfLink
+                case "CMDI" return $cmdi/cmd:Header/cmd:MdSelfLink
                 default return ()
         else util:log-app("ERROR",$config:app-name,"No CMDI record found for project '"||$project-pid||"'")
+};
+
+
+declare function project:set-handle($type as xs:string, $project-pid as xs:string) as empty() {
+    let $cmdi := project:dmd($project-pid),
+        $config := config:config($project-pid),
+        $resourceproxy-id := config:param-value($config,"pid-resourceproxy-prefix")||$project-pid
+    return
+        switch($type)
+            (: sets handles of all resources of a the project in its ResourceProxy, without actually updating their URL :)
+            case "resources" return 
+                for $r in $cmdi/cmd:Resources/cmd:ResourceProxyList/cmd:ResourceProxy[cmd:ResourceType = "Metadata"]
+                return
+                    let $resource-pid := $r/@id
+                    let $handle := resource:get-handle("CMDI",$resource-pid,$project-pid)
+                    return   
+                        if ($r != $handle)
+                        then update value $r/cmd:ResourceRef with $handle
+                        else ()
+                        
+            case "CMDI" return
+                let $current := project:get-handle("CMDI",$project-pid)
+                let $target-url := 
+                        concat(
+                            replace(config:param-value($config,"public-repo-baseurl"),'/$',''),
+                            "/get/",$project-pid,"/",
+                            switch($type)
+                                case "CMDI" return "metadata/CMDI"
+                                default return "metadata/CMDI"
+                        )
+                let $handle-url := 
+                        if (exists($current) and $current != '')
+                        then handle:update($target-url,$current,$project-pid)
+                        else handle:create($target-url,$project-pid)
+                return
+                    switch (true())
+                        case exists($cmdi/cmd:Header/cmd:MdSelfLink) return
+                            update value $cmdi/cmd:Header/cmd:MdSelfLink with $handle-url
+                        case exists($cmdi/cmd:Header) return
+                            update insert <cmd:MdSelfLink>{$handle-url}</cmd:MdSelfLink> into $cmdi/cmd:Header
+                        default return ()    
+            
+            default return util:log-app("INFO",$config:app-name,"unknown aspect "||$type||" of project "||$project-pid||". Can't set handle.")
+                    
 };
 
 
@@ -930,4 +979,11 @@ declare function project:mets2cmdi($project-pid as xs:string) as element(cmd:CMD
             then $current
             else ()
     return ()
+};
+
+declare function project:dmd2dc($project-pid as xs:string) as element(oai_dc:dc){
+    let $dmd := project:dmd($project-pid),
+        $xsl := doc(config:path("scripts")||"/dc/cmdi2dc.xsl"),
+        $params := <parameters><param name='fedora-pid-namespace-prefix' value="{config:param-value(config:module-config(),'fedora-pid-namespace-prefix')}"/></parameters>
+    return transform:transform($dmd,$xsl,$params)
 };
