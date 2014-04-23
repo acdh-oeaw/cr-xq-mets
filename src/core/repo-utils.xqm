@@ -12,14 +12,16 @@ import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  ".
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
-
+import module namespace ltb="http://aac.ac.at/content_repository/lookuptable" at "lookuptable.xqm";
+import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
+import module namespace index="http://aac.ac.at/content_repository/index" at "/db/apps/cr-xq-dev0913/core/index.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 (:~ HELPER functions - configuration, caching, data-access
 :)
 
 (:
 : this all cannot be defined as global variable, because we want different configurations,
-: thus the $config has to be sent as param everywhere
+: thus the $config has to be sent sas param everywhere
 : declare variable $repo-utils:config := doc("config.xml");
 : declare variable $repo-utils:mappings := doc(repo-utils:config-value('mappings'));
 : declare variable $repo-utils:data-collection := collection(repo-utils:config-value('data.path'));
@@ -93,11 +95,12 @@ declare function repo-utils:config-values($config, $key as xs:string) as xs:stri
 :)
 (:~ Get value of a param based on a key, from config or from request-param (precedence) :)
 declare function repo-utils:param-value($config, $key as xs:string, $default as xs:string) as xs:string* {
-    let $param := request:get-parameter($key, $default)
+(:    let $param := request:get-parameter($key, $default):)
+    let $param := $config//(param|property)[@key=$key]
     return 
         if ($param) 
         then $param 
-        else $config//(param|property)[@key=$key]
+        else $default
 };
 
 (:~ This function returns a node set consisting of all available documents of the project as listed in mets:fileGrp[@USE="Project Data"]     
@@ -113,24 +116,240 @@ declare function repo-utils:context-to-collection($project-pid as xs:string, $co
             for $p in $dbcoll-path
             return
                 if (ends-with($p,'.xml'))
-                then doc($p)
-                else ()
+                then doc($p)                
+                else if (xmldb:collection-available($p)) then
+                   collection($p)
+                 else ()
      return ($docs)
 };
 
-(:~ This function returns paths to all available data files of the given project.  
- :
+
+(:~ This function returns a node set consisting of all available documents of the project as listed in mets:fileGrp[@USE="Project Data"]     
+ : 
  : @param $project-pid: The CR-Context
  : @param $config: The mets-config of the project
 ~:)
-declare function repo-utils:context-to-collection-path($project-pid as xs:string, $config) as xs:string* {
-    let $projectData:=$config//mets:fileGrp[@USE="Project Data"]//mets:file/mets:FLocat
+declare function repo-utils:context-to-fragments($x-context as xs:string) as item()* {
+    let $projects:=config:path("projects"),
+    	$contexts:=tokenize($x-context,",")
+    return 
+        for $c in $contexts
+    	let $id := normalize-space($c),
+    		$div:= collection($projects)//mets:div[@ID eq $id],
+(:    		$project := if (exists($div)) then () else collection($projects)//mets:mets[@OBJID eq $id]:)
+    		$fileid := ($div/mets:fptr/@FILEID,$div/mets:fptr/mets:area/@FILEID),
+    		$uri := root($div)//mets:file[ancestor::mets:fileGrp[@ID eq $config:PROJECT_DATA_FILEGRP_ID] and @ID eq $fileid]/mets:FLocat/@xlink:href
+(:    		$doc := doc($uri):)
+    	return xs:string($uri) 
+    	    (:if ($fileid/parent::mets:area)
+    	    then $doc//fcs:resourceFragment[@cr:id=$fileid/parent::mets:area/@BEGIN]
+    	    else $doc:)
+};
+
+
+(:~ This function returns paths to all available data files of the given project.
+if $x-context is empty the path to the project' collection of working copies is returned,
+otherwise the list of all data files of the project is returned
+ :
+ : @param $x-context: The CR-Context
+ : @param $config: The mets-config of the project
+~:)
+declare function repo-utils:context-to-collection-path($x-context as xs:string*, $config) as xs:string* {
+    let $context-type := repo-utils:context-to-type($x-context,$config)
+    return
+        if ($context-type = "project")
+        then project:path($x-context, 'workingcopies')
+        else 
+            if ($context-type='resource')
+            then 
+                let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
+                return resource:path($x-context,$project-pid,'workingcopy')
+            else ()
+(:    project:path($x-context, 'workingcopies'):)
+    (:let $projectData:=     $config//mets:fileGrp[@USE="Project Data"]//mets:file/mets:FLocat
     return 
         for $d in $projectData/@xlink:href return
             if (doc-available($d)) 
             then xs:string($d)
-            else ()
+            else ():)
 };
+
+declare function repo-utils:context-to-type($x-context as xs:string*, $config) as xs:string* {
+    let $projects := config:path("projects"),
+        $div := collection($projects)//mets:div[@ID = $x-context],
+        $mets := collection($projects)//mets:mets[@OBJID = $x-context]
+    return 
+        switch(true())
+            case exists($mets) return "project"
+            case exists($div) return $div/xs:string(@TYPE)
+            default return ()
+};
+
+declare function repo-utils:context-to-project-pid($x-context as xs:string?, $config) as xs:string* {
+    let $projects := collection(config:path("projects"))
+    return 
+        switch(true())
+            case exists($projects//mets:mets[@OBJID = $x-context]) return $x-context
+            case exists($projects//mets:div[@ID = $x-context]) return $projects//mets:div[@ID = $x-context]/ancestor::mets:mets/@OBJID/xs:string(.)
+            default return ()
+};
+
+declare function repo-utils:context-to-resource-pid($x-context as xs:string?, $config) as map()* {
+    let $projects := collection(config:path("projects"))
+    let $div := $projects//mets:div[@ID = $x-context]
+    let $project-pid := $div/ancestor::mets:mets/@OBJID/xs:string(.),
+        $resource-pid := if ($div/@TYPE='resource') then $x-context else $div/ancestor::mets:div[@TYPE='resource']/xs:string(@ID)
+    return
+        if (exists($div))
+        then 
+            map:new((
+                    map:entry("project-pid",$project-pid),
+                    map:entry("resource-pid",$resource-pid)
+               ))
+        else ()
+};
+
+(: returns 0-n map(s) in the form
+ : [
+ :   ["id"      : "abacus2.2_16" ],
+ :   ["operand" : "except" ],
+ :   ["type"    : "resourcefragment" ],
+ : ]
+:)
+declare function repo-utils:parse-x-context($x-context as xs:string, $config) as map()* {
+    let $contexts := tokenize($x-context,',')
+    let $maps := 
+        for $c at $pos in distinct-values($contexts)
+            let $operand := switch (true())
+                                        case substring($c,1,1) = "+" return "union"
+                                        case substring($c,1,1) = "-" return "except"
+                                        default return "union"
+            let $c-id := if (substring($c,1,1) = ("+","-")) then substring($c,2) else $c
+            let $type := repo-utils:context-to-type($c-id,$config)
+            return 
+                if ($type)
+                then
+                    map:new((
+                        map:entry("operand",$operand),
+                        map:entry("type",$type),
+                        switch ($type)
+                            case "resourcefragment" return (map:entry("resourcefragment-pid",$c-id),repo-utils:context-to-resource-pid($c-id,$config))
+                            case "resource" return repo-utils:context-to-resource-pid($c-id,$config)
+                            default return map:entry("project-pid",$c-id)
+                   ))
+                else ()
+    return $maps
+};
+
+(:~
+ : returns nodes of the given context, e.g. "x-context=abacus2" or "x-context=abacus2.1,abacus2.2".
+ : resources or fragments *excluded* via x-context ("x-context=abacus2,-abacus2.1") are not filtered out
+ : here but  
+~:)
+declare function repo-utils:context-to-data($x-context as map(), $config) as item()* {
+    let $path-expressions := 
+        for $p at $pos in $x-context  
+        let $type := map:get($p,'type'),
+            $operand := if ($pos=1) then () else " "||map:get($p,'operand')||" "
+        let $path := 
+            switch ($type)
+                    case "project" return $operand||"collection('"||project:path($p("project-pid"),"workingcopy")||"')"
+                    case "resource" return $operand||"doc('"||resource:path($p("resource-pid"),$p("project-pid"),'workingcopy')||"')"
+                    case "resourcefragment" return " union doc('"||resource:path($p("resource-pid"),$p("project-pid"),'workingcopy')||"')"
+                    default return ()
+        return $path
+    let $log := util:log-app("INFO",$config:app-name,"constructed data path: "||string-join($path-expressions,''))        
+    return util:eval(string-join($path-expressions,''))
+};
+
+
+declare function repo-utils:filter-by-context($data as item()*, $x-context as map(), $config) as item()* { 
+        if (not(exists($x-context))) 
+        then $data
+        else 
+            let $assertions-by-type := 
+                map:new(
+                    for $a in $x-context 
+                    group by $assertion-type := map:get($a,'type')
+                    return map:entry($assertion-type,$a)),
+                $assertion-types := map:keys($assertions-by-type)
+            return
+                (: we aggregate the nodes by resource and 
+                   apply those assertions that refer to this resource :)
+                for $x in $data
+                group by $r-pid := $x/@cr:resource-pid
+                return 
+                    (: get maps that directly exclude or include this resource :)
+                    let $r-map := for $p in $assertions-by-type("resource")
+                                  return 
+                                      if (map:get($p,'resource-pid') = $r-pid)
+                                        then $p 
+                                        else ()
+                    return
+                        if (not(exists($r-map)) and $assertion-types = "resource")
+                        then ()
+                        else 
+                             if (some $x in $r-map satisfies map:get($x,'operand') = 'except')
+                             then ()
+                             else  
+                                 (: we gather cr:ids of elements in this resource $r-pid 
+                                    that are referenced via fragment-pids in the x-context,
+                                    and group them as keys in a map.
+                                    [
+                                       "exclude": ("cr:id1","cr:id2","cr:id3",...)
+                                       "include": ("cr:id4","cr:id5",...)
+                                    ]
+                                    :)
+                                 
+                                 if (map:contains($assertions-by-type,"resourcefragment"))
+                                 then 
+                                     let $rf-assertions-for-current-resource := map:get($assertions-by-type,"resourcefragment")
+                                     let $element-ids-by-operand := 
+                                         let $maps := 
+                                             for $assertions-by-operand in $rf-assertions-for-current-resource
+                                             group by $operand := $assertions-by-operand("operand")
+                                             return
+                                                 let $cr-ids:=
+                                                     for $a in $assertions-by-operand
+                                                     return
+                                                         if ($a("resource-pid") = $r-pid)
+                                                         then ltb:dump($a("resourcefragment-pid"),$a("resource-pid"),$a("project-pid"))//data(cr:id)
+                                                         else ()
+                                                 return map:entry($operand,$cr-ids)
+                                         return map:new($maps)
+                                     return
+                                         if (exists($element-ids-by-operand("except")))
+                                         then  
+                                            if (exists($element-ids-by-operand("union")))
+                                            then $x[not(@cr:id = $element-ids-by-operand("except"))][@cr:id = $element-ids-by-operand("union")]
+                                            else $x[not(@cr:id = $element-ids-by-operand("except"))]
+                                         else 
+                                            if (exists($element-ids-by-operand("union")))
+                                            then $x[@cr:id = $element-ids-by-operand("union")]
+                                            else $x
+                                 else $x
+};
+
+(: filters a set of nodes by its project, resource or resourcefragment.
+ : the 'assertion' maps (second parameter) take the following form:
+ : map {
+ :    "type" := "resourcefragment",
+ :    "id" := "abacus2.1_64",
+ :    "operand" := "exclude"
+ : }
+:)
+(:declare function repo-utils:filter-by-context($data as item()*, $assertions as map()*, $config) as item()* {
+    if (count($assertions) eq 0)
+    then $data
+    else
+        let $assertions-ordered :=  for $a in $assertions
+                                    let $type := map:get($a,'type'),
+                                        $order := ("resourcefragment","resource","project")
+                                    order by index-of($order,$type)
+                                    return $a
+        let $current := $assertions-ordered[1]
+};:)
+
 (:~
  : Retrieves the id of the resourcefragment(s) a given element is part of.
  : 
@@ -208,21 +427,37 @@ declare function repo-utils:is-doc-available($collection as xs:string, $doc-name
 };
 
 declare function repo-utils:is-in-cache($doc-name as xs:string,$config) as xs:boolean {
-  fn:doc-available(fn:concat(repo-utils:config-value($config, 'cache.path'), "/", $doc-name))
+    repo-utils:is-in-cache($doc-name,$config, 'indexes') 
+};
+
+declare function repo-utils:is-in-cache($doc-name as xs:string,$config, $type as xs:string) as xs:boolean {
+    let   $project-pid := config:param-value($config,'project-pid'),
+        $cache-path := project:path($project-pid, $type)  
+    return fn:doc-available($cache-path||"/"||$doc-name)
 };
 
 
 declare function repo-utils:get-from-cache($doc-name as xs:string,$config) as item()* {
-    let $path := fn:concat(repo-utils:config-value($config, 'cache.path'), "/", $doc-name)
-    return repo-utils:get-from-cache($doc-name, $path,$config)
+        repo-utils:get-from-cache($doc-name, $config, 'indexes')     
 };
 
+declare function repo-utils:get-from-cache($doc-name as xs:string,$config, $type) as item()* {
+   let   $project-pid := config:param-value($config,'project-pid'),
+        $cache-path := project:path($project-pid, $type)
+    let $path := fn:concat($cache-path, "/", $doc-name)
+    return if (util:is-binary-doc($path))
+            then util:binary-doc($path)
+            else fn:doc($path)
+};
+
+(:
+This seems weird - TO BE DEPRECATED
 declare function repo-utils:get-from-cache($doc-name as xs:string,$path,$config) as item()* {
     if (util:is-binary-doc($path))
     then util:binary-doc($path)
     else fn:doc($path)
 };
-
+:)
 (:~ 
  : Store the data in Cache, which is set in the parameter "cache.path" in the config. 
  : The function uses its own writer-account. 
@@ -230,32 +465,55 @@ declare function repo-utils:get-from-cache($doc-name as xs:string,$path,$config)
  : @param $doc-name: the filename of the resource to create/update.
  : @param $data: the data to store
  : @param $config: the config for the current project  
+ 
 ~:)
-declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node(),$config) as item()* {
-  repo-utils:store-in-cache($doc-name,$data,repo-utils:config-value($config, 'cache.path'))
+declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node(),$config) as item()* {    
+    repo-utils:store-in-cache($doc-name,$data,$config,'indexes')
 };
 
 (:~ 
  : Store the data in Cache to the specified collection. 
  : The function uses its own writer-account. 
- :  
+ : if the file exists, it will be overwritten
+ 
+  : instead of sending the cache-collection, the correct path is established based on project-context and $type 
  : @param $doc-name: the filename of the resource to create/update.
- : @param $cache-collection: the name of the collection (non-existent collections will be created)
+ 
  : @param $data: the data to store
- : @param $config: the config for the current project  
+ : @param $config: the config for the current project
+ : @param $type: type of cache
+
 ~:)
-declare function repo-utils:store-in-cache($doc-name as xs:string, $cache-path as xs:string, $data as node(),$config) as item()* {
-  let   $clarin-writer := fn:doc(repo-utils:config-value($config, 'writer.file')),
-        $dummy := xdb:login($cache-path, $clarin-writer//write-user/text(), $clarin-writer//write-user-cred/text()),
-        $mkcol :=   if (xmldb:collection-available($cache-path))
+declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node(),$config,$type) as item()* {
+  let   $project-pid := config:param-value($config,'project-pid'),
+        $cache-path := project:path($project-pid, $type),
+        $writer := fn:doc(config:path('writer.file')),
+        $writer-name :=  $writer//write-user/text(),
+        $writer-pw := $writer//write-user-cred/text()
+    let $log := util:log-app("INFO","cr-xq",config:path('writer.file'))
+  return system:as-user($writer-name, $writer-pw,
+        let $mkcol :=   if (xmldb:collection-available($cache-path))
                     then ()
                     else local:mkcol-recursive(tokenize($cache-path,'/')[1],tokenize($cache-path,'/')[position() gt 1]),
-        $store := xdb:store($cache-path, $doc-name, $data), 
-        $stored-doc := 
-            if (util:is-binary-doc(concat($cache-path, "/", $doc-name))) 
-            then util:binary-doc(concat($cache-path, "/", $doc-name))
-            else fn:doc(concat($cache-path, "/", $doc-name))
-  return $stored-doc
+        
+            $rem :=if (util:is-binary-doc(concat($cache-path, $doc-name))) then
+                            xdb:remove($cache-path, $doc-name)
+                          else if (doc-available(concat($cache-path, $doc-name))) 
+                            then xdb:remove($cache-path, $doc-name)  
+                            else (),
+                            
+            $store := try { xdb:store($cache-path, $doc-name, $data)
+                        } catch * {
+                            let $msg := "problem storing "||$doc-name||" to "||$cache-path
+                            let $dummy-log := util:log-app("ERROR", $config:app-name, $msg)
+                            return diag:diagnostics("general-error", $msg )
+                            }, 
+            $stored-doc := 
+                if (util:is-binary-doc(concat($cache-path, "/", $doc-name))) 
+                then util:binary-doc(concat($cache-path, "/", $doc-name))
+                else fn:doc(concat($cache-path, "/", $doc-name))
+        return $stored-doc
+    )
 };
 
 
@@ -280,19 +538,23 @@ checks for logged in user and only tries to use the internal writer, if no user 
 :)
 (:<options><option key="update">yes</option></options>:)
 declare function repo-utils:store($collection as xs:string, $doc-name as xs:string, $data as node(), $overwrite as xs:boolean, $config) as item()* {
-  let $writer := fn:doc(repo-utils:config-value($config, 'writer.file')),
+    let $log := util:log-app("INFO",$config:app-name,"repo-util:store($collection:"||$collection||",$doc-name:"||$doc-name||")")
+  let $writer := fn:doc(config:path('writer.file'))(:,
   $dummy := if (request:get-attribute("org.exist.demo.login.user")='') then
                 xdb:login($collection, $writer//write-user/text(), $writer//write-user-cred/text())
-             else ()  
+             else ()  :)
 
 (:  let $rem := if ($overwrite and doc-available(concat($collection, $doc-name))) then xdb:remove($collection, $doc-name) else () :)
 
+ let $mkcol :=   if (xmldb:collection-available($collection))
+                    then ()
+                    else repo-utils:mkcol("/", $collection)
+  
 let $rem :=if (util:is-binary-doc(concat($collection, $doc-name)) and $overwrite) then
                         xdb:remove($collection, $doc-name)
                       else if ($overwrite and doc-available(concat($collection, $doc-name))) 
                         then xdb:remove($collection, $doc-name)  
                         else ()
-  
   
   let $store := (: util:catch("org.exist.xquery.XPathException", :) xdb:store($collection, $doc-name, $data),  
   $stored-doc := if (util:is-binary-doc(concat($collection, "/", $doc-name))) then  util:binary-doc(concat($collection, "/", $doc-name)) else fn:doc(concat($collection, "/", $doc-name))
@@ -345,17 +607,21 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
  : @param $parameters optional additional parameters to be passed to xsl  
 ~:)
 declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $parameters as node()* ) as item()? {
+(: FIXME: empty x-context macht wenig sinn!! :) 
+        repo-utils:serialise-as($item, $format, $operation, $config, '', $parameters)
+};
+declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $x-context as xs:string, $parameters as node()* ) as item()? {
     switch(true())
         case ($format eq $repo-utils:responseFormatJSon) return	       
 	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config),
 	           $xslParams:=    <parameters>
 	                               <param name="format" value="{$format}"/>
-	                               <param name="x-context" value="{repo-utils:param-value($config, 'x-context', '' )}"/>
-	                               <param name="base_url" value="{repo-utils:base-url($config)}"/>
-	                               <param name="mappings-file" value="{repo-utils:config-value($config, 'mappings')}"/>
-	                               <param name="scripts_url" value="{repo-utils:config-value($config, 'scripts.url')}"/>
-	                               <param name="site_name" value="{repo-utils:config-value($config, 'site.name')}"/>
-	                               <param name="site_logo" value="{repo-utils:config-value($config, 'site.logo')}"/>
+	                               <param name="x-context" value="{$x-context}"/>
+	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
+	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
+	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
+	                               <param name="site_logo" value="{config:param-value($config, 'site.logo')}"/>
 	                               {$parameters/param}
 	                           </parameters>
 	       let $res := if ($xslDoc) 
@@ -371,18 +637,19 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	           $xslParams:=    <parameters>
 	                               <param name="format" value="{$format}"/>
               			           <param name="operation" value="{$operation}"/>
-              			           <param name="x-context" value="{repo-utils:param-value($config, 'x-context', '' )}"/>
-              			           <param name="base_url" value="{repo-utils:base-url($config)}"/>
-              			           <param name="mappings-file" value="{repo-utils:config-value($config, 'mappings')}"/>
-              			           <param name="scripts_url" value="{repo-utils:config-value($config, 'scripts.url')}"/>
-              			           <param name="site_name" value="{repo-utils:config-value($config, 'site.name')}"/>
-              			           <param name="site_logo" value="{repo-utils:config-value($config, 'site.logo')}"/>
+              			           <param name="x-context" value="{$x-context}"/>
+              			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
+              			           <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
+	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
+	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
+	                               <param name="site_logo" value="{config:param-value($config, 'site.logo')}"/>
               			           {$parameters/param}
               			       </parameters>
 	       let $res := if (exists($xslDoc)) 
 	                   then transform:transform($item,$xslDoc, $xslParams)
 	                   else 
-	                       let $log:=util:log("ERROR", "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
+	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
 	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html")
 	       return $res
@@ -416,8 +683,8 @@ declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:strin
     let $scripts-paths := config:path('scripts'),
         $xsldoc :=  for $scripts-path in $scripts-paths
                     return 
-                        let $operation-format-xsl:= $scripts-path||'/'||repo-utils:config-value($config, $operation||'-'||$format||".xsl"),
-                            $operation-xsl:= $scripts-path||'/'||repo-utils:config-value($config, $operation||".xsl")
+                        let $operation-format-xsl:= $scripts-path||'/'||config:param-value($config, $operation||'-'||$format||".xsl"),
+                            $operation-xsl:= $scripts-path||'/'||config:param-value($config, $operation||".xsl")
                         return 
                         switch(true())
                             case (doc-available($operation-format-xsl)) return doc($operation-format-xsl)
@@ -468,3 +735,35 @@ declare function local:mkcol-recursive($collection, $components) {
         )
     else ()
 };
+
+
+declare function repo-utils:get-record-pid($reference) as xs:string? {
+    typeswitch($reference)
+        case xs:string return $reference
+        case text() return $reference
+        case attribute(OBJID) return $reference/parent::mets:mets/xs:string(@OBJID)
+        case attribute(ID) return $reference/parent::mets:div/xs:string(@ID)
+        case element(mets:mets) return $reference/xs:string(@OBJID)
+        case element(mets:div) return $reference/xs:string(@ID)
+        case document-node() return $reference/mets:mets/xs:string(@OBJID)
+        default return ()
+}; 
+
+
+(:~ Returns the METS record of a project or resource, regardless of what 
+ : kind of reference (project-pid string, text(), @OBJID, is passed to the function.
+ : This allows us to pass either a project-pid, resource-pid or their resolved records in
+ : function definitions.
+ : @param $reference any item with relation to a resource or a mets record (elements like mets:div, mets:mets, PIDs, document-nodes etc.)
+:)
+declare function repo-utils:get-record($reference) as element()? {
+    typeswitch($reference)
+        case xs:string return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
+        case text() return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
+        case attribute(OBJID) return project:get($reference)
+        case attribute(ID) return collection(config:path("projects"))//mets:div[@ID = $reference]
+        case element(mets:mets) return $reference
+        case element(mets:div) return $reference
+        case document-node() return $reference/*
+        default return ()
+}; 
