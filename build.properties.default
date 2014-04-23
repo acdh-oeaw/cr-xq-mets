@@ -3,9 +3,18 @@
 app.name=SADE
 app.uri=http://telota.de/sade
 app.version=0.3
+
+# the base collection (relative to /db/) where to store all projects
 projects.dir=sade-projects
+
+# the base collection (relative to /db/) where to store all data
 data.dir=cr-data
 
+# system user account
+system.account.user=cr-xq            
+system.account.pwd=cr-xq-pwd
+
+# allows to exclude individual directories (especially modules) from the build package
 exclude.dirs=modules/admin/**,modules/text-viewer/**
 
 # dir where the build_docs.xml lies
