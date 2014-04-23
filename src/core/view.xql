@@ -13,6 +13,7 @@ import module namespace templates="http://exist-db.org/xquery/templates" at "tem
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
    import module namespace app="http://sade/app" at "app.xql";  
    import module namespace fcs="http://sade/fcs" at "../modules/fcs/fcs-sade.xqm";
+import module namespace projectAdmin="http://aac.ac.at/content_repository/projectAdmin" at "../modules/projectAdmin/projectAdmin.xqm";
 
 declare option exist:serialize "method=html5 media-type=text/html";
 
@@ -29,6 +30,7 @@ let $lookup :=function($functionName as xs:string, $arity as xs:int) {
  : Run it through the templating system and return the result.
  :)
  
-let $template := request:get-data() 
+let $template := request:get-data(),
+    $project := session:set-attribute("project-pid", request:get-parameter("project", ""))
     
-return templates:apply($template, $lookup,  ())
+return templates:apply($template, $lookup, ())
