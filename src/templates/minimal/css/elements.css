@@ -3,12 +3,23 @@
 
 a, a:link, a:hover { text-decoration: none;}
 
+dt {margin-top: 1em;}
+
 .title, h1, h2, h3 { color: #014172;}
+
 h1 {font-size: 1.6em; margin: 30px 0 10px 30px;}
 h2 {font-size: 1.4em; margin: 1em 0 0.4em 0;}
 h3 {font-size: 1.2em; margin: 0.8em 0 0.4em 0;}	 
 .title {font-size: 1.2em; font-weight: bold; margin: 0.4em 0 0 0.2em;}
 
+p { text-align:justify;}
 
 ul { padding-left: 4px; list-style-type: none; margin: 0;}
-li { background: url('imgs/icon-dot-4.png') no-repeat; background-position: 0px 7px; padding-left: 8px;  }
+li { background: url('dotred/icon-dot-4-grey.png') no-repeat; background-position: 0px 7px; padding-left: 8px;  }
+
+table {border-collapse: collapse;}
+td {padding: 1px 2px;}
+
+input, select, button {
+    font-size: 1.3em;
+}
