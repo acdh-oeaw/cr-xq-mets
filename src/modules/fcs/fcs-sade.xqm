@@ -62,8 +62,8 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
     let $base-path-x := if ($base-path='') then config:param-value($model,'base-url') else $base-path
     
     (: hardcoded sorting - needs to be optional (currently only used in STB :)
-    let $cql-query := if (contains($query, 'sortBy')) then $query else concat ($query, " sortBy sort")
-    
+    (:let $cql-query := if (contains($query, 'sortBy')) then $query else concat ($query, " sortBy sort"):)
+    let $cql-query := $query 
     let $result := 
 (:       fcs:search-retrieve($query, $x-context, xs:integer($start-item), xs:integer($max-items), $x-dataview, $config):)
        fcsm:search-retrieve($cql-query, $x-context-x, $startRecord , $maximumRecords, $x-dataview-x, $model("config"))
