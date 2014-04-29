@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config type="module">
+    <module key="cs-xsl">
+<!-- defined in app-root:conf.xml
+            <path key="scripts" xml:id="scripts" base="#app-root">modules/cs-xsl</path>
+        -->
+        <param key="scan.xsl">fcs/scan2view_v2.xsl</param>
+        <param key="scan-json.xsl">fcs/scan2json.xsl</param>
+<!--        <param key="map-scan.xsl">fcs/map2scan.xsl</param>-->
+        <param key="map-scan.xsl">fcs/map2sru_scan_fcs.resource.xsl</param>
+        <param key="metsdiv-scan.xsl">fcs/mets-div2sru_scan.xsl</param>
+        <param key="searchRetrieve.xsl">fcs/result2view_v2.xsl</param>
+        <param key="resource-list.xsl">misc/resource-list2view_v2.xsl</param>
+        <param key="data.xsl">misc/cr-data2view.xsl</param>
+        <param key="metadata.xsl">misc/xml2view_v2.xsl</param>
+        <param key="explain.xsl">fcs/explain2view_v2.xsl</param>
+        <param key="explain-json.xsl">fcs/explain2json.xsl</param>
+        <param key="static.xsl">misc/static2view.xsl</param>
+        <param key="xml.xsl">misc/xml2view_v2.xsl</param>
+        <param key="html.xsl">misc/html2view.xsl</param>
+        <param key="test.xsl">misc/test2view.xsl</param>
+        <param key="projectDMD.xsl">mets/project2view.xsl</param>
+        <param key="structMap.xsl">mets/project2view.xsl</param>
+         <!--<param key="html.xsl">misc/html2view.xsl</param>
+         
+         <param key="table.xsl">misc/xml2htmltable.xsl</param>
+         <param key="default.xsl">misc/xml2view.xsl</param>
+         -->
+        <param key="terms.xsl">misc/terms2view.xsl</param>
+    </module>
+</config>
