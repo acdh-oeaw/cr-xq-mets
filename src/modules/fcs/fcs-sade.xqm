@@ -47,7 +47,7 @@ tries to use x-context and x-dataview parameter from the configuration, if no ex
 declare 
     %templates:wrap
     %templates:default("x-context","")
-    %templates:default("x-dataview","kwic")
+    %templates:default("x-dataview","title,kwic")
     %templates:default("startRecord",1)
     %templates:default("maximumRecords",10)
     %templates:default("x-format","html")    
