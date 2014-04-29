@@ -52,5 +52,23 @@
                 token="@system.account.pwd@" 
                 property="system.account.pwd"/>
         </replace>
+        
+        <copy file="conf.template.xml" tofile="conf.xml" overwrite="true"  />
+        <replace file="conf.xml"
+            propertyFile="../build.properties">
+            <replacefilter 
+                token="@projects.dir@" 
+                property="projects.dir"/>
+            <replacefilter 
+                token="@data.dir@" 
+                property="data.dir"/>                        
+            <replacefilter 
+                token="@public.repo.baseurl@" 
+                property="public.repo.baseurl"/>
+            <replacefilter 
+                token="@public.repo.displayname@" 
+                property="public.repo.displayname"/>
+            
+        </replace>
     </target>
 </project>

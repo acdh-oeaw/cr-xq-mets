@@ -2,8 +2,8 @@
 <config xmlns="http://exist-db.org/xquery/apps/config">
     <paths>
         <!-- root path -->
-        <path key="projects" xml:id="projects">/db/cr-projects</path>
-        <path key="data" xml:id="data">/db/cr-data</path>
+        <path key="projects" xml:id="projects">/db/@projects.dir@</path>
+        <path key="data" xml:id="data">/db/@data.dir@</path>
         <path key="master" xml:id="master" base="#data"/>
         <path key="metadata" base="#data">_md</path>
         <path key="indexes" base="#data">_indexes</path>
@@ -17,7 +17,7 @@
         <path key="termlabels.file" base="#project-home">termlabels.xml</path>
     </paths>
     <params xmlns="">
-        <param key="public-repo-baseurl">http://clarin.oeaw.ac.at/lrp</param>
-        <param key="public-repo-displayname">Language Resource Portal</param>
+        <param key="public-repo-baseurl">@public.repo.baseurl@</param>
+        <param key="public-repo-displayname">@public.repo.displayname@</param>
     </params>
 </config>

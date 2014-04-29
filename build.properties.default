@@ -17,6 +17,12 @@ system.account.pwd=cr-xq-pwd
 # password for the user "shib" - acting as place-holder for shibboleth authenticated users. 
 shib.user.pwd=shib-user-pwd
 
+# public-repo baseurl
+public.repo.baseurl=/
+
+# public-repo displayname
+public.repo.displayname=Content Repository
+
 
 # allows to exclude individual directories (especially modules) from the build package
 exclude.dirs=modules/admin/**,modules/text-viewer/**
