@@ -132,7 +132,7 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
         $sanitized-term := cql:sanitize-term($clause/term),
 (:$predicate := ''        :)
         $predicate := switch (true())
-                        case ($index-type eq $index:INDEX_TYPE_FT) return 'ft:query('||$match-on||',"'||$sanitized-term||'")'                        
+                        case ($index-type eq $index:INDEX_TYPE_FT) return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
                         default return $match-on||"='"||$sanitized-term||"'"
                         
 
