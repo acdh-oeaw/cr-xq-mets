@@ -43,13 +43,13 @@
             <mdWrap MDTYPE="OTHER">
                 <xmlData>
                     <module xmlns="" key="fcs">
-                        <param key="default.dataview">kwic</param>
+                        <!--<param key="default.dataview">kwic</param>
                         <param key="site.name">Abacus site.name</param>
                         <param key="cache.path">/db/cr-data/_indexes</param>
                         <param key="index.prefix">/db/cr-data/_indexes/index_</param>
                         <param key="scripts.path">/db/cr-projects/abacus/</param>
                         <param key="scan.xsl">scan2view_custom.xsl</param>
-                        <param key="searchRetrieve.xsl">result2view_v1_custom.xsl</param>
+                        <param key="searchRetrieve.xsl">result2view_v1_custom.xsl</param>-->
                     </module>
                 </xmlData>
             </mdWrap>
