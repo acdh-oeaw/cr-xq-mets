@@ -527,7 +527,13 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                 let $dmdidref := 
                     if (exists($doc//mets:div[matches(@DMDID,'\s*'||$dmdid||'\s*')])) 
                     then () 
-                    else update insert attribute DMDID {$dmdid} into resource:get($resource-pid,$project-pid)
+                    else 
+                        let $res-div := resource:get($resource-pid,$project-pid)
+                        let $existing-dmdid := $res-div/@DMDID
+                        return if (exists($existing-dmdid)) then
+                            update value $existing-dmdid with $existing-dmdid||' '||$dmdid
+                          else 
+                            update insert attribute DMDID {$dmdid} into $res-div
                 return
                 (: store metadata to database and add a reference in the mets record:)
                 if (exists($store-to-db) and $store-to-db)
@@ -545,7 +551,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                                 switch(true())
                                     case (exists($dmdSec/node())) return (update delete $dmdSec/node(), update insert $mdRef into $dmdSec)
                                     case (exists($dmdSec)) return update insert $mdRef into $dmdSec
-                                    default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdRef}</dmdSec> preceding $doc//mets:fileSec
+                                    default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdRef}</dmdSec> following $doc//mets:dmdSec[last()]
                         else 
                             util:log-app("INFO",$config:app-name,"The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
                     else 
@@ -561,7 +567,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                                 switch(true())
                                     case (exists($dmdSec/node())) return (update delete $dmdSec/node(), update insert $mdRef into $dmdSec)
                                     case (exists($dmdSec)) return update insert $mdRef into $dmdSec
-                                    default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdRef}</dmdSec> preceding $doc//mets:fileSec
+                                    default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdRef}</dmdSec> following $doc//mets:dmdSec[last()]
                             else util:log-app("INFO",$config:app-name,"could not store metadata resource at "||$dmdSec)
                 
                 (: move metadata into mets container :)
@@ -578,7 +584,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                                 switch(true())
                                     case (exists($dmdSec/node())) return (update delete $dmdSec/node(), update insert $mdWrap into $dmdSec)
                                     case (exists($dmdSec)) return update insert $mdWrap into $dmdSec
-                                    default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdWrap}</dmdSec> preceding $doc//mets:fileSec
+                                    default return update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdWrap}</dmdSec> following $doc//mets:dmdSec[last()]
                             (: ... and delete the external file :)
                             return xmldb:remove(util:collection-name($doc),util:document-name($doc))
                         else util:log-app("INFO",$config:app-name, "The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
@@ -605,7 +611,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                                         case exists($dmdSec) return 
                                             update insert $mdWrap into $dmdSec
                                         default return 
-                                            update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdWrap}</dmdSec> preceding $doc//mets:fileSec
+                                            update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdWrap}</dmdSec> following $doc//mets:dmdSec[last()]
                                 (: ... and delete the external file :)
                                 return xmldb:remove(util:collection-name($doc),util:document-name($doc))
                         
@@ -613,7 +619,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                         else
                             if (exists($dmdSec)) 
                             then update insert $mdWrap into $dmdSec
-                            else update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdWrap}</dmdSec> preceding $doc//mets:fileSec
+                            else update insert <dmdSec ID="{$dmdid}" xmlns="http://www.loc.gov/METS/">{$mdWrap}</dmdSec> following $doc//mets:dmdSec[last()]
         default return ()
 };
 
