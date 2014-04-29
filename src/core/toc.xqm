@@ -25,6 +25,9 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
    let $mappings:=project:map($project-pid),
        $indexes := for $m in $mapping-keys return $mappings//index[@key eq $m],
        $paths := for $i in $indexes return fcs:index-as-xpath($i,$project-pid,()),
+       $ltb-exists := if (resource:path($resource-pid,$project-pid,"lookuptable")='')
+                      then ltb:generate($resource-pid,$project-pid)
+                      else (),
        $ltb-path := "xmldb:exist://"||resource:path($resource-pid,$project-pid,"lookuptable"),
        $project-path := "xmldb:exist://"||project:filepath($project-pid)
 
@@ -90,7 +93,7 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
                     
                     
                     <xsl:template match="/" priority="1">
-                        <mets:div TYPE="resource" CONTENTIDS="#{$resource-pid}" LABEL="{$resource-label/text()}" ID="{$resource-pid}_toc">
+                        <mets:div TYPE="resource" CONTENTIDS="#{$resource-pid}" LABEL="{xs:string($resource-label)}" ID="{$resource-pid}_toc">
                             <xsl:apply-templates/>
                         </mets:div>
                     </xsl:template>
