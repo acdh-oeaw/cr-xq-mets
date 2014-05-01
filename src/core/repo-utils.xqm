@@ -176,13 +176,13 @@ declare function repo-utils:context-to-collection-path($x-context as xs:string*,
 
 declare function repo-utils:context-to-type($x-context as xs:string*, $config) as xs:string* {
     let $projects := config:path("projects"),
-        $div := collection($projects)//mets:div[@ID = $x-context],
-        $mets := collection($projects)//mets:mets[@OBJID = $x-context]
+        $div := collection($projects)//mets:div[@ID = normalize-space($x-context)],
+        $mets := collection($projects)//mets:mets[@OBJID = normalize-space($x-context)]
     return 
         switch(true())
             case exists($mets) return "project"
             case exists($div) return $div/xs:string(@TYPE)
-            default return ()
+            default return util:log-app("ERROR",$config:app-name,"Can't resolve $x-context '"||normalize-space($x-context)||"'")
 };
 
 declare function repo-utils:context-to-project-pid($x-context as xs:string?, $config) as xs:string* {
@@ -224,11 +224,13 @@ declare function repo-utils:parse-x-context($x-context as xs:string, $config) as
                                         case substring($c,1,1) = "+" return "union"
                                         case substring($c,1,1) = "-" return "except"
                                         default return "union"
-            let $c-id := if (substring($c,1,1) = ("+","-")) then substring($c,2) else $c
+            let $c-id := normalize-space(if (substring($c,1,1) = ("+","-")) then substring($c,2) else $c)
             let $type := repo-utils:context-to-type($c-id,$config)
             return 
                 if ($type)
                 then
+                    let $log := util:log-app("DEBUG",$config:app-name,"parsing x-context '"||$x-context||"' part #"||$pos||" - id: '"||$c-id||"', "||"type: '"||$type||"', operand: '"||$operand||"'")
+                    return 
                     map:new((
                         map:entry("operand",$operand),
                         map:entry("type",$type),
@@ -246,11 +248,12 @@ declare function repo-utils:parse-x-context($x-context as xs:string, $config) as
  : resources or fragments *excluded* via x-context ("x-context=abacus2,-abacus2.1") are not filtered out
  : here but  
 ~:)
-declare function repo-utils:context-to-data($x-context as map(), $config) as item()* {
+declare function repo-utils:context-to-data($x-context as map()*, $config) as item()* {
     let $path-expressions := 
         for $p at $pos in $x-context  
         let $type := map:get($p,'type'),
             $operand := if ($pos=1) then () else " "||map:get($p,'operand')||" "
+        let $log := util:log-app("DEBUG",$config:app-name,"$type: '"||$type||"' $operand: '"||$operand||"'")
         let $path := 
             switch ($type)
                     case "project" return $operand||"collection('"||project:path($p("project-pid"),"workingcopy")||"')"
@@ -258,12 +261,13 @@ declare function repo-utils:context-to-data($x-context as map(), $config) as ite
                     case "resourcefragment" return " union doc('"||resource:path($p("resource-pid"),$p("project-pid"),'workingcopy')||"')"
                     default return ()
         return $path
-    let $log := util:log-app("INFO",$config:app-name,"constructed data path: "||string-join($path-expressions,''))        
-    return util:eval(string-join($path-expressions,''))
+    let $log := util:log-app("DEBUG",$config:app-name,"constructed data path: "||string-join($path-expressions,''))        
+    let $data := util:eval(string-join($path-expressions,''))
+    return $data 
 };
 
 
-declare function repo-utils:filter-by-context($data as item()*, $x-context as map(), $config) as item()* { 
+declare function repo-utils:filter-by-context($data as item()*, $x-context as map()+, $config) as item()* { 
         if (not(exists($x-context))) 
         then $data
         else 
@@ -721,7 +725,13 @@ declare function repo-utils:if-absent ( $arg as item()* , $value as item()* )  a
 (: Helper function to recursively create a collection hierarchy. 
 xmldb:create-collection actually obviously can do this - no need for recursive call (anymore?) :)
 declare function repo-utils:mkcol($collection as xs:string, $path as xs:string) {
-   xmldb:create-collection($collection, $path)
+    try {
+    xmldb:create-collection($collection, $path)
+    } catch * {
+      let $log := util:log-app("ERROR",$config:app-name, "Could not create collection "||$path||" in collection "||$collection||". "||string-join(($err:code , $err:description, $err:value),' - ') )
+      return ()
+    }
+    
 (:    local:mkcol-recursive($collection, tokenize($path, "/")):)
 };
 
