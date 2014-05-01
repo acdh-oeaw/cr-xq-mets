@@ -15,10 +15,15 @@
     <xsl:param name="default-analyzer-class">org.apache.lucene.analysis.standard.StandardAnalyzer</xsl:param>
     <xsl:template match="/map">
         <xsl:variable name="range-indexes" as="item()+">
-            <xsl:apply-templates select="//index[@index-type!='ft' or not(@index-type)]"/>
+<!--            <xsl:apply-templates select="//index[@type!='ft' or not(@type)]"/>-->
+            <xsl:for-each-group select="(//index/path/@match|//index/path[node()])" group-by=".">
+                <!-- TODO: -->
+                <xsl:variable name="data-type" select="(@data-type,'xs:string')[1]"/>
+                <create qname="{index:qnamesFromPath(.)}" type="{$data-type}"/>
+            </xsl:for-each-group>
         </xsl:variable>
         <xsl:variable name="fulltext-indexes" as="item()+">
-            <xsl:apply-templates select="//index[@index-type='ft'][path/node()]"/>
+            <xsl:apply-templates select="//index[@type='ft'][path/node()]"/>
         </xsl:variable>
         <collection>
             <index xmlns:cr="http://aac.ac.at/content_repository" xmlns:fcs="http://clarin.eu/fcs/1.0">
@@ -50,22 +55,28 @@
     <xsl:template match="/map/namespaces/ns">
         <xsl:namespace name="{@prefix}" select="@uri"/>
     </xsl:template>
-    <xsl:template match="index[@index-type='ft']">
-        <xsl:for-each select="@use">
+    <xsl:template match="index[@type='ft']">
+        <xsl:for-each-group select="(@match|path[node()])" group-by=".">
             <text qname="{index:qnamesFromPath(.)}"/>
-        </xsl:for-each>
-        <xsl:for-each select="path[node()]">
+        </xsl:for-each-group>
+        <!--<xsl:for-each select="path[node()]">
             <text qname="{index:qnamesFromPath(.)}"/>
-        </xsl:for-each>
+        </xsl:for-each>-->
     </xsl:template>
-    <xsl:template match="index[@index-type='ngram' or not(@index-type)]">
+    <xsl:template match="index[@type!='ft']">
         <xsl:variable name="type" select="(@type,'xs:string')[1]"/>
-        <xsl:for-each select="@use">
+        <xsl:for-each-group select="(@match|path[node()])" group-by=".">
+            <create qname="{index:qnamesFromPath(.)}" type="{$type}"/>
+        </xsl:for-each-group>
+        
+        <!--
+        <xsl:for-each select="path/@match">
             <create qname="{index:qnamesFromPath(.)}" type="{$type}"/>
         </xsl:for-each>
         <xsl:for-each select="path[node()]">
-            <create qname="{index:qnamesFromPath(.)}" type="{$type}"/>
+            <create qname="{index:qnamesFromPath(.)}" type="{$type}"/>            
         </xsl:for-each>
+        -->
     </xsl:template>
     <xsl:function name="index:qnamesFromPath">
         <xsl:param name="path" as="xs:string"/>
