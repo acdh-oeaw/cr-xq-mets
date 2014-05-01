@@ -110,7 +110,7 @@ declare %private function project:remove-accounts($project-pid as xs:string) as 
 
 
 (:~
-:  Instanciates a new project.
+:  Instantiates a new project.
 :
 : @return mets:mets
 ~:)
@@ -151,7 +151,7 @@ declare function project:new($data as element(mets:mets),$project-pid as xs:stri
             let $seed-template := transform:transform($data,$xsl,$xslParams)
             return $seed-template
             
-        let $project-stored as xs:string :=  project:store($this:id,$this:project)
+        let $project-stored as xs:string? :=  project:store($this:id,$this:project)
         return
             if ($project-stored!='')
             then 
@@ -212,7 +212,7 @@ declare function project:new($data as element(mets:mets),$project-pid as xs:stri
                 let $content-acl :=          project:acl($this:id,project:default-acl($this:id))
                 return project:get($this:id)
             else 
-                util:log("INFO","Project "||$this:id||" could not be instanciated.")
+                util:log-app("INFO",$config:app-name, "Project "||$this:id||" could not be instantiated.")
 };
 
 declare function project:label($project-pid as xs:string) as xs:string? {
@@ -342,16 +342,18 @@ declare function project:path($project-pid as xs:string, $key as xs:string) as x
  : param 'project.home' or set by config:path('projects')
  : 
  : @param $mets:record the mets:file
- : @return database path to the new file 
+ : @return database path to the new file, or empty sequence if an error occured (logged in app-log))  
 ~:)
 declare %private function project:store($project-pid as xs:string, $mets:record as element(mets:mets)) as xs:string? {
     let $col :=     replace($mets:record//param[@key='project.home'],$project-pid||"/?$",'')
-    let $base :=    if ($col!='') then $col else config:path('projects'),
-        $mkdir:=    repo-utils:mkcol($base,$project-pid)
-    let $path:=     try {
-                        xmldb:store($base||"/"||$project-pid,"project.xml",$mets:record)
+    let $base :=    if ($col!='') then $col else config:path('projects')
+        
+    let $path:=     try {                        
+                        let $mkdir:=    repo-utils:mkcol($base,$project-pid)
+                        return xmldb:store($base||"/"||$project-pid,"project.xml",$mets:record)
                     } catch * {
-                        ()
+                        let $log := util:log-app("INFO",$config:app-name, "Could not store project "||$project-pid||" to collection "||$base||". "||string-join(($err:code , $err:description, $err:value),' - ') )
+                        return ()
                     }
     return 
         if ($path='')
@@ -718,7 +720,7 @@ declare function project:map($project) as element(map)? {
     return $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/*
 };
 
-declare function project:map($project-pid as xs:string, $data as element(map)) as empty() {
+declare function project:map($data as element(map), $project-pid as xs:string) as empty() {
     let $doc:=      project:get($project-pid),
         $current:=  project:map($project-pid)
     return 
