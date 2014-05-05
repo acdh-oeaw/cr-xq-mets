@@ -25,7 +25,7 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
    let $mappings:=project:map($project-pid),
        $indexes := for $m in $mapping-keys return $mappings//index[@key eq $m],
        $paths := for $i in $indexes return fcs:index-as-xpath($i,$project-pid,()),
-       $ltb-exists := if (resource:path($resource-pid,$project-pid,"lookuptable")='')
+       $ltb-exists := if (not(resource:path($resource-pid,$project-pid,"lookuptable")=''))
                       then ltb:generate($resource-pid,$project-pid)
                       else (),
        $ltb-path := "xmldb:exist://"||resource:path($resource-pid,$project-pid,"lookuptable"),
@@ -104,25 +104,31 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
 
     
     let $resource := wc:get-data($resource-pid,$project-pid),
-        $toc := transform:transform($resource,$xsl,())
+        $toc := if ($resource) then transform:transform($resource,$xsl,()) else ()
         
    let $mets:record := project:get($project-pid),
        $mets:structMap-exists := $mets:record//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE]
-  
- return (if (not(exists($mets:record))) then util:log-app("INFO",$config:app-name,"no METS-Record found in config for "||$project-pid )
-        else if(exists($mets:structMap-exists)) then 
+       
+   return
+    switch (true())
+        case (not(exists($mets:record))) return util:log-app("ERROR",$config:app-name,"no METS-Record found in config for "||$project-pid )
+        case (not($resource)) return util:log-app("ERROR", $config:app-name,"no working copy data found for resource "||$resource-pid||".")
+        case (exists($mets:structMap-exists)) return 
                     if (exists($mets:structMap-exists/mets:div/mets:div[@CONTENTIDS=$resource-ref])) then 
-                        update replace $mets:structMap-exists/mets:div/mets:div[@CONTENTIDS=$resource-ref] 
-                               with $toc
+                        (update replace $mets:structMap-exists/mets:div/mets:div[@CONTENTIDS=$resource-ref] with $toc,
+                         util:log-app("INFO",$config:app-name,"updated ToC for "||$resource-pid||" from indexes "||string-join($mapping-keys,',')||" (project "||$project-pid||")")
+                        )
                       else 
-                        update insert $toc 
-                               into $mets:structMap-exists/mets:div 
-            else update insert <mets:structMap TYPE="{$config:PROJECT_TOC_STRUCTMAP_TYPE}" >
+                        (update insert $toc into $mets:structMap-exists/mets:div,
+                        util:log-app("INFO",$config:app-name,"inserting ToC for "||$resource-pid||" from indexes "||string-join($mapping-keys,',')||" into logical structMap (project "||$project-pid||")")
+                        )
+        default return 
+            (update insert <mets:structMap TYPE="{$config:PROJECT_TOC_STRUCTMAP_TYPE}" >
                                    <mets:div>{$toc}</mets:div>
                                </mets:structMap>
                         into $mets:record,
-        util:log-app("INFO",$config:app-name,"generated TOC from indexes "||string-join($mapping-keys,',')||"for resource "||$resource-pid||" in cr-project "||$project-pid||"." )
-     )
+            util:log-app("INFO",$config:app-name,"created logical structMap and inserted ToC from indexes "||string-join($mapping-keys,',')||" for resource "||$resource-pid||" in cr-project "||$project-pid||"." )
+            )
 };
 
 declare %private function toc:expand-cr-ids($item as item()) as item() {
