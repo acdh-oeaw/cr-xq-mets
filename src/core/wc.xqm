@@ -106,6 +106,7 @@ declare function wc:generate($resource-pid as xs:string, $project-pid as xs:stri
                     let $wc:generated := transform:transform($preprocess,doc($wc:path-to-xsl),$xsl-params),
                         $store-wc := repo-utils:store($wc:path,$wc:filename,$wc:generated,true(),$config),
                         $wc:filepath := base-uri($store-wc),
+                        $log := util:log-app("INFO",$config:app-name,"working copy for "||$resource-pid||" has been stored to "||$wc:filepath),
                         $wc:chown := (sm:chown($wc:filepath,project:adminsaccountname($project-pid)),
                                       sm:chgrp($wc:filepath,project:adminsaccountname($project-pid)),
                                       sm:add-user-ace($wc:filepath,$config:cr-writer-accountname,true(),'rwx'),
@@ -114,7 +115,7 @@ declare function wc:generate($resource-pid as xs:string, $project-pid as xs:stri
                     let $update-mets:= 
                         if ($wc:filepath!='') 
                         then wc:add($wc:filepath,$resource-pid,$project-pid) 
-                        else ()
+                        else util:log-app("ERROR",$config:app-name,"$wc:filepath is empty")
                     return $wc:filepath 
 };
 
@@ -152,7 +153,11 @@ declare function wc:get($resource-pid as xs:string,$project-pid as xs:string) as
         :)
         (: we have to find the right <file> element by looking at all of them and determining each one's @USE attribute :)
     let $mets:workingcopy:=$mets:resource-files/mets:file[@USE eq $config:RESOURCE_WORKINGCOPY_FILE_USE]
-    return $mets:workingcopy
+    return switch (true())
+        case not($mets:resource) return util:log-app("ERROR", $config:app-name,'Unknown resource with PID '||$resource-pid)
+        case not($mets:resource-files) return util:log-app("ERROR", $config:app-name,'Resource files mets entries not found for '||$resource-pid)
+        case not($mets:workingcopy) return util:log-app("ERROR", $config:app-name,'Working copy mets file entry not found for '||$resource-pid)
+        default return $mets:workingcopy
 };
 
 (:~
@@ -209,11 +214,11 @@ declare function wc:add($path as xs:string, $resource-pid as xs:string, $project
         then 
             let $replace-file:=update replace $mets:wc-file with $this:wc-file
             let $replace-fileptr:=update replace $mets:wc-fptr with $this:wc-fptr
-            let $log := util:log-app("INFO", $config:app-name, "mets:wc-file exists")
+            let $log := util:log-app("DEBUG", $config:app-name, "mets:wc-file exists")
             return $this:wc-file
         else 
-            let $log := util:log-app("INFO", $config:app-name, exists(resource:files($resource-pid,$project-pid)))
-            let $log := util:log-app("INFO", $config:app-name, "resource-pid:" ||$resource-pid||" project-pid: "||$project-pid)
+            let $log := util:log-app("DEBUG", $config:app-name, exists(resource:files($resource-pid,$project-pid)))
+            let $log := util:log-app("DEBUG", $config:app-name, "resource-pid:" ||$resource-pid||" project-pid: "||$project-pid)
             let $master := resource:get-master($resource-pid,$project-pid)
             (: we insert the wc <file> right after the resource's master <file> :)
             let $insert-file:= update insert $this:wc-file following $master
