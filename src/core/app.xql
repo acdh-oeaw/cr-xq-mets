@@ -60,10 +60,10 @@ function app:info ($node as node(), $model as map(*), $key, $x-format) {
     let $ret := 
         if (contains($x-format,'html')) then
             typeswitch ($val)            
-                case xs:string      return <span class="{$key}">{$val}</span>
-                case text()         return <span class="{$key}">{$val}</span>
+                (:case xs:string      return <span class="{$key}">{$val}</span>
+                case text()         return <span class="{$key}">{$val}</span>:)
                 case element()      return repo-utils:serialise-as($val, $x-format, $key, $model("config"))
-                default             return ()   
+                default             return <span class="{$key}">{$val}</span>
         else $val 
  
     return $ret
