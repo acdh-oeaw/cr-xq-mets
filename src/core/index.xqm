@@ -148,10 +148,10 @@ declare function index:generate-xconf($project-pid as xs:string) as element(xcon
 declare function index:store-xconf($project-pid as xs:string) {
     let $xconf:=index:generate-xconf($project-pid)
     let $paths:=(
-        project:path($project-pid,'workingcopies'),
-        project:path($project-pid,'resourcefragments'),
+        project:path($project-pid,'workingcopies')
+        (:project:path($project-pid,'resourcefragments'),
         project:path($project-pid,'metadata'),
-        project:path($project-pid,'lookuptables')
+        project:path($project-pid,'lookuptables'):)
     )
     return
         for $p in $paths
