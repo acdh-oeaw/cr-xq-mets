@@ -20,7 +20,7 @@
         <xsl:copy>
             <xsl:attribute name="cr:project-id" select="$project-id"/>
             <xsl:attribute name="cr:resource-pid" select="$resource-pid"/>
-            <xsl:attribute name="cr:id" select="generate-id()"/>
+            <xsl:attribute name="cr:id" select="concat($resource-pid,'.',generate-id())"/>
             <xsl:apply-templates select="@*|node()"/>
         </xsl:copy>
     </xsl:template>
