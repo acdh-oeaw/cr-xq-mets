@@ -502,7 +502,8 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                 return string-join($allowed-users,',')
             
             case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))/cmd:CMD
-            case 'project-title'            return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))//cmd:CollectionInfo/cmd:Title
+            case 'project-title'            return ($mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))//cmd:CollectionInfo/cmd:Title[text()],$mets/@LABEL)[1]
+
             case 'mappings'                 return $mets//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/map
             case 'teaser-text'              return config:mets-file($mets//mets:file[@USE='projectTeaserText'])
             case 'logo-image'               return config:mets-file($mets//mets:file[@USE='projectLogoImage']) 
@@ -541,8 +542,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
     let $param-value := 
         switch(true())
             case ($param instance of text() or $param instance of xs:string) return $param
+            case ($param instance of attribute()) return data($param)
             case (exists($param/@value))    return $param/xs:string(@value)
-            case (exists($param/*))         return $param/*
+            case (exists($param/*))         return $param
             default                         return $param/text()               
    return ($param-value)
     
