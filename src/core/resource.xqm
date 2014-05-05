@@ -106,6 +106,7 @@ declare function resource:set-preprocess-xsl-path($path as xs:string, $resource-
                             else update insert <mets:behaviorSec>{$new-behavior}</mets:behaviorSec> into $project
 };
 
+(: removes the resource's PID from the list of PIDs to be pre-processed by the preprocess XSL stylesheet. :)
 declare function resource:remove-preprocess-xsl-path($resource-pid as xs:string, $project-pid as xs:string) as empty() {
     let $project:= project:get($project-pid),
         $current-path := resource:get-preprocess-xsl-path($resource-pid,$project-pid),
@@ -132,6 +133,7 @@ declare function resource:purge($resource-pid as xs:string, $project-pid as xs:s
 };
 
 declare function resource:purge($resource-pid as xs:string, $project-pid as xs:string, $delete-data as xs:boolean*) as empty() {
+    let $log := util:log-app("INFO",$config:app-name,"Purging resource "||$resource-pid||" (project "||$project-pid||")")
     let $files := resource:files($resource-pid,$project-pid)
     let $remove-data :=  
         if ($delete-data)
@@ -142,14 +144,15 @@ declare function resource:purge($resource-pid as xs:string, $project-pid as xs:s
                     $path :=    substring-before($f,"/"||$filename)
                 return
                     try {   
-                        xmldb:remove($path,$filename)
+                        (xmldb:remove($path,$filename),util:log-app("INFO",$config:app-name,"removing "||$filename||" at "||$path))
                     } catch * {
                         ()
                     }
         else ()
     let $remove-prep-xsl-path := resource:remove-preprocess-xsl-path($resource-pid,$project-pid) 
-    let $remove-files := update delete $files 
+    let $remove-files := update delete $files
     let $remove-div := update delete resource:get($resource-pid,$project-pid)
+    let $log := util:log-app("INFO",$config:app-name,"deleting mets:files and mets:div for "||$resource-pid||" (project "||$project-pid||")")
     return ()
 };
 
@@ -274,10 +277,10 @@ declare function resource:add-fragment($div as element(mets:div),$resource-pid a
         $facs := root($mets:div)//mets:fileGrp[@ID = $config:PROJECT_FACS_FILEGRP_ID]//mets:file[@ID = $mets:div/mets:fptr/@FILEID]
     return
         if (exists($mets:div))
-        then 
+        then  
             if (exists($facs))
             then 
-                let $log := util:log-app("INFO",$config:app-name, "mets:div @ID="||$mets:div/@ID||" contains refence to facs "||string-join($facs/@ID,', ')||" - inserting fptrs into generated fragment.")
+                let $log := util:log-app("INFO",$config:app-name, "mets:div @ID "||$mets:div/@ID||" contains refence to facs "||string-join($facs/@ID,', ')||" - inserting fptrs into generated fragment.")
                 let $replace := update replace $mets:div with $div
                 return 
                     for $f in $facs
@@ -285,8 +288,16 @@ declare function resource:add-fragment($div as element(mets:div),$resource-pid a
                         if (exists($mets:resource//mets:div[@ID eq $this:fragmentID]/mets:fptr[@FILEID eq $f/@ID]))
                         then ()
                         else update insert <mets:fptr FILEID="{$f/@ID}"/> into $mets:resource//mets:div[@ID eq $this:fragmentID]
-            else update replace $mets:div with $div
-        else update insert $div into $mets:resource
+            else 
+                let $log := util:log-app("INFO",$config:app-name,'replacing existing resource fragment mets:div ID '||$this:fragmentID)
+                return update replace $mets:div with $div
+        else
+            if (exists($mets:resource))
+            then (
+                update insert $div into $mets:resource,
+                util:log-app("INFO",$config:app-name,"registered resourcefragment "||$this:fragmentID||" with resource "||$resource-pid)
+            )
+            else util:log-app("ERROR",$config:app-name,"could not locate resource w/ ID "||$resource-pid||" in "||$project-pid||".")
 };
 
 declare function resource:remove-file($fileid as xs:string,$resource-pid as xs:string,$project-pid as xs:string){
