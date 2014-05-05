@@ -164,23 +164,27 @@ let $protected := config:param-value($project-config-map,'visibility')='protecte
  : FIXME: this is inconsistent with the implementation in config:param:value that operates on security-manager information
 ~:)
 (:let $allowed-users := 'guest' :)
-let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
-
-let $project-dir := config:param-value($project-config-map,'project-dir')
-(:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
-let $domain:= "org.exist.login"
-
-(: login:set-user() must go before checking the user :) 
-let $login:=login:set-user($domain, (), false())
-
-let $db-user := request:get-attribute($domain||".user")
-(:let $db-current-user := xmldb:get-current-user():)
-let $shib-user := config:shib-user()
-let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
-                    let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
-                    return 'shib'
-                    else $db-user
-let $user-may := ($user=$allowed-users)
+let $user-may := 
+        if ($file-type = $web-resources) then true()
+        else if (not($protected)) then true()
+        else 
+        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
+        
+        let $project-dir := config:param-value($project-config-map,'project-dir')
+        (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
+        let $domain:= "org.exist.login"
+        
+        (: login:set-user() must go before checking the user :) 
+        let $login:=login:set-user($domain, (), false())
+        
+        let $db-user := request:get-attribute($domain||".user")
+        (:let $db-current-user := xmldb:get-current-user():)
+        let $shib-user := config:shib-user()
+        let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+                            let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
+                            return 'shib'
+                            else $db-user
+        return ($user=$allowed-users)
 (:~
  : The variable <code>$domain</code> holds the name of the login domain to which the users  
  : of the current cr-xq instance will be logged into.
@@ -201,7 +205,24 @@ switch (true())
      : Requests for the bases of the cr-xq instance or a cr-project are redirected 
      : to the 'index.html' view.         
     ~:)
-    case ($debug='controller') return 
+    case ($debug='controller') return
+                let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
+        
+        let $project-dir := config:param-value($project-config-map,'project-dir')
+        (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
+        let $domain:= "org.exist.login"
+        
+        (: login:set-user() must go before checking the user :) 
+        let $login:=login:set-user($domain, (), false())
+        
+        let $db-user := request:get-attribute($domain||".user")
+        (:let $db-current-user := xmldb:get-current-user():)
+        let $shib-user := config:shib-user()
+        let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+                            let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
+                            return 'shib'
+                            else $db-user
+        return
 (:        <DEBUG>{$exist-resource-index, '-', $exist:resource }</DEBUG>:)
          <DEBUG >USER exists db-user: {exists($db-user)}; project-dir: {$project-dir}; usermay: {$user-may}; user:{$user}; shib-user:{$shib-user}
          <allowed-users>{$allowed-users}</allowed-users>
@@ -261,7 +282,7 @@ switch (true())
             (:let $login:=login:set-user($domain, (), false()):)
 (:            return:)
             (:if (not(request:get-attribute($domain||".user")=$allowed-users)):) 
-            if (not($user-may))            
+            if (not($user-may))             
             then
 (:                let $log:=util:log("INFO",'user='||request:get-attribute($domain||".user")):)
 (:                return:)
@@ -290,6 +311,7 @@ switch (true())
        then
 (:            let $user := request:get-attribute($domain||".user"):)
             let $path := config:resolve-template-to-uri($project-config-map, if ($exist-resource-index='index.html') then $exist-resource-index else $rel-path   )
+(:              <add-parameter name="user" value="{$user}"/>:)
             return  
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$path}" />    
@@ -297,7 +319,7 @@ switch (true())
                         <forward url="{$exist:controller}/core/view.xql" >
                             <add-parameter name="project" value="{$project}"/>
                             <add-parameter name="x-context" value="{$x-context}"/>
-                            <add-parameter name="user" value="{$user}"/>
+                          
                             <add-parameter name="exist-path" value="{$exist:path}"/>
                             <add-parameter name="exist-resource" value="{$exist:resource}"/>
                             <add-parameter name="exist-controller" value="{$exist:controller}"/>
@@ -393,10 +415,11 @@ switch (true())
                         return projectAdmin:data($project, $entity)
                     
                     case ($form-id or $target != 'projectAdmin.xql') return
+(:                    <add-parameter name="user" value="{$user}"/>:)
                         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
                             <forward url="{$url}">
                                 <add-parameter name="project" value="{$project}"/>
-                                <add-parameter name="user" value="{$user}"/>
+                                
                                 <add-parameter name="path" value="{$path}"/>
                                 <add-parameter name="exist-path" value="{$exist:path}"/>
                                 <add-parameter name="exist-resource" value="{$exist:resource}"/>
@@ -417,8 +440,8 @@ switch (true())
         (if ($module-protected) 
         then 
             (: CHECK: $logout ?? :)
-            let $logout:= login:set-user($domain, (), false())
-            return
+(:            let $logout:= login:set-user($domain, (), false())
+            return :)
                 if (not($user-may)) 
                 then
                     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -451,11 +474,12 @@ switch (true())
             return
             	let $target := $module||".xql"
             	let $url := $exist:controller||"/modules/"||$module||"/"||$target
+(:            	     <add-parameter name="user" value="{$user}"/>:)
             	return 
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
                     <forward url="{$url}">
                         <add-parameter name="project" value="{$project}"/>
-                        <add-parameter name="user" value="{$user}"/>
+                   
                         <add-parameter name="path" value="{$path}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
                         <add-parameter name="exist-resource" value="{$exist:resource}"/>
