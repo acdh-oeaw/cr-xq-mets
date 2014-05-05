@@ -107,7 +107,10 @@ declare function facs:set($version as xs:string, $mets:file as element(mets:file
                         <mets:fileGrp ID="{$resource-pid}{$config:RESOURCE_FACS_SUFFIX}" USE="{$config:PROJECT_FACS_FILEGRP_USE}">
                             <mets:fileGrp USE="{$version}">{$mets:file}</mets:fileGrp>
                         </mets:fileGrp>
-                    return update insert $new_fileGrp into facs:get-fileGrp($project-pid)
+                    return 
+                        if (exists(facs:get-fileGrp($project-pid)))
+                        then update insert $new_fileGrp into facs:get-fileGrp($project-pid)
+                        else update insert <mets:fileGrp ID="{$config:PROJECT_FACS_FILEGRP_ID}" USE="Visual representations of the project's data (Facsimile et. alt.)">{$new_fileGrp}</mets:fileGrp> into root($mets:div)//mets:fileSec
 
     return ()
 };
@@ -197,6 +200,7 @@ declare function facs:generate($version-param as xs:string?, $resource-pid as xs
         $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     (: we generate the first fragment outside of the for-in expression in order to make 
        sure it is instantly written to the project.xml :)
+    let $log := util:log-app("INFO",$config:app-name,"Generating "||count($fragments)||" facs entries for "||$resource-pid||" (project "||$project-pid||")")
     let $first :=
         let $resourcefragment-pid := $fragments[1]/@ID
         let $file := facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
