@@ -23,6 +23,7 @@ module namespace project = "http://aac.ac.at/content_repository/project";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
+import module namespace index="http://aac.ac.at/content_repository/index" at "index.xqm";
 import module namespace handle = "http://aac.ac.at/content_repository/handle" at "../modules/resource/handle.xqm";
 
 declare namespace mets = "http://www.loc.gov/METS/";
@@ -461,15 +462,20 @@ declare function project:purge($project-pid as xs:string, $delete-data as xs:boo
                   let $base :=          config:path('projects')
                   let $rm-structure :=  project:structure($project-pid,'remove'),
                       $rm-indizes :=    for $x in xmldb:get-child-resources(config:path("indexes"))[starts-with(.,"index-"||$project-pid)]
-                                        return xmldb:remove(config:path("indexes"),$x)
+                                        return (
+                                            xmldb:remove(config:path("indexes"),$x),
+                                            util:log-app("INFO",$config:app-name,"removed index file "||$x||".")
+                                         )
                   let $project-dir :=    project:collection($project-pid),
                       $rm-project-dir := if ($project-dir!='') then xmldb:remove($project-dir) else ()
-                  let $log :=           util:log("INFO","current user: "||xmldb:get-current-user())
-                  let $log :=           util:log("INFO","project-dir: "||$project-dir)
+                  let $log :=           util:log-app("INFO",$config:app-name,"removed project dir "||$project-dir)
                   let $rm-accounts :=   project:remove-accounts($project-pid)
+                  let $log :=           util:log-app("INFO",$config:app-name,"removed project accounts")
+                  let $log :=           util:log-app("INFO",$config:app-name,"finished purging project "||$project-pid)
                   return ()
               else 
                  let $update-status := project:status($project-pid,'removed')
+                 let $log :=           util:log-app("INFO",$config:app-name,"set status of project "||$project-pid||" to 'removed'")
                  return ()
     else ()
 };
@@ -585,9 +591,12 @@ declare function project:list-resources-resolved($project) as element(sru:search
     let $resources := for $res in $ress 
         let $dmd := resource:dmd($res, $project )
         let $res-id := $res/data(@ID)
+        let $res-label := $res/data(@LABEL)
+        let $res-title := (if (exists($dmd)) then index:apply-index($dmd,'title',$project) else $res-label, $res-label)[1]
         let $indexImage-path := resource:path($res-id, $project-id, 'indexImage')
         order by $res/@ORDER
         return <fcs:Resource pid="{$res-id}" >
+                 <fcs:DataView type="title">{$res-title}</fcs:DataView>
                  <fcs:DataView type="metadata">{$dmd}</fcs:DataView>
                  <fcs:DataView type="image" ref="{$indexImage-path}" />
                </fcs:Resource>
@@ -719,6 +728,7 @@ declare function project:map($project) as element(map)? {
     let $doc:=project:get($project)
     return $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/*
 };
+
 
 declare function project:map($data as element(map), $project-pid as xs:string) as empty() {
     let $doc:=      project:get($project-pid),
