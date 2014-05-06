@@ -113,11 +113,17 @@ function CQLConfig(options) {
              }
              
              // return filtered result if available
+           if (this.values[index][pattern]) {
            if (this.values[index][pattern].hasOwnProperty("terms")) {
                    return  this.values[index][pattern].terms;
               } else { 
                     return this.values[index][pattern]; 
               }
+           } else { // fallback return what we have
+               if (this.values[index].hasOwnProperty("terms")) {
+                        return this.values[index].terms;
+               }
+           } 
              
              
         } else {
