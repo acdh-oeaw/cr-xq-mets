@@ -55,7 +55,7 @@ declare variable $config:app-root external;
 declare variable $fcs:scanSortText as xs:string := "text";
 declare variable $fcs:scanSortSize as xs:string := "size";
 declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
-declare variable $fcs:kwicWidth := 30;
+declare variable $fcs:kwicWidth := 40;
 (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)  
 declare variable $fcs:maxScanSize:= 100000;
 
@@ -654,7 +654,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
         
         (: basically we search on working copies and filter out fragments and resoruces  
            (prefixed with a minus sign, e.g. &x-context=abacus2,-abacus2.1) below :)
-           
+        (: FIXME add support for index 'fcs.resource' :)
         let $data := if (contains($query,$config:INDEX_INTERNAL_RESOURCEFRAGMENT)) 
                      then collection(project:path($project-id, 'resourcefragments'))  
                      else repo-utils:context-to-data($context-parsed,$config)
@@ -668,7 +668,8 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                 if (contains($query,$config:INDEX_INTERNAL_RESOURCEFRAGMENT))
                 then $result-unfiltered
                 else repo-utils:filter-by-context($result-unfiltered,$context-parsed,$config)
-        let	$result-count := fn:count($result),         
+        let	$result-count := fn:count($result),
+            $facets := if (contains($x-dataview,'facets') and $result-count > 1) then fcs:generateFacets($result, $query) else (),
             $ordered-result := fcs:sort-result($result, $query, $x-context, $config),                              
             $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),
             $seq-count := fn:count($result-seq),        
@@ -740,7 +741,39 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                                 then  <sru:diagnostics>{$xpath-query/*}</sru:diagnostics> 
                                 else ()
                             }
+                            {$facets}                     
                         </sru:searchRetrieveResponse>
+};
+
+
+(:~ facets are only available in SRU 2.0, but we need them now.
+
+For now only for faceting over resources
+
+xsi:schemaLocation="http://docs.oasis-open.org/ns/search-ws/facetedResults http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/os/schemas/facetedResults.xsd"
+:)
+declare function fcs:generateFacets($result, $orig-query) {
+ let $project-id := ($result/data(@cr:project-id))[1]
+return <sru:facetedResults>
+    <sru:facet>
+        <sru:facetDisplayLabel>Resource</sru:facetDisplayLabel>
+        <sru:index>fcs.resource</sru:index>
+        <sru:relation>=</sru:relation>        
+        <sru:terms>{
+                for $hit in $result
+                let $id := $hit/data(@cr:resource-pid)
+                 
+                group by $id
+                return <sru:term>
+                <sru:actualTerm>{resource:label($id,$project-id)}</sru:actualTerm>
+                <sru:query>{$id}</sru:query>
+                <sru:requestUrl>?operation=searchRetrieve&amp;query={$orig-query}&amp;x-context={$id}</sru:requestUrl>
+                <sru:count>{count($hit)}</sru:count>
+            </sru:term>
+        }</sru:terms>
+    </sru:facet>
+</sru:facetedResults>
+
 };
 
 (:declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {:)
@@ -901,7 +934,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                         case "kwic"         return $kwic
                                         case "navigation"   return $dv-navigation
                                         case "xmlescaped"   return $dv-xmlescaped
-                                        default             return $kwic
+                                        default             return ()
                          return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
                 }</fcs:ResourceFragment>
             </fcs:Resource>
