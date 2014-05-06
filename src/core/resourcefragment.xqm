@@ -51,9 +51,8 @@ declare function rf:new($resource-pid as xs:string, $filepath as xs:string,$proj
             for $f in $fragments 
                 let $this:pid:=xs:string($f/@*[name(.) eq $config:RESOURCEFRAGMENT_PID_NAME])
                 let $this:label:=xs:string($f/@*[name(.) eq $config:RESOURCEFRAGMENT_LABEL_NAME])                
-                let $log:=util:log-app("INFO",$config:app-name,"registered resourcefragment "||$this:pid||" with resource "||$resource-pid)
                 let $this:div:=rf:make-div($this:pid,$fragmentfile-id, $this:label)
-                let $update:=resource:add-fragment($this:div,$resource-pid,$project-pid)
+                 let $update:=resource:add-fragment($this:div,$resource-pid,$project-pid)
                 return $this:pid
         else util:log-app("INFO",$config:app-name,"extracted resourcefragments file not found at "||$filepath)
 };
