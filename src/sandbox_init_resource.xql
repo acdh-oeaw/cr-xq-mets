@@ -19,7 +19,7 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 let $resource-pid := "abacus.3",
     $project-pid := "abacus"
 
-(:  : let $resource-pid := "dict-gate.3",
+(:  let $resource-pid := "dict-gate.3",
     $project-pid := "dict-gate" :)
 
 (:let $md := doc("/db/cr-data/_tmp/dict-gate/dict-gate.cmd.xml")/*:)
