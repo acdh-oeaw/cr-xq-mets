@@ -269,7 +269,8 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                             let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
                         (: if no subsequent element, dont trying to generate fragment will fail :)
                             return if (empty($pb2)) then $pb1 
-                                     else util:parse(replace(util:get-fragment-between($pb1, $pb2, true(), true()),'&amp;','&amp;amp;'))                    
+(:                                     else util:parse(replace(util:get-fragment-between($pb1, $pb2, true(), true()),'&amp;','&amp;amp;'))                    :)
+                                       else util:parse-html(util:get-fragment-between($pb1, $pb2, true(), true()))/HTML/BODY/*
                     return
                         element {
                             QName(
