@@ -2,6 +2,7 @@ xquery version "3.0";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace config="http://exist-db.org/xquery/apps/config-params" at "core/config.xql";
+import module namespace configm="http://exist-db.org/xquery/apps/config" at "core/config.xqm";
 import module namespace project="http://aac.ac.at/content_repository/project" at "core/project.xqm";
 
 (: The following external variables are set by the repo:deploy function :)
@@ -31,12 +32,18 @@ declare function local:mkcol($collection, $path) {
 
 declare variable $local:cr-writer:=doc($target||"/modules/access-control/writer.xml")/write;
 
+declare variable $local:projects-xconf := doc($target||"_cr-projects.xconf");  
+    
+
 (: setup projects-dir :)
 local:mkcol("", $config:projects-dir),
 local:mkcol("", $config:data-dir),
 (: store the collection configuration :)
 local:mkcol("/db/system/config", $target),
 xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
+(: store the cr-projects collection configuration :)
+local:mkcol("/db/system/config", $config:projects-dir),
+xdb:store("/db/system/config/"||$config:projects-dir,'collection.xconf',$local:projects-xconf),
 
 (: we need two system users for the data maangement :)
 (: TODO merge these into one? :)
@@ -45,5 +52,11 @@ if (not(sm:user-exists(xs:string($local:cr-writer/write-user)))) then sm:create-
 util:log("INFO", "** setting up cr-xq system account **"),
 if (not(sm:user-exists($config:system-account-user))) then sm:create-account($config:system-account-user,$config:system-account-pwd,()) else sm:passwd($config:system-account-user,$config:system-account-pwd),
 if (not(sm:group-exists("cr-admin"))) then sm:create-group("cr-admin",$config:system-account-user,"admin") else (),
+util:log("INFO", "** chown "||$config:projects-dir||" "||$config:system-account-user||":cr-admin"),
+sm:chown(xs:anyURI($config:projects-dir),$config:system-account-user),
+sm:chgrp(xs:anyURI($config:data-dir),'cr-admin'),
+util:log("INFO", "** chown "||$config:data-dir||" "||$config:system-account-user||":cr-admin"),
+sm:chown(xs:anyURI($config:projects-dir),$config:system-account-user),
+sm:chgrp(xs:anyURI($config:data-dir),'cr-admin'),
 util:log("INFO", "** setting up default project 'defaultProject' **"),
 project:new("defaultProject")
