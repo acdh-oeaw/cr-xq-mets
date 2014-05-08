@@ -1,6 +1,7 @@
 # customized config files #
 ###########################
 build.properties
+src/conf.xml
 src/core/config.xql
 
 # oxygen project file #
