@@ -359,7 +359,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                                     (: this delivers the whole structure of all resources - it may be too much in one shot 
                                         resource:get-toc($project-id) would deliver only up until chapter level 
                                         alternatively just take fcs.resource to get only resource-listing :)
-                                            resource:get-toc-resolved($project-id)
+                                            project:get-toc-resolved($project-id)
                                             else resource:get-toc($x-context,$project-id)                                                        
                             default return ()
                     (:let $map := 

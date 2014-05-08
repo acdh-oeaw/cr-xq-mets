@@ -96,7 +96,7 @@ declare
 function app:toc($node as node(), $model as map(*), $x-format) {
     
     let $project-pid := $model('config')/xs:string(@OBJID)
-    let $struct := resource:get-toc-resolved($project-pid)
+    let $struct := project:get-toc-resolved($project-pid)
                 
     return repo-utils:serialise-as($struct, $x-format, 'structMap', $model("config"))
    
