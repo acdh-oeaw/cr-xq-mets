@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config type="module">
+    <module key="xfedora">
+        <param key="fedora-pid-namespace-prefix">lrp</param>
+        <param key="fedora-get-url">http://clarin.arz.oeaw.ac.at/acdh-repo/get</param>
+    </module>
+</config>

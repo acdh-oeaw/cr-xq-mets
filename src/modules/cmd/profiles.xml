@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles>
+    <!-- this file lists supported profiles and they short-names used at various points in LRP (namely: fedora-commons datastream naming conventions and proai properties. -->
+    <profile id="clarin.eu:cr1:p_1290431694579" name="CMDI-LEX" description="Lexicographic Resource Profile"/>
+    <profile id="clarin.eu:cr1:p_1290431694580" name="CMDI-CORPUS" description="Text Corpus Profile"/>
+    <profile id="clarin.eu:cr1:p_1345561703620" name="CMDI-COLLECTION" description="Resource Collection Profile"/>
+    <profile id="clarin.eu:cr1:p_1380106710826" name="CMDI-TEIHDR" description="TEI Header Profile"/>
+</profiles>
