@@ -1,0 +1,6 @@
+ /* dot -otest_calls.png -Tpng test_calls.dot */ 
+digraph test_calls {
+label="test calls";
+rankdir=LR;
+_start -> config_xqm ;
+}

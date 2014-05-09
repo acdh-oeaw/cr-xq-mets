@@ -1,0 +1,10 @@
+ /* dot -ofacsviewer_calls.png -Tpng facsviewer_calls.dot */ 
+digraph facsviewer_calls {
+label="facsviewer calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> config_xql ;
+_start -> repo_utils_xqm ;
+_start -> fcs_xqm ;
+facs_create_scratchfile -> config_project_exists [label= 1 ];
+}

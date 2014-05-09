@@ -1,0 +1,5 @@
+ /* dot -odiagnostics_calls.png -Tpng diagnostics_calls.dot */ 
+digraph diagnostics_calls {
+label="diagnostics calls";
+rankdir=LR;
+}

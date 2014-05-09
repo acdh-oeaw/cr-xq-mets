@@ -1,0 +1,19 @@
+ /* dot -ocr_calls.png -Tpng cr_calls.dot */ 
+digraph cr_calls {
+label="cr calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> repo_utils_xqm ;
+_start -> project_xqm ;
+_start -> resource_xqm ;
+cr_project_pids -> config_path [label= 1 ];
+cr_resolve_id_to_data -> config_path [label= 1 ];
+cr_resolve_id_to_data -> config_path [label= 2 ];
+cr_resolve_id_to_data -> project_path [label= 3 ];
+cr_resolve_id_to_data -> resource_get_data [label= 4 ];
+cr_resolve_id_to_data -> cr_resolve_id_to_data [label= 1 ];
+cr_resolve_id_to_data -> cr_resolve_id_to_data [label= 2 ];
+cr_context_to_fragments -> config_path [label= 1 ];
+cr_resolve_id_to_entry  -> project_get [label= 1 ];
+cr_resolve_id_to_entry  -> config_path [label= 2 ];
+}

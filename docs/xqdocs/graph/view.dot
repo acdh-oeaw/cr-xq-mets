@@ -1,0 +1,10 @@
+ /* dot -oview_calls.png -Tpng view_calls.dot */ 
+digraph view_calls {
+label="view calls";
+rankdir=LR;
+_start -> templates_xql ;
+_start -> config_xqm ;
+_start -> projectAdmin_xqm ;
+_start -> templates_apply [label= 1 ];
+_start -> templates_apply [label= 2 ];
+}

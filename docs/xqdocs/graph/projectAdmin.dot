@@ -1,0 +1,13 @@
+ /* dot -oprojectAdmin_calls.png -Tpng projectAdmin_calls.dot */ 
+digraph projectAdmin_calls {
+label="projectAdmin calls";
+rankdir=LR;
+_start -> project_xqm ;
+_start -> resource_xqm ;
+projectAdmin_instancedata -> projectAdmin_function_by_form [label= 1 ];
+projectAdmin_instancedata -> projectAdmin_function_by_form [label= 2 ];
+projectAdmin_data -> projectAdmin_function_by_form [label= 1 ];
+projectAdmin_store -> project_label [label= 1 ];
+projectAdmin_store -> project_label [label= 2 ];
+projectAdmin_store -> resource_new_with_label [label= 3 ];
+}

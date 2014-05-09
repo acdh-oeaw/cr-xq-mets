@@ -1,0 +1,9 @@
+ /* dot -oget_calls.png -Tpng get_calls.dot */ 
+digraph get_calls {
+label="get calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> viewer_xqm ;
+_start -> config_config [label= 1 ];
+_start -> viewer_display [label= 2 ];
+}

@@ -1,0 +1,8 @@
+ /* dot -oreindex_calls.png -Tpng reindex_calls.dot */ 
+digraph reindex_calls {
+label="reindex calls";
+rankdir=LR;
+_start -> scan_xql ;
+_start -> config_xqm ;
+_start -> docs_load_fundocs [label= 1 ];
+}

@@ -1,0 +1,5 @@
+ /* dot -ocmdi_calls.png -Tpng cmdi_calls.dot */ 
+digraph cmdi_calls {
+label="cmdi calls";
+rankdir=LR;
+}

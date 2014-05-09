@@ -1,0 +1,5 @@
+ /* dot -osync_calls.png -Tpng sync_calls.dot */ 
+digraph sync_calls {
+label="sync calls";
+rankdir=LR;
+}

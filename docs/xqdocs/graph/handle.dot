@@ -1,0 +1,11 @@
+ /* dot -ohandle_calls.png -Tpng handle_calls.dot */ 
+digraph handle_calls {
+label="handle calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> repo_utils_xqm ;
+_start -> project_xqm ;
+_start -> resource_xqm ;
+handle_credentials -> config_config [label= 1 ];
+_file -> handle_credentials [label= 1 ];
+}

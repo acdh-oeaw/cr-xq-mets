@@ -1,0 +1,9 @@
+ /* dot -osandbox_init_project_calls.png -Tpng sandbox_init_project_calls.dot */ 
+digraph sandbox_init_project_calls {
+label="sandbox_init_project calls";
+rankdir=LR;
+_start -> repo_utils_xqm ;
+_start -> config_xqm ;
+_start -> project_xqm ;
+_start -> index_xqm ;
+}

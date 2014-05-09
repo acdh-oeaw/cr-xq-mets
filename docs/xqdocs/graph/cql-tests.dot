@@ -1,0 +1,7 @@
+ /* dot -ocql_tests_calls.png -Tpng cql_tests_calls.dot */ 
+digraph cql_tests_calls {
+label="cql-tests calls";
+rankdir=LR;
+_start -> cqlparser_xqm ;
+_start -> index_xqm ;
+}

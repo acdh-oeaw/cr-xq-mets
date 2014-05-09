@@ -1,0 +1,11 @@
+ /* dot -ogenerate_index_functions_calls.png -Tpng generate_index_functions_calls.dot */ 
+digraph generate_index_functions_calls {
+label="generate-index-functions calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> fcs_xqm ;
+"||$local_prefix||"_get_"||$index_name||" -> fcs_index_as_xpath [label= 1 ];
+_file -> config_config [label= 2 ];
+_file -> fcs_get_mapping [label= 3 ];
+_file -> local_declare_index_function [label= 4 ];
+}

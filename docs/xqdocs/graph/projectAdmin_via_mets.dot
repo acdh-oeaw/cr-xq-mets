@@ -1,0 +1,11 @@
+ /* dot -oprojectAdmin_via_mets_calls.png -Tpng projectAdmin_via_mets_calls.dot */ 
+digraph projectAdmin_via_mets_calls {
+label="projectAdmin_via_mets calls";
+rankdir=LR;
+_start -> projectAdmin_xqm ;
+_start -> project_xqm ;
+_start -> projectAdmin_form [label= 1 ];
+_start -> projectAdmin_form [label= 2 ];
+_start -> project_get [label= 3 ];
+_start -> project_get [label= 4 ];
+}

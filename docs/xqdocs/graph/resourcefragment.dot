@@ -1,0 +1,42 @@
+ /* dot -oresourcefragment_calls.png -Tpng resourcefragment_calls.dot */ 
+digraph resourcefragment_calls {
+label="resourcefragment calls";
+rankdir=LR;
+_start -> repo_utils_xqm ;
+_start -> config_xqm ;
+_start -> resource_xqm ;
+_start -> wc_xqm ;
+_start -> lookuptable_xqm ;
+_start -> project_xqm ;
+_start -> index_xqm ;
+_start -> fcs_xqm ;
+rf_new -> resource_make_file [label= 1 ];
+rf_new -> resource_add_file [label= 2 ];
+rf_new -> resource_add_fragment [label= 3 ];
+rf_remove -> resource_get [label= 1 ];
+rf_remove -> resource_remove_file [label= 2 ];
+rf_remove -> resource_get [label= 1 ];
+rf_remove -> resource_remove_file [label= 2 ];
+rf_remove_data -> rf_path [label= 1 ];
+rf_remove_data -> rf_remove [label= 2 ];
+rf_remove_data -> rf_remove [label= 3 ];
+rf_record -> resource_get [label= 1 ];
+rf_file -> resource_files [label= 1 ];
+rf_path -> resource_files [label= 1 ];
+rf_get -> rf_path [label= 1 ];
+rf_lookup -> rf_get [label= 1 ];
+rf_dump -> rf_path [label= 1 ];
+rf_generate -> resource_master [label= 1 ];
+rf_generate -> config_config [label= 2 ];
+rf_generate -> wc_get_data [label= 3 ];
+rf_generate -> wc_generate [label= 4 ];
+rf_generate -> wc_get_data [label= 5 ];
+rf_generate -> index_index_as_xpath [label= 6 ];
+rf_generate -> index_index_as_xpath [label= 7 ];
+rf_generate -> index_index_as_xpath [label= 8 ];
+rf_generate -> index_index_as_xpath [label= 9 ];
+rf_generate -> config_mappings [label= 10 ];
+rf_generate -> project_path [label= 11 ];
+rf_generate -> repo_utils_store [label= 12 ];
+rf_generate -> rf_new [label= 13 ];
+}

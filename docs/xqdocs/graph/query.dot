@@ -1,0 +1,10 @@
+ /* dot -oquery_calls.png -Tpng query_calls.dot */ 
+digraph query_calls {
+label="query calls";
+rankdir=LR;
+_start -> cql_xqm ;
+_start -> repo_utils_xqm ;
+_start -> diagnostics_xqm ;
+_start -> index_xqm ;
+query_execute_query -> cql_cql_to_xpath [label= 1 ];
+}

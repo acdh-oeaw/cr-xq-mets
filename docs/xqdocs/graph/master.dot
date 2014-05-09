@@ -1,0 +1,19 @@
+ /* dot -omaster_calls.png -Tpng master_calls.dot */ 
+digraph master_calls {
+label="master calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> resource_xqm ;
+_start -> repo_utils_xqm ;
+master_get -> config_config [label= 1 ];
+master_get -> resource_get [label= 2 ];
+master_get -> resource_files [label= 3 ];
+master_path -> master_get [label= 1 ];
+master_store -> resource_path [label= 1 ];
+master_store -> config_config [label= 2 ];
+master_store -> repo_utils_store_in_cache [label= 3 ];
+master_store -> repo_utils_store_in_cache [label= 4 ];
+master_store -> repo_utils_store_in_cache [label= 5 ];
+master_add -> resource_make_file [label= 1 ];
+master_add -> resource_add_file [label= 2 ];
+}

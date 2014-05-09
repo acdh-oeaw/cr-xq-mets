@@ -1,0 +1,7 @@
+ /* dot -onavigation_calls.png -Tpng navigation_calls.dot */ 
+digraph navigation_calls {
+label="navigation calls";
+rankdir=LR;
+navi_create -> navi_createLevel [label= 1 ];
+navi_createLevel -> navi_createLevel [label= 1 ];
+}

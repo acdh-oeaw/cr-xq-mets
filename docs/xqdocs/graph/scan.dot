@@ -1,0 +1,15 @@
+ /* dot -oscan_calls.png -Tpng scan_calls.dot */ 
+digraph scan_calls {
+label="scan calls";
+rankdir=LR;
+_start -> dbutils_xql ;
+_start -> java:org_exist_xquery_functions_inspect_InspectionModule ;
+_file -> docs_generate_xqdoc [label= 1 ];
+_file -> dbutil_find_by_mimetype [label= 2 ];
+_file -> docs_generate_xqdoc [label= 3 ];
+docs_generate_xqdoc -> docs_generate_signature [label= 1 ];
+docs_generate_xqdoc -> docs_cardinality [label= 2 ];
+docs_generate_xqdoc -> docs_cardinality [label= 3 ];
+docs_generate_signature -> docs_cardinality [label= 1 ];
+docs_generate_signature -> docs_cardinality [label= 2 ];
+}

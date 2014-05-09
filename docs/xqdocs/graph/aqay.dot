@@ -1,0 +1,15 @@
+ /* dot -oaqay_calls.png -Tpng aqay_calls.dot */ 
+digraph aqay_calls {
+label="aqay calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> repo_utils_xqm ;
+_start -> diagnostics_xqm ;
+_start -> crday_xqm ;
+_start -> tests_xqm ;
+_start -> config_config [label= 1 ];
+_start -> fcs_tests_run_testset [label= 2 ];
+_start -> fcs_tests_display_page [label= 3 ];
+_start -> crday_get_query_internal [label= 4 ];
+_start -> diag_diagnostics [label= 5 ];
+}

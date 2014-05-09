@@ -1,0 +1,12 @@
+ /* dot -oextract_pages_calls.png -Tpng extract_pages_calls.dot */ 
+digraph extract_pages_calls {
+label="extract-pages calls";
+rankdir=LR;
+_start -> facsviewer_xqm ;
+_start -> diagnostics_xqm ;
+_start -> diag_diagnostics [label= 1 ];
+_start -> facs_create_scratchfile [label= 2 ];
+_start -> facs_create_scratchfile [label= 3 ];
+_start -> facs_create_scratchfile [label= 4 ];
+_start -> facs_create_scratchfile [label= 5 ];
+}

@@ -1,0 +1,9 @@
+ /* dot -ocqlparser_calls.png -Tpng cqlparser_calls.dot */ 
+digraph cqlparser_calls {
+label="cqlparser calls";
+rankdir=LR;
+_start -> repo_utils_xqm ;
+_start -> diagnostics_xqm ;
+cql_cql2xpath -> cql_cql_to_xcql [label= 1 ];
+cql_cql2xpath -> cql_cql_to_xcql [label= 1 ];
+}

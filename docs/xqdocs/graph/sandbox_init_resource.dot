@@ -1,0 +1,15 @@
+ /* dot -osandbox_init_resource_calls.png -Tpng sandbox_init_resource_calls.dot */ 
+digraph sandbox_init_resource_calls {
+label="sandbox_init_resource calls";
+rankdir=LR;
+_start -> repo_utils_xqm ;
+_start -> project_xqm ;
+_start -> resource_xqm ;
+_start -> resourcefragment_xqm ;
+_start -> facs_xqm ;
+_start -> wc_xqm ;
+_start -> config_xqm ;
+_start -> cr_xqm ;
+_start -> resource_refresh_aux_files [label= 1 ];
+_start -> resource_refresh_aux_files [label= 2 ];
+}

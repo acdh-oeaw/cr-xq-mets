@@ -1,0 +1,33 @@
+ /* dot -owc_calls.png -Tpng wc_calls.dot */ 
+digraph wc_calls {
+label="wc calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> resource_xqm ;
+_start -> project_xqm ;
+_start -> repo_utils_xqm ;
+wc_generate -> config_config [label= 1 ];
+wc_generate -> resource_path [label= 2 ];
+wc_generate -> project_path [label= 3 ];
+wc_generate -> resource_path [label= 4 ];
+wc_generate -> repo_utils_mkcol [label= 5 ];
+wc_generate -> project_adminsaccountname [label= 6 ];
+wc_generate -> project_adminsaccountname [label= 7 ];
+wc_generate -> resource_master [label= 8 ];
+wc_generate -> resource_get_preprocess_xsl_path [label= 9 ];
+wc_generate -> repo_utils_store [label= 10 ];
+wc_generate -> project_adminsaccountname [label= 11 ];
+wc_generate -> project_adminsaccountname [label= 12 ];
+wc_generate -> wc_add [label= 13 ];
+wc_remove_data -> wc_get_path [label= 1 ];
+wc_get -> resource_get [label= 1 ];
+wc_get -> resource_files [label= 2 ];
+wc_get_path -> wc_get [label= 1 ];
+wc_get_data -> wc_get_path [label= 1 ];
+wc_add -> resource_get [label= 1 ];
+wc_add -> wc_get [label= 2 ];
+wc_add -> resource_make_file [label= 3 ];
+wc_add -> resource_files [label= 4 ];
+wc_add -> resource_get_master [label= 5 ];
+wc_lookup -> wc_get_data [label= 1 ];
+}

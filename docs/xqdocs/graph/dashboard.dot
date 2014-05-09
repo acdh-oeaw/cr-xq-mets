@@ -1,0 +1,5 @@
+ /* dot -odashboard_calls.png -Tpng dashboard_calls.dot */ 
+digraph dashboard_calls {
+label="dashboard calls";
+rankdir=LR;
+}

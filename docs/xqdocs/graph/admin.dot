@@ -1,0 +1,12 @@
+ /* dot -oadmin_calls.png -Tpng admin_calls.dot */ 
+digraph admin_calls {
+label="admin calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> crday_xqm ;
+_start -> diagnostics_xqm ;
+_start -> repo_utils_xqm ;
+_start -> config_config [label= 1 ];
+_start -> crday_get_query_internal [label= 2 ];
+_start -> crday_get_ay_xml [label= 3 ];
+}

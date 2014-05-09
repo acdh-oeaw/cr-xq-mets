@@ -1,0 +1,5 @@
+ /* dot -okickstrap_calls.png -Tpng kickstrap_calls.dot */ 
+digraph kickstrap_calls {
+label="kickstrap calls";
+rankdir=LR;
+}

@@ -1,0 +1,18 @@
+ /* dot -ocql_calls.png -Tpng cql_calls.dot */ 
+digraph cql_calls {
+label="cql calls";
+rankdir=LR;
+_start -> repo_utils_xqm ;
+_start -> diagnostics_xqm ;
+_start -> index_xqm ;
+cql_cql2xpath_old -> cql_cql_to_xcql [label= 1 ];
+cql_cql_to_xpath -> cql_cql_to_xcql [label= 1 ];
+cql_cql2xpath -> cql_cql_to_xcql [label= 1 ];
+cql_xcql_to_xpath  -> cql_process_xcql [label= 1 ];
+cql_xcql_to_xpath  -> cql_process_xcql [label= 2 ];
+cql_process_xcql -> cql_boolean [label= 1 ];
+cql_process_xcql -> cql_searchClause [label= 2 ];
+cql_process_xcql -> cql_boolean [label= 3 ];
+cql_process_xcql -> cql_process_xcql [label= 4 ];
+cql_searchClause -> cql_sanitize_term [label= 1 ];
+}

@@ -1,0 +1,21 @@
+ /* dot -oprep_data_calls.png -Tpng prep_data_calls.dot */ 
+digraph prep_data_calls {
+label="prep-data calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> fcs_xqm ;
+_start -> repo_utils_xqm ;
+_start -> resource_xqm ;
+_start -> resourcefragment_xqm ;
+_start -> resource_new [label= 1 ];
+_start -> resource_new [label= 2 ];
+_start -> config_config [label= 3 ];
+_start -> config_config [label= 4 ];
+_start -> config_mappings [label= 5 ];
+_start -> repo_utils_store_in_cache [label= 6 ];
+_start -> repo_utils_store_in_cache [label= 7 ];
+_start -> repo_utils_store_in_cache [label= 8 ];
+_start -> repo_utils_store_in_cache [label= 9 ];
+_start -> repo_utils_store_in_cache [label= 10 ];
+_start -> repo_utils_store_in_cache [label= 11 ];
+}

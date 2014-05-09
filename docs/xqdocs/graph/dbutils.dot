@@ -1,0 +1,9 @@
+ /* dot -odbutils_calls.png -Tpng dbutils_calls.dot */ 
+digraph dbutils_calls {
+label="dbutils calls";
+rankdir=LR;
+dbutil_scan_collections -> dbutil_scan_collections [label= 1 ];
+dbutil_scan -> dbutil_scan_collections [label= 1 ];
+dbutil_scan -> dbutil_scan_resources [label= 2 ];
+dbutil_find_by_mimetype -> dbutil_scan [label= 1 ];
+}

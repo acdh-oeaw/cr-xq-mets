@@ -1,0 +1,25 @@
+ /* dot -olookuptable_calls.png -Tpng lookuptable_calls.dot */ 
+digraph lookuptable_calls {
+label="lookuptable calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> resource_xqm ;
+_start -> project_xqm ;
+_start -> resourcefragment_xqm ;
+_start -> repo_utils_xqm ;
+ltb_generate -> rf_dump [label= 1 ];
+ltb_generate -> rf_generate [label= 2 ];
+ltb_generate -> resource_path [label= 3 ];
+ltb_generate -> project_path [label= 4 ];
+ltb_generate -> config_config [label= 5 ];
+ltb_generate -> repo_utils_store [label= 6 ];
+ltb_generate -> resource_make_file [label= 7 ];
+ltb_generate -> resource_add_file [label= 8 ];
+ltb_lookup -> ltb_dump [label= 1 ];
+ltb_lookup -> ltb_dump [label= 2 ];
+ltb_lookup -> ltb_dump [label= 3 ];
+ltb_dump -> resource_path [label= 1 ];
+ltb_dump -> resource_path [label= 1 ];
+ltb_dump -> resource_path [label= 1 ];
+ltb_path -> resource_files [label= 1 ];
+}

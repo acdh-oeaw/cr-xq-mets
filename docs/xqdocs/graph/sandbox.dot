@@ -1,0 +1,9 @@
+ /* dot -osandbox_calls.png -Tpng sandbox_calls.dot */ 
+digraph sandbox_calls {
+label="sandbox calls";
+rankdir=LR;
+_start -> fcs_xqm ;
+_start -> config_xqm ;
+_start -> toc_xqm ;
+_start -> toc_generate [label= 1 ];
+}

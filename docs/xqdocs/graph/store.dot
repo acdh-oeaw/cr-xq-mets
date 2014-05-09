@@ -1,0 +1,10 @@
+ /* dot -ostore_calls.png -Tpng store_calls.dot */ 
+digraph store_calls {
+label="store calls";
+rankdir=LR;
+_start -> project_xqm ;
+_start -> project_dmd [label= 1 ];
+_start -> project_dmd [label= 2 ];
+_start -> project_metsHdr [label= 3 ];
+_start -> project_metsHdr [label= 4 ];
+}

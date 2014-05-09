@@ -1,0 +1,8 @@
+ /* dot -oprepdata_calls.png -Tpng prepdata_calls.dot */ 
+digraph prepdata_calls {
+label="prepdata calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> resource_xqm ;
+_start -> workingcopy_xqm ;
+}

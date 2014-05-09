@@ -1,0 +1,7 @@
+ /* dot -otext_viewer_calls.png -Tpng text_viewer_calls.dot */ 
+digraph text_viewer_calls {
+label="text-viewer calls";
+rankdir=LR;
+_start -> local_readConfig [label= 1 ];
+_start -> text_viewer_getNavBar [label= 2 ];
+}

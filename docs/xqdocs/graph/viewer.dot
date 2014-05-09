@@ -1,0 +1,14 @@
+ /* dot -oviewer_calls.png -Tpng viewer_calls.dot */ 
+digraph viewer_calls {
+label="viewer calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> repo_utils_xqm ;
+_start -> resource_xqm ;
+viewer_display -> config_param_value [label= 1 ];
+viewer_display -> config_param_value [label= 2 ];
+viewer_display -> config_param_value [label= 3 ];
+viewer_display -> repo_utils_serialise_as [label= 4 ];
+viewer_display -> repo_utils_serialise_as [label= 5 ];
+viewer_display -> repo_utils_serialise_as [label= 6 ];
+}

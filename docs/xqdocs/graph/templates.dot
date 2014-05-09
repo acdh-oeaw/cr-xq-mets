@@ -1,0 +1,37 @@
+ /* dot -otemplates_calls.png -Tpng templates_calls.dot */ 
+digraph templates_calls {
+label="templates calls";
+rankdir=LR;
+_start -> config_xqm ;
+templates_apply -> templates_process [label= 1 ];
+templates_apply -> templates_apply [label= 1 ];
+templates_apply -> templates_apply [label= 2 ];
+templates_process -> templates_process [label= 1 ];
+templates_process -> templates_process [label= 2 ];
+_file -> templates_process [label= 3 ];
+_file -> templates_process [label= 4 ];
+templates_init -> config_config [label= 1 ];
+_file -> templates_include [label= 2 ];
+_file -> config_resolve [label= 3 ];
+_file -> config_resolve [label= 4 ];
+_file -> templates_process [label= 5 ];
+_file -> config_resolve [label= 6 ];
+_file -> config_resolve [label= 7 ];
+_file -> templates_process [label= 8 ];
+templates_surround -> config_resolve [label= 1 ];
+templates_surround -> config_resolve [label= 2 ];
+templates_surround -> config_resolve [label= 3 ];
+templates_surround -> config_resolve [label= 4 ];
+templates_surround -> templates_process_surround [label= 5 ];
+templates_surround -> templates_process [label= 6 ];
+templates_process_surround -> templates_process_surround [label= 1 ];
+templates_process_surround -> templates_process_surround [label= 2 ];
+templates_if_parameter_set -> templates_process [label= 1 ];
+templates_if_parameter_unset -> templates_process [label= 1 ];
+templates_if_module_missing -> templates_process [label= 1 ];
+templates_fix_links -> templates_fix_links [label= 1 ];
+templates_fix_links -> templates_fix_links [label= 2 ];
+templates_fix_links -> templates_process [label= 3 ];
+templates_fix_links -> templates_fix_links [label= 1 ];
+templates_fix_links -> templates_fix_links [label= 2 ];
+}

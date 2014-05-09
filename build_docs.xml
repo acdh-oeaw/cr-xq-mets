@@ -118,7 +118,7 @@
 	</target>
 	
 	<target name="gen-build-info" >
-		<ant antfile="${scripts.dir}\build.xml" target="gen-build-info">
+		<ant antfile="${scripts.dir}\build_docs.xml" target="gen-build-info">
 			<property name="in.dir" location="" />
 			<property name="other.build" value="build"/>
 			<property name="out.dir" location="docs"/>

@@ -1,0 +1,32 @@
+ /* dot -otoc_calls.png -Tpng toc_calls.dot */ 
+digraph toc_calls {
+label="toc calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> project_xqm ;
+_start -> resource_xqm ;
+_start -> lookuptable_xqm ;
+_start -> fcs_xqm ;
+_start -> wc_xqm ;
+toc_generate -> project_map [label= 1 ];
+toc_generate -> project_map [label= 2 ];
+toc_generate -> fcs_index_as_xpath [label= 3 ];
+toc_generate -> resource_path [label= 4 ];
+toc_generate -> ltb_generate [label= 5 ];
+toc_generate -> resource_path [label= 6 ];
+toc_generate -> project_filepath [label= 7 ];
+toc_generate -> project_filepath [label= 8 ];
+toc_generate -> resource_label [label= 9 ];
+toc_generate -> resource_label [label= 10 ];
+toc_generate -> wc_get_data [label= 11 ];
+toc_generate -> project_get [label= 12 ];
+_file -> ltb_lookup [label= 13 ];
+toc_set -> toc_get [label= 1 ];
+toc_set -> toc_get [label= 2 ];
+toc_set -> toc_get [label= 3 ];
+toc_set -> toc_get [label= 4 ];
+toc_set -> project_get [label= 5 ];
+toc_get -> toc_get [label= 1 ];
+toc_get -> toc_get [label= 2 ];
+toc_get -> project_get [label= 1 ];
+}

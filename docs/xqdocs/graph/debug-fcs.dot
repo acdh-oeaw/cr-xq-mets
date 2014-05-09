@@ -1,0 +1,9 @@
+ /* dot -odebug_fcs_calls.png -Tpng debug_fcs_calls.dot */ 
+digraph debug_fcs_calls {
+label="debug-fcs calls";
+rankdir=LR;
+_start -> fcs_xqm ;
+_start -> config_xqm ;
+_start -> repo_utils_xqm ;
+_start -> cqlparser_xqm ;
+}

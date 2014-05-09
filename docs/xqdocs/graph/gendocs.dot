@@ -1,0 +1,6 @@
+ /* dot -ogendocs_calls.png -Tpng gendocs_calls.dot */ 
+digraph gendocs_calls {
+label="gendocs calls";
+rankdir=LR;
+_start -> scan_xql ;
+}

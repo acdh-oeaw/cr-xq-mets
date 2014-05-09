@@ -1,0 +1,13 @@
+ /* dot -olookup_test_calls.png -Tpng lookup_test_calls.dot */ 
+digraph lookup_test_calls {
+label="lookup-test calls";
+rankdir=LR;
+_start -> config_xqm ;
+_start -> project_xqm ;
+_start -> wc_xqm ;
+_start -> master_xqm ;
+_start -> resourcefragment_xqm ;
+cr_get_pids -> cr_get_resourcefragment_pids [label= 1 ];
+_file -> project_acl [label= 2 ];
+_file -> project_acl [label= 3 ];
+}

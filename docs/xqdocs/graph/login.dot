@@ -1,0 +1,5 @@
+ /* dot -ologin_calls.png -Tpng login_calls.dot */ 
+digraph login_calls {
+label="login calls";
+rankdir=LR;
+}

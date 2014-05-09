@@ -1,0 +1,8 @@
+ /* dot -osetup_project_calls.png -Tpng setup_project_calls.dot */ 
+digraph setup_project_calls {
+label="setup_project calls";
+rankdir=LR;
+_start -> config_xqm ;
+local_mkcol_recursive -> local_mkcol_recursive [label= 1 ];
+local_mkcol -> local_mkcol_recursive [label= 1 ];
+}

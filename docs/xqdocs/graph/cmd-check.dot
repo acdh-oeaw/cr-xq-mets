@@ -1,0 +1,46 @@
+ /* dot -ocmd_check_calls.png -Tpng cmd_check_calls.dot */ 
+digraph cmd_check_calls {
+label="cmd-check calls";
+rankdir=LR;
+_start -> repo_utils_xqm ;
+_start -> fcs_xqm ;
+_start -> crday_xqm ;
+_start -> smc_xqm ;
+_start -> diagnostics_xqm ;
+cmdcheck_run_stats -> repo_utils_config [label= 1 ];
+cmdcheck_run_stats -> repo_utils_config_value [label= 2 ];
+cmdcheck_run_stats -> repo_utils_config_value [label= 3 ];
+cmdcheck_run_stats -> fcs_scan [label= 4 ];
+cmdcheck_run_stats -> fcs_scan [label= 5 ];
+cmdcheck_collection_to_mapping -> repo_utils_context_to_collection_path [label= 1 ];
+cmdcheck_collection_to_mapping -> repo_utils_store [label= 2 ];
+cmdcheck_check -> repo_utils_sanitize_name [label= 1 ];
+cmdcheck_check -> repo_utils_config_value [label= 2 ];
+cmdcheck_check -> repo_utils_config_value [label= 3 ];
+cmdcheck_check -> cmdcheck_scan_profiles [label= 4 ];
+cmdcheck_scan_profiles -> repo_utils_context_to_collection [label= 1 ];
+cmdcheck_scan_profiles -> diag_diagnostics [label= 2 ];
+cmdcheck_scan_profiles -> diag_diagnostics [label= 3 ];
+cmdcheck_scan_profiles -> diag_diagnostics [label= 4 ];
+cmdcheck_scan_profiles -> diag_diagnostics [label= 5 ];
+cmdcheck_display_overview -> repo_utils_config_value [label= 1 ];
+cmdcheck_display_overview -> repo_utils_config_value [label= 2 ];
+cmdcheck_display_overview -> fcs_scan [label= 3 ];
+cmdcheck_display_overview -> fcs_scan [label= 4 ];
+cmdcheck_display_overview -> repo_utils_serialise_as [label= 5 ];
+cmdcheck_display_overview -> repo_utils_serialise_as [label= 6 ];
+cmdcheck_display_overview -> repo_utils_serialise_as [label= 7 ];
+cmdcheck_display_overview -> repo_utils_serialise_as [label= 8 ];
+cmdcheck_display_overview -> repo_utils_serialise_as [label= 9 ];
+cmdcheck_display_overview -> repo_utils_serialise_as [label= 10 ];
+cmdcheck_addIsPartOf_colls -> repo_utils_config_value [label= 1 ];
+cmdcheck_addIsPartOf_colls -> repo_utils_config_value [label= 2 ];
+cmdcheck_addIsPartOf_colls -> repo_utils_context_to_collection_path [label= 3 ];
+cmdcheck_addIsPartOf -> repo_utils_config_value [label= 1 ];
+cmdcheck_addIsPartOf -> repo_utils_config_value [label= 2 ];
+cmdcheck_addIsPartOf -> repo_utils_context_to_collection [label= 3 ];
+cmdcheck_addIsPartOf -> repo_utils_context_to_collection_path [label= 4 ];
+cmdcheck_addIsPartOf -> cmdcheck_addIsPartOf_root [label= 5 ];
+cmdcheck_addIsPartOf -> cmdcheck_addIsPartOf_r [label= 6 ];
+cmdcheck_addIsPartOf_r -> cmdcheck_addIsPartOf_r [label= 1 ];
+}

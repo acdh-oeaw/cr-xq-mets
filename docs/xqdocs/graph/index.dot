@@ -1,0 +1,28 @@
+ /* dot -oindex_calls.png -Tpng index_calls.dot */ 
+digraph index_calls {
+label="index calls";
+rankdir=LR;
+_start -> project_xqm ;
+_start -> config_xqm ;
+_start -> repo_utils_xqm ;
+index_map -> project_map [label= 1 ];
+index_map -> project_map [label= 2 ];
+index_index -> index_map [label= 1 ];
+index_index -> index_index_from_map [label= 2 ];
+index_index_as_xpath -> index_map [label= 1 ];
+index_index_as_xpath -> index_index_as_xpath_from_map [label= 2 ];
+index_index_as_xpath_from_map -> index_index_from_map [label= 1 ];
+index_index_as_xpath -> index_index_as_xpath [label= 1 ];
+index_index_as_xpath -> index_index_as_xpath [label= 2 ];
+index_apply_index -> index_index_as_xpath [label= 1 ];
+index_apply_index -> index_index_as_xpath [label= 2 ];
+index_apply_index -> project_map [label= 3 ];
+index_apply_index -> project_map [label= 4 ];
+index_default -> index_map [label= 1 ];
+index_generate_xconf -> index_map [label= 1 ];
+index_store_xconf -> index_generate_xconf [label= 1 ];
+index_store_xconf -> project_path [label= 2 ];
+index_store_xconf -> repo_utils_mkcol [label= 3 ];
+index_facets -> index_index [label= 1 ];
+index_facets -> index_facets [label= 2 ];
+}
