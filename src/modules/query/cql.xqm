@@ -95,9 +95,9 @@ declare function cql:process-xcql($xcql as element(),$map) as xs:string {
     let $return := 
         typeswitch ($xcql)
             case text() return normalize-space($xcql)
-            case element(triple) return cql:boolean($xcql/boolean/value, $xcql/leftOperand, $xcql/rightOperand, $map)
+            case element(triple) return cql:boolean($xcql/boolean/value, $xcql/boolean/modifiers, $xcql/leftOperand, $xcql/rightOperand, $map)
             case element(searchClause) return cql:searchClause($xcql, $map)
-            case element(boolean) return cql:boolean($xcql/value, $xcql/following-sibling::leftOperand, $xcql/following-sibling::rightOperand, $map)
+            case element(boolean) return cql:boolean($xcql/value, $xcql/modifiers, $xcql/following-sibling::leftOperand, $xcql/following-sibling::rightOperand, $map)
             default return cql:process-xcql($xcql/*, $map)
     return $return
 };
@@ -107,19 +107,23 @@ declare function cql:process-xcql-default($node as node(), $map) as item()* {
   
  };:) 
  
- declare function cql:boolean($value as element(value), $leftOperand as element(leftOperand), $rightOperand as element(rightOperand),$map) as xs:string {
+declare function cql:boolean($value as element(value), $leftOperand as element(leftOperand), $rightOperand as element(rightOperand),$map) as xs:string {
+    cql:boolean($value,(),$leftOperand,$rightOperand,$map) 
+};
+
+declare function cql:boolean($value as element(value), $modifiers as element(modifiers)?, $leftOperand as element(leftOperand), $rightOperand as element(rightOperand),$map) as xs:string {
     let $parts :=
         switch($value)
             case "OR" return cql:union($leftOperand, $rightOperand, $map)   
             case "NOT" return cql:except($leftOperand, $rightOperand, $map)
+            case "prox" return cql:prox($leftOperand, $rightOperand, $modifiers, $map)
             (: default operator AND :)
             default return cql:intersect($leftOperand, $rightOperand, $map) 
                 (:"("||string-join(
                         for $i in $boolean/following-sibling::*/searchClause
                         return cql:searchClause($i,$map),
                         ' intersect '
-                    )||")":)
-    return string-join($parts,"")
+                    )||")":)    return string-join($parts,"")
  };
 
 declare function cql:searchClause($clause as element(searchClause), $map) {
@@ -167,6 +171,29 @@ declare function cql:except($leftOperand as element(leftOperand), $rightOperand 
 declare function cql:union($leftOperand as element(leftOperand), $rightOperand as element(rightOperand), $map) as xs:string {
     let $operands := (cql:process-xcql($leftOperand,$map),cql:process-xcql($rightOperand,$map))
     return "("||string-join($operands,' union ')||")"
+};
+
+declare function cql:prox($leftOperand as element(leftOperand), $rightOperand as element(rightOperand), $modifiers as element(modifiers)?, $map) as xs:string {
+    let $operands := (cql:process-xcql($leftOperand,$map),cql:process-xcql($rightOperand,$map)),
+        $distance := ($modifiers/modifier[type='distance']/value),
+        $comparison := ($modifiers/modifier[type='distance']/comparison),
+        $proximityExpPrev := 
+            (:if ($comparison = "=") 
+            then :)"@cr:w = (xs:integer($hit/@cr:w)+1 to xs:integer($hit/@cr:w)+"||$distance||")"
+            (:else "@cr:w "||$comparison||" $hit/@cr:w":),
+        $proximityExpFoll := 
+            (:if ($comparison = "=") 
+            then :)"@cr:w = (xs:integer($hit/@cr:w)-"||$distance||" to xs:integer($hit/@cr:w)-1)"
+            (:else "@cr:w "||$comparison||" $hit/@cr:w":)
+    return 
+        "for $hit in $data//("||$operands[1]||")
+            let $prev := root($hit)//*["||$proximityExpPrev||"],
+                $foll := root($hit)//*["||$proximityExpFoll||"],
+                $window := ($prev,$foll)
+            return 
+                if ($window/self::"||$operands[2]||")
+                then ($prev,$hit,$foll)
+                else ()"
 };
         
 
