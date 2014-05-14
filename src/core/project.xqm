@@ -592,7 +592,7 @@ declare function project:list-resources-resolved($project) as element(sru:search
         let $dmd := resource:dmd($res, $project )
         let $res-id := $res/data(@ID)
         let $res-label := $res/data(@LABEL)
-        let $res-title := (if (exists($dmd)) then index:apply-index($dmd,'title',$project) else $res-label, $res-label)[1]
+        let $res-title := (if (exists($dmd)) then index:apply-index($dmd,'resource.title',$project)//text() else $res-label, $res-label)[1]
         let $indexImage-path := resource:path($res-id, $project-id, 'indexImage')
         order by $res/@ORDER
         return <fcs:Resource pid="{$res-id}" >
@@ -1018,53 +1018,73 @@ let $mets:record := project:get($project-pid)
 
 declare function project:get-toc-resolved($project-pid as xs:string) as element()? {
     let $mets:record := project:get($project-pid),
-        $toc-struct := $mets:record//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE ]/mets:div,
-        $frgs := $mets:record//mets:structMap[@TYPE=$config:PROJECT_STRUCTMAP_TYPE]//mets:div[@TYPE='resourcefragment'], 
-        $resources := $mets:record//mets:structMap[@TYPE=$config:PROJECT_STRUCTMAP_TYPE]//mets:div[@TYPE='resource']
-        
-    return <mets:structMap>{$toc-struct/@*, 
-            for $toc-resource in $toc-struct/mets:div
-                let $res-id := substring-after($toc-resource/@CONTENTIDS, '#')
-                let $res-order := $resources[@ID=$res-id]/data(@ORDER)   
-                let $resolved-toc := for $div in $toc-resource/mets:div
-                                        let $rfid-first := $div/mets:fptr/mets:area/xs:string(@BEGIN),
-                                            $rfid-last :=  $div/mets:fptr/mets:area/xs:string(@END),
-                                            $frg-first := $frgs[@ID=$rfid-first],
-                                            $frg-last := $frgs[@ID=$rfid-last],
-                                            $chapter-frgs := for $frg in $frgs where $frg >> $frg-first and $frg << $frg-last return $frg
-                                        return <mets:div>{$div/@*,$div/*, $frg-first, $chapter-frgs, $frg-last}</mets:div>
-                order by $res-order              
-                return <mets:div ORDER="{$res-order}">{$toc-resource/@*,$resolved-toc}</mets:div>
-           }</mets:structMap>     
+        $toc-struct := $mets:record//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE ]/mets:div
+    return project:do-get-toc-resolved($toc-struct,$mets:record)
 };
 
 declare function project:do-get-toc-resolved($node as node(), $mets-record as element(mets:mets)) as node() {
     project:do-get-toc-resolved($node,(),$mets-record)
 };
 
+
 declare function project:do-get-toc-resolved($node as node(), $resource-pid as xs:string?, $mets-record as element(mets:mets)) as node()* {
     typeswitch ($node)
         case attribute() return $node
+        
         case text() return $node
+        
         case processing-instruction() return $node
+        
         case document-node() return project:do-get-toc-resolved($node/*, $resource-pid, $mets-record)
+        
         case element(mets:fptr) return 
-            for $n in $node/* return project:do-get-toc-resolved($node/*, $resource-pid, $mets-record)
+            for $n in $node/* 
+            return project:do-get-toc-resolved($node/*, $resource-pid, $mets-record)
+        
         case element(mets:area) return 
             let $frgs := $mets-record//mets:div[@ID = $resource-pid]//mets:div[@type=$config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]
             let $rfid-first := $node/xs:string(@BEGIN),
                 $rfid-last :=  $node/xs:string(@END),
                 $frg-first := $mets-record//mets:div[@ID=$rfid-first],
-                $frg-last := $mets-record//mets:div[@ID=$rfid-first],
-                $chapter-frgs := for $frg in $frgs where $frg >> $frg-first and $frg << $frg-last return $frg
-            return ($frg-first,$chapter-frgs,$frg-last)
+                $frg-last := $mets-record//mets:div[@ID=$rfid-last],
+                $frgs-between := $frgs[. >> $frg-first and . << $frg-last]
+            return 
+            	($frg-first,$frgs-between,$frg-last)/. (: the location step after the sequence eliminates duplicates, e.g. when $frg-first and $frg-last are the same element :)
+
+        case element(mets:div) return
+            switch(true())
+                case (exists($node/mets:div[@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE])) return 
+                    <mets:structMap>{
+                        for $n in $node/mets:div[@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE]
+                        return project:do-get-toc-resolved($n,$resource-pid,$mets-record)
+                    }</mets:structMap>
+                
+                case ($node/@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE) return
+                    (: we are shadowing the $resource-pid downwards :)
+                    let $resource-pid := substring-after($node/@CONTENTIDS,'#'),
+                        $resource := $mets-record//mets:div[@ID = $resource-pid]
+                    return element {QName(xs:string(namespace-uri($resource)),local-name($resource))} {
+                        $resource/@* except $resource/(@DMDID,@CONTENTIDS,@ID),
+                        $node/@ID,
+                        for $n in $node/node() return project:do-get-toc-resolved($n,$resource-pid,$mets-record)
+                     }
+                
+                case ($node/@TYPE='resourcefragment') return 
+                    for $n in $node/mets:* 
+                    return project:do-get-toc-resolved($n,$resource-pid,$mets-record)
+                
+                default return 
+                    element {QName(xs:string(namespace-uri($node)),local-name($node))} {
+                            $node/@*,
+                            for $n in $node/node() 
+                            return project:do-get-toc-resolved($n,$resource-pid,$mets-record)
+                       }
+        
         case element() return element {QName(xs:string(namespace-uri($node)),local-name($node))} {
                             $node/@*,
-                            for $n in $node/node()
-                            return 
-                                if ($node/self::mets:div and $node/@CONTENTIDS)
-                                then project:do-get-toc-resolved($n,substring-after($node/@CONTENTIDS,'#'),$mets-record)
-                                else project:do-get-toc-resolved($n,$resource-pid,$mets-record)
+                            for $n in $node/node() 
+                            return project:do-get-toc-resolved($n,$resource-pid,$mets-record)
                        }
+
         default return $node
 };
