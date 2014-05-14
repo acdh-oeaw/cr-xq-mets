@@ -40,7 +40,10 @@
                 <xsl:apply-templates select="namespaces/ns"/>
                 
                 <!-- disable legacy fulltext index -->
-                <fulltext default="none" attributes="no"/>
+                <xsl:comment>disable legacy fulltext index</xsl:comment>
+                <xsl:comment>
+                    <fulltext default="none" attributes="no"/>
+                </xsl:comment>
                 
                 <!-- fulltext index definitions -->
                 <xsl:if test="exists($fulltext-indexes)">
@@ -59,8 +62,9 @@
                 <xsl:comment>Default index-definitions for working copies and lookup tables</xsl:comment>
                 <xsl:value-of select="'&#xA;'"/>
                 <create qname="@cr:id" type="xs:string"/>
-                <create qname="@cr:project-id" type="xs:ID"/>
-                <create qname="@cr:resource-pid" type="xs:ID"/>
+                <create qname="@cr:project-id" type="xs:string"/>
+                <create qname="@cr:resource-pid" type="xs:string"/>
+                <create qname="@cr:w" type="xs:string"/>
 <!--                <create qname="@cr:resourcefragment-pid" type="xs:string"/>-->
             </index>
         </collection>
