@@ -46,7 +46,7 @@
         <techMD ID="projectParameters" GROUPID="config.xml">
             <mdWrap MDTYPE="OTHER">
                 <xmlData>
-                    <param xmlns="" key="template"/>
+                    <param xmlns="" key="template">minimal</param>
                 </xmlData>
             </mdWrap>
         </techMD>
