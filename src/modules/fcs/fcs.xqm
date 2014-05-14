@@ -254,13 +254,14 @@ declare function fcs:explain($x-context as xs:string*, $config) as item()* {
                 <name set="fcs">resource</name>
             </map>
         </index> -->
-        { for $index in distinct-values($mappings//index/xs:string(@key))
-            order by $index
+        { for $index in $mappings//index
+            let $ix-key := $index/xs:string(@key)
+            order by $ix-key
             return
-                <zr:index search="true" scan="true" sort="false">
-                <zr:title lang="en">{$index}</zr:title>
+                <zr:index search="true" scan="{($index/data(@scan), 'false')[1]}" sort="false">
+                <zr:title lang="en">{$ix-key}</zr:title>
                 <zr:map>
-                    <zr:name set="fcs">{$index}</zr:name>
+                    <zr:name set="fcs">{$ix-key}</zr:name>
                 </zr:map>
         </zr:index>
         }
@@ -497,7 +498,7 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs
     return 
         <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
             <sru:version>1.2</sru:version>
-            <sru:terms>{$terms}</sru:terms>
+            {$terms}
             <fcs:countTerms level="top">{count($terms)}</fcs:countTerms>
             <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>
             <sru:echoedScanRequest>
@@ -541,7 +542,8 @@ declare function fcs:term-from-nodes($node as item()+, $order-param as xs:string
                 $m-value := map:entry("value",$value),
                 $m-count := map:entry("numberOfRecords",count($g))
             return map:new(($m-label,$m-value,$m-count))
-    return 
+    return <sru:terms> 
+        {
         for $term at $pos in $terms
         return <sru:term>
                     <sru:value>{$term("value")}</sru:value>
@@ -551,6 +553,8 @@ declare function fcs:term-from-nodes($node as item()+, $order-param as xs:string
                         <fcs:position>{$pos}</fcs:position>
                     </sru:extraTermData>
                 </sru:term>
+                }
+                </sru:terms>
 };
 
 
@@ -578,6 +582,7 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
         return $map
     
     return
+     <sru:terms> {
         for $group-key in map:keys($groups)
         let $entries := map:get($groups, $group-key)
         order by 
@@ -594,7 +599,8 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
                     then fcs:group-by-facet($entries, $sort, $index/index, $project-pid)
                     else fcs:term-from-nodes($entries, $sort, root($index)/index/@key, $project-pid)}
                 </sru:extraTermData>
-            </sru:term>         
+            </sru:term>
+            } </sru:terms>
 };
 
 declare %private function fcs:term-to-label($term as xs:string, $index as xs:string, $project-pid as xs:string) as xs:string{
