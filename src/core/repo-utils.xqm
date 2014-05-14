@@ -644,7 +644,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
               			           <param name="operation" value="{$operation}"/>
               			           <param name="x-context" value="{$x-context}"/>
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
-                                    <param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
+                                    <param name="base_url" value="{config:param-value($config,'base-url')}"/>
 	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site-name')}"/>
@@ -652,7 +652,9 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="site_url" value="{config:param-value($config, 'public-baseurl')}"/>
               			           {$parameters/param}
               			       </parameters>
-(:                <param name="base_url" value="{config:param-value($config,'base-url')}"/>:)
+(:                <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+<param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
+:)
 	       let $res := if (exists($xslDoc)) 
 	                   then transform:transform($item,$xslDoc, $xslParams)
 	                   else 
