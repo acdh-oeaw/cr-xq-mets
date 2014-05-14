@@ -81,6 +81,14 @@ $("#resource-filter").QueryInput({params: {
     // register to search
     $("#navigation .load-main a").live('click', load_main);
     
+    // handle link to toggle info
+    $("#navigation a.link-info").live('click', toggle_info);
+    $("#navigation .data-view.metadata, #navigation .data-view.image").hide();
+    
+    // handle link to explain
+    $("#navigation a.link-explain").live('click', load_explain);
+    $("#navigation .indexInfo a").live('click', load_scan);
+    
     //
     $("#navigation a.toc").live('click', load_toc);
     
@@ -116,6 +124,43 @@ $("#resource-filter").QueryInput({params: {
 $(minimal_template_ui_setup); 
 
 
+
+function load_explain(event) {
+    event.preventDefault();
+    var target = $(this).parents('.links');
+    
+    if (target.find('.explain').length > 0)  
+       { target.find('.explain').toggle(); }
+      else { 
+        var targetRequest = $(this).attr('href');
+    //var detailFragment = targetRequest + ' ' + search_container_selector;
+        
+        $.get(targetRequest,function(data) {
+                target.append(data);
+                target.append("<div class='scan' />");
+                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                close_button = $(target).find(".cmd_close");
+                close_button.click(function() { target.find('.explain').toggle(); });                
+            }        
+        );        
+      }
+}
+
+function load_scan(event) {
+    event.preventDefault();
+    var target = $(this).parents('.record').find(".scan");
+    
+     var targetRequest = $(this).attr('href');
+    //var detailFragment = targetRequest + ' ' + search_container_selector;
+
+        console.log("targetRequest");
+        console.log(target);
+     target.load(targetRequest);        
+     
+}
+
+
+
 function load_toc(event) {
     event.preventDefault();
     var parentRecord = $(this).parents('div.record');
@@ -147,6 +192,14 @@ function load_main(event) {
             
     $(target).load(targetRequest);
 }
+
+function toggle_info(event) {
+    event.preventDefault();
+    console.log("Info:");
+    var data_view = $(this).parents(".record").find('.data-view.metadata, .data-view.image');
+    data_view.toggle();
+}
+
 
 /** handles interactions with the full toc
 resource level toggles the nested levels, 
