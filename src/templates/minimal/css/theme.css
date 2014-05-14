@@ -1,4 +1,4 @@
-/* **************  */
+/* **************   */
 /* THEME = setting fonts and colors */
 
 html {    line-height: 1.5em; }
@@ -27,6 +27,9 @@ a, a:link, a:hover {
 input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button {
     border:  1px solid #A6C9E2;
 }
+ 
+.explain h3 {display:none;}
+.explain li {float:left;}
  
 div.teaser {clear:both; border-top: 1px solid #A6C9E2; padding: 1em 0; }
 img.teaser { float:left; margin-right: 1em; margin-bottom: 1em;}
