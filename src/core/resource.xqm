@@ -815,7 +815,7 @@ declare function resource:refresh-aux-files($toc-indexes as xs:string*, $resourc
         $rf := rf:generate($resource-pid, $project-pid),
         $lt := lt:generate($resource-pid,$project-pid)
     let $toc := 
-        if ($toc-indexes = '')
+        if (not(exists($toc-indexes)))
         then ()
         else toc:generate($toc-indexes,$resource-pid,$project-pid)
     let $stop-time := current-dateTime()
