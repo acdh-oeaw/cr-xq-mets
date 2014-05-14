@@ -56,6 +56,9 @@ $.fn.QueryInput = function (options)
                 case "text":
                   new_input = genText(key, param);    
                   break;
+                case "hidden":
+                  new_input = genHidden(key, param);    
+                  break;
                 case "submit":
                   new_input = genSubmit (key, param);    
                   break;
@@ -125,6 +128,14 @@ $.fn.QueryInput = function (options)
         var input = $("<input />");
          $(input).attr("name",key);
          if (param_settings.size) $(input).attr("size",param_settings.size);
+         
+        return input;
+    }
+    
+    function genHidden(key, param_settings) {
+         
+        var input = $("<input type='hidden'  />");
+         $(input).attr("name",key);
          
         return input;
     }
