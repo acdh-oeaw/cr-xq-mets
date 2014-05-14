@@ -444,7 +444,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
 (:            case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/':)
-            case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection 
+(:            case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection
+            trying to add project-part to the "base-url": :)
+              case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/" 
             case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
