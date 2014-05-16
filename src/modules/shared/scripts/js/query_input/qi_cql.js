@@ -33,7 +33,7 @@ function genCQLInput(key, param_settings) {
 /** constructor for a Query-object - bascally a set of search clauses (previously: Searchclauseset */
 function Query(key, param_settings) {
     this.key = key;
-    this.fcs_config = param_settings.fcs_config;
+    this.cql_config = param_settings.cql_config;
     // actual query string in CQL-syntax
     this.cql = param_settings.cql;  
     
@@ -142,8 +142,8 @@ function SearchClause(query_object, and_pos, or_pos) {
       this.value = "";
       this.key = query_object.key + '-' + and_pos + '-' + or_pos;
 
-    //make fcs_config static to make it accessible from getValues()
-    //fcs_config = query_object.fcs_config;
+    //make cql_config static to make it accessible from getValues()
+    //cql_config = query_object.cql_config;
 
     /** generate a widget for this SC */
       this.genCQLSearchClauseWidget = function () {
@@ -191,13 +191,13 @@ function SearchClause(query_object, and_pos, or_pos) {
                       .append(input_value);
     
     // setup autocompletes 
-        if (this.query_object.fcs_config) {
+        if (this.query_object.cql_config) {
             
             // let the autocomplete-select refresh upon loaded index
-            this.query_object.fcs_config.onLoaded = function(index) {     input_value.autocomplete( "search");
+            this.query_object.cql_config.onLoaded = function(index) {     input_value.autocomplete( "search");
                    console.log("onloaded-index:" + index)};
           
-            var indexes =  this.query_object.fcs_config.getIndexes();
+            var indexes =  this.query_object.cql_config.getIndexes();
           //  console.log(indexes);
             
             // setting source on init did not work ??
@@ -213,8 +213,10 @@ function SearchClause(query_object, and_pos, or_pos) {
         //      console.log(input_index.autocomplete( "option", "source" ));
         
              input_value.data("input_index", input_index);
-             input_value.autocomplete();
+             input_value.autocomplete({ delay: 500, minLength: 2 });
              input_value.autocomplete( "option", "source", this.getValues );
+             
+/*             input_value.autocomplete( "option", "source", 'http://corpus4.aac.ac.at/exist/apps/cr-xq-mets/abacus/fcs?x-context=&x-format=json&operation=scan&scanClause=persName=');*/
              input_value.on("autocompletechange", 
                         function(){ 
                             currentSC.value = $(this).val();
@@ -229,14 +231,16 @@ function SearchClause(query_object, and_pos, or_pos) {
 
 
     this.getValues = function(request, response) {
-            
+            		
             console.log("request_term:" + request.term);
             console.log(this.element.data("sc"));
             var sc = this.element.data("sc")
-            values = sc.query_object.fcs_config.getValues(sc.index,request.term);
+            values = sc.query_object.cql_config.getValues(sc.index,request.term, response);
+            
+				/*
             //console.log(values);
             if (values.status == 'loading') { response( ["loading..."]) }
-                else  { response(values) };
+                else  { response(values) };*/
     };
 
     this.rendered = function(){ 
