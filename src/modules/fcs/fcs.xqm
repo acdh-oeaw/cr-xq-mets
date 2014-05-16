@@ -499,8 +499,10 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs
         <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
             <sru:version>1.2</sru:version>
             {$terms}
-            <fcs:countTerms level="top">{count($terms)}</fcs:countTerms>
-            <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>
+            <sru:extraResponseData>
+                <fcs:countTerms level="top">{count($terms)}</fcs:countTerms>
+                <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>
+             </sru:extraResponseData>
             <sru:echoedScanRequest>
                 <sru:scanClause>{$scan-clause}</sru:scanClause>
                 <sru:maximumTerms/>
