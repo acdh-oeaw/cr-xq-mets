@@ -82,10 +82,42 @@ function CQLConfig(options) {
         }
     };
 
+
+    this.getValues = function (index, pattern, response) {
+        var scan_url = sprintf(this.settings.scan_pattern_url,this.settings.base_url,index,pattern).replace(/&amp;/g,'&');
+        
+        var me = this;
+        /*
+        $.getJSON("http://api.rottentomatoes.com/api/public/v1.0/movies.json?callback=?", {
+				q: request.term,
+				page_limit: 10
+			}, function(data) {
+				// data is an array of objects and must be transformed for autocomplete to use
+				var array = data.error ? [] : $.map(data.movies, function(m) {
+					return {
+						label: m.title + " (" + m.year + ")",
+						url: m.links.alternate
+					};
+				});
+				response(array);
+			});
+			*/
+        $.getJSON(scan_url, function(data) {
+                         // console.log(data);
+    //                         me.values[index] = data;
+      //                 me.onLoaded.call(me, index);
+                    var array = data.error ? [] : data.terms
+                         response(array);
+                   });
+       return {"status":"loading"};
+    }
+
     /*: read (and cache) the scan on demand
-        TODO: how to handle large indexes? 
+        TODO: how to handle large indexes?
+        
+        nice idea (caching) , but did not get to work properly
     */
-    this.getValues = function (index, pattern) {
+    this.getValues_withCache = function (index, pattern) {
     
         if (this.values[index]) {
            
