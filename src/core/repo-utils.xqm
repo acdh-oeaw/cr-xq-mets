@@ -689,16 +689,24 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
  : @return zero or one XSL documents 
 ~:)
 declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node()? {        
-    let $scripts-paths := config:path('scripts'),
-        $xsldoc :=  for $scripts-path in $scripts-paths
+    let $scripts-paths := (config:param-value($config,'scripts.path'),config:path('scripts'))
+    let $log := util:log-app("DEBUG",$config:app-name,"looking for xsl-doc in "||string-join($scripts-paths,' '))
+    let $xsldoc :=  for $p in $scripts-paths
+                    let $path := replace($p,'/$','')
                     return 
-                        let $operation-format-xsl:= $scripts-path||'/'||config:param-value($config, $operation||'-'||$format||".xsl"),
-                            $operation-xsl:= $scripts-path||'/'||config:param-value($config, $operation||".xsl")
+(:                        let $path := replace($path,'/$',''):)
+                        let $operation-format-xsl:= $path||'/'||config:param-value($config, $operation||'-'||$format||".xsl"),
+                            $operation-xsl:= $path||'/'||config:param-value($config, $operation||".xsl")
                         return 
                         switch(true())
-                            case (doc-available($operation-format-xsl)) return doc($operation-format-xsl)
-                            case (doc-available($operation-xsl)) return doc($operation-xsl)
-                            default return ()
+                            case (doc-available($operation-format-xsl)) 
+                                return (
+                                    util:log-app("DEBUG",$config:app-name,"found xsl-doc "||$operation-format-xsl||" for operation "||$operation||", format "||$format),
+                                    doc($operation-format-xsl)
+                                    )
+                            case (doc-available($operation-xsl)) return 
+                                (util:log-app("DEBUG",$config:app-name,"found xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),doc($operation-xsl))
+                            default return util:log-app("ERROR",$config:app-name,"Could not locate ")
     return ($xsldoc)[1]
 };
 
