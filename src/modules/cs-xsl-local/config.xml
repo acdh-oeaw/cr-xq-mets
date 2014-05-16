@@ -12,15 +12,16 @@
         <param key="searchRetrieve.xsl">fcs/result2view_v2.xsl</param>
         <param key="resource-list.xsl">misc/resource-list2view_v2.xsl</param>
         <param key="data.xsl">misc/cr-data2view.xsl</param>
-        <param key="metadata.xsl">misc/xml2view_v2.xsl</param>
+        <!--<param key="metadata.xsl">misc/xml2view_v2.xsl</param>-->
+        <param key="metadata.xsl">misc/md2view_v2.xsl</param>
         <param key="explain.xsl">fcs/explain2view_v2.xsl</param>
         <param key="explain-json.xsl">fcs/explain2json.xsl</param>
         <param key="static.xsl">misc/static2view.xsl</param>
         <param key="xml.xsl">misc/xml2view_v2.xsl</param>
         <param key="html.xsl">misc/html2view.xsl</param>
         <param key="test.xsl">misc/test2view.xsl</param>
-        <param key="projectDMD.xsl">mets/project2view.xsl</param>
-        <param key="structMap.xsl">mets/project2view.xsl</param>
+        <param key="projectDMD.xsl">md/project2view.xsl</param>
+        <param key="structMap.xsl">md/project2view.xsl</param>
          <!--<param key="html.xsl">misc/html2view.xsl</param>
          
          <param key="table.xsl">misc/xml2htmltable.xsl</param>
