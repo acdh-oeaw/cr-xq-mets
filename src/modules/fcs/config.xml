@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config type="module">
     <module key="fcs">
-        <param key="scripts.url">modules/shared/scripts/</param>
+        <param key="scripts-url">modules/shared/scripts/</param>
 <!--        
         <!-\-<param key="scripts.path">/db/apps/cr-xq/modules/fcs/xsl/</param>-\->
         <param key="scripts.path">/db/apps/cr-xq/modules/cs-xsl/</param>
