@@ -78,7 +78,7 @@ $("#resource-filter").QueryInput({params: {
         }
     });
 
-    // register to search
+    // handle loading to main (scan -> search)
     $("#navigation .load-main a").live('click', load_main);
     
     // handle link to toggle info
@@ -106,6 +106,7 @@ $("#resource-filter").QueryInput({params: {
         return false;
     });
 
+    $('.result-header a').live("click", load_main);
     $('.result-body a').live("click", load_detail);
     // navigation links target:#detail itself
     $('#detail .navigation a').live("click", load_detail);
@@ -137,7 +138,7 @@ function load_explain(event) {
         
         $.get(targetRequest,function(data) {
                 target.append(data);
-                target.append("<div class='scan' />");
+                target.append("<div class='scan load-main' />");
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
                 close_button.click(function() { target.find('.explain').toggle(); });                
@@ -186,10 +187,19 @@ function load_toc(event) {
  */
 function load_main(event) {
     event.preventDefault();
-    var target = $('#main');
-    var targetRequest = $(this).attr('href');
+    var target = $('#main #results');
+    var targetRequest = baseurl + $(this).attr('href');
     //var detailFragment = targetRequest + ' ' + search_container_selector;
-            
+    
+    if (targetRequest == undefined) return;
+    var parsedUrl = $.url(targetRequest);
+    params = parsedUrl.param();
+    // Recreate the x-dataview param from scratch
+    
+    params["x-dataview"] = 'title,kwic,facets'; //,xmlescaped
+    targetRequest = baseurl + '?' + $.param(params);
+    
+        
     $(target).load(targetRequest);
 }
 
@@ -226,16 +236,16 @@ function handle_toc(event) {
  * @param {Object} event
  */
 function filter_default_nav_results(event) {
-    var loadParent = $(this).parents('div.module');
-    var loadParentID = loadParent.attr('id');
+    var loadParent = $(this).parents('div.scan');
+    //var loadParentID = loadParent.attr('id');
     // special hack, to only apply on index-scans
-    if (loadParentID != 'fcs-query') {
+    //if (loadParentID != 'fcs-query') {
         event.preventDefault();
         var targetRequest = baseurl + '?' + $(this).serialize();
         // + ' #' + loadParentID;
         console.log(targetRequest);
         loadParent.load(targetRequest);
-    }
+    //}
 }  
 
 function filter_resource(event) {
