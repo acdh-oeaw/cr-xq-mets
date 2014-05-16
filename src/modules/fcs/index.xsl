@@ -11,7 +11,13 @@
     <xsl:param name="mode" select="'aggregate'"/>
     <xsl:param name="sort" select="'text'"/>
     <xsl:param name="filter" select="''"/>
-    <xsl:param name="filter-mode" select="if (ends-with($filter,'*')) then 'starts-with' else 'contains'"/>
+    <xsl:param name="filter-mode" select="if (starts-with($filter,'*')) then 'contains' else 'starts-with'"/>
+    <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
+        <xd:desc>
+            <xd:p>filter without '*'</xd:p>
+        </xd:desc>
+    </xd:doc>
+    <xsl:param name="filter-x" select="lower-case(translate($filter,'*',''))"/>
     <!-- contains, starts-with -->
     <xsl:param name="start-item" select="1"/>
     <xsl:param name="response-position" select="1"/>
@@ -30,7 +36,9 @@
                         <xsl:apply-templates mode="subsequence" select=".//sru:terms"/>-->
                     <xsl:apply-templates mode="subsequence" select="sru:scanResponse/sru:terms"/>
                     <!-- dont copy the sru:terms on next level they are handled recursively in subsequence-mode -->
-                    <xsl:copy-of select="sru:scanResponse/sru:extraResponseData/*[not(local-name()='terms')]"/>
+                    <sru:extraResponseData>
+                        <xsl:copy-of select="sru:scanResponse/sru:extraResponseData/*[not(local-name()='terms')]"/>
+                    </sru:extraResponseData>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:variable name="terms">
@@ -73,9 +81,11 @@
         or the response-position is other than 1 (needed for navigation scan)
         than use the subsequence of the data-set, starting from first filter-matching term +/- response-position  -->
     <xsl:template match="sru:terms" mode="subsequence">
-        <xsl:variable name="only-filtered" select="not($sort='text' and ($filter-mode='starts-with' or not(xs:integer($response-position) = 1)))"/>
+<!--        <xsl:variable name="only-filtered" select="not($sort='text' and ($filter-mode='starts-with' or not(xs:integer($response-position) = 1)))"/>-->
+        <xsl:variable name="only-filtered" select="true()"/>
         <!-- position of the matching term within the index, if there is a filter -->
-        <xsl:variable name="filtered" select="./sru:term[if ($filter!='') then if ($filter-mode='starts-with') then (starts-with(lower-case(sru:value),substring-before(lower-case($filter),'*')) or starts-with(lower-case(sru:displayTerm),substring-before(lower-case($filter),'*'))) else (contains(lower-case(sru:value), lower-case($filter)) or contains(lower-case(sru:displayTerm), lower-case($filter)))  else true()]"/>
+        <!-- only filter leaves, not higher level terms -->
+        <xsl:variable name="filtered" select="./sru:term[if ($filter-x!='' and not(sru:extraTermData/sru:terms) ) then                      if ($filter-mode='starts-with') then (starts-with(lower-case(sru:value),$filter-x)                      or starts-with(lower-case(sru:displayTerm),$filter-x))                           else (contains(lower-case(sru:value), $filter-x) or contains(lower-case(sru:displayTerm), $filter-x))                            else true()]"/>
         <xsl:variable name="match-position" select="count(sru:term[.=$filtered[1]]/preceding-sibling::sru:term)"/>
 
         <!--        <xsl:message><xsl:value-of select="$match-position" /></xsl:message>-->
@@ -93,6 +103,7 @@
                             <xsl:for-each select="$filtered">
                                 <xsl:sort select="lower-case(sru:displayTerm)" data-type="text" order="ascending"/>
                                 <xsl:copy-of select="."/>
+<!--                                    <xsl:copy-of select="."></xsl:copy-of>>-->
                             </xsl:for-each>
                         </xsl:when>
                         <xsl:otherwise>
@@ -100,6 +111,7 @@
                             <xsl:for-each select="$filtered">
                                 <xsl:sort select="sru:numberOfRecords" data-type="number" order="descending"/>
                                 <xsl:copy-of select="."/>
+<!--                                    <xsl:apply-templates select="." ></xsl:apply-templates>-->
                             </xsl:for-each>
                         </xsl:otherwise>
                     </xsl:choose>
@@ -132,19 +144,24 @@
     </xsl:template>
     <xsl:template match="sru:term">
         <xsl:param name="start-pos" select="0"/>
-        <xsl:copy>
-            <xsl:copy-of select="*[not(local-name()='extraTermData')]"/>
+        <!-- dig deaper -->
+        <xsl:variable name="subsequence">
+            <xsl:apply-templates select="sru:extraTermData/sru:terms" mode="subsequence"/>
+        </xsl:variable>
+        <xsl:if test="not(sru:extraTermData/sru:terms/sru:term and empty($subsequence/sru:terms/sru:term))">
+            <xsl:copy>
+                <xsl:copy-of select="*[not(local-name()='extraTermData')]"/>
             <!-- <xsl:attribute name="pos" select="position()"/> -->
-            <sru:extraTermData>
+                <sru:extraTermData>
                 <!--                pass pre-existing sru:extraTermData through-->
-                <xsl:copy-of select="sru:extraTermData/*[not(local-name()='terms')]"/>
-                <fcs:position>
-                    <xsl:value-of select="position() + $start-pos"/>
-                </fcs:position>
-                <!-- dig deaper -->
-                <xsl:apply-templates select="sru:extraTermData/sru:terms" mode="subsequence"/>
-            </sru:extraTermData>
-        </xsl:copy>
+                    <xsl:copy-of select="sru:extraTermData/*[not(local-name()='terms')]"/>
+                    <fcs:position>
+                        <xsl:value-of select="position() + $start-pos"/>
+                    </fcs:position>
+                    <xsl:sequence select="$subsequence"/>
+                </sru:extraTermData>
+            </xsl:copy>
+        </xsl:if>
     </xsl:template>
     <xsl:template match="group">
         <sru:term>
