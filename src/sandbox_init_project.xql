@@ -10,9 +10,15 @@ import module namespace project = "http://aac.ac.at/content_repository/project" 
 
 import module namespace index = "http://aac.ac.at/content_repository/index" at "core/index.xqm";
 
-let $project-pid := 'abacus'
+let $project-pid := 'dict-gate'
 
 (:return project:new($project-pid):)
+(:  return config:path('projects'):)
+ let $path:=$config:cr-config//config:path[@key eq 'projects']
+    return $path
+
 (: return index:store-xconf($project-pid ):)
+ 
+(:return  project:list-resources-resolved($project-pid):)
 
  

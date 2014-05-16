@@ -16,18 +16,19 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-let $resource-pid := "abacus.3",
-    $project-pid := "abacus"
+let $resource-pid := "dict-gate.3",
+    $project-pid := "dict-gate",
+    $resource-label := "A machine-readable glossary of Egyptian Arabic"
 
 (:  let $resource-pid := "dict-gate.3",
     $project-pid := "dict-gate" :)
 
 (:let $md := doc("/db/cr-data/_tmp/dict-gate/dict-gate.cmd.xml")/*:)
 (: let $md := doc("/db/cr-data/_temp/abacus_md/TEIHDR/md-abacus.9.xml"):)
-let $data  := doc("/db/cr-data/_tmp/Abraham-Loesch_Wienn_persKeys-rm-toks-ids-pos.xml")
+let $data  := doc("/db/cr-data/_temp/dict-gate.1.xml")
 
 
-(:let  $resource-pid := resource:new-with-label(doc($temp-file-path),$project-pid, $resource-label):)
+(:let  $resource-pid := resource:new-with-label($data, $project-pid, $resource-label):)
 (: return $resource-pid:)
 
 
