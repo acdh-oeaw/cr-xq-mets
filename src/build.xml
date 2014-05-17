@@ -26,11 +26,14 @@
                     property="app.name"/>
                 <replacefilter 
                     token="@app.uri@" 
-                    property="app.uri"/>
-                <replacefilter 
-                    token="@app.version@" 
-                    property="app.version"/>
-            
+                    property="app.uri"/>                            
+        </replace>
+        
+        <replace dir="." includes="repo.xml expath-pkg.xml"
+            propertyFile="../.version">            
+            <replacefilter 
+                token="@app.version@" 
+                property="app.version"/>            
         </replace>
         
         <copy file="core/config.template.xql" tofile="core/config.xql" overwrite="true"  />
