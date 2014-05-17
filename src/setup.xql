@@ -32,9 +32,9 @@ declare function local:mkcol($collection, $path) {
 
 declare variable $local:cr-writer:=doc($target||"/modules/access-control/writer.xml")/write;
 
-declare variable $local:projects-xconf := doc($target||"_cr-projects.xconf");  
+declare variable $local:projects-xconf := doc($target||"/_cr-projects.xconf");  
     
-
+util:log("INFO", "$target: "|| $target),
 (: setup projects-dir :)
 local:mkcol("", $config:projects-dir),
 local:mkcol("", $config:data-dir),
