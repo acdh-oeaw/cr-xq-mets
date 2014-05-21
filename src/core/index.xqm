@@ -159,7 +159,7 @@ declare function index:store-xconf($project-pid as xs:string) {
             let $config-path :=  "/db/system/config"||$p
             let $mkPath := repo-utils:mkcol("/db/system/config",$p)
             let $store:=xmldb:store($config-path,"collection.xconf",$xconf)
-            return xmldb:reindex($config-path)
+            return xmldb:reindex($p)
 (:            return $xconf:)
 };
 
