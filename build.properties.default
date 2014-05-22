@@ -2,7 +2,8 @@
 
 app.name=cr-xq-mets
 app.uri=http://vronk.net/ns/cr-xq-mets
-app.version=0.8
+
+# app.version= -> moved to .version
 
 # the base collection (relative to /db/) where to store all projects
 projects.dir=cr-projects
