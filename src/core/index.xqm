@@ -104,8 +104,12 @@ This is a rework of (and should replace) the original fcs:apply-index()
 @returns result of evaluating given index's path on given data. or empty node if no mapping index was found
 :)
 declare function index:apply-index($data as item(), $index as xs:string, $project) as item()* {
+  index:apply-index($data, $index, $project, () )
+};
+
+declare function index:apply-index($data as item(), $index as xs:string, $project, $type as xs:string?) as item()* {
     (:    let $index-map := index:indexfcs:get-mapping($index,$x-context, $config),:)
-        let $index-xpath := index:index-as-xpath($index,$project)
+        let $index-xpath := index:index-as-xpath($index,$project, $type)
     
 (:    $match-on := if (exists($index-map/@use) ) then concat('/', xs:string($index-map[1]/@use)) else ''
 , $match-on:)
