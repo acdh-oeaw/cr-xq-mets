@@ -242,17 +242,18 @@ declare function project:available($project-pid as xs:string) as xs:boolean {
  : @return zero or one cr_xq object.
 ~:)
 declare function project:get($project) as element(mets:mets)? {
-    if ($project instance of  element(mets:mets)) then $project
+    if ($project instance of  element(mets:mets)) then $project        
         else 
-           let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
-           return
-            if (count($project_) gt 1)
-            then 
-                let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
-                return $project_[1]
-            else $project_
-            
-                          
+        (: also try to get it out of the mixed config-sequence: :)
+           if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
+           else 
+            let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
+            return
+             if (count($project_) gt 1)
+             then 
+                 let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+                 return $project_[1]
+             else $project_
 };
 
 declare function project:usersaccountname($project-pid as xs:string) as xs:string {
@@ -320,7 +321,7 @@ declare %private function project:structure($project-pid as xs:string, $action a
  : used as a constructor function for new resources.
 ~:)
 declare function project:path($project-pid as xs:string, $key as xs:string) as xs:string? {
-    let $project-config:=project:parameters($project-pid)//param[@key=$key||".path"]/xs:string(.),
+    let $project-config:=project:parameters($project-pid)[@key=$key||".path"]/xs:string(.),
         $global-key := 
             switch($key)
                 case "workingcopy" return "workingcopies"
