@@ -13,18 +13,19 @@ let $dcr-cmd-map := doc("/db/apps/cr-xq/modules/smc/data/dcr-cmd-map.xml")
 let $xsl-smc-op := doc("/db/apps/cr-xq/modules/smc/xsl/smc_op.xsl")
 
 let $format := request:get-parameter("x-format",'htmlpage'),
-    $op := request:get-parameter("operation", "")
+    $op := request:get-parameter("operation", ""),
+    $mode := request:get-parameter("mode", "") (: refresh :)
 
 let $x-context := "mdrepo",
     $config := config:config($x-context)
 
 
-let $result := if ($op eq '' or contains ($op, 'mappings-overview')) then                    
+let $result := if (contains ($op, 'mappings-overview')) then                    
                     smc:mappings-overview($config, $format)
                 else if ($op = 'gen-mappings') then                
-                    smc:gen-mappings($config, $x-context, true(), 'raw') 
+                    smc:gen-mappings($config, $x-context, ($mode eq 'refresh'), 'raw') 
                 else if (contains ($op, 'gen-graph')) then                    
-                    smc:gen-graph($config, $x-context)
+                    smc:gen-graph($config, $x-context)                
                 else 
                     diag:diagnostics("unsupported-operation", $op)
 
