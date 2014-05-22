@@ -12,6 +12,7 @@ import module namespace repo-utils = "http://aac.ac.at/content_repository/utils"
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 import module namespace index = "http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
+declare namespace cmd = "http://www.clarin.eu/cmd/";
 declare  namespace cr="http://aac.ac.at/content_repository";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 
