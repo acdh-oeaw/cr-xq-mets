@@ -703,7 +703,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
          	              <sru:recordPacking>xml</sru:recordPacking>         	              
          	              <sru:recordData>{$rec-data}</sru:recordData>         	              
          	              <sru:recordPosition>{$pos}</sru:recordPosition>
-         	              <sru:recordIdentifier>{xs:string($rec-data/fcs:ResourceFragment[1]/@ref)}</sru:recordIdentifier>
+         	              <sru:recordIdentifier>{($rec-data/fcs:ResourceFragment[1]/data(@ref),$rec-data/data(@ref))[1]}</sru:recordIdentifier>
          	          </sru:record>
          	   }</sru:records>,
              $end-time2 := util:system-dateTime()
@@ -799,9 +799,25 @@ all based on mappings and parameters (data-view)
 :)
 declare function fcs:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
     
-    let $title := fcs:apply-index($orig-sequence-record-data, "title",$x-context, $config)
+    let $title := index:apply-index($orig-sequence-record-data, "title", $config)
     (: this is (hopefully) temporary FIX: the resource-pid attribute is in fcs-namespace (or no namespace?) on resourceFragment element!  	:)
-	let $resource-pid:= $record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME])
+	let $resource-pid:= ($record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),
+	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$config,'match-only'))[1]
+	
+	let $resource-ref :=   if (exists($resource-pid)) 
+	                               then 
+	                                   concat('?operation=searchRetrieve&amp;query=fcs.resource="',
+	                                           replace(xmldb:encode-uri(replace($resource-pid[1],'//','__')),'__','//'),
+	                                           '"&amp;x-context=', $x-context,
+	                                           '&amp;x-dataview=title,full',
+	                                           '&amp;version=1.2'
+	                                           (: rather nohighlight for full resource now
+	                                           if (exists(util:expand($record-data)//exist:match/ancestor-or-self::*[@cr:id][1]))
+	                                           then '&amp;x-highlight='||string-join(distinct-values(util:expand($record-data)//exist:match/ancestor-or-self::*[@cr:id][1]/@cr:id),',')
+	                                           else ():)
+	                                         )
+	                               else ""
+	
 (:	let $resource-pid:= util:eval("$record-data-input/ancestor-or-self::*[1]/data(@cr:"||$config:RESOURCE_PID_NAME||")"):)
 	let $project-id := cr:resolve-id-to-project-pid($x-context)
     
@@ -813,16 +829,18 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     (: if the match is a whole resourcefragment we dont need a lookup, its ID is in the attribute :)   
     let $resourcefragment-pid :=    if ($record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
                                     then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
-                                    else rf:lookup-id($match-ids[1],$resource-pid, $project-id)[1]
-    let $rf :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME]) 
+                                    else if (exists($match-ids)) then rf:lookup-id($match-ids[1],$resource-pid, $project-id)[1]
+                                          else ()
+    let $rf :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
                     then $record-data-input
                     else rf:lookup($match-ids[1],$resource-pid, $project-id)
-    let $rf-entry :=  rf:record($resourcefragment-pid,$resource-pid, $project-id)
+                    
+    let $rf-entry :=  if (exists($resourcefragment-pid)) then rf:record($resourcefragment-pid,$resource-pid, $project-id) else ()
     let $res-entry := $rf-entry/parent::mets:div[@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE]
 	
     let $matches-to-highlight:= (tokenize(request:get-parameter("x-highlight",""),","),$match-ids)
-    let $record-data :=     if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
-                            then 
+    let $record-data :=  if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
+                                then 
 (:                                if ($config("x-highlight")="off"):)
                                 if ($config instance of map()) 
                                 then 
@@ -830,7 +848,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     then $rf
                                     else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
                                 else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
-                            else $rf
+                             else $rf
+                          
 	(: to repeat current $x-format param-value in the constructed requested :)
 	let $x-format := request:get-parameter("x-format", $repo-utils:responseFormatXml)
 	let $resourcefragment-ref :=   if (exists($resourcefragment-pid)) 
@@ -838,7 +857,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 	                                   concat('?operation=searchRetrieve&amp;query=fcs.rf="',
 	                                           replace(xmldb:encode-uri(replace($resourcefragment-pid[1],'//','__')),'__','//'),
 	                                           '"&amp;x-context=', $x-context,
-	                                           '&amp;x-dataview=full',
+	                                           '&amp;x-dataview=title,full',
 	                                           '&amp;version=1.2',
 	                                           if (exists(util:expand($record-data)//exist:match/ancestor-or-self::*[@cr:id][1]))
 	                                           then '&amp;x-highlight='||string-join(distinct-values(util:expand($record-data)//exist:match/ancestor-or-self::*[@cr:id][1]/@cr:id),',')
@@ -930,21 +949,37 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     return
         if ($data-view = "raw") 
         then $record-data
-        else <fcs:Resource pid="{$resource-pid}">                
-                <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
-                    for $d in tokenize($data-view,',\s*') 
-                    return 
-                        let $data:= switch ($d)
-(:                                        case "full"         return $rf[1]/*:)
-                                        case "full"         return $record-data[1]/*
-                                        case "facs"         return $dv-facs
-                                        case "title"        return $dv-title
-                                        case "kwic"         return $kwic
-                                        case "navigation"   return $dv-navigation
-                                        case "xmlescaped"   return $dv-xmlescaped
-                                        default             return ()
-                         return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
-                }</fcs:ResourceFragment>
+        else <fcs:Resource pid="{$resource-pid}" ref="{$resource-ref}">                
+                { (: if not resource-fragment couldn't be identified, don't put it in the result, just DataViews directly into Resource :)
+                if ($rf-entry) then         
+                    <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
+                        for $d in tokenize($data-view,',\s*') 
+                        return 
+                            let $data:= switch ($d)
+    (:                                        case "full"         return $rf[1]/*:)
+                                            case "full"         return $record-data[1]/*
+                                            case "facs"         return $dv-facs
+                                            case "title"        return $dv-title
+                                            case "kwic"         return $kwic
+                                            case "navigation"   return $dv-navigation
+                                            case "xmlescaped"   return $dv-xmlescaped
+                                            default             return ()
+                             return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
+                    }</fcs:ResourceFragment>
+                 else 
+                     for $d in tokenize($data-view,',\s*') 
+                        return 
+                            let $data:= switch ($d)
+    (:                                        case "full"         return $rf[1]/*:)
+                                            case "full"         return $record-data[1]/*
+                                            case "facs"         return $dv-facs
+                                            case "title"        return $dv-title
+                                            case "kwic"         return $kwic
+                                            case "navigation"   return $dv-navigation
+                                            case "xmlescaped"   return $dv-xmlescaped
+                                            default             return ()
+                             return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
+                 }
             </fcs:Resource>
 
 };
