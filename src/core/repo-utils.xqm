@@ -243,12 +243,16 @@ declare function repo-utils:parse-x-context($x-context as xs:string, $config) as
     return $maps
 };
 
+declare function repo-utils:context-to-data($x-context as xs:string, $config) as item()* {
+    repo-utils:context-map-to-data(repo-utils:parse-x-context($x-context, $config),$config)
+   };
+
 (:~
  : returns nodes of the given context, e.g. "x-context=abacus2" or "x-context=abacus2.1,abacus2.2".
  : resources or fragments *excluded* via x-context ("x-context=abacus2,-abacus2.1") are not filtered out
  : here but  
 ~:)
-declare function repo-utils:context-to-data($x-context as map()*, $config) as item()* {
+declare function repo-utils:context-map-to-data($x-context as map()*, $config) as item()* {
     let $path-expressions := 
         for $p at $pos in $x-context  
         let $type := map:get($p,'type'),
