@@ -102,7 +102,7 @@ also REMOVED generating a list of profile-id#profile-name pairs, as it was too e
 declare function cmdcheck:scan-profiles($x-context as xs:string, $config as node()*) as item()* {
       (: try- to handle namespace problem - primitively :) 
       
-    let $context := repo-utils:context-to-collection($x-context, $config),
+    let $context := repo-utils:context-to-data($x-context, $config),
         $ns-uri := namespace-uri($context[1]/*)  
             
 
@@ -113,7 +113,7 @@ let $profiles-summary :=
             
              
             let $missing-profiles-records := $context//cmd:MdProfile[. = '']/ancestor::cmd:CMD
-            let $missing-profiles-distinct-names := distinct-values($missing-profiles-records/cmd:Components/*/local-name())
+            let $missing-profiles-distinct-names := if (exists($missing-profiles-records)) then distinct-values($missing-profiles-records/cmd:Components/*/local-name()) else ()
                         
             let $missing-profiles := for $profile-name in $missing-profiles-distinct-names
                 (:  if ID missing try to fill up from smc:cmd-terms :)
