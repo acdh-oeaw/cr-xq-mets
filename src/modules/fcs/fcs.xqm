@@ -485,8 +485,8 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs
     let $path := index:index-as-xpath($scan-clause,$project-pid)
     (:let $data-collection := repo-utils:context-to-collection($x-context, $config),
         $nodes := util:eval("$data-collection//"||$path):)
-    let $context-parsed := repo-utils:parse-x-context($x-context,$config)
-    let $data := repo-utils:context-to-data($context-parsed,$config),
+(:    let $context-parsed := repo-utils:parse-x-context($x-context,$config):)
+    let $data := repo-utils:context-to-data($x-context,$config),
     (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)
         $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize)
     
@@ -665,7 +665,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
         (: FIXME add support for index 'fcs.resource' :)
         let $data := if (contains($query,$config:INDEX_INTERNAL_RESOURCEFRAGMENT)) 
                      then collection(project:path($project-id, 'resourcefragments'))  
-                     else repo-utils:context-to-data($context-parsed,$config)
+                     else repo-utils:context-map-to-data($context-parsed,$config)
         
         let $xpath-query := cql:cql-to-xpath($query,$project-id)
         
