@@ -20,7 +20,7 @@ let $project-pid := 'mdrepo'
  let $check-projects-path := if (empty(config:path('projects'))) then xmldb:reindex("/db/apps")
                              else true()
 let $new-project := project:new($project-pid)
-return if (exists($new-project)) then  ("Created project"||$project-pid||" in "||config:path('projects'), $new-project)
+return if (exists($new-project)) then  ("Created project: "||$project-pid||" in "||config:path('projects'), $new-project)
           else if (exists(project:get($project-pid))) then "Project "||$project-pid||" already exists."
           else "Project "||$project-pid||" could not be instantiated."
 (: return index:store-xconf($project-pid ):)
