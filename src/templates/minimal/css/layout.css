@@ -50,7 +50,7 @@ height:70px;
 /* set the box-model to border for easier widths setting */
 #navigation, #main, #detail,
 .static-text, .intro-image{
-    float:left;
+/*    float:left;*/
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
     box-sizing:border-box;
@@ -63,10 +63,11 @@ height:70px;
 
 /* basic positioning of the main blocks on the screen */
 @media all and (min-width: 1200px) {
+    #navigation, #main, #detail {position:absolute; bottom:0; top:90px;   }
     #navigation { width:24%; min-width:150px; float:left;    /*margin-right:1em; */ }
     /*#left-menu {float: left; width:250px; height:500px; overflow:auto;}*/
-    #main{    /* margin-left:2em; */    float:left;    width:29%; /* + 1% margin-right */ }
-    #detail {     position:fixed; right:0; width:45%;     margin-right:0; }
+    #main{    /* margin-left:2em;     float:left; */ position:absolute; left:24%; width:29%; /* + 1% margin-right */ }
+    #detail {     right:0; width:45%; margin-right:0; }
 }
 
 @media all and (max-width: 1199px) {
@@ -133,6 +134,8 @@ height:70px;
 .result-header .note {display:none;}
 
 .result-navigation {float:right;}
+
+.result-body, .detail-content {overflow: auto; height:90%;}
 
 /*#content, #main {float: left;}*/
 /*******************/
