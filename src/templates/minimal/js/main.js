@@ -47,14 +47,15 @@ function minimal_template_ui_setup() {
         active : 0
     });
 
-$("#resource-filter").QueryInput({params: {                        
+/* not working yet
+    $("#resource-filter").QueryInput({params: {                        
             resource: {label:"Werk", value:"", widget:"selectone", static_source: baseurl + "fcs?version=1.2&operation=scan&scanClause=fcs.resource&x-format=json"},            
         submit_resource: {value:"filter", label:"", widget:"submit" }},
            onValueChanged: function(v) {console.log(this, v)}
             });
 
      $('#input-submit_resource').live("click", filter_resource)
-     
+   */  
      
     // Create tabs for the detail view, xmlViewer may need refresh.
     // tab-view currently deactivated
@@ -293,7 +294,7 @@ function load_detail_data(targetRequest) {
     params = parsedUrl.param();
     // Recreate the x-dataview param from scratch
     
-    params["x-dataview"] = 'title,navigation,full,facs'; //,xmlescaped
+    params["x-dataview"] = cr_config.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     
     // The detail view is hidden at first
