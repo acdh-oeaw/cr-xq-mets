@@ -114,7 +114,9 @@ declare function ltb:lookup($element-id as xs:string, $resource-pid as xs:string
 ~:)
 declare function ltb:dump($resource-pid as xs:string, $project-pid as xs:string) as document-node()? {
 let $ltb:location:=  resource:path($resource-pid, $project-pid, "lookuptable"  ),
-        $ltb:doc := if (doc-available($ltb:location)) then doc($ltb:location) else util:log("INFO","Could not locate lookuptable from "||$ltb:location) 
+        $ltb:doc := if (doc-available($ltb:location)) then doc($ltb:location) else
+        util:log-app($config:app-name,"ERROR","Could not locate lookuptable from "||$ltb:location)
+         
     return $ltb:doc
 };
 
