@@ -166,22 +166,104 @@ declare variable $config:app-version := $config:expath-descriptor/xs:string(@ver
 declare variable $config:app-name-full := $config:expath-descriptor/xs:string(@name);
 declare variable $config:app-name-abbreviation := $config:expath-descriptor/xs:string(@abbrev);
 
-
-declare function config:path-relative-to-absolute ($path as element(config:path)) as xs:string? {
-    if (starts-with($path,'/'))
-    then $path
-    else config:path-relative-to-absolute($path, ())
+(:~
+ : Resolves one path path key to the full db-path.
+ :
+ : This function accepts either one single argument, the key, and resolves 
+ : it to the 'paths' branch of the conf.xml file in config:app-root; or it accepts two 
+ : arguments, the first being a sequence of config:path elements, the second one the key 
+ : of the path to resolve. 
+ : The latter function makes it possible to inject arbitrary paths to the resolver
+ : which are only known at run time, e.g. the home collection of a specific project.
+ : @param $key the path element to be resolved
+ : @return the resolved path (zero or one string)  
+:)
+declare function config:path($key as xs:string) as xs:string? {
+    let $path:=$config:cr-config//config:path[@key eq $key]
+    return
+        if (exists($path))
+        then config:path-relative-to-absolute($path)
+        else ()
 };
 
-declare function config:path-relative-to-absolute($path as element(config:path), $steps-before as element(config:path)*) as xs:string? {
+(:~
+ : Resolves one path path key to the full db-path.
+ :
+ : This function accepts either one single argument, the key, and resolves 
+ : it to the 'paths' branch of the conf.xml file in config:app-root; or it accepts two 
+ : arguments, the first being a sequence of config:path elements, the second one the key 
+ : of the path to resolve. 
+ : The latter function makes it possible to inject arbitrary paths to the resolver
+ : which are only known at run time, e.g. the home collection of a specific project.
+ : @param $key the path element to be resolved
+ : @param $paths the path elements the key should be resolved against
+ : @return the resolved path (zero or one string)  
+:)
+declare function config:path($paths as element(config:path)*, $key as xs:string)  {
+    let $path:=$paths/self::config:path[@key eq $key]
+    return
+        if (exists($path))
+        then config:path-relative-to-absolute($paths,$path)
+        else ()
+};
+
+
+(:~
+ : Resolves one single path element in conf.xml to the full db-path.
+ :
+ : path elements look like this (note the @base attribute):
+ : 
+ : <path key="data" xml:id="data">/db/cr-data</path>
+ : <path key="metadata" base="#data">_md</path>
+ :
+ : This function accepts either one single argument, the path element, and resolves 
+ : it to the 'paths' branch of the conf.xml file in config:app-root; or it accepts two 
+ : arguments, the first being a sequence of config:path elements, the second one the path element
+ : to resolve. The latter function makes it possible to inject arbitrary paths to the resolver
+ : which are only known at run time, e.g. the home collection of a specific project.
+ : @param $path the path element to be resolved
+ : @return the resolved path (zero or one string)  
+:)
+declare function config:path-relative-to-absolute($path as element(config:path)) as xs:string? {
+    if (starts-with($path,'/'))
+    then $path
+    else 
+        let $static-paths:=$config:cr-config//config:path
+        return config:path-relative-to-absolute($static-paths, $path, ())
+};
+
+
+(:~
+ : Resolves one single path element in conf.xml to the full db-path.
+ :
+ : path elements look like this (note the @base attribute):
+ : 
+ : <path key="data" xml:id="data">/db/cr-data</path>
+ : <path key="metadata" base="#data">_md</path>
+ :
+ : This function accepts either one single argument, the path element, and resolves 
+ : it to the 'paths' branch of the conf.xml file in config:app-root; or it accepts two 
+ : arguments, the first being a sequence of config:path elements, the second one the path element
+ : to resolve. The latter function makes it possible to inject arbitrary paths to the resolver
+ : which are only known at run time, e.g. the home collection of a specific project.
+ : @param $path the path element to be resolved
+ : @return the resolved path (zero or one string)  
+:)
+declare function config:path-relative-to-absolute ($paths as element(config:path)*, $path as element(config:path)) as xs:string? {
+    if (starts-with($path,'/'))
+    then $path
+    else config:path-relative-to-absolute($paths, $path, ())
+};
+
+declare function config:path-relative-to-absolute($paths as element(config:path)*, $path as element(config:path), $steps-before as element(config:path)*) as xs:string? {
     if (starts-with($path,'/'))
     then string-join(($path,reverse($steps-before)),'/')
     else
         let $parent-id := substring-after($path/@base,'#')
-        let $parent:= $config:cr-config//config:path[@xml:id eq $parent-id]
+        let $parent:= $paths[@key = $parent-id]
         return
             if (exists($parent))
-            then config:path-relative-to-absolute($parent,($steps-before,$path))
+            then config:path-relative-to-absolute($paths,$parent,($steps-before,$path))
             else if ($parent-id eq $config:app-root-key) then string-join(($config:app-root,$path,reverse($steps-before)),'/')  
             else string-join(($path,reverse($steps-before)),'/')
 };
@@ -190,14 +272,6 @@ declare variable $config:paths as map :=
     map:new(for $p in $config:cr-config//config:path
             return map:entry($p/@key, data($p)))
 ;
-
-declare function config:path($key as xs:string) as xs:string? {
-    let $path:=$config:cr-config//config:path[@key eq $key]
-    return
-        if (exists($path))
-        then config:path-relative-to-absolute($path)
-        else ()
-};
 
 (:~
  : Returns the xml resource by resolving the relative path $relPath using the current application context. 

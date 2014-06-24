@@ -321,22 +321,46 @@ declare %private function project:structure($project-pid as xs:string, $action a
  : used as a constructor function for new resources.
 ~:)
 declare function project:path($project-pid as xs:string, $key as xs:string) as xs:string? {
-    let $project-config:=project:parameters($project-pid)[@key=$key||".path"]/xs:string(.),
-        $global-key := 
+    (: the path may be specified explicitly as a project configuration parameter :)
+    let $project-config:=project:parameters($project-pid)//param[@key=$key||".path"]/xs:string(.)
+    
+    (: in some cases the path will be just a subcollection of a repo-wide path configuration, 
+        so we can just concatenate it with the project-pid (see below):)
+    let $global-key := 
             switch($key)
                 case "workingcopy" return "workingcopies"
+                case "workingcopies" return "workingcopies"
                 case "lookuptable" return "lookuptables"
+                case "lookuptables" return "lookuptables"
                 case "master"       return "data"
                 case "resourcefragment"       return "resourcefragments"
-                case "home"         return "projects"
-                default return $key
-    let $default := config:path($global-key)
+                case "resourcefragments"       return "resourcefragments"
+                case "home"         return "projects" 
+                default return ()
+                
+    let $global-path := if (exists($global-key)) then config:path($global-key) else ()
+    
+    (: for some cases we have to inject some project-specific paths here in 
+        order to be able to resolve the full path with the project-agnostic 
+       config:path-relative-to-absolute() function :)
+       
+   let $project-path :=
+        if (exists($project-config) or exists($global-path))
+        then ()
+        else 
+            let $static-paths := $config:cr-config//config:path
+            let $project-paths := (
+                <config:path key="project-home" base="#projects">{$project-pid}</config:path>
+            )
+            return config:path(($static-paths,$project-paths),$key)
     return 
         switch(true())
-            case exists($project-config) return $project-config
-            case exists($default)        return $default||"/"||$project-pid
-            default                      return ()
+            case exists($project-config)    return $project-config
+            case exists($global-path)       return $global-path||"/"||$project-pid
+            case exists($project-path)      return $project-path
+            default                         return ()
 };
+
 
 (:~
  : Stores the project's mets record in the database and returns the path 
@@ -906,7 +930,6 @@ declare function project:acl($project-pid as xs:string, $data as element(sm:perm
 
 
 
-
 (:~
  : Returns the handle to the given project.
  : Handles are stored directly in the CMDI metadata of the resoruce as we cannot 
@@ -1088,4 +1111,40 @@ declare function project:do-get-toc-resolved($node as node(), $resource-pid as x
                        }
 
         default return $node
+};
+
+
+
+
+(:~ gets the mets file Group for the term labels of a project
+ : @param $project-pid the id of the project to query
+ : @return sequence of docs() with term labels following  
+ :)
+declare function project:termlabels($project-pid as xs:string) as element(mets:fileGrp)? {
+    let $doc:=project:get($project-pid)
+    return $doc//mets:fileGrp[@ID eq "termlabels"]
+};
+
+(:~ gets the term label data of a project
+ : @param $project-pid the id of the project to query
+ : @return sequence of docs() with term labels following  
+ :)
+declare function project:get-termlabels($project-pid as xs:string) as item()* {
+    let $termlabels := project:termlabels($project-pid)
+    return $termlabels/mets:file/mets:FLocat/doc(@xlink:href)
+};
+
+declare function project:add-termlabels($project-pid as xs:string, $data as element(termLib)) as item()* {
+    let $termlabels-path:= project:path($project-pid,"termlabels"),
+        $termlabels := project:termlabels($project-pid),
+        $new-filename := 
+            let $counter := count($termlabels/mets:file)+1
+            return project:termlabel-new-filename($project-pid,"termlabels"||$counter||".xml") 
+    return () 
+};
+
+declare %private function project:termlabel-new-filename($project-pid as xs:string, $filename as xs:string) {
+    if (doc-available(project:path($project-pid,"termlabels")||"/"||$filename))
+    then project:termlabel-new-filename($project-pid, replace($filename,'\.xml$','_1.xml'))
+    else $filename
 };
