@@ -8,7 +8,7 @@ margin:10px;
 /* header */
 #header{
 margin-bottom:1em;
-height:70px;
+height:90px;
 }
 #site-name{
     display:inline;
@@ -61,20 +61,25 @@ height:70px;
     margin-right: 1%; 
 }
 
+    
 /* basic positioning of the main blocks on the screen */
 @media all and (min-width: 1200px) {
-    #navigation, #main, #detail {position:absolute; bottom:0; top:90px;   }
+    #navigation, #detail { position:absolute; bottom:0; top:110px; overflow: auto;  }
+    #main { position:absolute; bottom:0; top:110px; overflow: hidden;  }
+    #results {overflow: auto; height:90%;}
+    
     #navigation { width:24%; min-width:150px; float:left;    /*margin-right:1em; */ }
     /*#left-menu {float: left; width:250px; height:500px; overflow:auto;}*/
-    #main{    /* margin-left:2em;     float:left; */ position:absolute; left:24%; width:29%; /* + 1% margin-right */ }
-    #detail {     right:0; width:45%; margin-right:0; }
+    #main{    /* margin-left:2em;     float:left; */ position:absolute;    left:25%; width:29%; /* + 1% margin-right */ }
+    #detail {     right:0; width:45%;     margin-right:0; }
 }
 
 @media all and (max-width: 1199px) {
+    #navigation-main-wrapper {position:absolute; top:110px; bottom:0; overflow:auto; width:39%; min-width:150px; }
     #navigation, #main { float:none;}
-    #navigation { width:39%; min-width:150px; /*margin-right:1em; */ }
+    #navigation { /* width:100%; margin-right:1em; */ }
     /*#left-menu {float: left; width:250px; height:500px; overflow:auto;}*/
-    #main{    /* margin-left:2em; */    width:39%; /* + 1% margin-right */ }
+    #main{    /* margin-left:2em;     width:39%; *//* + 1% margin-right */ }
     #detail {     position:fixed; right:0; width:59%;     margin-right:0; }
 }
 /*******************/
@@ -135,7 +140,7 @@ height:70px;
 
 .result-navigation {float:right;}
 
-.result-body, .detail-content {overflow: auto; height:90%;}
+/*.result-body, .detail-content {overflow: auto; height:90%;}*/
 
 /*#content, #main {float: left;}*/
 /*******************/

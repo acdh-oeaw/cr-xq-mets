@@ -310,7 +310,7 @@ declare function resource:remove-file($fileid as xs:string,$resource-pid as xs:s
  : The data is read from resource's fileGrp in the project's mets record.  
  : This currently may be one of the following: 
  :  - master
- :  - workingcopy
+ :  - workingcopy (or wc, workincopy, workingcopies)
  :  - lookuptable
  :  - resourcefragments  
  :

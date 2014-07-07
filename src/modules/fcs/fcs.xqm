@@ -606,7 +606,7 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
 };
 
 declare %private function fcs:term-to-label($term as xs:string, $index as xs:string, $project-pid as xs:string) as xs:string{
-    let $labels := doc(project:path($project-pid,"home")||"/termlabels.xml")
+    let $labels := project:termlabels($project-pid)
     return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]
 };
 
