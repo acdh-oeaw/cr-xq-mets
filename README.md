@@ -29,23 +29,23 @@ Setup steps:
 
 1. Edit build.properties
 
-```
+  ```
 	app.name=cr-xq
 	app.uri=http://vronk.net/ns/cr-xq
 	app.version=0.3
 	projects.dir=cr-projects
-```
+  ```
 
-	during build they are used to generate 
+  during build they are used to generate 
 
-```	
+  ```	
 	repo.template -> repo.xml
 	expath-pkg.template.xml -> expath-pkg.xml
 	
 	$projects.dir + core/config.template.xql -> config.xql
-```
+  ```
 	
-2. ant generates an `.xar package, that can be installed via package manager 
+2. ant generates an `.xar` package, that can be installed via package manager 
 
 	upon installation `setup.xql` is executed which generates the `$projects.dir`
 	and sets up the default project (as copy of the `project.template`-collection)
