@@ -12,14 +12,27 @@ function genCQLInput(key, param_settings) {
         
         
         var query_object = new Query(key, param_settings);
-        var new_cql_widget = $("<div id='" + key + "-widget' ></div>");
+        var new_cql_widget = $("<div id='" + key + "-widget' >" +
+                "<div class='cmd-wrapper'><span id='cmd-advanced-query' class='ui-icon ui-icon-zoomin cmd_detail' title='Komplexere Abfragen'/>" +                
+              "</div><div class='search-clauses-table'></div></div>");
         
+        var new_cql_widget_proper = new_cql_widget.find(".search-clauses-table")
+        
+                
+        /* hide initially */        
+        new_cql_widget_proper.hide()
+        
+        new_cql_widget.find("#cmd-advanced-query").on("click", function() {
+                    console.log(new_cql_widget_proper);
+            new_cql_widget_proper.toggle();
+        }  );
+
         // link the widget and the query object 
         //new_cql_widget.data("query_object") = query_object;
-        new_cql_widget.query_object = query_object;
+        new_cql_widget_proper.query_object = query_object;
         console.log("new_cql_widget.query_object:");
-        console.log(new_cql_widget.query_object);
-        query_object.widget = new_cql_widget;
+        console.log(new_cql_widget_proper.query_object);
+        query_object.widget = new_cql_widget_proper;
         query_object.updatedCQL = function() {
             new_input.val(query_object.cql);
         };
@@ -259,7 +272,7 @@ function SearchClause(query_object, and_pos, or_pos) {
         var div_controls = $("<span class='cmd-wrapper controls' />");
         var cmd_del = $("<span class='ui-icon ui-icon-close cmd_sc_delete' />");
         var cmd_and = $("<span class='ui-icon cmd_add_and' >&amp;</span>");
-        var cmd_or = $("<span class='ui-icon cmd_add_or' >OR</span>");
+        var cmd_or = $("<span class='ui-icon ui-icon-carat-1-s cmd_add_or' >OR</span>");
         
         div_controls.append(cmd_del).append(cmd_and).append(cmd_or);
         
