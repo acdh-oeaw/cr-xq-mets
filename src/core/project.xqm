@@ -242,18 +242,20 @@ declare function project:available($project-pid as xs:string) as xs:boolean {
  : @return zero or one cr_xq object.
 ~:)
 declare function project:get($project) as element(mets:mets)? {
-    if ($project instance of  element(mets:mets)) then $project        
+    if ($project instance of  element(mets:mets)) then $project
         else 
         (: also try to get it out of the mixed config-sequence: :)
            if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
            else 
             let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
-            return
-             if (count($project_) gt 1)
-             then 
-                 let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
-                 return $project_[1]
-             else $project_
+           return
+            if (count($project_) gt 1)
+            then 
+                let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+                return $project_[1]
+            else $project_
+            
+                          
 };
 
 declare function project:usersaccountname($project-pid as xs:string) as xs:string {
@@ -335,7 +337,8 @@ declare function project:path($project-pid as xs:string, $key as xs:string) as x
                 case "master"       return "data"
                 case "resourcefragment"       return "resourcefragments"
                 case "resourcefragments"       return "resourcefragments"
-                case "home"         return "projects" 
+                case "home"         return "projects"
+                case "indexes"      return "indexes"        
                 default return ()
                 
     let $global-path := if (exists($global-key)) then config:path($global-key) else ()

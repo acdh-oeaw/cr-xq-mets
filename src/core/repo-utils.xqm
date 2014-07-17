@@ -453,6 +453,7 @@ declare function repo-utils:get-from-cache($doc-name as xs:string,$config, $type
    let   $project-pid := config:param-value($config,'project-pid'),
         $cache-path := project:path($project-pid, $type)
     let $path := fn:concat($cache-path, "/", $doc-name)
+    let $log := util:log-app("DEBUG",$config:app-name,"retrieving from path "||$path)
     return if (util:is-binary-doc($path))
             then util:binary-doc($path)
             else fn:doc($path)
@@ -498,7 +499,8 @@ declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node
         $writer := fn:doc(config:path('writer.file')),
         $writer-name :=  $writer//write-user/text(),
         $writer-pw := $writer//write-user-cred/text()
-    let $log := util:log-app("INFO","cr-xq",config:path('writer.file'))
+    let $log := util:log-app("DEBUG",$config:app-name,"storing to file "||$cache-path||"/"||$doc-name)
+    let $log := util:log-app("DEBUG",$config:app-name,"reading credentials from "||config:path('writer.file'))
   return system:as-user($writer-name, $writer-pw,
         let $mkcol :=   if (xmldb:collection-available($cache-path))
                     then ()
