@@ -13,14 +13,16 @@ import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  ".
 import module namespace index = "http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace cmd = "http://www.clarin.eu/cmd/";
-declare  namespace cr="http://aac.ac.at/content_repository";
+declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
+declare namespace mets="http://www.loc.gov/METS/";
+
 
 
 
 declare function query:execute-query($cql as xs:string, $data as node()*, $project) as node()* {
     
-    let $xpath := cql:cql-to-xpath($cql, $project)
+    let $xpath := cql:cql-to-xpath(replace($cql,'&amp;','&amp;amp;'), $project)
     return util:eval("($data)//"||$xpath)
 (:  return $xpath:)
     
