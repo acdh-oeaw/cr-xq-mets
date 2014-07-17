@@ -327,15 +327,23 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
 	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
     let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index-name, $sort, $max-depth)),
-        $dummy := util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
         $dummy2 := util:log-app("DEBUG", $config:app-name, "is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
+        $log := (util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
+                util:log-app("DEBUG", $config:app-name, "scan-clause="||$scan-clause),
+                util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
+                util:log-app("DEBUG", $config:app-name, "start-item="||$start-item),
+                util:log-app("DEBUG", $config:app-name, "max-items="||$max-items),
+                util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
+                util:log-app("DEBUG", $config:app-name, "p-sort="||$p-sort)
+        ),
   (: get the base-index from cache, or create and cache :)
   $index-scan := 
   if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
           let $dummy := util:log-app("DEBUG", $config:app-name, "reading index "||$index-doc-name||" from cache")
           return repo-utils:get-from-cache($index-doc-name, $config)           
         else
-        (: TODO: cmd-specific stuff has to be integrated in a more dynamic way! :) 
+        (: TODO: cmd-specific stuff has to be integrated in a more dynamic way! :)
+            let $dummy := util:log-app("DEBUG", $config:app-name, "generating index "||$index-doc-name)
             let $data :=
                 (:
                 if ($index-name eq $cmdcoll:scan-collection) then
@@ -830,17 +838,17 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     let $resourcefragment-pid :=    if ($record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
                                     then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
                                     else if (exists($match-ids)) then rf:lookup-id($match-ids[1],$resource-pid, $project-id)[1]
-                                          else ()
+    else ()
     let $rf :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
                     then $record-data-input
                     else rf:lookup($match-ids[1],$resource-pid, $project-id)
-                    
-    let $rf-entry :=  if (exists($resourcefragment-pid)) then rf:record($resourcefragment-pid,$resource-pid, $project-id) else ()
+    let $rf-entry :=  if (exists($resourcefragment-pid)) then rf:record($resourcefragment-pid,$resource-pid, $project-id)
+    else ()
     let $res-entry := $rf-entry/parent::mets:div[@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE]
 	
     let $matches-to-highlight:= (tokenize(request:get-parameter("x-highlight",""),","),$match-ids)
-    let $record-data :=  if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
-                                then 
+    let $record-data :=     if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
+                            then 
 (:                                if ($config("x-highlight")="off"):)
                                 if ($config instance of map()) 
                                 then 
@@ -848,8 +856,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     then $rf
                                     else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
                                 else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
-                             else $rf
-                          
+                            else $rf
 	(: to repeat current $x-format param-value in the constructed requested :)
 	let $x-format := request:get-parameter("x-format", $repo-utils:responseFormatXml)
 	let $resourcefragment-ref :=   if (exists($resourcefragment-pid)) 
@@ -953,19 +960,19 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                 { (: if not resource-fragment couldn't be identified, don't put it in the result, just DataViews directly into Resource :)
                 if ($rf-entry) then         
                     <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
-                        for $d in tokenize($data-view,',\s*') 
-                        return 
-                            let $data:= switch ($d)
-    (:                                        case "full"         return $rf[1]/*:)
-                                            case "full"         return $record-data[1]/*
-                                            case "facs"         return $dv-facs
-                                            case "title"        return $dv-title
-                                            case "kwic"         return $kwic
-                                            case "navigation"   return $dv-navigation
-                                            case "xmlescaped"   return $dv-xmlescaped
-                                            default             return ()
-                             return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
-                    }</fcs:ResourceFragment>
+                    for $d in tokenize($data-view,',\s*') 
+                    return 
+                        let $data:= switch ($d)
+(:                                        case "full"         return $rf[1]/*:)
+                                        case "full"         return $record-data[1]/*
+                                        case "facs"         return $dv-facs
+                                        case "title"        return $dv-title
+                                        case "kwic"         return $kwic
+                                        case "navigation"   return $dv-navigation
+                                        case "xmlescaped"   return $dv-xmlescaped
+                                        default             return ()
+                         return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
+                }</fcs:ResourceFragment>
                  else 
                      for $d in tokenize($data-view,',\s*') 
                         return 
