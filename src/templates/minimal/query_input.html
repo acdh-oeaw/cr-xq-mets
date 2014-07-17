@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div xmlns="http://www.w3.org/1999/xhtml" id="query-input">
-    <form action="" method="GET">
-        <div class="inputrow">
-<!--            <label for="query">Query: </label>-->
-            <input id="input-simplequery" type="text" name="query" class="templates:form-control"/>
-            <button id="submit-query" type="submit">search</button>
-            <div class="cmd-wrapper">
-                <span id="cmd-advanced-query" class="ui-icon ui-icon-zoomin cmd_detail" title="Komplexere Abfragen"/>
+    <div id="qi">
+        <!-- should get replaced on load by the query_input widget -->
+        <form action="" method="GET">
+            <div class="inputrow">
+                <!--            <label for="query">Query: </label>-->
+                <input id="input-simple-query" type="text" name="query" class="templates:form-control" value=""/>
+                <button id="submit-query" type="submit">Suche</button>
             </div>
-        </div>
-    </form>
-    <div id="qi-advanced" style="display:none"/>
+        </form>
+    </div>
 </div>
