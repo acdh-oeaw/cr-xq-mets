@@ -265,11 +265,15 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                         if ($fragment-element-has-content)
                         then $pb1
                         else
-                        let $log:=util:log-app("INFO",$config:app-name,"processing resourcefragment w/ pid="||xs:string($id))
+                        let $log:=util:log-app("INFO",$config:app-name,"processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
                             let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
                         (: if no subsequent element, dont trying to generate fragment will fail :)
                             return if (empty($pb2)) then $pb1 
-                                     else util:parse(replace(util:get-fragment-between($pb1, $pb2, true(), true()),'&amp;','&amp;'))                    
+                                     else
+                                        let $frag :=util:get-fragment-between($pb1, $pb2, true(), true())
+                                        let $analyzed :=  analyze-string($frag,'&amp;(amp;)?')
+                                        let $replaced := string-join((for $i in $analyzed/* return if($i/self::fn:non-match) then $i else '&amp;amp;'),'')
+                                        return util:parse(($replaced,$frag)[1])                    
 (:                                       else util:parse-html(util:get-fragment-between($pb1, $pb2, true(), true()))/HTML/BODY/*:)
                     return
                         element {
