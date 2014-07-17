@@ -40,9 +40,9 @@ declare
     %templates:wrap
 function app:logo($node as node(), $model as map(*)) {
     let $logo-image := config:param-value($model, 'logo-image')
-    let $logo-link := config:param-value($model, 'logo-link')
+    let $logo-link := if (config:param-value($model, 'logo-link')='') then './' else config:param-value($model, 'logo-link')  
     return 
-        <a xmlns="http://www.w3.org/1999/xhtml" href="{$logo-link}" target="_blank">
+        <a xmlns="http://www.w3.org/1999/xhtml" href="{$logo-link}" >
             <img src="{$logo-image}" class="logo right"/>
         </a>
 };
@@ -75,13 +75,13 @@ declare
     %templates:default("x-format", "html")
 function app:list-resources($node as node(), $model as map(*), $x-format) {
    
-   let $log := util:log-app("INFO",$config:app-name,"app:list-resources") 
+   let $log := util:log-app("DEBUG",$config:app-name,"app:list-resources") 
 (:    let $structMap := project:list-resources($model("config")):)
     (: project/resource:* couldn't correctly handle the config sequence chaos as is in $model("config") 
     so rather give them just the project-pid :) 
     let $project-pid := config:param-value($model("config"),$config:PROJECT_PID_NAME)    
     let $ress := project:list-resources-resolved($project-pid)
-    let $log := util:log-app("INFO",$config:app-name,"app:list-resources-END")
+    let $log := util:log-app("DEBUG",$config:app-name,"app:list-resources-END")
     (:for $res in $ress
         let $dmd := resource:dmd($res, $model("config") ):)            
         return repo-utils:serialise-as($ress, $x-format, 'resource-list', $model("config"))
