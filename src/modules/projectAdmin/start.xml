@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<binds xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:mets="http://www.loc.gov/METS/" xmlns:ev="http://www.w3.org/2001/xml-events">
+<binds xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:mets="http://www.loc.gov/METS/">
     <!--<xf:instance id="status-list" resource="/exist/restxq/cr_xq/status-list"/>-->
     <xf:submission id="save-project-label" resource="store.xql" bind="project-label" method="post" replace="instance">
         <xf:message ev:event="xforms-submit-done" level="ephemeral">Saved "Project Label"</xf:message>
