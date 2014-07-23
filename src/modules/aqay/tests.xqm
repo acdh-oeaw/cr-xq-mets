@@ -5,11 +5,11 @@ import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 import module namespace t="http://exist-db.org/xquery/testing";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
 import module namespace xqjson="http://xqilla.sourceforge.net/lib/xqjson";
+import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 
 declare namespace zr="http://explain.z3950.org/dtd/2.0/";
 declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
-declare namespace diag = "http://www.loc.gov/zing/srw/diagnostic/";
 declare namespace ds = "http://aac.ac.at/corpus_shell/dataset";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
