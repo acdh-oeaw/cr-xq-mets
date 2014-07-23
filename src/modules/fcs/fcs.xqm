@@ -44,6 +44,7 @@ import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at 
 import module namespace project="http://aac.ac.at/content_repository/project" at "../../core/project.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "../../core/resource.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
+import module namespace dynix = "http://cr-xq/dynix" at "../index-functions/dynix.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "../../core/resourcefragment.xqm";
 
 declare variable $fcs:explain as xs:string := "explain";
@@ -568,9 +569,101 @@ declare function fcs:term-from-nodes($node as item()+, $order-param as xs:string
 };
 
 
+declare function fcs:do-scan-default-dynix($index as xs:string, $x-context as xs:string, $sort as xs:string, $config) as item()* {
+    let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
+    let $facets := index:facets($index,$project-pid)
+    let $path := index:index-as-xpath($index,$project-pid)
+    (:let $data-collection := repo-utils:context-to-collection($x-context, $config),
+        $nodes := util:eval("$data-collection//"||$path):)
+(:    let $context-parsed := repo-utils:parse-x-context($x-context,$config):)
+    let $data := repo-utils:context-to-data($x-context,$config),
+    (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)
+        $nodes := subsequence(dynix:apply-index($data, $index,$project-pid,()),1,$fcs:maxScanSize)
+    
+    let $terms := 
+        if ($facets/index)
+        then fcs:group-by-facet($nodes, $sort, $facets/index, $project-pid)
+        else fcs:term-from-nodes-dynix($nodes, $sort, $index, $project-pid)
+        
+    return 
+        <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
+            <sru:version>1.2</sru:version>
+            {$terms}
+            <sru:extraResponseData>
+                <fcs:countTerms level="top">{count($terms)}</fcs:countTerms>
+                <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>
+             </sru:extraResponseData>
+            <sru:echoedScanRequest>
+                <sru:scanClause>{$index}</sru:scanClause>
+                <sru:maximumTerms/>
+            </sru:echoedScanRequest>
+        </sru:scanResponse>
+};
+
+
+
+(:%private :)
+declare function fcs:term-from-nodes-dynix($node as item()+, $order-param as xs:string, $index-key as xs:string, $project-pid as xs:string) {
+    let $data :=  for $n in $node
+                    let $value:= map:entry("value",dynix:apply-index($n,$index-key,$project-pid,'match-only')),
+                        $label := map:entry("label",dynix:apply-index($n,$index-key,$project-pid,'label-only'))                            
+                    return map:new(($value,$label))
+    
+    (:let $order-expr :=
+        switch ($order-param)
+            case 'text' return "$value"
+            case 'size' return "count($g)"
+            default     return "$value"
+            
+   let $order-modifier :=
+        switch ($order-param)
+            case 'size' return "descending"
+            default     return "ascending":)
+    
+    let $terms :=           
+        for $g at $pos in $data
+        group by $value := map:get($g,'value')
+    (:    order by 
+            if ($order-modifier='ascending') then true() else util:eval($order-expr) descending,
+            if ($order-modifier='descending') then true() else util:eval($order-expr) ascending:)
+        return
+            let $m-label := map:entry("label",map:get($g[1],'label')),
+                $m-value := map:entry("value",$value),
+                $m-count := map:entry("numberOfRecords",count($g))
+            return map:new(($m-label,$m-value,$m-count))
+            
+    return <sru:terms> 
+        {
+        for $term at $pos in $terms
+        return <sru:term>
+                    <sru:value>{$term("value")}</sru:value>
+                    <sru:displayTerm>{$term("label")}</sru:displayTerm>
+                    <sru:numberOfRecords>{$term("numberOfRecords")}</sru:numberOfRecords>
+                    <sru:extraTermData>
+                        <fcs:position>{$pos}</fcs:position>
+                    </sru:extraTermData>
+                </sru:term>
+                }
+                </sru:terms>
+                
+};
+(:
+{
+        for $term at $pos in $terms
+        return <sru:term>
+                    <sru:value>{$term("value")}</sru:value>
+                    <sru:displayTerm>{$term("label")}</sru:displayTerm>
+                    <sru:numberOfRecords>{$term("numberOfRecords")}</sru:numberOfRecords>
+                    <sru:extraTermData>
+                        <fcs:position>{$pos}</fcs:position>
+                    </sru:extraTermData>
+                </sru:term>
+                }:)
+
 declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string, $index as element(index), $project-pid) as item()* {
     let $key := $index/xs:string(@key),
-        $match:= index:index-as-xpath($key,$project-pid,'match-only')
+        $match:= index:index-as-xpath($key,$project-pid,'match-only'),
+        $label-path := index:index-as-xpath($key,$project-pid,'label-only')
      
      let $order-expression :=
         switch ($sort)
@@ -586,8 +679,10 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
     let $groups := 
         let $maps := 
             for $x in $data 
-            group by $g := util:eval("$x/"||$match)
-            return map:entry($g,$x)
+            let $g := util:eval("$x/"||$match)[1]
+            group by $g 
+            return if (exists($g)) then map:entry(($g)[1],$x)
+        else ()
         let $map := map:new($maps)
         return $map
     
@@ -595,12 +690,15 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
      <sru:terms> {
         for $group-key in map:keys($groups)
         let $entries := map:get($groups, $group-key)
+        let $label :=  if ($label-path!='') 
+                            then data(util:eval("$entries[1]/"||$label-path))
+                            else fcs:term-to-label($group-key, $key,$project-pid)
         order by 
                 if ($order-modifier='ascending') then true() else util:eval($order-expression) descending,
                 if ($order-modifier='descending') then true() else util:eval($order-expression) ascending
         return
             <sru:term>
-                <sru:displayTerm>{fcs:term-to-label($group-key, $key,$project-pid)}</sru:displayTerm>
+                <sru:displayTerm>{$label}</sru:displayTerm>
                 <sru:value>{$group-key}</sru:value>
                 <sru:numberOfRecords>{count($entries)}</sru:numberOfRecords>
                 <sru:extraTermData>
