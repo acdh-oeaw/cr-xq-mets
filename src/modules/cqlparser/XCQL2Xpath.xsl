@@ -248,50 +248,50 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
-        	<xsl:when test="$index-type = 'ngram'">
-        		<xsl:choose>
-        			<xsl:when test="contains($sanitized_term, ' ')">
-        				<xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
-        				<xsl:text>'"</xsl:text>
-        				<xsl:value-of select="replace($sanitized_term,'&#34;','')"/>
-        				<xsl:text>"')</xsl:text>
-        			</xsl:when>
-        			<xsl:when test="contains($term,'%7C')"> <!-- contains: |  - but why simply remove? -->
-        				<xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
-        				<xsl:text>'</xsl:text>
-        				<xsl:value-of select="replace($sanitized_term,'%7C','')"/>
-        				<xsl:text>')</xsl:text>
-        			</xsl:when>
-        			<xsl:when test="contains($term,$ws) or contains($sanitized_term,'+')"> <!--  AND-combined full-text search-->
-        				<xsl:for-each select="tokenize(replace($sanitized_term,'\+',$ws),$ws)">
-        					<xsl:if test=".!=''">
-        						<xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
-        						<xsl:text>'</xsl:text>
-        						<xsl:value-of select="."/>
-        						<xsl:text>')</xsl:text>
-        						<xsl:message>
-        							<xsl:value-of select="concat(position(),':', .)"/>
-        						</xsl:message>
-        						<xsl:if test="position()!=last()">
-        							<xsl:text>][</xsl:text>
-        						</xsl:if>
-        					</xsl:if>
-        				</xsl:for-each>
-        			</xsl:when>
+            <xsl:when test="$index-type = 'ngram'">
+                <xsl:choose>
+                    <xsl:when test="contains($sanitized_term, ' ')">
+                        <xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
+                        <xsl:text>'"</xsl:text>
+                        <xsl:value-of select="replace($sanitized_term,'&#34;','')"/>
+                        <xsl:text>"')</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains($term,'%7C')"> <!-- contains: |  - but why simply remove? -->
+                        <xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
+                        <xsl:text>'</xsl:text>
+                        <xsl:value-of select="replace($sanitized_term,'%7C','')"/>
+                        <xsl:text>')</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="contains($term,$ws) or contains($sanitized_term,'+')"> <!--  AND-combined full-text search-->
+                        <xsl:for-each select="tokenize(replace($sanitized_term,'\+',$ws),$ws)">
+                            <xsl:if test=".!=''">
+                                <xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
+                                <xsl:text>'</xsl:text>
+                                <xsl:value-of select="."/>
+                                <xsl:text>')</xsl:text>
+                                <xsl:message>
+                                    <xsl:value-of select="concat(position(),':', .)"/>
+                                </xsl:message>
+                                <xsl:if test="position()!=last()">
+                                    <xsl:text>][</xsl:text>
+                                </xsl:if>
+                            </xsl:if>
+                        </xsl:for-each>
+                    </xsl:when>
         			<!--<xsl:otherwise>
                         <xsl:value-of select="concat('ft:query(', $match-on, ', ')"/>
                         <xsl:text><term></xsl:text>
                         <xsl:value-of select="$sanitized_term"/>
                         <xsl:text></term>)</xsl:text>
                     </xsl:otherwise>-->
-        			<xsl:otherwise>
-        				<xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
-        				<xsl:text>'</xsl:text>
-        				<xsl:value-of select="$sanitized_term"/>
-        				<xsl:text>')</xsl:text>
-        			</xsl:otherwise>
-        		</xsl:choose>
-        	</xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="concat('ngram:contains(', $match-on, ', ')"/>
+                        <xsl:text>'</xsl:text>
+                        <xsl:value-of select="$sanitized_term"/>
+                        <xsl:text>')</xsl:text>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
             <xsl:when test="value='='">
                 <xsl:value-of select="concat($match-on, $ws, 'eq', $ws)"/>
                 <xsl:text>'</xsl:text>
