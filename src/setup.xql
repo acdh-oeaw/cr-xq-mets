@@ -45,6 +45,7 @@ xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf")
 local:mkcol("/db/system/config", $config:projects-dir),
 xdb:store("/db/system/config/"||$config:projects-dir,'collection.xconf',$local:projects-xconf),
 xdb:reindex($config:projects-dir),
+xdb:reindex($target),
 
 (: we need two system users for the data maangement :)
 (: TODO merge these into one? :)
