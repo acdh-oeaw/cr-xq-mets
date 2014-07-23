@@ -2,10 +2,10 @@ xquery version "3.0";
 
 (:~ This is a simple XQuery script for debugging purposes which assembles the various steps of the fcs module to produce results to a query. ~:)
 
-import module namespace fcs = "http://clarin.eu/fcs/1.0" at "/db/apps/cr-xq-dev0913/modules/fcs/fcs.xqm";
-import module namespace config="http://exist-db.org/xquery/apps/config" at "/db/apps/cr-xq-dev0913/core/config.xqm";
-import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "/db/apps/cr-xq-dev0913/core/repo-utils.xqm";
-import module namespace cql = "http://exist-db.org/xquery/cql" at "/db/apps/cr-xq-dev0913/modules/cqlparser/cqlparser.xqm";
+import module namespace fcs = "http://clarin.eu/fcs/1.0" at "fcs.xqm";
+import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
+import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
+import module namespace cql = "http://exist-db.org/xquery/cql" at "../cqlparser/cqlparser.xqm";
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace mets="http://www.loc.gov/METS/";
@@ -37,7 +37,7 @@ let $xpath-query := fcs:transform-query ($query, $x-context, $config, true())
 (:return fcs:get-mapping('resourcefragment-pid',$x-context,config:config($x-context)):)
 (:return fcs:index-as-xpath('resourcefragment-pid',$x-context,config:config($x-context)):)
 (:return $config//mets:techMD[@ID='crProjectMappings']/mets:mdWrap/mets:xmlData/map:)
-let $dataset:=repo-utils:resources-by-project($x-context)
+(:let $dataset:=repo-utils:resources-by-project($x-context):)
 
 (:let $import:=fcs:import-project-index-functions($x-context):)
 (:let $data:=for $d in $dataset return doc($d):)
@@ -45,7 +45,9 @@ let $dataset:=repo-utils:resources-by-project($x-context)
 (:    for $d in $data return:)
 (:        fcs:apply-index($d, 'title', $x-context, $config):)
 
-return cql:cql2xpath($query, $x-context, config:mappings($x-context))
+(:return cql:cql2xpath($query, $x-context, config:mappings($x-context)):)
+(:return  fcs:scan('fcs.toc', 'abacus.3',1, 100, 1, 1, 'text', '', $config):)
+ return  repo-utils:context-to-type('abacus',$config)
  
 (:let $mappings := config:param-value(map{"config":=$config},"mappings"):)
 (:return:)
