@@ -549,10 +549,10 @@ checks for logged in user and only tries to use the internal writer, if no user 
 (:<options><option key="update">yes</option></options>:)
 declare function repo-utils:store($collection as xs:string, $doc-name as xs:string, $data as node(), $overwrite as xs:boolean, $config) as item()* {
     let $log := util:log-app("INFO",$config:app-name,"repo-util:store($collection:"||$collection||",$doc-name:"||$doc-name||")")
-  let $writer := fn:doc(config:path('writer.file'))(:,
+  let $writer := fn:doc(config:path('writer.file')),
   $dummy := if (request:get-attribute("org.exist.demo.login.user")='') then
                 xdb:login($collection, $writer//write-user/text(), $writer//write-user-cred/text())
-             else ()  :)
+             else ()  
 
 (:  let $rem := if ($overwrite and doc-available(concat($collection, $doc-name))) then xdb:remove($collection, $doc-name) else () :)
 
