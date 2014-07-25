@@ -18,6 +18,14 @@
 var currentUrl = $.url();
 
 
+/** 
+ * configuration object
+ * currently only parameter: dataview
+*/
+var cr_config = { dataview: 'title,navigation,full,facs'
+                };
+
+
 //var detail_tabs;
 
 /**
