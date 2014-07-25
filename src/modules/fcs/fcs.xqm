@@ -937,15 +937,21 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
                                     else if (exists($match-ids)) then rf:lookup-id($match-ids[1],$resource-pid, $project-id)[1]
     else ()
+    (: HERE we are losing  the exist:match, when looking up the resource fragment :)
     let $rf :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
                     then $record-data-input
                     else rf:lookup($match-ids[1],$resource-pid, $project-id)
+                    
+(:    let $dumy := util:log-app("INFO",$config:app-name,("$record-data-input:",$record-data-input))                    :)
+(:    let $dumy2 := util:log-app("INFO",$config:app-name,("$match-ids:",$match-ids)):)
     let $rf-entry :=  if (exists($resourcefragment-pid)) then rf:record($resourcefragment-pid,$resource-pid, $project-id)
     else ()
     let $res-entry := $rf-entry/parent::mets:div[@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE]
 	
     let $matches-to-highlight:= (tokenize(request:get-parameter("x-highlight",""),","),$match-ids)
-    let $record-data :=     if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
+    let $record-data := 
+    (: not sure if to work with $record-data-input or $rf :)
+    if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
                             then 
 (:                                if ($config("x-highlight")="off"):)
                                 if ($config instance of map()) 
@@ -955,7 +961,9 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
                                 else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
                             else $rf
-	(: to repeat current $x-format param-value in the constructed requested :)
+                        
+
+(: to repeat current $x-format param-value in the constructed requested :)
 	let $x-format := request:get-parameter("x-format", $repo-utils:responseFormatXml)
 	let $resourcefragment-ref :=   if (exists($resourcefragment-pid)) 
 	                               then 
@@ -972,7 +980,10 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 	
     let $kwic := if (contains($data-view,'kwic')) then
                    let $kwic-config := <config width="{$fcs:kwicWidth}"/>
-                   let $kwic-html := kwic:summarize($record-data[1], $kwic-config)
+                   
+                   (: tentatively kwic-ing from original input - to get the closest match :)
+                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config)
+(:                 let $kwic-html := kwic:summarize($record-data[1], $kwic-config):)
                        
                     return 
                         if (exists($kwic-html)) 
@@ -1496,6 +1507,7 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
         $stylesheet:=   doc($stylesheet-file),
         $params := <parameters><param name="cr-ids" value="{string-join($ids,',')}"></param></parameters>
    return 
+(:   $copy:)
             if (exists($stylesheet)) 
             then 
                 for $c in $copy
