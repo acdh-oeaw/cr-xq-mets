@@ -337,6 +337,8 @@ declare function project:path($project-pid as xs:string, $key as xs:string) as x
                 case "master"       return "data"
                 case "resourcefragment"       return "resourcefragments"
                 case "resourcefragments"       return "resourcefragments"
+                case "metadata"     return "metadata"
+                case "data"         return  "data"
                 case "home"         return "projects"
                 case "indexes"      return "indexes"        
                 default return ()
