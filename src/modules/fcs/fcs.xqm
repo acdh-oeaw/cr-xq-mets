@@ -1308,9 +1308,7 @@ declare function fcs:indexes-in-query($cql as xs:string, $x-context as xs:string
     let $xcql := cql:cql-to-xcql($cql)
     let $indexes := for $ix in $xcql//index[not(ancestor::sortKeys)]
                         return fcs:get-mapping($ix, $x-context, $config)
-                        
     return $indexes                       
-    
 
 };
 
