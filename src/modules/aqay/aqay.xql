@@ -54,8 +54,8 @@ return <html>
         <head>
             <title>cr-xq/aqay - autoquery/testing suite</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-             <link rel="stylesheet" type="text/css" href="/exist/apps/cr-xq/modules/aqay/scripts/tests.css" />            
-            <link rel="stylesheet" type="text/css" href="/exist/apps/cr-xq/modules/shared/scripts/style/cmds-ui.css" />
+             <link rel="stylesheet" type="text/css" href="modules/aqay/scripts/tests.css" />            
+            <link rel="stylesheet" type="text/css" href="modules/shared/scripts/style/cmds-ui.css" />
         </head>
         <body>            
             <div id="header">
