@@ -153,7 +153,7 @@ function processParams () {
         
         if (cr_config.params["detail.query"]) {
             
-            var detail_params = cr_config.params;
+            var detail_params = $.extend({},cr_config.params);
             detail_params["query"] = cr_config.params["detail.query"]; 
             detail_params["x-dataview"] = 'title,full'; //,xmlescaped
            var detail_request = baseurl + '?' + $.param(detail_params);
