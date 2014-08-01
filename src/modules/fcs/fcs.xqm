@@ -814,7 +814,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
          	   }</sru:records>,
              $end-time2 := util:system-dateTime()
              
-             return
+             return 
                 switch (true())
                     case ($xpath-query instance of element(sru:diagnostics)) return  
                         <sru:searchRetrieveResponse>
@@ -982,16 +982,19 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                    let $kwic-config := <config width="{$fcs:kwicWidth}"/>
                    
                    (: tentatively kwic-ing from original input - to get the closest match :)
-                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config)
-(:                 let $kwic-html := kwic:summarize($record-data[1], $kwic-config):)
+(:                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config):)
+                 let $kwic-html := kwic:summarize($record-data[1], $kwic-config)
                        
                     return 
                         if (exists($kwic-html)) 
                         then  
-                            for $match in $kwic-html
+                            for $match at $pos in $kwic-html
+                            (: when the exist:match is complex element kwic:summarize leaves the keyword (= span[2]) empty, 
+                            so we try to fall back to the exist:match :)
+                            let $kw := if (exists($match/span[2][text()])) then $match/span[2]/text() else $record-data[1]//exist:match[$pos]//text() 
                             return (<fcs:c type="left">{$match/span[1]/text()}</fcs:c>, 
                                        (: <c type="left">{kwic:truncate-previous($exp-rec, $matches[1], (), 10, (), ())}</c> :)
-                                                      <fcs:kw>{$match/span[2]/text()}</fcs:kw>,
+                                                      <fcs:kw>{$kw}</fcs:kw>,
                                                       <fcs:c type="right">{$match/span[3]/text()}</fcs:c>)            	                       
                                        (: let $summary  := kwic:get-summary($exp-rec, $matches[1], $config) :)
                         (:	                               <fcs:DataView type="kwic-html">{$kwic-html}</fcs:DataView>:)
