@@ -23,11 +23,12 @@ let $parse-id := repo-utils:parse-x-context($id,$config-map)
 
 (:~ @param $type 'data' | 'entry' | 'metadata' ; default: 'entry'  :)
 let $type := 
-        if ($id = $project)
+(:        if ($id = $project):)
+        if ($path-components[1] = ("data","metadata", "entry"))
         then ($path-components[1],'entry')[1]
         else ($path-components[2],'entry')[1],
     $subtype := 
-        if ($id = $project)
+        if ($path-components[1] = ("data","metadata", "entry"))
         then $path-components[2]
         else $path-components[3]
 
