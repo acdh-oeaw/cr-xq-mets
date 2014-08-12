@@ -31,9 +31,13 @@ function app:user ($node as node(), $model as map(*)) {
 
     let $shib-user := config:shib-user()
     let $user := if ($shib-user) then $shib-user else xmldb:get-current-user()                                     
-    return <div id="user" >user: <span class="current-user">{$user}</span><br/> 
-        <a href="https://clarin.oeaw.ac.at/Shibboleth.sso/Login?target={$back-url}">Log on</a>|
-        <a href="https://clarin.oeaw.ac.at/Shibboleth.sso/Logout">Log off</a></div>
+    return <div id="user" >user: <span class="current-user">{$user}</span><br/>
+           { if ($shib-user) then <a href="https://clarin.oeaw.ac.at/Shibboleth.sso/Logout">Log off</a>
+                else if (not($user = 'guest')) then  <a href=".?logout=true">Log out</a>
+                else <a href="https://clarin.oeaw.ac.at/Shibboleth.sso/Login?target={$back-url}">Log on</a>
+             }
+           </div>
+        
 };
 
 declare 

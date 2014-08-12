@@ -18,6 +18,15 @@
 var currentUrl = $.url();
 
 
+/** 
+ * configuration object
+ * currently only parameter: dataview
+*/
+var cr_config = { dataview: 'title,navigation,full,facs',
+                   params: {"x-format":"html"}
+                };
+
+
 //var detail_tabs;
 
 /**
@@ -79,6 +88,12 @@ function minimal_template_ui_setup() {
         }
     });
 
+    processParams();
+    
+    
+    // refresh persistent link
+    $("a#persistent-link").live('hover', persistentLink);
+    
     // handle loading to main (scan -> search)
     $("#navigation .load-main a").live('click', load_main);
     
@@ -100,7 +115,9 @@ function minimal_template_ui_setup() {
     
     // register filter
     $("#navigation form").live('submit', filter_default_nav_results);
-    
+
+    $("#query-input form").live('submit', query);
+
     // Dialog Link
     $('#dialog_link').click(function() {
         $('#dialog').dialog('open');
@@ -125,14 +142,49 @@ function minimal_template_ui_setup() {
 //register this on document ready
 $(minimal_template_ui_setup); 
 
+/** checks the request params 
+   and post-loads detail-view if detail.query is filled
+*/
+function processParams () {
+    
+        cr_config.params = $.extend(cr_config.params, currentUrl.param());
+        console.log("cr_config.params:")
+        console.log(cr_config.params);
+        
+        if (cr_config.params["detail.query"]) {
+            
+            var detail_params = $.extend({},cr_config.params);
+            detail_params["query"] = cr_config.params["detail.query"]; 
+            detail_params["x-dataview"] = 'title,full'; //,xmlescaped
+           var detail_request = baseurl + '?' + $.param(detail_params);
+           console.log("post-loading DETAIL: " + detail_request);
+            load_detail_data(detail_request);
+         }
+         
+           
+}
 
+/** generate a persistent link - capturing the current search and detail 
+  *  and set the a#persistent-link.href accordingly
+  */
+function persistentLink() {
+    
+    var url = currentUrl;
+        
+    link = url.attr("path") + '?' + $.param(cr_config.params);
+    
+    $.extend($.url().param(),
+cr_config.params)
+    $("#persistent-link").attr("href",link);
+    return link;    
+}
 
 function load_explain(event) {
     event.preventDefault();
     var target = $(this).parents('.links');
     
     if (target.find('.explain').length > 0)  
-       { target.find('.explain').toggle(); }
+       { target.find('.explain').toggle(); target.find('.scan').toggle();}
       else { 
         var targetRequest = $(this).attr('href');
     //var detailFragment = targetRequest + ' ' + search_container_selector;
@@ -142,7 +194,7 @@ function load_explain(event) {
                 target.append("<div class='scan load-main' />");
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
-                close_button.click(function() { target.find('.explain').toggle(); });                
+                close_button.click(function() { target.find('.explain').toggle(); target.find('.scan').toggle(); });                
             }        
         );        
       }
@@ -157,6 +209,7 @@ function load_scan(event) {
 
         console.log("targetRequest");
         console.log(target);
+        target.show();
      target.load(targetRequest);        
      
 }
@@ -182,8 +235,24 @@ function load_toc(event) {
       }
 }
 
+/** run query via ajax 
+  * read query-param from the form 
+ */
+function query(event) {
+    event.preventDefault();
+    var target = $('#main #results');
+    
+    var query = $('#input-query').val() 
+    var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
+    targetRequest = baseurl + '?' + $.param(params);
+    cr_config.params["query"] = query;    
+    $(target).load(targetRequest);
+}
+
+
 /**
- * AJAX loading for the main container (middle column) 
+ * AJAX loading for the main container (middle column) = search
+ * expects a searchRetrieve request URL in $this.href  
  * @param {Object} event
  */
 function load_main(event) {
@@ -195,6 +264,9 @@ function load_main(event) {
     if (targetRequest == undefined) return;
     var parsedUrl = $.url(targetRequest);
     params = parsedUrl.param();
+    
+    cr_config.params["query"] = params["query"];  
+    
     // Recreate the x-dataview param from scratch
     
     params["x-dataview"] = 'title,kwic,facets'; //,xmlescaped
@@ -296,7 +368,7 @@ function load_detail_data(targetRequest) {
     
     params["x-dataview"] = cr_config.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
-    
+    cr_config.params["detail.query"]=params["query"];
     // The detail view is hidden at first
     detail.show();
     var classes_interested_in = " .title, .data-view, .navigation";

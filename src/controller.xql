@@ -228,6 +228,9 @@ switch (true())
          <allowed-users>{$allowed-users}</allowed-users>
          <current-user >{($db-user,'-',xmldb:get-current-user())}</current-user>
          <attrs>{string-join(request:attribute-names(),', ')}</attrs>
+         <rel-path>{$rel-path}</rel-path>
+         <module>{$module}</module>
+         <logout>{request:get-parameter("logout","")}</logout>
          </DEBUG>
          
 (:        <DEBUG>module: {$module}, project: {$project} </DEBUG>:)
@@ -256,6 +259,12 @@ switch (true())
                     </view>
                 </dispatch>:)
         
+   (: if logout parameter we need to remove it before trying to login - otherwise the login fails b:)        
+    case (not(request:get-parameter("logout","")="")) return
+        
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <redirect url="index.html"/>    
+        </dispatch>
     (:~
      : Requests that should be proxied 
     ~:)

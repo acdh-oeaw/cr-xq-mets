@@ -14,7 +14,8 @@
                 <!-- we want to be sure that we do not highlight whole resourcefragments -->
                 <xsl:when test="exists(parent::element())">
                     <exist:match>
-                        <xsl:value-of select="."/>
+                        <xsl:apply-templates/>
+<!--                        <xsl:value-of select="."/>-->
                     </exist:match>
                 </xsl:when>
                 <xsl:otherwise>

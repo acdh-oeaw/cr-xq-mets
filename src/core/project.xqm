@@ -337,6 +337,8 @@ declare function project:path($project-pid as xs:string, $key as xs:string) as x
                 case "master"       return "data"
                 case "resourcefragment"       return "resourcefragments"
                 case "resourcefragments"       return "resourcefragments"
+                case "metadata"     return "metadata"
+                case "data"         return  "data"
                 case "home"         return "projects"
                 case "indexes"      return "indexes"        
                 default return ()
@@ -1134,7 +1136,7 @@ declare function project:termlabels($project-pid as xs:string) as element(mets:f
  :)
 declare function project:get-termlabels($project-pid as xs:string) as item()* {
     let $termlabels := project:termlabels($project-pid)
-    return $termlabels/mets:file/mets:FLocat/doc(@xlink:href)
+    return $termlabels/mets:file/mets:FLocat!doc(@xlink:href)
 };
 
 declare function project:add-termlabels($project-pid as xs:string, $data as element(termLib)) as item()* {

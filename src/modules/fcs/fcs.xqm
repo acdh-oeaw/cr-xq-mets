@@ -57,6 +57,7 @@ declare variable $fcs:scanSortText as xs:string := "text";
 declare variable $fcs:scanSortSize as xs:string := "size";
 declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
 declare variable $fcs:kwicWidth := 40;
+declare variable $fcs:filterScanMinLength := 2;
 (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)  
 declare variable $fcs:maxScanSize:= 100000;
 
@@ -338,10 +339,15 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                 util:log-app("DEBUG", $config:app-name, "p-sort="||$p-sort)
         ),
   (: get the base-index from cache, or create and cache :)
-  $index-scan := 
-  if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
+  $index-scan :=
+        (: scan overall existing indices
+           dont store the result! :)        
+        if ($index-name= 'cql.serverChoice') then 
+                    fcs:scan-all($x-context, $filter)
+        else
+        if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
           let $dummy := util:log-app("DEBUG", $config:app-name, "reading index "||$index-doc-name||" from cache")
-          return repo-utils:get-from-cache($index-doc-name, $config)           
+          return repo-utils:get-from-cache($index-doc-name, $config)            
         else
         (: TODO: cmd-specific stuff has to be integrated in a more dynamic way! :)
             let $dummy := util:log-app("DEBUG", $config:app-name, "generating index "||$index-doc-name)
@@ -371,6 +377,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                                         alternatively just take fcs.resource to get only resource-listing :)
                                             project:get-toc-resolved($project-id)
                                             else resource:get-toc($x-context,$project-id)                                                        
+                                                               
                             default return ()
                     (:let $map := 
 (\:                        if ($x-context= ('', 'default')) then 
@@ -399,8 +406,6 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     
                     return transform:transform($metsdivs,$xsl,())
 (:                    return $context-map:)
-                        
-                                
                 else
                     fcs:do-scan-default($scan-clause, $x-context, $sort, $config)         
 
@@ -418,7 +423,9 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
     let $filterx := if ($index-name= 'fcs.resource' and $filter='root') then '' else $filter
     
 	(: extract the required subsequence (according to given sort) :)
-	let $res-nodeset := transform:transform($index-scan,$fcs:indexXsl, 
+	let $res-nodeset :=  if ($index-name= 'cql.serverChoice') then
+	                           $index-scan
+	                    else transform:transform($index-scan,$fcs:indexXsl, 
 			<parameters><param name="scan-clause" value="{$scan-clause}"/>
 			            <param name="mode" value="subsequence"/>
 			            <param name="x-context" value="{$x-context}"/>
@@ -488,6 +495,33 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs
     return $data
 };:)
 
+(:~ delivers matching(!) terms from all indexes
+    to prevent too many records results are only returned, when at least the filter is at least $fcs:filterScanMinLength (current default=2)  
+:)
+declare function fcs:scan-all($project as xs:string, $filter as xs:string) as item()* {
+  let $indexes :=  collection(project:path("abacus","indexes"))
+  let $terms := if (string-length($filter) >= $fcs:filterScanMinLength) then
+                    $indexes//sru:value[ft:query(., $filter)]/parent::sru:term union $indexes//sru:displayTerm[ft:query(., $filter)]/parent::sru:term
+                  else ()
+    let $dummy-log := util:log-app("DEBUG", $config:app-name, count($terms)) 
+  return 
+        <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
+            <sru:version>1.2</sru:version>
+            <sru:terms>
+            {$terms}
+            </sru:terms>
+            <sru:extraResponseData>
+                
+             </sru:extraResponseData>
+            <sru:echoedScanRequest>
+                <sru:scanClause>cql.serverChoice={$filter}</sru:scanClause>
+                <sru:maximumTerms/>
+            </sru:echoedScanRequest>
+        </sru:scanResponse>
+(:        <fcs:countTerms level="top">{count($terms)}</fcs:countTerms>
+                <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>:)
+};
+
 declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs:string, $sort as xs:string, $config) as item()* {
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
     let $facets := index:facets($scan-clause,$project-pid)
@@ -524,12 +558,20 @@ declare function fcs:term-from-nodes($node as item()+, $order-param as xs:string
     let $match-path := index:index-as-xpath($index-key,$project-pid,'match-only'),
         $label-path := index:index-as-xpath($index-key,$project-pid,'label-only')
     let $data :=  for $n in $node
-                    let $value:= map:entry("value",string-join(util:eval("$n/"||$match-path),'')),
-                        $label := map:entry("label",
-                            if ($label-path!='') 
+                    let $term-value :=  string-join(util:eval("$n/"||$match-path),''),
+                        $value-map := map:entry("value",$term-value)
+                    let $term-label := fcs:term-to-label($term-value,$index-key,$project-pid)
+                    let $label-value := 
+                            switch(true())
+                                case ($term-label!='') return $term-label
+                                case ($label-path!='') return string-join(util:eval("$n/"||$label-path),'')
+                                default return $term-value
+                            (:if ($label-path!='') 
                             then util:eval("$n/"||$label-path)/data(.)
-                            else $value)
-                    return map:new(($value,$label))
+                            else $value):)
+                    let $label-map := map:entry("label",$label-value)
+                            
+                    return map:new(($value-map,$label-map))
     
     let $order-expr :=
         switch ($order-param)
@@ -690,9 +732,12 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
      <sru:terms> {
         for $group-key in map:keys($groups)
         let $entries := map:get($groups, $group-key)
-        let $label :=  if ($label-path!='') 
-                            then data(util:eval("$entries[1]/"||$label-path))
-                            else fcs:term-to-label($group-key, $key,$project-pid)
+        (:let $label :=  if ($label-path='') 
+                            then fcs:term-to-label($group-key, $key,$project-pid)
+                            else data(util:eval("$entries[1]/"||$label-path)):)
+         let $label := (fcs:term-to-label($group-key,$key,$project-pid), data(util:eval("$entries[1]/"||$label-path)))[1]
+         
+         let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:group by facet: "||$group-key||"##"||$key||"##"||$label)
         order by 
                 if ($order-modifier='ascending') then true() else util:eval($order-expression) descending,
                 if ($order-modifier='descending') then true() else util:eval($order-expression) ascending
@@ -711,9 +756,11 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
             } </sru:terms>
 };
 
-declare %private function fcs:term-to-label($term as xs:string, $index as xs:string, $project-pid as xs:string) as xs:string{
-    let $labels := project:termlabels($project-pid)
-    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]
+(:%private :)
+declare function fcs:term-to-label($term as xs:string, $index as xs:string, $project-pid as xs:string) as xs:string?{
+    let $labels := project:get-termlabels($project-pid)
+(:    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]:)
+    return $labels//term[@key=$term][ancestor::*/@key=$index]
 };
 
 
@@ -814,7 +861,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
          	   }</sru:records>,
              $end-time2 := util:system-dateTime()
              
-             return
+             return 
                 switch (true())
                     case ($xpath-query instance of element(sru:diagnostics)) return  
                         <sru:searchRetrieveResponse>
@@ -937,15 +984,21 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
                                     else if (exists($match-ids)) then rf:lookup-id($match-ids[1],$resource-pid, $project-id)[1]
     else ()
+    (: HERE we are losing  the exist:match, when looking up the resource fragment :)
     let $rf :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
                     then $record-data-input
                     else rf:lookup($match-ids[1],$resource-pid, $project-id)
+                    
+(:    let $dumy := util:log-app("INFO",$config:app-name,("$record-data-input:",$record-data-input))                    :)
+(:    let $dumy2 := util:log-app("INFO",$config:app-name,("$match-ids:",$match-ids)):)
     let $rf-entry :=  if (exists($resourcefragment-pid)) then rf:record($resourcefragment-pid,$resource-pid, $project-id)
     else ()
     let $res-entry := $rf-entry/parent::mets:div[@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE]
 	
     let $matches-to-highlight:= (tokenize(request:get-parameter("x-highlight",""),","),$match-ids)
-    let $record-data :=     if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
+    let $record-data := 
+    (: not sure if to work with $record-data-input or $rf :)
+    if (exists($matches-to-highlight) and request:get-parameter("x-highlight","") != 'off')
                             then 
 (:                                if ($config("x-highlight")="off"):)
                                 if ($config instance of map()) 
@@ -955,7 +1008,9 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
                                 else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
                             else $rf
-	(: to repeat current $x-format param-value in the constructed requested :)
+                        
+
+(: to repeat current $x-format param-value in the constructed requested :)
 	let $x-format := request:get-parameter("x-format", $repo-utils:responseFormatXml)
 	let $resourcefragment-ref :=   if (exists($resourcefragment-pid)) 
 	                               then 
@@ -972,15 +1027,23 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 	
     let $kwic := if (contains($data-view,'kwic')) then
                    let $kwic-config := <config width="{$fcs:kwicWidth}"/>
-                   let $kwic-html := kwic:summarize($record-data[1], $kwic-config)
+                   
+                   (: tentatively kwic-ing from original input - to get the closest match
+                    however this fails when matching on attributes, where the exist:match is only added in the highlighting function,
+                    thus we need the processed record-data :)
+(:                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config):)
+                 let $kwic-html := kwic:summarize($record-data[1], $kwic-config)
                        
                     return 
                         if (exists($kwic-html)) 
                         then  
-                            for $match in $kwic-html
+                            for $match at $pos in $kwic-html
+                            (: when the exist:match is complex element kwic:summarize leaves the keyword (= span[2]) empty, 
+                            so we try to fall back to the exist:match :)
+                            let $kw := if (exists($match/span[2][text()])) then $match/span[2]/text() else $record-data[1]//exist:match[$pos]//text() 
                             return (<fcs:c type="left">{$match/span[1]/text()}</fcs:c>, 
                                        (: <c type="left">{kwic:truncate-previous($exp-rec, $matches[1], (), 10, (), ())}</c> :)
-                                                      <fcs:kw>{$match/span[2]/text()}</fcs:kw>,
+                                                      <fcs:kw>{$kw}</fcs:kw>,
                                                       <fcs:c type="right">{$match/span[3]/text()}</fcs:c>)            	                       
                                        (: let $summary  := kwic:get-summary($exp-rec, $matches[1], $config) :)
                         (:	                               <fcs:DataView type="kwic-html">{$kwic-html}</fcs:DataView>:)
@@ -1297,9 +1360,7 @@ declare function fcs:indexes-in-query($cql as xs:string, $x-context as xs:string
     let $xcql := cql:cql-to-xcql($cql)
     let $indexes := for $ix in $xcql//index[not(ancestor::sortKeys)]
                         return fcs:get-mapping($ix, $x-context, $config)
-                        
     return $indexes                       
-    
 
 };
 
@@ -1496,6 +1557,7 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
         $stylesheet:=   doc($stylesheet-file),
         $params := <parameters><param name="cr-ids" value="{string-join($ids,',')}"></param></parameters>
    return 
+(:   $copy:)
             if (exists($stylesheet)) 
             then 
                 for $c in $copy

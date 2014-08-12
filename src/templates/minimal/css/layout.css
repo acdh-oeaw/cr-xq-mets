@@ -47,6 +47,8 @@ height:90px;
 
 #user {float:right;}
 
+#persistent-link-wrapper {position: absolute; right: 1.2em; top:65px;}  
+
 /* set the box-model to border for easier widths setting */
 #navigation, #main, #detail,
 .static-text, .intro-image{
