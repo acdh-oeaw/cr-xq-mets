@@ -12,6 +12,8 @@ declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace ds = "http://aac.ac.at/corpus_shell/dataset";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
+declare namespace cmd = "http://www.clarin.eu/cmd/";
 
 
 (: sample input: 
