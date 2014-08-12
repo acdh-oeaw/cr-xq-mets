@@ -1136,7 +1136,7 @@ declare function project:termlabels($project-pid as xs:string) as element(mets:f
  :)
 declare function project:get-termlabels($project-pid as xs:string) as item()* {
     let $termlabels := project:termlabels($project-pid)
-    return $termlabels/mets:file/mets:FLocat/doc(@xlink:href)
+    return $termlabels/mets:file/mets:FLocat!doc(@xlink:href)
 };
 
 declare function project:add-termlabels($project-pid as xs:string, $data as element(termLib)) as item()* {
