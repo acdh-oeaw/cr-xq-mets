@@ -712,7 +712,7 @@ declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:strin
                                     )
                             case (doc-available($operation-xsl)) return 
                                 (util:log-app("DEBUG",$config:app-name,"found xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),doc($operation-xsl))
-                            default return util:log-app("ERROR",$config:app-name,"Could not locate ")
+                            default return util:log-app("DEBUG",$config:app-name,"Could not find xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format)
     return ($xsldoc)[1]
 };
 
