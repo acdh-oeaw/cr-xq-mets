@@ -133,13 +133,28 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
         $index-xpath := index:index-as-xpath-from-map($index-key,$map,''),        
         $match-on := index:index-as-xpath-from-map($index-key,$map,'match-only'),         
         $relation := $clause/relation/value/text(),
+        (: exact, starts-with, contains, ends-with :)
+        $match-mode := if (ends-with($clause/term,'*')) then 
+                            if (starts-with($clause/term,'*')) then 'contains'
+                            else 'starts-with'
+                        else if (starts-with($clause/term,'*')) then 'ends-with'
+                            else 'exact', 
         $sanitized-term := cql:sanitize-term($clause/term),
 (:$predicate := ''        :)
         $predicate := switch (true())
-                        case ($index-type eq $index:INDEX_TYPE_FT) return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
-                        default return $match-on||"='"||$sanitized-term||"'"
+                        case ($index-type eq $index:INDEX_TYPE_FT) return 
+                                switch ($match-mode) 
+                                    case ('exact') return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'
+                                    case ('starts-with') return 'ft:query('||$match-on||',"'||$sanitized-term||'")'
+                                    default return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
+                        default return
+                               switch ($match-mode) 
+                                    case ('exact') return $match-on||"='"||$sanitized-term||"'"
+                                    case ('starts-with') return 'stars-with('||$match-on||",'"||$sanitized-term||"')"
+                                    case ('ends-with') return 'ends-with('||$match-on||",'"||$sanitized-term||"')"
+                                    case ('contains') return 'contains('||$match-on||",'"||$sanitized-term||"')"
+                                    default return $match-on||"='"||$sanitized-term||"'"                        
                         
-
     return $index-xpath||'['||$predicate||']'
 
 };
@@ -193,7 +208,7 @@ declare function cql:prox($leftOperand as element(leftOperand), $rightOperand as
             return 
                 if ($window/self::"||$operands[2]||")
                 then ($prev,$hit,$foll)
-                else ()"
+                else ()" (: " :)
 };
         
 
