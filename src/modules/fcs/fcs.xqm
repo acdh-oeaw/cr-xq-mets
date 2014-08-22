@@ -208,7 +208,7 @@ declare function fcs:explain($x-context as xs:string*, $config) as item()* {
 (\:    let $context-mappings := if ($x-context='') then $mappings else $mappings//map[xs:string(@key)=$x-context]:\):\)
     let $context-map := fcs:get-mapping("",$x-context, $config)
 :)
-    let $server-host :=  'TODO: config:param-value($config, "base-url")', 
+    let $server-host :=  config:param-value($config, "base-url"), 
         $database := repo-utils:config-value($config, 'project-id'),
         $title := concat( repo-utils:config-value($config, 'project-title'), 
                     if ($x-context != '') then concat(' - ', $mappings/xs:string(@title)) else '') ,
@@ -258,10 +258,11 @@ declare function fcs:explain($x-context as xs:string*, $config) as item()* {
         </index> -->
         { for $index in $mappings//index
             let $ix-key := $index/xs:string(@key)
-            order by $ix-key
+            let $ix-label := ($index/xs:string(@label),$ix-key)[1]
+(: rather retain explicit order           order by $ix-key:)
             return
                 <zr:index search="true" scan="{($index/data(@scan), 'false')[1]}" sort="false">
-                <zr:title lang="en">{$ix-key}</zr:title>
+                <zr:title lang="en">{$ix-label}</zr:title>
                 <zr:map>
                     <zr:name set="fcs">{$ix-key}</zr:name>
                 </zr:map>
@@ -340,10 +341,9 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
         ),
   (: get the base-index from cache, or create and cache :)
   $index-scan :=
-        (: scan overall existing indices
-           dont store the result! :)        
+        (: scan overall existing indices, do NOT store the result! :)        
         if ($index-name= 'cql.serverChoice') then 
-                    fcs:scan-all($x-context, $filter)
+                    fcs:scan-all($x-context, $filter, $config)
         else
         if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
           let $dummy := util:log-app("DEBUG", $config:app-name, "reading index "||$index-doc-name||" from cache")
@@ -495,20 +495,34 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs
     return $data
 };:)
 
-(:~ delivers matching(!) terms from all indexes
-    to prevent too many records results are only returned, when at least the filter is at least $fcs:filterScanMinLength (current default=2)  
+(:~ delivers matching(!) terms from all indexes marked as scan=true(!) 
+    to prevent too many records results are only returned, when the filter is at least $fcs:filterScanMinLength (current default=2)  
 :)
-declare function fcs:scan-all($project as xs:string, $filter as xs:string) as item()* {
-  let $indexes :=  collection(project:path("abacus","indexes"))
+declare function fcs:scan-all($project as xs:string, $filter as xs:string, $config ) as item()* {
+(:  let $indexes :=  collection(project:path("abacus","indexes")):)
+        
+  let $indexes := for $ix in index:map($project)//index[@scan='true']    
+                              let $index-doc-name := repo-utils:gen-cache-id("index", ($project, $ix/xs:string(@key), 'text', 1))
+                             return repo-utils:get-from-cache($index-doc-name, $config)
+  
   let $terms := if (string-length($filter) >= $fcs:filterScanMinLength) then
                     $indexes//sru:value[ft:query(., $filter)]/parent::sru:term union $indexes//sru:displayTerm[ft:query(., $filter)]/parent::sru:term
                   else ()
-    let $dummy-log := util:log-app("DEBUG", $config:app-name, count($terms)) 
+            (: get rid of nested terms  and adding cr:type :)
+   let $terms-pruned := for $t in $terms
+                                let $type := if (exists($t/sru:extraTermData/cr:type)) then () (: it will be copied anyhow :)
+                                                else <cr:type>{root($t)//sru:scanClause/text()}</cr:type> (: add if not provided :)
+                                let $extraTermData := 
+                                       <sru:extraTermData>{($t/sru:extraTermData/*[not(local-name()='terms')], $type)}</sru:extraTermData>                                 
+                               return
+                                <sru:term>{($t/@*, $t/*[not(local-name()='extraTermData')], $extraTermData) }</sru:term>
+    let $dummy-log := util:log-app("DEBUG", $config:app-name, "terms/pruned:"||count($terms)||"/"||count($terms-pruned))
+    
   return 
         <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
             <sru:version>1.2</sru:version>
             <sru:terms>
-            {$terms}
+            {$terms-pruned}
             </sru:terms>
             <sru:extraResponseData>
                 
@@ -536,7 +550,8 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs
     let $terms := 
         if ($facets/index)
         then fcs:group-by-facet($nodes, $sort, $facets/index, $project-pid)
-        else fcs:term-from-nodes($nodes, $sort, $scan-clause, $project-pid)
+        else if ($nodes) then fcs:term-from-nodes($nodes, $sort, $scan-clause, $project-pid)
+                else ()
         
     return 
         <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
@@ -575,9 +590,11 @@ declare function fcs:term-from-nodes($node as item()+, $order-param as xs:string
     
     let $order-expr :=
         switch ($order-param)
-            case 'text' return "$value"
+            (:case 'text' return "$value":)
+            case 'text' return "map:get($g[1],'label')"
             case 'size' return "count($g)"
-            default     return "$value"
+            (:default     return "$value":)
+            default     return "map:get($g[1],'label')"
             
    let $order-modifier :=
         switch ($order-param)
@@ -709,9 +726,11 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
      
      let $order-expression :=
         switch ($sort)
-            case 'text' return "$group-key"
+            (:case 'text' return "$group-key":)
+            case 'text' return  "$label"
             case 'size' return "count($entries)"
-            default     return "$group-key"
+            (:default     return "$group-key":)
+            default     return "$label"
             
    let $order-modifier :=
         switch ($sort)
