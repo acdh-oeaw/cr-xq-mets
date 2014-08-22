@@ -229,7 +229,7 @@ switch (true())
          <current-user >{($db-user,'-',xmldb:get-current-user())}</current-user>
          <attrs>{string-join(request:attribute-names(),', ')}</attrs>
          <rel-path>{$rel-path}</rel-path>
-         <module>{$module}</module>
+         <module>{($module, 'module-protected:',$module-protected)}</module>
          <logout>{request:get-parameter("logout","")}</logout>
          </DEBUG>
          
