@@ -243,11 +243,14 @@ declare function project:available($project-pid as xs:string) as xs:boolean {
 ~:)
 declare function project:get($project) as element(mets:mets)? {
     if ($project instance of  element(mets:mets)) then $project
-        else 
+        else
+        if ($project instance of map())
+        then $project("config")[self::mets:mets]
+        else
         (: also try to get it out of the mixed config-sequence: :)
            if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
            else 
-            let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
+           let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
            return
             if (count($project_) gt 1)
             then 
