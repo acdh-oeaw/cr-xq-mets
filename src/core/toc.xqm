@@ -5,7 +5,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 import module namespace ltb="http://aac.ac.at/content_repository/lookuptable" at "lookuptable.xqm";
-import module namespace fcs = "http://clarin.eu/fcs/1.0" at "../modules/fcs/fcs.xqm";
+import module namespace index = "http://aac.ac.at/content_repository/index" at "index.xqm";
 import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "wc.xqm";
 
 declare namespace mets="http://www.loc.gov/METS/";
@@ -24,7 +24,7 @@ declare namespace cr="http://aac.ac.at/content_repository";
 declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:string, $project-pid as xs:string) as item()* {
    let $mappings:=project:map($project-pid),
        $indexes := for $m in $mapping-keys return $mappings//index[@key eq $m],
-       $paths := for $i in $indexes return fcs:index-as-xpath($i,$project-pid,()),
+       $paths := for $i in $indexes return index:index-as-xpath($i,$project-pid,()),
        $ltb-exists := if (not(resource:path($resource-pid,$project-pid,"lookuptable")=''))
                       then ltb:generate($resource-pid,$project-pid)
                       else (),
