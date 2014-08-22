@@ -265,10 +265,12 @@ function load_main(event) {
     var parsedUrl = $.url(targetRequest);
     params = parsedUrl.param();
     
-    cr_config.params["query"] = params["query"];  
+    cr_config.params["query"] = params["query"];
     
-    // Recreate the x-dataview param from scratch
+    // set the query into the query input field
+    $('#input-query').val(params["query"]);
     
+    // Recreate the x-dataview param from scratch    
     params["x-dataview"] = 'title,kwic,facets'; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     
@@ -382,6 +384,9 @@ function load_detail_data(targetRequest) {
     detail.find(".detail-content").load(detailFragment, function () {
                         
                         detail.find('.detail-header').toggleClass("cmd_get cmd");
+                        detail.find(".data-view.facs img").each( function() {$(this).attr("data-zoom-image",$(this).attr("src")); });
+                        detail.find(".data-view.facs img").elevateZoom({ zoomType : "lens", lensShape : "round", lensSize : 200 });
+                         
                         // move Title and navigation above the tabs
                         $('.detail-header').html($(this).find(".navigation")).append($(this).find(".title"));
                         customizeIcons(); 
