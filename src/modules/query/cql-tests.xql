@@ -26,9 +26,9 @@ import module namespace request="http://exist-db.org/xquery/request";
                     </map>
  
  let $queries := <qs>
-                <q cql="term1" expected-xpath='p[ft:query(.,&lt;query>&lt;phrase&gt;term1&lt;/phrase&gt;&lt;/query&gt;)]' />
-                <q cql="rf = pb1" expected-xpath="pb[@xml:id='pb1']" />
-                <q cql="fcs.rf = rf1" expected-xpath='resourceFragment[ft:query(@rf-pid,&lt;query&gt;&lt;phrase&gt;rf1&lt;/phrase>&lt;/query&gt;)]' />
+                <q cql="term1" expected-xpath='/descendant-or-self::p[ft:query(./.,&lt;query>&lt;phrase&gt;term1&lt;/phrase&gt;&lt;/query&gt;)]' />
+                <q cql="rf = pb1" expected-xpath="/descendant-or-self::pb[./@xml:id='pb1']" />
+                <q cql="fcs.rf = rf1" expected-xpath='/descendant-or-self::resourceFragment[ft:query(./@rf-pid,&lt;query&gt;&lt;phrase&gt;rf1&lt;/phrase>&lt;/query&gt;)]' />
                 </qs>
  
  for $q at $pos in $queries/q

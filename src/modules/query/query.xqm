@@ -38,7 +38,7 @@ and evaluates the xpath against the data passed as the second parameter
 declare function query:execute-query($q as xs:string, $data as node()*, $project) as node()* {
     
     let $xpath := query:query-to-xpath($q, $project)
-    return util:eval("($data)//"||$xpath)
+    return util:eval("($data)"||$xpath)
 (:  return $xpath:)
     
 };
