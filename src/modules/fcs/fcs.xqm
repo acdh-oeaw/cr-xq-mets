@@ -60,7 +60,6 @@ declare variable $fcs:filterScanMinLength := 2;
 (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)  
 declare variable $fcs:maxScanSize:= 100000;
 
-declare variable $fcs:project-index-functions-ns-base-uri := "http://aac.ac.at/content-repository/projects-index-functions/";
 
 (:~ The main entry-point. Processes request-parameters
 regards config given as parameter + the predefined sys-config
@@ -512,21 +511,22 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
                 <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>:)
 };
 
-declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs:string, $sort as xs:string, $config) as item()* {
+declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string, $config) as item()* {
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
-    let $facets := index:facets($scan-clause,$project-pid)
-    let $path := index:index-as-xpath($scan-clause,$project-pid)
+    let $facets := index:facets($index,$project-pid)
+(:    let $path := index:index-as-xpath($scan-clause,$project-pid):)
     (:let $data-collection := repo-utils:context-to-collection($x-context, $config),
         $nodes := util:eval("$data-collection//"||$path):)
 (:    let $context-parsed := repo-utils:parse-x-context($x-context,$config):)
     let $data := repo-utils:context-to-data($x-context,$config),
     (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)
-        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize)
-    
+(:        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize):)
+        $nodes := index:apply-index($data, $index,$project-pid,())
+        
     let $terms := 
         if ($facets/index)
         then fcs:group-by-facet($nodes, $sort, $facets/index, $project-pid)
-        else if ($nodes) then fcs:term-from-nodes($nodes, $sort, $scan-clause, $project-pid)
+        else if ($nodes) then fcs:term-from-nodes($nodes, $sort, $index, $project-pid)
                 else ()
         
     return 
@@ -538,56 +538,55 @@ declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs
                 <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>
              </sru:extraResponseData>
             <sru:echoedScanRequest>
-                <sru:scanClause>{$scan-clause}</sru:scanClause>
+                <sru:scanClause>{$index}</sru:scanClause>
                 <sru:maximumTerms/>
             </sru:echoedScanRequest>
         </sru:scanResponse>
 };
 
 (:%private :)
-declare function fcs:term-from-nodes($node as item()+, $order-param as xs:string, $index-key as xs:string, $project-pid as xs:string) {
-    let $match-path := index:index-as-xpath($index-key,$project-pid,'match-only'),
-        $label-path := index:index-as-xpath($index-key,$project-pid,'label-only')
-    let $data :=  for $n in $node
-                    let $term-value :=  string-join(util:eval("$n/"||$match-path),''),
+declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:string, $index-key as xs:string, $project-pid as xs:string) {
+    let $ts0 := util:system-dateTime()
+    let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: "||$index-key)
+    let $termlabels := project:get-termlabels($project-pid,$index-key)
+    (:let $data :=  for $n in $node
+                    let $term-value := index:apply-index($n,$index-key,$project-pid,'match-only')                                                    
+                    return $term-value
+    :)                
+    (:let $data :=  for $n in $node
+                    let $term-value := index:apply-index($n,$index-key,$project-pid,'match-only'),
                         $value-map := map:entry("value",$term-value)
-                    let $term-label := fcs:term-to-label($term-value,$index-key,$project-pid)
-                    let $label-value := 
-                            switch(true())
+                    let $term-label := fcs:term-to-label($term-value,$index-key,$project-pid,$termlabels)
+                    let $label-value := if ($term-label) then $term-label
+                                        else string-join(index:apply-index($n,$index-key,$project-pid,'label-only'),'')                                    
+                            (\:switch(true())
                                 case ($term-label!='') return $term-label
                                 case ($label-path!='') return string-join(util:eval("$n/"||$label-path),'')
-                                default return $term-value
-                            (:if ($label-path!='') 
-                            then util:eval("$n/"||$label-path)/data(.)
-                            else $value):)
-                    let $label-map := map:entry("label",$label-value)
-                            
-                    return map:new(($value-map,$label-map))
-    
-    let $order-expr :=
-        switch ($order-param)
-            (:case 'text' return "$value":)
-            case 'text' return "map:get($g[1],'label')"
-            case 'size' return "count($g)"
-            (:default     return "$value":)
-            default     return "map:get($g[1],'label')"
-            
-   let $order-modifier :=
-        switch ($order-param)
-            case 'size' return "descending"
-            default     return "ascending"
-    
+                                default return $term-value:\)                            
+                    let $label-map := map:entry("label",$label-value)                            
+                    return map:new(($value-map,$label-map)):)
+    let $ts1 := util:system-dateTime()     
+    let $dummy1 := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: after initial lookup "||$index-key||" duration:"|| ($ts1 - $ts0))
     let $terms :=           
-        for $g at $pos in $data
-        group by $value := map:get($g,'value')
+        for $g at $pos in $nodes
+            let $term-value := index:apply-index($g,$index-key,$project-pid,'match-only')                                                    
+            let $term-label := fcs:term-to-label($term-value[1],$index-key,$project-pid,$termlabels)
+            let $label := if ($term-label) then $term-label
+                                        else index:apply-index($g,$index-key,$project-pid,'label-only')                                    
+(:                    let $label-map := map:entry("label",$label-value):)
+        group by $term-value-g := xs:string($term-value[1]), 
+                 $label-g := xs:string($label[1])
         order by 
-            if ($order-modifier='ascending') then true() else util:eval($order-expr) descending,
-            if ($order-modifier='descending') then true() else util:eval($order-expr) ascending
+            if ($order-param='size') then count($g) else true() descending,
+(:            if ($order-param='text') then map:get($g[1],'label') else true() ascending                    :)
+            if ($order-param='text') then $label-g else true() ascending                    
         return
-            let $m-label := map:entry("label",map:get($g[1],'label')),
-                $m-value := map:entry("value",$value),
+            let $m-label := map:entry("label",$label-g),
+                $m-value := map:entry("value",$term-value-g),
                 $m-count := map:entry("numberOfRecords",count($g))
             return map:new(($m-label,$m-value,$m-count))
+   let $ts2 := util:system-dateTime()
+   let $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: after ordering"||$index-key||" duration:"||($ts2 - $ts1))
     return <sru:terms> 
         {
         for $term at $pos in $terms
@@ -606,27 +605,15 @@ declare function fcs:term-from-nodes($node as item()+, $order-param as xs:string
 
 
 declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string, $index as element(index), $project-pid) as item()* {
-    let $key := $index/xs:string(@key),
-        $match:= index:index-as-xpath($key,$project-pid,'match-only'),
-        $label-path := index:index-as-xpath($key,$project-pid,'label-only')
-     
-     let $order-expression :=
-        switch ($sort)
-            (:case 'text' return "$group-key":)
-            case 'text' return  "$label"
-            case 'size' return "count($entries)"
-            (:default     return "$group-key":)
-            default     return "$label"
-            
-   let $order-modifier :=
-        switch ($sort)
-            case 'size' return "descending"
-            default     return "ascending"
-    
+    let $index-key := $index/xs:string(@key)
+        (:$match:= index:index-as-xpath($key,$project-pid,'match-only'),
+        $label-path := index:index-as-xpath($key,$project-pid,'label-only'):)
+    let $termlabels := project:get-termlabels($project-pid,$index-key)     
     let $groups := 
         let $maps := 
             for $x in $data 
-            let $g := util:eval("$x/"||$match)[1]
+(:            let $g := util:eval("$x/"||$match)[1]:)
+              let $g := index:apply-index ($x, $index-key, $project-pid,'match-only')
             group by $g 
             return if (exists($g)) then map:entry(($g)[1],$x)
         else ()
@@ -640,19 +627,22 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
         (:let $label :=  if ($label-path='') 
                             then fcs:term-to-label($group-key, $key,$project-pid)
                             else data(util:eval("$entries[1]/"||$label-path)):)
-         let $label := (fcs:term-to-label($group-key,$key,$project-pid), data(util:eval("$entries[1]/"||$label-path)))[1]
-         
-         let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:group by facet: "||$group-key||"##"||$key||"##"||$label)
-        order by 
-                if ($order-modifier='ascending') then true() else util:eval($order-expression) descending,
-                if ($order-modifier='descending') then true() else util:eval($order-expression) ascending
+(:         let $label := (fcs:term-to-label($group-key,$key,$project-pid), data(util:eval("$entries[1]/"||$label-path)))[1]:)
+         let $term-label := fcs:term-to-label($group-key,$index-key,$project-pid,$termlabels)
+         let $label := if ($term-label) then $term-label
+                                        else index:apply-index($entries[1],$index-key,$project-pid,'label-only')
+
+        let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:group by facet: "||$group-key||"##"||$index-key||"##"||$label)
+        order by
+            if ($sort='size') then count($entries) else true() descending,
+            if ($sort='text') then $label else true() ascending            
         return
             <sru:term>
                 <sru:displayTerm>{$label}</sru:displayTerm>
                 <sru:value>{$group-key}</sru:value>
                 <sru:numberOfRecords>{count($entries)}</sru:numberOfRecords>
                 <sru:extraTermData>
-                    <cr:type>{$key}</cr:type>
+                    <cr:type>{$index-key}</cr:type>
                     {if ($index/index)
                     then fcs:group-by-facet($entries, $sort, $index/index, $project-pid)
                     else fcs:term-from-nodes($entries, $sort, root($index)/index/@key, $project-pid)}
@@ -661,11 +651,31 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
             } </sru:terms>
 };
 
+(:~ lookup a label to a term using a freshly loaded the projects termlabel map 
+you really should try to use the second method with termlabels already resolved
+it spears you a lot of time  
+:)
 (:%private :)
-declare function fcs:term-to-label($term as xs:string, $index as xs:string, $project-pid as xs:string) as xs:string?{
-    let $labels := project:get-termlabels($project-pid)
+declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string) as xs:string?{
+    
 (:    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]:)
-    return $labels//term[@key=$term][ancestor::*/@key=$index]
+    if ($term) then 
+            let $termlabels := project:get-termlabels($project-pid)
+            return fcs:term-to-label($term,$index,$project-pid, $termlabels)
+         else  ()
+};
+
+(:~ lookup a label to a term using the termlabel map passed as argument
+this is the preferred method, the resolution of the projects termlabels map should happen before the scan loop, 
+to prevent repeated lookup of this map, which has serious performance impact
+:)
+(:%private :)
+declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string, $termlabels) as xs:string?{
+    
+(:    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]:)
+    if ($term and $termlabels) then 
+            $termlabels//term[@key=$term][ancestor::*/@key=$index]
+         else  ()
 };
 
 
@@ -832,10 +842,11 @@ all based on mappings and parameters (data-view)
 :)
 declare function fcs:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
     
-    let $title := index:apply-index($orig-sequence-record-data, "title", $config)
+    let $title := index:apply-index($orig-sequence-record-data, "title", $x-context)
     (: this is (hopefully) temporary FIX: the resource-pid attribute is in fcs-namespace (or no namespace?) on resourceFragment element!  	:)
 	let $resource-pid:= ($record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),
-	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$config,'match-only'))[1]
+(:	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$config,'match-only'))[1]:)
+	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$x-context,'match-only'))[1]
 	
 	let $resource-ref :=   if (exists($resource-pid)) 
 	                               then 
