@@ -5,6 +5,7 @@ import module namespace repo-utils = "http://aac.ac.at/content_repository/utils"
 import module namespace crday  = "http://aac.ac.at/content_repository/data-ay" at "../aqay/crday.xqm";
 import module namespace fcs = "http://clarin.eu/fcs/1.0" at "../fcs/fcs.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
+import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 declare namespace sru = "http://www.loc.gov/zing/srw/";
 
 declare variable $smc:termsets := doc("data/termsets.xml");
@@ -80,7 +81,7 @@ by invoking get-mappings for each collection individually (as x-context)
 declare function smc:gen-mappings($config, $x-context as xs:string+, $run-flag as xs:boolean, $format as xs:string) as item()* {
 
 (:         let $mappings := doc(repo-utils:config-value($config, 'mappings')),:)
-    let $context-mapping := fcs:get-mapping('',$x-context, $config),
+    let $context-mapping := index:map($x-context),
           (: if not specific mapping found for given context, use whole mappings-file :)
           $mappings := if ($context-mapping/xs:string(@key) = $x-context) then $context-mapping 
                     else doc(repo-utils:config-value($config, 'mappings')) 

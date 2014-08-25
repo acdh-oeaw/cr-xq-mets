@@ -18,12 +18,27 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace mets="http://www.loc.gov/METS/";
 
 
-
-
-declare function query:execute-query($cql as xs:string, $data as node()*, $project) as node()* {
+(:~ resolves query to xpath in the context of a project (applying custom mappings)
+currently only passed further to the cql-module
+but could in future also switch to other parsers/transformers
+@param $q the query string (currently only CQL-syntax is supported)
+@param 
+:) 
+declare function query:query-to-xpath($q as xs:string, $project) as xs:string? {
     
-    let $xpath := cql:cql-to-xpath(replace($cql,'&amp;','&amp;amp;'), $project)
-    return util:eval("($data)//"||$xpath)
+    let $xpath := cql:cql-to-xpath(replace($q,'&amp;','&amp;amp;'), $project)
+    return $xpath
+    
+};
+
+(:~ lets the query translate into xpath in the context of a project (applying custom mappings)
+and evaluates the xpath against the data passed as the second parameter
+@param $q the query string (currently only CQL-syntax is supported)
+:) 
+declare function query:execute-query($q as xs:string, $data as node()*, $project) as node()* {
+    
+    let $xpath := query:query-to-xpath($q, $project)
+    return util:eval("($data)"||$xpath)
 (:  return $xpath:)
     
 };

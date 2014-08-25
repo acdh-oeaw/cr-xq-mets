@@ -15,9 +15,12 @@ import module namespace index = "http://aac.ac.at/content_repository/index" at "
 (:declare variable $cql:transform-doc := doc("XCQL2Xpath.xsl");:)
 declare variable $cql:transform-doc := doc(concat(system:get-module-load-path(),"/XCQL2Xpath.xsl"));
 declare variable $cql:log := util:log("INFO",$cql:transform-doc);
+
 (:~ use the extension module CQLParser (using cql-java library)
 to parse the expression and return the xml version  of the parse-tree
 or a diagnostic, on parsing error
+: @param $cql-expression a query string in CQL-syntax
+: @return XCQL - a XML version of the parse-tree (or diagnostics) 
 :)
 declare function cql:cql-to-xcql($cql-expression as xs:string) {
     try {
@@ -39,9 +42,11 @@ declare function cql:cql-to-xcql($cql-expression as xs:string) {
 : <li>1. parsing into XCQL (XML-representation of the parsed query</li>
 : <li>2. and transform via XCQL2Xpath.xsl-stylesheet</li>
 : </ol>
+: @param $cql-expression a query string in CQL-syntax
+: @param $context identifies the context-project (providing the custom index-mappings) 
 : @returns xpath-string, or if not a string, whatever came from the parsing (if not a string, it must be a diagnostic) 
 :)
-declare function cql:cql2xpath_old($cql-expression as xs:string, $x-context as xs:string)  as item() {
+declare function cql:cql2xpath_old($cql-expression as xs:string, $context as xs:string)  as item() {
     let $xcql := cql:cql-to-xcql($cql-expression)
 (:    return transform:transform ($xcql, $cql:transform-doc, <parameters><param name="mappings-file" value="{repo-utils:config-value('mappings')}" /></parameters>):)
     return 
@@ -52,6 +57,16 @@ declare function cql:cql2xpath_old($cql-expression as xs:string, $x-context as x
         else $xcql
 };
 
+(:~ translate a query in CQL-syntax to a corresponding XPath
+This happens in two steps: 
+: <ol>
+: <li>1. parsing into XCQL (XML-representation of the parsed query</li>
+: <li>2. and process the XCQL recursively with xquery (as opposed to old solution, with the XCQL2Xpath.xsl-stylesheet)</li>
+: </ol>
+: @param $cql-expression a query string in CQL-syntax
+: @param $context identifies the context-project (providing the custom index-mappings, needed in the second step) 
+: @returns xpath-string, or if not a string, whatever came from the parsing (if not a string, it must be a diagnostic) 
+:)
 declare function cql:cql-to-xpath($cql-expression as xs:string, $context)  as item()* {
     let $xcql := cql:cql-to-xcql($cql-expression)
 (:    return transform:transform ($xcql, $cql:transform-doc, <parameters><param name="mappings-file" value="{repo-utils:config-value('mappings')}" /></parameters>):)
@@ -62,6 +77,9 @@ declare function cql:cql-to-xpath($cql-expression as xs:string, $context)  as it
 };
 
 (:~ a version that accepts mappings-element(s) as param
+: @param $cql-expression a query string in CQL-syntax
+: @param $context identifies the context-project (providing the custom index-mappings, needed in the second step) 
+: @returns xpath corresponding to the abstract cql query as string, or if not a string, whatever came from the parsing (if not a string, it must be a diagnostic) 
 :)
 declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:string, $mappings as element(map)*)  as item() {
     let $xcql :=    if (exists($mappings)) 
@@ -81,7 +99,13 @@ declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:st
             return transform:transform($input, $cql:transform-doc,$parameters)
 };
 
-declare function cql:xcql-to-xpath ($xcql as node(), $context)  as xs:string {
+(:~ starting point of the processing of the parsing tree into an xpath string
+requires $context to be able to translate the abstract indexes into xpaths
+: @param $xcql the parsed query as XCQL
+: @param $context string that identifies the context-project (providing the custom index-mappings) 
+: @returns xpath corresponding to the abstract cql query as string
+:)
+declare function cql:xcql-to-xpath ($xcql as node(), $context as xs:string)  as xs:string {
     let $map := index:map($context)    
     let $xpath := 
         if ($xcql instance of document-node())
@@ -90,6 +114,11 @@ declare function cql:xcql-to-xpath ($xcql as node(), $context)  as xs:string {
     return string-join($xpath,'') 
 };
 
+(:~ the default recursive processor of the parsed query expects map with indexes defined
+: @param $xcql the parsed query as XCQL
+: @param $map map element as defined in the project-configuration 
+: @returns xpath corresponding to the abstract cql query as string
+:)
 
 declare function cql:process-xcql($xcql as element(),$map) as xs:string {
     let $return := 
@@ -133,13 +162,28 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
         $index-xpath := index:index-as-xpath-from-map($index-key,$map,''),        
         $match-on := index:index-as-xpath-from-map($index-key,$map,'match-only'),         
         $relation := $clause/relation/value/text(),
+        (: exact, starts-with, contains, ends-with :)
+        $match-mode := if (ends-with($clause/term,'*')) then 
+                            if (starts-with($clause/term,'*')) then 'contains'
+                            else 'starts-with'
+                        else if (starts-with($clause/term,'*')) then 'ends-with'
+                            else 'exact', 
         $sanitized-term := cql:sanitize-term($clause/term),
 (:$predicate := ''        :)
         $predicate := switch (true())
-                        case ($index-type eq $index:INDEX_TYPE_FT) return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
-                        default return $match-on||"='"||$sanitized-term||"'"
+                        case ($index-type eq $index:INDEX_TYPE_FT) return 
+                                switch ($match-mode) 
+                                    case ('exact') return 'ft:query(.'||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'
+                                    case ('starts-with') return 'ft:query(.'||$match-on||',"'||$sanitized-term||'")'
+                                    default return 'ft:query(.'||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
+                        default return
+                               switch ($match-mode) 
+                                    case ('exact') return "."||$match-on||"='"||$sanitized-term||"'"
+                                    case ('starts-with') return 'stars-with(.'||$match-on||",'"||$sanitized-term||"')"
+                                    case ('ends-with') return 'ends-with(.'||$match-on||",'"||$sanitized-term||"')"
+                                    case ('contains') return 'contains(.'||$match-on||",'"||$sanitized-term||"')"
+                                    default return '.'||$match-on||"='"||$sanitized-term||"'"                        
                         
-
     return $index-xpath||'['||$predicate||']'
 
 };
@@ -193,7 +237,7 @@ declare function cql:prox($leftOperand as element(leftOperand), $rightOperand as
             return 
                 if ($window/self::"||$operands[2]||")
                 then ($prev,$hit,$foll)
-                else ()"
+                else ()" (: " :)
 };
         
 
