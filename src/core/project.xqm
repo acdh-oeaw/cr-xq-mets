@@ -1142,6 +1142,17 @@ declare function project:get-termlabels($project-pid as xs:string) as item()* {
     return $termlabels/mets:file/mets:FLocat!doc(@xlink:href)
 };
 
+(:~ gets the term label data of a project, already specific for an index
+ : @param $project-pid the id of the project to query
+ : @param $index-key the index-key to provide labels for
+ : @return sequence of docs() with term labels following  
+ :)
+declare function project:get-termlabels($project-pid as xs:string, $index-key) as item()* {
+    let $termlabels := project:get-termlabels($project-pid)
+    return $termlabels//*[@key=$index-key]
+};
+
+
 declare function project:add-termlabels($project-pid as xs:string, $data as element(termLib)) as item()* {
     let $termlabels-path:= project:path($project-pid,"termlabels"),
         $termlabels := project:termlabels($project-pid),
