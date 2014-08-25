@@ -173,16 +173,16 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
         $predicate := switch (true())
                         case ($index-type eq $index:INDEX_TYPE_FT) return 
                                 switch ($match-mode) 
-                                    case ('exact') return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'
-                                    case ('starts-with') return 'ft:query('||$match-on||',"'||$sanitized-term||'")'
-                                    default return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
+                                    case ('exact') return 'ft:query(.'||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'
+                                    case ('starts-with') return 'ft:query(.'||$match-on||',"'||$sanitized-term||'")'
+                                    default return 'ft:query(.'||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
                         default return
                                switch ($match-mode) 
-                                    case ('exact') return $match-on||"='"||$sanitized-term||"'"
-                                    case ('starts-with') return 'stars-with('||$match-on||",'"||$sanitized-term||"')"
-                                    case ('ends-with') return 'ends-with('||$match-on||",'"||$sanitized-term||"')"
-                                    case ('contains') return 'contains('||$match-on||",'"||$sanitized-term||"')"
-                                    default return $match-on||"='"||$sanitized-term||"'"                        
+                                    case ('exact') return "."||$match-on||"='"||$sanitized-term||"'"
+                                    case ('starts-with') return 'stars-with(.'||$match-on||",'"||$sanitized-term||"')"
+                                    case ('ends-with') return 'ends-with(.'||$match-on||",'"||$sanitized-term||"')"
+                                    case ('contains') return 'contains(.'||$match-on||",'"||$sanitized-term||"')"
+                                    default return '.'||$match-on||"='"||$sanitized-term||"'"                        
                         
     return $index-xpath||'['||$predicate||']'
 
