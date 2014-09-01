@@ -5,6 +5,7 @@ import module namespace project = "http://aac.ac.at/content_repository/project" 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 import module namespace ixfn = "http://aac.ac.at/content-repository/projects-index-functions/" at "../modules/index-functions/index-functions.xqm";
+import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
 declare namespace xconf = "http://exist-db.org/collection-config/1.0";
 
@@ -54,7 +55,7 @@ declare function index:index-as-xpath($key as xs:string, $project, $type as xs:s
 (:~ this expects already the index-map of the project as param, as opposed to the project file or id 
 - this is meant to skip the resolution of the map
 
-@returns the full generated path (including starting '/'!) 
+@returns the full generated path (excluding starting '/'!) 
 :)
 declare function index:index-as-xpath-from-map($key as xs:string, $map, $type as xs:string?) as xs:string {    
     let $index := index:index-from-map($key, $map)        
@@ -84,7 +85,7 @@ declare function index:index-as-xpath-from-map($key as xs:string, $map, $type as
                                         else translate(concat($paths, $match-on),'.','/'):)
                                         then '('||string-join($paths ,'|')||')'
                                         else $paths
-                           return concat('/',$indexes)
+                           return $indexes
 (: unknown index - return the key - except for match-only or label-only : return just '.' :)                           
                   else if ($type = ('label-only', 'match-only')) then '.'
                             else translate($key,'.','/')
