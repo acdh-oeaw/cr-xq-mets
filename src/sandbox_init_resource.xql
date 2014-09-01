@@ -8,6 +8,7 @@ import module namespace facs="http://aac.ac.at/content_repository/facs" at "core
 import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "core/wc.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "core/config.xqm";
 import module namespace cr="http://aac.ac.at/content_repository" at "core/cr.xqm";
+import module namespace toc="http://aac.ac.at/content_repository/toc" at "core/toc.xqm";
 
 declare namespace cmd="http://www.clarin.eu/cmd/";
 
@@ -16,8 +17,8 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-let $resource-pid := "dict-gate.3",
-    $project-pid := "dict-gate",
+let $resource-pid := "abacus.3",
+    $project-pid := "abacus",
     $resource-label := "A machine-readable glossary of Egyptian Arabic"
 
 (:  let $resource-pid := "dict-gate.3",
@@ -25,7 +26,7 @@ let $resource-pid := "dict-gate.3",
 
 (:let $md := doc("/db/cr-data/_tmp/dict-gate/dict-gate.cmd.xml")/*:)
 (: let $md := doc("/db/cr-data/_temp/abacus_md/TEIHDR/md-abacus.9.xml"):)
-let $data  := doc("/db/cr-data/_temp/dict-gate.1.xml")
+(:let $data  := doc("/db/cr-data/_temp/dict-gate.1.xml"):)
 
 
 (:let  $resource-pid := resource:new-with-label($data, $project-pid, $resource-label):)
@@ -36,17 +37,17 @@ let $data  := doc("/db/cr-data/_temp/dict-gate.1.xml")
 (: :)
 (:let $lt-gen :=  lt:generate($resource-pid, $project-pid):)
 (::)
-(:let $toc-gen :=  toc:generate(('front','chapter'),  $resource-pid, $project-pid):)
+let $toc-gen :=  toc:generate(('front','chapter', 'back'),  $resource-pid, $project-pid)
 (: :)
 (: return ($resource-pid, $rf-gen):)
  
 (:return resource:get-toc-resolved($project-pid):)
  
 (::)
-let $gen-aux := resource:refresh-aux-files($resource-pid, $project-pid)
+(:let $gen-aux := resource:refresh-aux-files($resource-pid, $project-pid):)
 (::)
 (:let $gen-facs := facs:generate($resource-pid,$project-pid):)
- return $gen-aux
+ return $toc-gen
 (:return ($resource-pid, $gen-aux, $gen-facs):)
 (:  return ($lt-gen, $toc-gen):)
 
