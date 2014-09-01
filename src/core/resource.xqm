@@ -806,9 +806,10 @@ declare function resource:refresh-aux-files($resource-pid as xs:string, $project
  : @param $struct-type the name of the structure (e.g. 'chapter')
  : @param $resource-pid the pid of the resource 
  : @param $project-pid the id of the project
+ : @returns a sequence consisting of the results of the partial functions (wc, rf, lt, toc) + overall duration
 ~:)
 declare function resource:refresh-aux-files($toc-indexes as xs:string*, $resource-pid as xs:string, $project-pid as xs:string){
-    let $start-time := current-dateTime()
+    let $start-time := util:system-time()
     let $log := util:log-app("INFO",$config:app-name,"rebuilding auxiliary files for resource "||$resource-pid||" (project "||$project-pid||")")
     let $log := util:log-app("INFO",$config:app-name,"please bear with me, this might take a while ... ")
     let $wc := wc:generate($resource-pid,$project-pid),
@@ -818,10 +819,10 @@ declare function resource:refresh-aux-files($toc-indexes as xs:string*, $resourc
         if (not(exists($toc-indexes)))
         then ()
         else toc:generate($toc-indexes,$resource-pid,$project-pid)
-    let $stop-time := current-dateTime()
-    let $duration := xs:dateTime($start-time)-xs:dateTime($stop-time)
-    let $log := util:log-app("INFO",$config:app-name,"finished rebuiling auxiliary files for resource "||$resource-pid||" (project "||$project-pid||" in "||minutes-from-duration($duration)||"min.)") 
-    return ()
+    let $stop-time := util:system-time()
+    let $duration := $stop-time - $start-time 
+    let $log := util:log-app("INFO",$config:app-name,"finished rebuilding auxiliary files for resource "||$resource-pid||" (project "||$project-pid||" in "||$duration||")") 
+    return ($wc, $rf, $lt, 'toc:'||$toc, $duration)
 };
 
 

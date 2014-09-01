@@ -4,7 +4,7 @@ declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace mets = "http://www.loc.gov/METS/";
 declare namespace xlink = "http://www.w3.org/1999/xlink";
-
+declare namespace sru = "http://www.loc.gov/zing/srw/";
 
 (:import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "core/repo-utils.xqm";:)
 import module namespace fcs="http://clarin.eu/fcs/1.0" at "modules/fcs/fcs.xqm";
@@ -12,6 +12,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "core
 import module namespace toc = "http://aac.ac.at/content_repository/toc" at "core/toc.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "core/repo-utils.xqm";
 import module namespace project="http://aac.ac.at/content_repository/project" at "core/project.xqm";
+
 
 let $resource-pid := "abacus2.5",   
     $x-context := "abacus",
@@ -30,4 +31,7 @@ let $resource-pid := "abacus2.5",
 (:    let $labels := project:get-termlabels($x-context):)
     let $term := 'city'
 (:    return xs:string(($labels//term[@key=$term][ancestor::*/@key='placeType'],$term)[1]):)
- return  fcs:term-to-label('city', 'placeType', $x-context)
+(: return  fcs:term-to-label('city', 'placeType', $x-context):)
+ 
+(: return (config:path("projects"),project:path($x-context,'home'), config:param-value($config,'project-dir')):)
+

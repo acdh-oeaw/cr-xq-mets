@@ -310,7 +310,12 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
             let $rf:path-param :=       (rf:path($resource-pid,$project-pid), project:path($project-pid,"resourcefragments"))[1],:)
             let $rf:path-param :=       project:path($project-pid,"resourcefragments"),
                 $rf:path:=              replace($rf:path-param,'/$',''),
-                $rf:filename:=          $config:RESOURCE_RESOURCEFRAGMENT_FILENAME_PREFIX||$master_filename,
+                $rf:current-filepath := resource:path($resource-pid,$project-pid,"resourcefragments"),
+(:                $rf:filename:=          $config:RESOURCE_RESOURCEFRAGMENT_FILENAME_PREFIX||$master_filename,:)
+                $rf:filename:=          if ($rf:current-filepath != '')
+                                            then tokenize($rf:current-filepath,'/')[last()]
+                                            else $config:RESOURCE_RESOURCEFRAGMENT_FILENAME_PREFIX||$resource-pid||".xml",    
+                        
                 $rf:filepath:=          $rf:path||"/"||$rf:filename
 (:            let $rf:store:=repo-utils:store-in-cache($rf:filename,$rf:path,$rf:container,$config)
                 allows to overwrite :)

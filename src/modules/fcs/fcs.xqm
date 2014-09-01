@@ -512,6 +512,7 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
 };
 
 declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string, $config) as item()* {
+    let $ts0 := util:system-dateTime()
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
     let $facets := index:facets($index,$project-pid)
 (:    let $path := index:index-as-xpath($scan-clause,$project-pid):)
@@ -523,12 +524,14 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
 (:        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize):)
         $nodes := index:apply-index($data, $index,$project-pid,())
         
-    let $terms := 
-        if ($facets/index)
-        then fcs:group-by-facet($nodes, $sort, $facets/index, $project-pid)
-        else if ($nodes) then fcs:term-from-nodes($nodes, $sort, $index, $project-pid)
-                else ()
-        
+    let $terms :=
+        if ($nodes) then 
+            if ($facets/index)
+                then fcs:group-by-facet($nodes, $sort, $facets/index, $project-pid)
+                else fcs:term-from-nodes($nodes, $sort, $index, $project-pid)
+           else ()
+    let $ts1 := util:system-dateTime()
+    let $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: index: "||$index||", duration:"||($ts1 - $ts0))        
     return 
         <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
             <sru:version>1.2</sru:version>
@@ -566,7 +569,6 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                     let $label-map := map:entry("label",$label-value)                            
                     return map:new(($value-map,$label-map)):)
     let $ts1 := util:system-dateTime()     
-    let $dummy1 := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: after initial lookup "||$index-key||" duration:"|| ($ts1 - $ts0))
     let $terms :=           
         for $g at $pos in $nodes
             let $term-value := index:apply-index($g,$index-key,$project-pid,'match-only')                                                    
@@ -586,7 +588,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                 $m-count := map:entry("numberOfRecords",count($g))
             return map:new(($m-label,$m-value,$m-count))
    let $ts2 := util:system-dateTime()
-   let $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: after ordering"||$index-key||" duration:"||($ts2 - $ts1))
+   let $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: after ordering; index: "||$index-key||", duration:"||($ts2 - $ts1))
     return <sru:terms> 
         {
         for $term at $pos in $terms
@@ -631,16 +633,16 @@ declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string
          let $term-label := fcs:term-to-label($group-key,$index-key,$project-pid,$termlabels)
          let $label := if ($term-label) then $term-label
                                         else index:apply-index($entries[1],$index-key,$project-pid,'label-only')
-
-        let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:group by facet: "||$group-key||"##"||$index-key||"##"||$label)
+        let $count := count($entries)
+        let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:group by facet: "||$group-key||"##"||$index-key||"##"||$label||" count-group: "||$count)
         order by
-            if ($sort='size') then count($entries) else true() descending,
+            if ($sort='size') then $count else true() descending,
             if ($sort='text') then $label else true() ascending            
         return
             <sru:term>
                 <sru:displayTerm>{$label}</sru:displayTerm>
                 <sru:value>{$group-key}</sru:value>
-                <sru:numberOfRecords>{count($entries)}</sru:numberOfRecords>
+                <sru:numberOfRecords>{$count}</sru:numberOfRecords>
                 <sru:extraTermData>
                     <cr:type>{$index-key}</cr:type>
                     {if ($index/index)

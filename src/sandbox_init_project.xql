@@ -10,7 +10,7 @@ import module namespace project = "http://aac.ac.at/content_repository/project" 
 
 import module namespace index = "http://aac.ac.at/content_repository/index" at "core/index.xqm";
 
-let $project-pid := 'mdrepo'
+let $project-pid := 'mecmua'
 
 (:return     xmldb:reindex("/db/cr-projects"):)
 
@@ -19,10 +19,11 @@ let $project-pid := 'mdrepo'
 (:     check if projects dir is set (if not reindex!)     :)
  let $check-projects-path := if (empty(config:path('projects'))) then xmldb:reindex("/db/apps")
                              else true()
-let $new-project := project:new($project-pid)
-return if (exists($new-project)) then  ("Created project: "||$project-pid||" in "||config:path('projects'), $new-project)
-          else if (exists(project:get($project-pid))) then "Project "||$project-pid||" already exists."
-          else "Project "||$project-pid||" could not be instantiated."
-(: return index:store-xconf($project-pid ):)
-
+(:let $new-project := project:new($project-pid):)
+(:return if (exists($new-project)) then  ("Created project: "||$project-pid||" in "||config:path('projects'), $new-project):)
+(:          else if (exists(project:get($project-pid))) then "Project "||$project-pid||" already exists.":)
+(:          else "Project "||$project-pid||" could not be instantiated.":)
+ return index:store-xconf($project-pid )
+(:return project:path("mecmua","data"):)
    
+(:   return config:path("metadata"):)

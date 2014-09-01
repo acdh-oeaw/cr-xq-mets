@@ -60,7 +60,7 @@ declare {"function "||gen:ns-short($project-pid)||":apply-index" (: this is just
         let $ix-path := index:index-as-xpath($ix-name,$config, $xtype)
         
         return 
-           "&#09;case '"||$ix-name||"' return $data"||$ix-path||$gen:cr,
+           "&#09;case '"||$ix-name||"' return $data/"||$ix-path||$gen:cr,
            
            "&#09;default return ()"||$gen:cr
            
