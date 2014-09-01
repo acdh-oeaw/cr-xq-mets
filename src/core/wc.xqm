@@ -85,7 +85,13 @@ declare function wc:generate($resource-pid as xs:string, $project-pid as xs:stri
                                  ),
         $master:=           resource:master($resource-pid,$project-pid),
         $master_filename:=  util:document-name($master),
-        $wc:filename :=     $wc:filename-prefix||$master_filename
+        $wc:current-filepath := resource:path($resource-pid,$project-pid,"workingcopy"),
+        $wc:filename:=          if ($wc:current-filepath != '')
+                                            then tokenize($wc:current-filepath,'/')[last()]
+                                            else $config:RESOURCE_WORKINGCOPY_FILENAME_PREFIX ||$resource-pid||".xml"    
+                        
+
+(:        $wc:filename :=     $wc:filename-prefix||$master_filename:)
     let $preprocess-xsl :=  resource:get-preprocess-xsl-path($resource-pid,$project-pid)
     return 
     switch(true())
