@@ -31,6 +31,13 @@ declare function query:query-to-xpath($q as xs:string, $project) as xs:string? {
     
 };
 
+declare function query:query-to-xpath-map($q as xs:string, $map) as xs:string? {
+    
+    let $xpath := cql:cql-to-xpath(replace($q,'&amp;','&amp;amp;'), '', $map)
+    return $xpath
+    
+};
+
 (:~ lets the query translate into xpath in the context of a project (applying custom mappings)
 and evaluates the xpath against the data passed as the second parameter
 @param $q the query string (currently only CQL-syntax is supported)
@@ -38,7 +45,12 @@ and evaluates the xpath against the data passed as the second parameter
 declare function query:execute-query($q as xs:string, $data as node()*, $project) as node()* {
     
     let $xpath := query:query-to-xpath($q, $project)
-    return util:eval("($data)"||$xpath)
+    return util:eval("$data/"||$xpath)
 (:  return $xpath:)
     
+};
+
+declare function query:execute-query-map($q as xs:string, $data as node()*, $map) as node()* {
+    let $xpath := query:query-to-xpath-map($q, $map)
+        return util:eval("$data/"||$xpath)
 };
