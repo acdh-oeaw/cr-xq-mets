@@ -8,7 +8,6 @@ import module namespace facs="http://aac.ac.at/content_repository/facs" at "core
 import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "core/wc.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "core/config.xqm";
 import module namespace cr="http://aac.ac.at/content_repository" at "core/cr.xqm";
-import module namespace toc="http://aac.ac.at/content_repository/toc" at "core/toc.xqm";
 
 declare namespace cmd="http://www.clarin.eu/cmd/";
 
@@ -17,45 +16,47 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-let $resource-pid := "abacus.3",
-    $project-pid := "abacus",
-    $resource-label := "A machine-readable glossary of Egyptian Arabic"
+let $resource-pid := "prj.1",
+    $project-pid := "prj",
+    $resource-label := "My first resource"
 
-(:  let $resource-pid := "dict-gate.3",
-    $project-pid := "dict-gate" :)
+let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
 
-(:let $md := doc("/db/cr-data/_tmp/dict-gate/dict-gate.cmd.xml")/*:)
-(: let $md := doc("/db/cr-data/_temp/abacus_md/TEIHDR/md-abacus.9.xml"):)
-(:let $data  := doc("/db/cr-data/_temp/dict-gate.1.xml"):)
+(:~ 1.  uncomment this to add a new resource  :)        
+(:let  $resource-pid := resource:new-with-label($data, $project-pid, $resource-label) return $resource-pid :)
 
+(:~ 2. use this to generate/refresh all auxiliary files for given resource :)
+(:let $gen-aux := resource:refresh-aux-files(('front','chapter','back','index'), $resource-pid, $project-pid) return $gen-aux:)
 
-(:let  $resource-pid := resource:new-with-label($data, $project-pid, $resource-label):)
-(: return $resource-pid:)
+(:~ alternatively you can do it one by one:  :)
+(: let $wc-gen :=  wc:generate($resource-pid, $project-pid) return $wc-gen:)
+(: let $lt-gen :=  lt:generate($resource-pid, $project-pid) return $lt-gen:)
+(: let $toc-gen :=  toc:generate(('front','chapter'),  $resource-pid, $project-pid) return ($resource-pid, $toc-gen) :)
 
-
-(:let $rf-gen :=  rf:generate($resource-pid, $project-pid):)
-(: :)
-(:let $lt-gen :=  lt:generate($resource-pid, $project-pid):)
-(::)
-let $toc-gen :=  toc:generate(('front','chapter', 'back'),  $resource-pid, $project-pid)
-(: :)
-(: return ($resource-pid, $rf-gen):)
- 
-(:return resource:get-toc-resolved($project-pid):)
- 
-(::)
-(:let $gen-aux := resource:refresh-aux-files($resource-pid, $project-pid):)
-(::)
+(:~ 3. if you have links to facsimile/images in the data you can use this to extract them and write them in the project-configuration  :)
 (:let $gen-facs := facs:generate($resource-pid,$project-pid):)
- return $toc-gen
+
+
+(:~ 4. add a metadata record for given resource :)
+(:let $md := doc("/db/cr-data/_tmp/path/to/metadata_record.xml")/*:)
+(:return resource:dmd($resource-pid,$project-pid,$md,"TEIHDR",true()):)
+
+ 
+
+(:~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ :  Below are some debugging tests you don't need in normal workflow  :)
+ 
 (:return ($resource-pid, $gen-aux, $gen-facs):)
 (:  return ($lt-gen, $toc-gen):)
+(: return index:store-xconf($project-pid ):)
 
+(:let $master:=  resource:master($resource-pid,$project-pid),:)
+(:        $master_filename:=  util:document-name($master):)
+(:        return $master_filename:)
 
 
 (:return resource:dmd($resource-pid,$project-pid):)
 
-(:return resource:dmd($resource-pid,$project-pid,$md,"TEIHDR",true()):)
 (:return resource:dmd("CMDI",$resource-pid,$project-pid):)
 
  (:return resource:set-handle("data",$resource-pid,$project-pid):)
