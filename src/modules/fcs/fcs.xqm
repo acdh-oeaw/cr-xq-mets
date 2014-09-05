@@ -569,24 +569,38 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                     let $label-map := map:entry("label",$label-value)                            
                     return map:new(($value-map,$label-map)):)
     let $ts1 := util:system-dateTime()     
-    let $terms :=           
+    (: since an expression like  
+        group by $x 
+        let $y 
+        order by $y 
+     is not possible in eXist (although a xquery 3.0 use case cf. http://www.w3.org/TR/xquery-30-use-cases/#groupby_q6) we have to separated 
+     the group operation from the sort operation here     
+    :)
+    let $terms-unordered :=           
         for $g at $pos in $nodes
-            let $term-value := index:apply-index($g,$index-key,$project-pid,'match-only')                                                    
-            let $term-label := fcs:term-to-label($term-value[1],$index-key,$project-pid,$termlabels)
-            let $label := if ($term-label) then $term-label
-                                        else index:apply-index($g,$index-key,$project-pid,'label-only')                                    
-(:                    let $label-map := map:entry("label",$label-value):)
-        group by $term-value-g := xs:string($term-value[1]), 
-                 $label-g := xs:string($label[1])
-        order by 
-            if ($order-param='size') then count($g) else true() descending,
-(:            if ($order-param='text') then map:get($g[1],'label') else true() ascending                    :)
-            if ($order-param='text') then $label-g else true() ascending                    
+        let $term-value-g := xs:string(index:apply-index($g,$index-key,$project-pid,'match-only'))
+        group by $term-value-g 
         return
-            let $m-label := map:entry("label",$label-g),
-                $m-value := map:entry("value",$term-value-g),
-                $m-count := map:entry("numberOfRecords",count($g))
-            return map:new(($m-label,$m-value,$m-count))
+            let $m-value := map:entry("value",$term-value-g),
+                $m-count := map:entry("count",count($g)),
+                $firstOccurence := map:entry("firstOccurence",$g[1])
+            return map:new(($m-value,$m-count,$firstOccurence))
+    let $terms := 
+            for $t in $terms-unordered
+            let $t-value := $t("value"),
+                $t-count := $t("count"),
+                $firstOccurence := $t("firstOccurence"),
+                $label := 
+                    let $term-label := string-join(fcs:term-to-label($t-value,$index-key,$project-pid,$termlabels),'')
+                    return
+                        if ($term-label) 
+                        then $term-label[1]
+                        else string-join(index:apply-index($firstOccurence,$index-key,$project-pid,'label-only'),'')
+            order by 
+                if ($order-param='size') then $t-count else true() descending,
+                if ($order-param='text') then $label else true() ascending 
+            return map:new((map:entry("value",$t-value),map:entry("count",$t-count),map:entry("label",$label)))
+            
    let $ts2 := util:system-dateTime()
    let $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: after ordering; index: "||$index-key||", duration:"||($ts2 - $ts1))
     return <sru:terms> 
@@ -595,7 +609,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
         return <sru:term>
                     <sru:value>{$term("value")}</sru:value>
                     <sru:displayTerm>{$term("label")}</sru:displayTerm>
-                    <sru:numberOfRecords>{$term("numberOfRecords")}</sru:numberOfRecords>
+                    <sru:numberOfRecords>{$term("count")}</sru:numberOfRecords>
                     <sru:extraTermData>
                         <fcs:position>{$pos}</fcs:position>
                     </sru:extraTermData>
