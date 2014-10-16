@@ -38,8 +38,10 @@ declare function facs:generate-file($resourcefragment-pid as xs:string, $resourc
  : @param $project-pid 
 ~:)
 declare function facs:generate-file($version-param as xs:string?, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element(mets:file)* {
-    let $file-id := facs:id-by-resourcefragment($resourcefragment-pid,$resource-pid,$project-pid),
-        $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
+    let $log := util:log-app("DEBUG",$config:app-name,"facs:generate-file("||$version-param||", "||$resourcefragment-pid||", "||$resource-pid||", "||$project-pid||")")
+    let $file-id := facs:id-by-resourcefragment($resourcefragment-pid,$resource-pid,$project-pid)
+    let $log := util:log-app("DEBUG",$config:app-name,"$file-id: "||$file-id)
+    let $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     let $url :=     facs:generate-url($file-id, $version, $resourcefragment-pid,$resource-pid,$project-pid)
     let $file-elt:=
         switch(true())
@@ -204,7 +206,7 @@ declare function facs:generate($version-param as xs:string?, $resource-pid as xs
     let $first :=
         let $resourcefragment-pid := $fragments[1]/@ID
         let $file := facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
-        return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid) 
+        return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
     return  
         for $f in $fragments[position() gt 1]
         let $resourcefragment-pid := $f/@ID
@@ -224,17 +226,26 @@ declare function facs:generate($version-param as xs:string?, $resource-pid as xs
  : @result one or more file-ids (filenames) 
 ~:)
 declare %private function facs:id-by-resourcefragment($resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:string?{
+    let $log := util:log-app("DEBUG",$config:app-name,"facs:id-by-resourcefragment("||$resourcefragment-pid||", "||$resource-pid||", "||$project-pid||")")
     let $rf := rf:get($resourcefragment-pid, $resource-pid,$project-pid)
+    let $log := util:log-app("DEBUG",$config:app-name,"$rf:"),
+        $log := util:log-app("DEBUG",$config:app-name,$rf)
      (: let's get the element that the "resourcefragment-pid" index refers to in the full data. 
         (in the variable $fragment-elt-in-wc). 
         This indirection is necessary, as our "facs" index does not have to point to 
         a descendant of the resourcefragment, so that an expression like $rf/preceding::pb 
         will easily lead to strange results. :)       
     let $fragment-pid-in-rf:= index:apply-index($rf,"rf",$project-pid)/ancestor-or-self::*[@cr:id][1],
+        $log := util:log-app("DEBUG",$config:app-name,"$fragment-pid-in-rf:"),
+        $log := util:log-app("DEBUG",$config:app-name,index:apply-index($rf,"rf",$project-pid)),
         $fragment-in-wc := wc:lookup($fragment-pid-in-rf/xs:string(@cr:id),$resource-pid,$project-pid)    
     (: ... then apply the "facs" index to the fragment-element in the working copy :)
+    let $log := (util:log-app("DEBUG",$config:app-name,"$fragment-in-wc:"),
+                util:log-app("DEBUG",$config:app-name,$fragment-in-wc))
     let $facs:= index:apply-index($fragment-in-wc,"facs",$project-pid)
-    return $facs/xs:string(.)
+    let $return := $facs/xs:string(.)
+    let $log := util:log-app("DEBUG",$config:app-name,"return "||$return)
+    return $return
 };
 
 
