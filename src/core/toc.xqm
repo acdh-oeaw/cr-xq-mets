@@ -22,6 +22,10 @@ declare namespace cr="http://aac.ac.at/content_repository";
  : special mets:structMap TYPE="toc" ID="{$resource-pid}_toc"
  :)
 declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:string, $project-pid as xs:string) as item()* {
+   switch (true())
+    case (not(project:get($project-pid))) return util:log-app("ERROR", $config:app-name, "No project found with id "||$project-pid)
+    case (empty(resource:get($resource-pid, $project-pid))) return util:log-app("ERROR", $config:app-name, "No resource "||$resource-pid||" found within project "||$project-pid)
+    default return 
    let $mappings:=project:map($project-pid),
        $indexes := for $m in $mapping-keys return $mappings//index[@key eq $m],
        $paths := for $i in $indexes return index:index-as-xpath($i,$project-pid,()),
@@ -37,11 +41,15 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
                 for $p at $pos in $paths
                     let $index := $indexes[position() eq $pos]
                     return
-                        <xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:mets="http://www.loc.gov/METS/" match="{$p}">
+                        <xsl:template xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:mets="http://www.loc.gov/METS/" match="{normalize-space($p)}">
                             <xsl:variable name="cr:id" select="@cr:id"/>
+                            <!-- holds all resourcefragments that this structure element is part of -->
+                            <xsl:variable name="rf" select="key('rf',$cr:id,$ltb)"/>
                             <xsl:variable name="content" as="item()*">
                                 <xsl:apply-templates/>
                             </xsl:variable>
+                            <xsl:variable name="contentFirstRfs" select="for $cID in $content/@ID return key('rf',$cID,$ltb)[1]"/>
+                            <xsl:variable name="contentRfs" select="for $cID in $content/@ID return key('rf',$cID,$ltb)"/>
                             
                             <mets:div TYPE="{$index/@key}" ID="&#x007b;$cr:id&#x007d;">
                                 {if (exists($index/path/@label))
@@ -50,18 +58,18 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
                                 else 
                                     <xsl:attribute name="LABEL" select="concat('{$index/@key} ',count(preceding::{$p})+1)"/>
                                 }
-                                <xsl:choose>
-                                    <xsl:when test="empty($content)">
-                                        <xsl:for-each select="key('rf',$cr:id,$ltb)">
+                                <xsl:for-each select="$rf">
+                                    <xsl:variable name="rfPID" select="@resourcefragment-pid"/>
+                                    <xsl:choose>
+                                        <xsl:when test="@resourcefragment-pid = $contentFirstRfs/@resourcefragment-pid">
+                                            <xsl:sequence select="$content[key('rf',@ID,$ltb)[1]/@resourcefragment-pid = $rfPID]"/>
+                                        </xsl:when>
+                                        <xsl:when test="@resourcefragment-pid = $contentRfs/@resourcefragment-pid"/>
+                                        <xsl:otherwise>
                                             <xsl:sequence select="key('rf-div',@resourcefragment-pid,$project)/mets:fptr[mets:area]"/>
-                                        </xsl:for-each>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:sequence select="$content"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                                
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:for-each>
                             </mets:div>
                         </xsl:template>
     let $xsl := 
@@ -104,7 +112,11 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
 
     
     let $resource := wc:get-data($resource-pid,$project-pid),
+        (:$log := util:log-app("DEBUG",$config:app-name, "xsl: "),
+        $log := util:log-app("DEBUG",$config:app-name, $xsl),
+        $store := xmldb:store(project:path($project-pid,"home"),$resource-pid||".xsl",$xsl),:)
         $toc := if ($resource) then transform:transform($resource,$xsl,()) else ()
+            
         
    let $mets:record := project:get($project-pid),
        $mets:structMap-exists := $mets:record//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE]
