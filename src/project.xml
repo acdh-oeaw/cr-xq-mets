@@ -44,10 +44,17 @@
                             <index key="resourcefragment-pid">
                                 <path/>
                             </index>
-                            <index key="cql.serverChoice" index-type="fulltext">
+                            <index key="cql.serverChoice" type="ft">
                                 <path/>
                             </index>
                         </map>
+                        <!-- fulltext index setup -->
+                        <ft>
+                            <!-- 0-n "inline" elements with QNames to not be treated as a token boundary by the fulltext indexer -->
+                            <!--<inline/>-->
+                            <!-- 0-n "ignore" elements with QNames be ignored by the fulltext indexer -->
+                            <!--<ignore/>-->
+                        </ft>
                     </map>
                 </xmlData>
             </mdWrap>
