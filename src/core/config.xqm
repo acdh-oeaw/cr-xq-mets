@@ -200,7 +200,7 @@ declare function config:path($key as xs:string) as xs:string? {
  : @return the resolved path (zero or one string)  
 :)
 declare function config:path($paths as element(config:path)*, $key as xs:string)  {
-    let $path:=$paths/self::config:path[@key eq $key]
+    let $path:=$paths[@key eq $key]
     return
         if (exists($path))
         then config:path-relative-to-absolute($paths,$path)
@@ -260,7 +260,8 @@ declare function config:path-relative-to-absolute($paths as element(config:path)
     then string-join(($path,reverse($steps-before)),'/')
     else
         let $parent-id := substring-after($path/@base,'#')
-        let $parent:= $paths[@key = $parent-id]
+        (: we have to make an in-memory copy of the nodes, otherwise injected config:path elements will not be found when the range index is involved :)
+        let $parent:= util:expand($paths)[@key = $parent-id]
         return
             if (exists($parent))
             then config:path-relative-to-absolute($paths,$parent,($steps-before,$path))
@@ -764,7 +765,7 @@ declare function config:module-config() as item()* {
  :  
  : @param $project project identifier
 ~:)
-declare function config:project-exists($project as xs:string) {
+declare function config:project-exists($project as xs:string?) {
     exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
 };
 
