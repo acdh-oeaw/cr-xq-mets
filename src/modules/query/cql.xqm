@@ -146,11 +146,15 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
         $sanitized-term := cql:sanitize-term($clause/term),
 (:$predicate := ''        :)
         $predicate := switch (true())
+                        case ($sanitized-term eq 'false') return 'not('||$match-on||')'
+                        case ($sanitized-term eq 'true') return $match-on
                         case ($index-type eq $index:INDEX_TYPE_FT) return 
                                 switch ($match-mode) 
                                     case ('exact') return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'
+(:                                    case ('exact') return 'ft:query('||$match-on||',"'||$sanitized-term||'")':)
                                     case ('starts-with') return 'ft:query('||$match-on||',"'||$sanitized-term||'")'
-                                    default return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'                        
+                                    default return 'ft:query('||$match-on||',<query><phrase>'||$sanitized-term||'</phrase></query>)'
+(:                                    default return 'ft:query('||$match-on||',"'||$sanitized-term||'")':)
                         default return
                                switch ($match-mode) 
                                     case ('exact') return $match-on||"='"||$sanitized-term||"'"
