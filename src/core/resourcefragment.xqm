@@ -251,19 +251,20 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     return util:declare-namespace(xs:string($prefix), xs:anyURI($namespace-uri))
            
             (: extract fragments and create wrapper elements for each :)
-            let $all-fragments:=util:eval("$working-copy//"||$rf:xpathexpr)
+            (:let $all-fragments:=util:eval("$working-copy//"||$rf:xpathexpr):)
+            let $all-fragments := index:apply-index($working-copy,'rf',$project-pid)
             
-            (: CHECK: shouldn't this be checked for every $fragment separately :)
-            let $fragment-element-has-content:=some $x in $all-fragments satisfies exists($x/node())
+            (:let $fragment-element-has-content:=some $x in $all-fragments satisfies exists($x/node()):)
             let $fragments-extracted:=
                 for $pb1 at $pos in $all-fragments 
 (:                    let $id:=$resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_FILEID_SUFFIX||format-number($pos, '00000000'):)
-                    let $id:=$resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_ID_SUFFIX||$pos
-                    let $label := util:eval("$pb1/"||$rf:xpathexpr-label)
+                    let $id := $resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_ID_SUFFIX||$pos
+                    (:let $label := util:eval("$pb1/"||$rf:xpathexpr-label):)
+                    let $label := index:apply-index($pb1, "rf", $project-pid, "label-only")
                     let $fragment:=
-                    (: CHECK: shouldn't this be checked for every $fragment separately :)
-                        if ($fragment-element-has-content)
-                        then $pb1
+                        if (exists($pb1/node()))
+                        then 
+                            ($pb1, util:log-app("INFO",$config:app-name,"copying resourcefragment w/ pid="||xs:string($id)))
                         else
                         let $log:=util:log-app("INFO",$config:app-name,"processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
                             let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
