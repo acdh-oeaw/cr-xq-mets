@@ -28,10 +28,10 @@
         <xsl:apply-templates select="$all-fulltext-indexes"/>
     </xsl:variable>
     <xsl:variable name="fulltext-ignore" as="item()*">
-        <xsl:sequence select="//ft/ignore/index:mvToNs(.)"/>
+        <xsl:sequence select="//ft/ignore[not(@index)]/index:mvToNs(.)"/>
     </xsl:variable>
     <xsl:variable name="fulltext-inline" as="item()*">
-        <xsl:sequence select="//ft/inline/index:mvToNs(.)"/>
+        <xsl:sequence select="//ft/inline[not(@index)]/index:mvToNs(.)"/>
     </xsl:variable>
     <xsl:template match="/map">
         <collection>
@@ -87,10 +87,31 @@
         </xsl:for-each>
     </xsl:template>
     <xsl:template match="*[some $x in $all-fulltext-indexes satisfies $x is .]">
+        <xsl:variable name="key" select="@key"/>
         <xsl:comment>index '<xsl:value-of select="@key"/>'</xsl:comment>
         <xsl:value-of select="'&#xA;'"/>
         <xsl:for-each select="path/(if (@match) then @match else text())">
-            <text qname="{index:qnamesFromPath(.)}"/>
+            <text qname="{index:qnamesFromPath(.)}">
+                <xsl:if test="//ft/ignore[@index = $key]">
+                    <xsl:for-each select="//ft/ignore[@index = $key]">
+                        <xsl:element name="ignore" namespace="http://exist-db.org/collection-config/1.0">
+                            <xsl:attribute name="qname">
+                                <xsl:value-of select="."/>
+                            </xsl:attribute>
+                        </xsl:element>
+                    </xsl:for-each>
+                </xsl:if>
+                <xsl:if test="//ft/inline[@index = $key]">
+                    <xsl:for-each select="//ft/inline[@index = $key]">
+                        <xsl:element name="inline" namespace="http://exist-db.org/collection-config/1.0">
+                            <xsl:attribute name="qname">
+                                <xsl:value-of select="."/>
+                            </xsl:attribute>
+                        </xsl:element>
+                    </xsl:for-each>
+                    <!--<xsl:copy-of select="//ft/inline[@index = $key]/index:mvToNs(.)"/>-->
+                </xsl:if>
+            </text>
         </xsl:for-each>
         <xsl:value-of select="'&#xA;'"/>
         <xsl:value-of select="'&#xA;'"/>
@@ -110,7 +131,7 @@
         <xsl:choose>
             <xsl:when test="$node instance of element()">
                 <xsl:element name="{local-name($node)}" namespace="http://exist-db.org/collection-config/1.0">
-                    <xsl:for-each select="($node/@*,$node/node())">
+                    <xsl:for-each select="($node/@* except $node/@index,$node/node())">
                         <xsl:sequence select="index:mvToNs(.)"/>
                     </xsl:for-each>
                 </xsl:element>
