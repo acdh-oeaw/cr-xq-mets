@@ -271,13 +271,16 @@ declare function resource:add-file($file as element(mets:file),$resource-pid as 
 };
 
 declare function resource:add-fragment($div as element(mets:div),$resource-pid as xs:string,$project-pid as xs:string) {
+    let $log := util:log-app("DEBUG",$config:app-name, "resource:add-fragment("||util:serialize($div,'method=xml')||", "||$resource-pid||", "||$project-pid||")")
     let $mets:resource:=resource:get($resource-pid,$project-pid)
     let $this:fragmentID:=$div/@ID,
         $mets:div:=$mets:resource//mets:div[@ID eq $this:fragmentID],
         $facs := root($mets:div)//mets:fileGrp[@ID = $config:PROJECT_FACS_FILEGRP_ID]//mets:file[@ID = $mets:div/mets:fptr/@FILEID]
     return
         if (exists($mets:div))
-        then  
+        then
+            let $log := util:log-app("DEBUG",$config:app-name, "located $div in resource")
+            return
             if (exists($facs))
             then 
                 let $log := util:log-app("INFO",$config:app-name, "mets:div @ID "||$mets:div/@ID||" contains refence to facs "||string-join($facs/@ID,', ')||" - inserting fptrs into generated fragment.")
@@ -289,9 +292,11 @@ declare function resource:add-fragment($div as element(mets:div),$resource-pid a
                         then ()
                         else update insert <mets:fptr FILEID="{$f/@ID}"/> into $mets:resource//mets:div[@ID eq $this:fragmentID]
             else 
-                let $log := util:log-app("INFO",$config:app-name,'replacing existing resource fragment mets:div ID '||$this:fragmentID)
+                let $log := util:log-app("DEBUG",$config:app-name,'replacing existing resource fragment mets:div ID '||$this:fragmentID)
                 return update replace $mets:div with $div
         else
+            let $log := util:log-app("DEBUG",$config:app-name, "could not locate $div in resource")
+            return
             if (exists($mets:resource))
             then (
                 update insert $div into $mets:resource,
@@ -653,6 +658,20 @@ declare function resource:label($data as document-node(), $resource-pid as xs:st
         if ($update)
         then <cr:response path="/cr_xq/{$project-pid}/{$resource-pid}/label" datatype="xs:string">{$resource/xs:string(@LABEL)}</cr:response>
         else ()
+};
+
+declare function resource:cite($resource-pid, $project-pid, $config) {
+let $cite-template := config:param-value($config,'cite-template')
+let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
+let $md := resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid)
+let $link := resource:link($resource-pid, $project-pid, $config)
+let $entity-label := ""
+(:return $md:)
+return util:eval ("<bibl>"||$cite-template||"</bibl>")
+};
+
+declare function resource:link($resource-pid, $project-pid, $config) {
+    config:param-value($config, 'base-url')||'get/'||$resource-pid
 };
 
 (:~

@@ -619,17 +619,20 @@ declare function project:list-resources-resolved($project) as element(sru:search
                 then project:get($project)
                 else $project
     let $ress := project:list-resources($doc)
-    let $project-id := $doc/@OBJID
+    let $project-id := data($doc/@OBJID)
     let $count := count($ress)
     let $resources := for $res in $ress 
-        let $dmd := resource:dmd($res, $project )
+        let $dmd := resource:dmd($res, $project )        
         let $res-id := $res/data(@ID)
         let $res-label := $res/data(@LABEL)
         let $res-title := (if (exists($dmd)) then index:apply-index($dmd,'resource.title',$project)//text() else $res-label, $res-label)[1]
+        let $res-cite := resource:cite($res-id, $project-id, $doc )
+        
         let $indexImage-path := resource:path($res-id, $project-id, 'indexImage')
         order by $res/@ORDER
         return <fcs:Resource pid="{$res-id}" >
                  <fcs:DataView type="title">{$res-title}</fcs:DataView>
+                 <fcs:DataView type="cite">{$res-cite}</fcs:DataView>          
                  <fcs:DataView type="metadata">{$dmd}</fcs:DataView>
                  <fcs:DataView type="image" ref="{$indexImage-path}" />
                </fcs:Resource>

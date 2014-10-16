@@ -47,7 +47,7 @@ height:90px;
 
 #user {float:right;}
 
-#persistent-link-wrapper {position: absolute; right: 1.2em; top:65px;}  
+/*#persistent-link-wrapper {position: absolute; right: 1.2em; top:65px;}  */
 
 /* set the box-model to border for easier widths setting */
 #navigation, #main, #detail,
@@ -152,6 +152,8 @@ height:90px;
 
 
 #detail .navigation {float:right;}
+
+/*.data-view.cite {display:none;}*/
 
 #detail .data-view.full, #detail .data-view.facs {
      width: 48%;

@@ -326,3 +326,18 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
             return $rf:filepath
 };
 
+
+declare function rf:cite($resourcefragment-pid, $resource-pid, $project-pid, $config) {
+let $cite-template := config:param-value($config,'cite-template')
+let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
+let $md := resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid)
+let $link := rf:link($resourcefragment-pid, $resource-pid, $project-pid, $config) 
+let $entity-label := rf:record($resourcefragment-pid,$resource-pid, $project-pid)/data(@LABEL)  
+
+(:return $md:)
+return util:eval ("<bibl>"||$cite-template||"</bibl>")
+};
+
+declare function rf:link($rf-id, $resource-pid, $project-pid, $config) {
+    config:param-value($config, 'base-url')||'get/'||$resource-pid||'/'||$rf-id
+};

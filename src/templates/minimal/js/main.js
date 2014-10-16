@@ -22,7 +22,7 @@ var currentUrl = $.url();
  * configuration object
  * currently only parameter: dataview
 */
-var cr_config = { dataview: 'title,navigation,full,facs',
+var cr_config = { dataview: 'title,cite,navigation,full,facs',
                    params: {"x-format":"html"}
                 };
 
@@ -98,8 +98,8 @@ function minimal_template_ui_setup() {
     $("#navigation .load-main a").live('click', load_main);
     
     // handle link to toggle info
-    $("#navigation a.link-info").live('click', toggle_info);
-    $("#navigation .data-view.metadata, #navigation .data-view.image").hide();
+    $("#navigation a.link-info").live('click', toggle_info);    
+    $("#navigation .data-view.metadata, #navigation .data-view.image, #navigation .data-view.cite").hide();
     
     // handle link to explain
     $("#navigation a.link-explain").live('click', load_explain);
@@ -279,12 +279,23 @@ function load_main(event) {
 }
 
 function toggle_info(event) {
-    event.preventDefault();
-    console.log("Info:");
-    var data_view = $(this).parents(".record").find('.data-view.metadata, .data-view.image');
-    data_view.toggle();
+    toggle_navigation_data_views(this,event,'info')
 }
 
+
+function toggle_navigation_data_views(context,event, type) {
+   event.preventDefault();
+    var data_view = {};
+    data_view['info'] = $(context).parents(".record").find('.data-view.metadata, .data-view.image, .data-view.cite');
+        
+    // first check for current status
+    var hidden = data_view[type].is(":hidden");
+    // then hide all
+    $(context).parents(".record").find('.data-view').hide();
+    // then open the requested view it was closed
+/*    console.log(context);*/
+    if (hidden) data_view[type].show();
+}
 
 /** handles interactions with the full toc
 resource level toggles the nested levels, 
@@ -384,11 +395,16 @@ function load_detail_data(targetRequest) {
     detail.find(".detail-content").load(detailFragment, function () {
                         
                         detail.find('.detail-header').toggleClass("cmd_get cmd");
-                        detail.find(".data-view.facs img").each( function() {$(this).attr("data-zoom-image",$(this).attr("src")); });
-                        detail.find(".data-view.facs img").elevateZoom({ zoomType : "lens", lensShape : "round", lensSize : 200 });
+                        
+                        // activate zoom functionality on the images, expects: jquery.elevateZoom-3.0.8.min.js
+                        // deactivated for now
+                        //detail.find(".data-view.facs img").each( function() {$(this).attr("data-zoom-image",$(this).attr("src")); });
+                        //detail.find(".data-view.facs img").elevateZoom({ zoomType : "lens", lensShape : "round", lensSize : 200 });
                          
-                        // move Title and navigation above the tabs
+                        // move Title and navigation above the content
                         $('.detail-header').html($(this).find(".navigation")).append($(this).find(".title"));
+                        // move cite below the detail content
+                        detail.find('.context-detail').html($(this).find(".cite"));
                         customizeIcons(); 
                         /*
                         var detail_anno = $(this).html();

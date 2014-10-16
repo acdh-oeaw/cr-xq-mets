@@ -1006,6 +1006,11 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     let $dv-title := let $title_ := if (exists($title) and not($title='')) then $title else $res-entry/data(@LABEL)||", "||$rf-entry/data(@LABEL) 
     
                     return <fcs:DataView type="title">{$title_[1]}</fcs:DataView>
+
+    let $dv-cite := if (contains($data-view,'cite')) then
+                        if ($rf-entry) then rf:cite($resourcefragment-pid, $resource-pid, $project-id, $config)
+                            else resource:cite($resource-pid, $project-id, $config)
+                       else ()
     
     let $dv-xmlescaped :=   if (contains($data-view,'xmlescaped')) 
                             then <fcs:DataView type="xmlescaped">{util:serialize($record-data,'method=xml, indent=yes')}</fcs:DataView>
@@ -1035,6 +1040,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                         case "full"         return $record-data[1]/*
                                         case "facs"         return $dv-facs
                                         case "title"        return $dv-title
+                                        case "cite"        return $dv-cite
                                         case "kwic"         return $kwic
                                         case "navigation"   return $dv-navigation
                                         case "xmlescaped"   return $dv-xmlescaped
@@ -1049,6 +1055,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                             case "full"         return $record-data[1]/*
                                             case "facs"         return $dv-facs
                                             case "title"        return $dv-title
+                                            case "cite"        return $dv-cite
                                             case "kwic"         return $kwic
                                             case "navigation"   return $dv-navigation
                                             case "xmlescaped"   return $dv-xmlescaped
