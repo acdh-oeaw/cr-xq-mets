@@ -55,6 +55,7 @@ declare variable $config:app-root external;
 declare variable $fcs:scanSortText as xs:string := "text";
 declare variable $fcs:scanSortSize as xs:string := "size";
 declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
+declare variable $fcs:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
 declare variable $fcs:kwicWidth := 40;
 declare variable $fcs:filterScanMinLength := 2;
 (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)  
@@ -939,7 +940,9 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                     however this fails when matching on attributes, where the exist:match is only added in the highlighting function,
                     thus we need the processed record-data :)
 (:                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config):)
-                 let $kwic-html := kwic:summarize($record-data[1], $kwic-config)
+                 let $flattened-record := transform:transform($record-data[1], $fcs:flattenKwicXsl,())
+(:                 let $flattened-record := repo-utils:serialise-as($record-data[1], 'html', $fcs:searchRetrieve, $config):)
+                 let $kwic-html := kwic:summarize($flattened-record, $kwic-config)
                        
                     return 
                         if (exists($kwic-html)) 
