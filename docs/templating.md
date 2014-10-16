@@ -8,8 +8,8 @@ As in the base templating system:
 `controller.xql` dispatches the requests, for `.html` resources by default to `view.xql`, fetching the correct template-view
 and view.xql invokes the templating-processing. But there are following changes:
 
-Project configuration
----------------------
+Project-specific configuration
+------------------------------
 
 The *controller* tries to determine the context-project (from the URI)
 and get the **project configuration**. The project config refers to the template to be used for given project (`param@key='template'`).

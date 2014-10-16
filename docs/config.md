@@ -1,6 +1,7 @@
 Project Configuration
 =====================
-Every project has its own configuration stored in $projects/$project-id/config.xml
+Every project has its own configuration stored in `$projects/$project-id/project.xml`
+in [METS](http://www.loc.gov/standards/mets/) format.
 
 This provides project-specific information as parameters to the modules.
 It has three levels of parameters:
@@ -9,7 +10,7 @@ It has three levels of parameters:
     module
     container/function
 
-There is a tentative schema [config.xsd](/tharman/SADE/blob/sade_modules/schemas/config.xsd).
+There is a tentative schema [config.xsd](../schemas/config.xsd).
 See also [default project config](/tharman/SADE/blob/sade_modules/src/project-boilerplate/config.xml)
 
 Optionally, also modules can have config.
