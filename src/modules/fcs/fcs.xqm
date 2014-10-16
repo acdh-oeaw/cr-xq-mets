@@ -599,7 +599,8 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                         else string-join(index:apply-index($firstOccurence,$index-key,$project-pid,'label-only'),'')
             order by 
                 if ($order-param='size') then $t-count else true() descending,
-                if ($order-param='text') then $label else true() ascending 
+                if ($order-param='text') then $label else true() ascending
+                 collation "?lang=de-DE"
             return map:new((map:entry("value",$t-value),map:entry("count",$t-count),map:entry("label",$label)))
             
    let $ts2 := util:system-dateTime()
