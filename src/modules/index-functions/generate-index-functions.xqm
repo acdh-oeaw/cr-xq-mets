@@ -1,9 +1,9 @@
 xquery version "3.0";
 module namespace gen = "http://aac.ac.at/content_repository/generate-index";
-import module namespace project = "http://aac.ac.at/content_repository/project" at "project.xqm";
-import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
-import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
-import module namespace index = "http://aac.ac.at/content_repository/index";
+import module namespace project = "http://aac.ac.at/content_repository/project" at "../../core/project.xqm";
+import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
+import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "../../core/repo-utils.xqm";
+import module namespace index = "http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 
 declare namespace xconf = "http://exist-db.org/collection-config/1.0";
 
@@ -37,12 +37,23 @@ let $indexes := $map//index
 
 let $generated-code :=
     <processor-code>xquery version '3.0';
-module namespace {gen:ns-short($project-pid)} = "{gen:ns($project-pid)}"; 
+module namespace {gen:ns-short($project-pid)} = "{gen:ns($project-pid)}";
+(:import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";:)
 
-{
+{(
        for $ns in $map//namespaces/ns
-        return "declare namespace "||$ns/@prefix||" = '"||$ns/@uri||"';"||$gen:cr
-       }
+       return "declare namespace "||$ns/@prefix||" = '"||$ns/@uri||"';"||$gen:cr,
+       (: we want to make sure that the system namespaces are declared, even if they are missing in the project configuration :)
+       if (not($map//namespace/ns = "http://www.loc.gov/METS/"))
+       then "&#10;declare namespace mets = 'http://www.loc.gov/METS/';"
+       else (),
+       if (not($map//namespace/ns = "http://clarin.eu/fcs/1.0"))
+       then "&#10;declare namespace fcs = 'http://clarin.eu/fcs/1.0';"
+       else (),
+       if (not($map//namespace/ns = "http://aac.ac.at/content_repository"))
+       then "&#10;declare namespace cr = 'http://aac.ac.at/content_repository';"
+       else ()
+)}
 
 (: project-specific mapping of abstract indexes to xpaths as defined in the "map" in project-configuration :)
 
@@ -62,6 +73,7 @@ declare {"function "||gen:ns-short($project-pid)||":apply-index" (: this is just
         return 
            "&#09;case '"||$ix-name||"' return $data/"||$ix-path||$gen:cr,
            
+           (:"&#09;default return util:log-app('WARN',$config:app-name, concat('Index ',$index-name,' is not defined.'))"||$gen:cr:)
            "&#09;default return ()"||$gen:cr
            
     ) }
