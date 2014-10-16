@@ -60,7 +60,9 @@ declare function index:index-as-xpath($key as xs:string, $project, $type as xs:s
 declare function index:index-as-xpath-from-map($key as xs:string, $map, $type as xs:string?) as xs:string {    
     let $index := index:index-from-map($key, $map)        
     let $default-prefix := 'descendant-or-self::'
-    return if (exists($index)) then
+    (: added check for text in path defintion - this is important because if $index exists and has a <path> child without text() 
+    the returned xpath is invalid - like 'descendant::' - thus breaking the automatically generated index functions :)
+    return if (exists($index) and $index/path[text()]) then
        (:                 let $match-on := if (exists($index-map/@use) ) then 
                                             if (count($index-map/@use) > 1) then  
                                                concat('/(', string-join($index-map/@use,'|'),')')
@@ -88,7 +90,9 @@ declare function index:index-as-xpath-from-map($key as xs:string, $map, $type as
                            return $indexes
 (: unknown index - return the key - except for match-only or label-only : return just '.' :)                           
                   else if ($type = ('label-only', 'match-only')) then '.'
-                            else translate($key,'.','/')
+                            (: translating the key to a path does not work as before since we have keys with a prefix like 'fcs.toc' :)
+                            (:else translate($key,'.','/'):)
+                            else $key
     
 };
 
