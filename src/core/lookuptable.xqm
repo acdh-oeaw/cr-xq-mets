@@ -6,6 +6,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
+import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "workingcopy.xqm";
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 
 declare namespace mets="http://www.loc.gov/METS/";
@@ -47,6 +48,7 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                 then substring-before($ltb:current-filepath,"/"||$ltb:filename)
                 else project:path($project-pid,"lookuptables")
                 
+    let $wc := wc:get-data($resource-pid,$project-pid)
     let $ltb:container :=
         element {QName($config:RESOURCE_LOOKUPTABLE_ELEMENT_NSURI,$config:RESOURCE_LOOKUPTABLE_ELEMENT_NAME)} {
             attribute project-pid {$project-pid},
@@ -60,6 +62,11 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                     attribute project-pid {$project-pid},
                     attribute resource-pid {$resource-pid},
                     attribute resourcefragment-pid {$fragment/@resourcefragment-pid},
+                    if ($wc/*/@cr:id = $fragment//@cr:id) 
+                    then ()
+                    else    
+                        for $a in $wc//*[@cr:id = $fragment/*/@cr:id]/ancestor::* 
+                        return <cr:id>{$a/xs:string(@cr:id)}</cr:id>,
                     for $part-id in $fragment//@cr:id return <cr:id>{xs:string($part-id)}</cr:id>
                 }
         }
