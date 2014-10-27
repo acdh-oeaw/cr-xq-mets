@@ -79,6 +79,7 @@ For every project, you need to configure
 1. permissions
 1. indexes
 1. UI layout
+1. Other
 
 ### Permissions
 
@@ -136,6 +137,14 @@ To apply given layout for given project you simply need to set the template-iden
 The current default is `minimal`.
 
 See more on [templating](docs/templating.md)
+
+### Other
+
+What you probably also want to set right away is the project title
+
+You can set it in two ways:
+a) in the main metadata record for the project (this is automatically created on project initialization) in the `cmd:Title` element 
+b) in the main project-configuration METS-file unter `mets:mets/@LABEL`
 
 
 Add resources

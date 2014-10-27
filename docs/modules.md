@@ -18,6 +18,14 @@ Module import (dynamic vs. static)
 Dynamic modules import is basically possible (with `util:import-module()` function),  
 but it makes development/debugging near to impossible, so it seems preferable to import modules statically, preferably generating the import-declarations upon module installation.
 
+Module dependencies 
+-------------------
+
+```
+	fcs -> cs-xsl, cqlparser
+	aqay -> xqjsons
+```
+
 
 Shared modules
 --------------
