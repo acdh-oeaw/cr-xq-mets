@@ -97,7 +97,9 @@ let $full-config :=  config:config($project),
 let $module := 
         if ($params[3] = config:list-modules()) 
         then $params[3]            
-        else if ($project = $config:DEFAULT_PROJECT_ID) then $params[2]
+        else if ($project = $config:DEFAULT_PROJECT_ID) then 
+             if ($params[2] = config:list-modules()) then $params[2]
+             else ''
         else ''
 
 (:~
@@ -185,6 +187,28 @@ let $user-may :=
                             return 'shib'
                             else $db-user
         return ($user=$allowed-users)
+        
+let $user-may-module := 
+        if ($file-type = $web-resources) then true()
+        else if (not($module-protected)) then true()
+        else 
+        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
+        
+        let $project-dir := config:param-value($project-config-map,'project-dir')
+        (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
+        let $domain:= "org.exist.login"
+        
+        (: login:set-user() must go before checking the user :) 
+        let $login:=login:set-user($domain, (), false())
+        
+        let $db-user := request:get-attribute($domain||".user")
+        (:let $db-current-user := xmldb:get-current-user():)
+        let $shib-user := config:shib-user()
+        let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+                            let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
+                            return 'shib'
+                            else $db-user
+        return ($user=$module-users)
 (:~
  : The variable <code>$domain</code> holds the name of the login domain to which the users  
  : of the current cr-xq instance will be logged into.
@@ -231,15 +255,19 @@ switch (true())
          <rel-path>{$rel-path}</rel-path>
          <module>{($module, 'module-protected:',$module-protected)}</module>
          <logout>{request:get-parameter("logout","")}</logout>
+         <exist-controller>{$exist:controller}</exist-controller>
+         <exist-root>{$exist:root}</exist-root>
+         <exist-prefix>{$exist:prefix}</exist-prefix>
+         <request-url>{request:get-url()}</request-url>
          </DEBUG>
          
 (:        <DEBUG>module: {$module}, project: {$project} </DEBUG>:)
-    (:case (($exist:path eq "/" or $rel-path eq "/" ) return 
-        (\: forward root (project) path to index.html :\)
+    case ($exist:path eq "" or $rel-path eq "" ) return 
+        (: redirect path without trailing "/" to (default project's) index.html :)
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <redirect url="index.html"/>    
+            <redirect url="{substring-after($exist:controller,'/')||'/index.html'}"/>    
         </dispatch>
-    :)    (:let $path := config:resolve-template-to-uri($project-config-map, "index.html")
+        (:let $path := config:resolve-template-to-uri($project-config-map, "index.html")
         return <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$path}" />    
                     <view>
@@ -446,18 +474,21 @@ switch (true())
      : Requests for a specific module are forwarded after having checked user authorization. 
     ~:)
     case (not($module='')) return
+        (: TODO extend like $user-may :)
         (if ($module-protected) 
         then 
             (: CHECK: $logout ?? :)
 (:            let $logout:= login:set-user($domain, (), false())
             return :)
-                if (not($user-may)) 
+                if (not($user-may-module)) 
                 then
                     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                         <forward url="{$exist:controller}/modules/access-control/login.html"/>
                         <view>
                             <forward url="{$exist:controller}/core/view.xql">
                                 <add-parameter name="project" value="{$project}"/>
+                                <add-parameter name="x-context" value="{$x-context}"/>
+                                <add-parameter name="path" value="{$exist:path}"/>
                                 <add-parameter name="exist-path" value="{$exist:path}"/>
                                 <add-parameter name="exist-resource" value="{$exist:resource}"/>
                                 <add-parameter name="exist-controller" value="{$exist:controller}"/>
@@ -472,7 +503,7 @@ switch (true())
         (: not protected, so also go to second part :)
         else (), 
         
-        if (not($module-protected) or $user-may) 
+        if (not($module-protected) or $user-may-module) 
         then
 (:            let $user := request:get-attribute($domain||".user")          :)
             (: used by get-module :)          
@@ -485,19 +516,19 @@ switch (true())
             	let $url := $exist:controller||"/modules/"||$module||"/"||$target
 (:            	     <add-parameter name="user" value="{$user}"/>:)
             	return 
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
-                    <forward url="{$url}">
-                        <add-parameter name="project" value="{$project}"/>
-                   
-                        <add-parameter name="path" value="{$path}"/>
-                        <add-parameter name="exist-path" value="{$exist:path}"/>
-                        <add-parameter name="exist-resource" value="{$exist:resource}"/>
-                        <add-parameter name="exist-controller" value="{$exist:controller}"/>
-                        <add-parameter name="exist-root" value="{$exist:root}"/>
-                         <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
-                         <add-parameter name="rel-path" value="{$corr-rel-path}"/>
-                    </forward>
-                </dispatch>
+                    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
+                        <forward url="{$url}">
+                            <add-parameter name="project" value="{$project}"/>
+                       
+                            <add-parameter name="path" value="{$path}"/>
+                            <add-parameter name="exist-path" value="{$exist:path}"/>
+                            <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                            <add-parameter name="exist-controller" value="{$exist:controller}"/>
+                            <add-parameter name="exist-root" value="{$exist:root}"/>
+                             <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
+                             <add-parameter name="rel-path" value="{$corr-rel-path}"/>
+                        </forward>
+                    </dispatch>
             (: login :)
             else ()
         )
