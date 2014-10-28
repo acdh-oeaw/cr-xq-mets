@@ -700,6 +700,21 @@ declare function resource:label($label, $resource-pid as xs:string, $project)  {
     return $update    
 };
 
+(:~  :)
+declare function resource:cite($resource-pid, $project-pid, $config) {
+let $cite-template := config:param-value($config,'cite-template')
+let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
+let $md := resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid)
+let $link := resource:link($resource-pid, $project-pid, $config)
+let $entity-label := ""
+(:return $md:)
+return util:eval ("<bibl>"||$cite-template||"</bibl>")
+};
+
+declare function resource:link($resource-pid, $project-pid, $config) {
+    config:param-value($config, 'base-url')||'get/'||$resource-pid
+};
+
 (:~
  : returns the logical structure of a resource  
  : as generated in the structMap.logical 
