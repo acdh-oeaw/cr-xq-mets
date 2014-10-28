@@ -8,7 +8,6 @@ declare namespace html = "http://www.w3.org/1999/xhtml";
 declare namespace cr="http://aac.ac.at/content_repository";
 
 (:~ This module allows annotating data in the repository on resource, resourcefragment and element level. 
- : 
 ~:)
  
 
@@ -66,7 +65,9 @@ declare function annotations:setByResourcefragmentPID($projectPID as xs:string, 
              if (count($annotations:data) gt 1)
              then util:log-app("WARN", $config:app-name, "more than one annotations found for resourcefragment "||$resourcefragmentPID||" in project "||$projectPID||" - updating only first")
              else ())
-        else util:log-app("ERROR", $config:app-name, "annotation for resource fragment  "||$resourcefragmentPID||" not found in project "||$projectPID) 
+        else 
+            (util:log-app("INFO", $config:app-name, "annotation for resource fragment  "||$resourcefragmentPID||" not found in project "||$projectPID||" - creating it anew"),
+            annotations:new(annotations:data2XML($projectPID,$resourcePID,$resourcefragmentPID,(), "resourcefragment", $data))) 
         
 };
 
@@ -164,7 +165,7 @@ declare function annotations:new($annotations:data as element(annotations:annota
         if ($projectPID != "" and $resourcePID != "")
         then
             let $d:= annotations:getDocument($projectPID, $resourcePID)
-            return if (exists($d)) then $d else annotations:createDocument($projectPID, $resourcePID)
+            return if (exists($d)) then doc($d) else doc(annotations:createDocument($projectPID, $resourcePID))
         else ()
     return            
     switch(true())
@@ -198,7 +199,7 @@ declare function annotations:path($projectPID as xs:string) as xs:string? {
 };
 
 
-declare function annotations:createDocument($projectPID as xs:string, $resourcePID as xs:string) {
+declare function annotations:createDocument($projectPID as xs:string, $resourcePID as xs:string) as xs:string? {
     let $annotations:path := annotations:path($projectPID),
         $annotations:filename := $resourcePID||".xml"
     return
