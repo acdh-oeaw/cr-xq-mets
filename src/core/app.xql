@@ -1,3 +1,5 @@
+xquery version "3.0";
+
 module namespace app="http://sade/app";
 
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
@@ -7,6 +9,8 @@ import module namespace resource="http://aac.ac.at/content_repository/resource" 
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "repo-utils.xqm";
+import module namespace f="http://aac.ac.at/content_repository/file" at "file.xqm";
+
 
 declare namespace xhtml= "http://www.w3.org/1999/xhtml";
 
@@ -97,6 +101,24 @@ function app:list-resources($node as node(), $model as map(*), $x-format) {
 declare 
     %templates:wrap    
     %templates:default("x-format", "html")
+function app:list-files($node as node(), $model as map(*), $fg-key, $x-format) {
+   
+(:   let $log := util:log-app("DEBUG",$config:app-name,"app:list-files") :)
+
+    let $project-pid := config:param-value($model("config"),$config:PROJECT_PID_NAME)    
+    let $fg := f:get-filegrp-entry($fg-key, $project-pid)
+(:    let $log := util:log-app("DEBUG",$config:app-name,"app:list-resources-END"):)
+    (:for $res in $ress
+        let $dmd := resource:dmd($res, $model("config") ):)            
+        return repo-utils:serialise-as($fg, $x-format, 'file-list', $model("config"))
+(:    return $dmd:)
+    
+};
+
+
+declare 
+    %templates:wrap    
+    %templates:default("x-format", "html")
 function app:toc($node as node(), $model as map(*), $x-format) {
     
     let $project-pid := $model('config')/xs:string(@OBJID)
@@ -157,4 +179,22 @@ function app:list-projects($node as node(), $model as map(*), $filter as xs:stri
                         else ()
 
 (:    return $projects:)
+};
+
+declare
+%templates:wrap
+%templates:default("filter", "")
+%templates:default("x-format", "html")
+%templates:default("res-type", "xml")
+function app:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string, $res-type as xs:string, $x-format as xs:string) {
+    let $content := config:resolve($model, $path-detail)
+        let $log := util:log-app("DEBUG",$config:app-name,"app:include-detail.path-detail: "||$path-detail)
+    let $restricted-content := if ($filter != '' and exists($content)) then 
+            (: try to handle namespaces dynamically 
+                by switching  to source namespace :)
+            let $ns-uri := namespace-uri($content[1]/*)        	       
+            let $ns := util:declare-namespace("",xs:anyURI($ns-uri))
+           return util:eval(concat("$content//", $filter)) else $content 
+    return if ($x-format='') then templates:process($restricted-content , $model)
+             else repo-utils:serialise-as($content, $x-format, $res-type, $model("config"))
 };

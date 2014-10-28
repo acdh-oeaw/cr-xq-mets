@@ -29,6 +29,7 @@ declare variable $resource:mdtypes := ("MARC","MODS","EAD","DC","NISOIMG","LC-AV
 
 declare variable $resource:othermdtypes := ("CMDI"); 
 
+
 declare function resource:make-file($fileid as xs:string, $filepath as xs:string, $type as xs:string) as element(mets:file) {
     let $USE:=
         switch($type)
@@ -171,18 +172,39 @@ declare function resource:generate-pid($project-pid as xs:string, $random-seed a
         else $this:pid
 };
 
-declare function resource:new-with-label($data as document-node(), $project-pid as xs:string, $resource-label as xs:string*) {
+(: checks if the passed string is not used yet as resource-pid, 
+so that it can be used as a new pid :)
+
+declare function resource:ensure-pid($project, $resource-pid-inspe as xs:string?) as xs:string {
+    let $project-mets:=  project:get($project),
+        $project-pid := repo-utils:get-record-pid($project),
+        $pid-exists:=   $project-mets//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE][@ID=$resource-pid-inspe]            
+    return 
+        if ($pid-exists)
+        then resource:ensure-pid($project-pid,$resource-pid-inspe||substring(util:uuid(util:random()),1,4))
+        else $resource-pid-inspe
+};
+
+declare function resource:new-with-label($data as document-node(), $project, $resource-label as xs:string*) {
+    resource:new-with-label($data, $project, $resource-label, () )
+};
+
+declare function resource:new-with-label($data as document-node(), $project, $resource-label as xs:string*, $resource-pid-inspe as xs:string?) {
     let $log := util:log-app("INFO",$config:app-name, "*** UPLOADED DATA ***")
 (:    let $log := util:log-app("INFO",$config:app-name,$data/*):)
     let $log := util:log-app("INFO",$config:app-name,"$resource-label: "||$resource-label)
     let $log := util:log-app("INFO",$config:app-name,"$user: "||xmldb:get-current-user())
-    let $resource-pid := resource:new($data,$project-pid, ()),
-        $set-label := resource:label(document {<cr:data>{$resource-label}</cr:data>},$resource-pid,$project-pid)
+    let $resource-pid := resource:new($data,$project, (),$resource-pid-inspe),
+        $set-label := resource:label($resource-label,$resource-pid,$project)
     return $resource-pid
 };
 
-declare function resource:new($data as document-node(), $project-pid as xs:string){
-    resource:new($data,$project-pid,())
+declare function resource:new($data as document-node(), $project){
+    resource:new($data,$project,(), ())
+};
+
+declare function resource:new($data as document-node(), $project, $make-fragments as xs:boolean*) as xs:string? {
+    resource:new($data,$project,$make-fragments, ())
 };
 
 (:~
@@ -195,14 +217,17 @@ declare function resource:new($data as document-node(), $project-pid as xs:strin
  : or lookup-tables. 
  : 
  : @param $data: the content of the new resource
- : @param $project-pid: the id of the cr-project
+ : @param $project: the id of the cr-project or already the project mets-record (idempotent project:get() is applied on the parameter)
+ : @param $make-fragments: flag to also generate resource fragments right away (calls rf:generate()) 
+ : @param $resource-pid-inspe: optional key to be used as resource-pid. It is checked to be unique (resource:ensure-pid()) and potentially suffixed, if left empty, automatic PID will be generated
  : @return the resource-pid of the created resource  
 ~:)
-declare function resource:new($data as document-node(), $project-pid as xs:string, $make-fragments as xs:boolean*) as xs:string? {
-    let $mets:record := project:get($project-pid),
+declare function resource:new($data as document-node(), $project, $make-fragments as xs:boolean*, $resource-pid-inspe as xs:string?) as xs:string? {
+    let $mets:record := project:get($project),
+        $project-pid := repo-utils:get-record-pid($project),
         $mets:projectData := $mets:record//mets:fileGrp[@ID=$config:PROJECT_DATA_FILEGRP_ID],
         $mets:structMap := $mets:record//mets:structMap[@TYPE=$config:PROJECT_STRUCTMAP_TYPE and @ID=$config:PROJECT_STRUCTMAP_ID],
-        $this:resource-pid := resource:generate-pid($project-pid) 
+        $this:resource-pid := if ($resource-pid-inspe) then resource:ensure-pid($project-pid, $resource-pid-inspe) else resource:generate-pid($project-pid) 
     return
         switch (true())
             case (not(exists($mets:record))) return util:log-app("INFO",$config:app-name,"no METS-Record found in config")
@@ -227,8 +252,8 @@ declare function resource:new($data as document-node(), $project-pid as xs:strin
 
 (:~ Returns the structMap entry for the resource
 :)
-declare function resource:get($resource-pid as xs:string,$project-pid as xs:string) as element(mets:div)? {
-    let $mets:record:=project:get($project-pid)
+declare function resource:get($resource-pid as xs:string,$project) as element(mets:div)? {
+    let $mets:record:=project:get($project)
     return $mets:record//mets:div[@ID eq $resource-pid][@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]    
 };
 
@@ -236,8 +261,8 @@ declare function resource:get($resource-pid as xs:string,$project-pid as xs:stri
 (:~
  : Returns the  mets:fileGrp which contains all files of the given resource. 
 ~:)
-declare function resource:files($resource-pid as xs:string,$project-pid as xs:string) as element(mets:fileGrp)? {
-    let $mets:record:=project:get($project-pid),
+declare function resource:files($resource-pid as xs:string,$project) as element(mets:fileGrp)? {
+    let $mets:record:=project:get($project),
         $mets:fileGrp-by-id:=$mets:record//mets:fileGrp[@USE=$config:PROJECT_RESOURCE_FILEGRP_USE][@ID eq $resource-pid||$config:PROJECT_RESOURCE_FILEGRP_SUFFIX]
     return 
         if (exists($mets:fileGrp-by-id))
@@ -271,16 +296,13 @@ declare function resource:add-file($file as element(mets:file),$resource-pid as 
 };
 
 declare function resource:add-fragment($div as element(mets:div),$resource-pid as xs:string,$project-pid as xs:string) {
-    let $log := util:log-app("DEBUG",$config:app-name, "resource:add-fragment("||util:serialize($div,'method=xml')||", "||$resource-pid||", "||$project-pid||")")
     let $mets:resource:=resource:get($resource-pid,$project-pid)
     let $this:fragmentID:=$div/@ID,
         $mets:div:=$mets:resource//mets:div[@ID eq $this:fragmentID],
         $facs := root($mets:div)//mets:fileGrp[@ID = $config:PROJECT_FACS_FILEGRP_ID]//mets:file[@ID = $mets:div/mets:fptr/@FILEID]
     return
         if (exists($mets:div))
-        then
-            let $log := util:log-app("DEBUG",$config:app-name, "located $div in resource")
-            return
+        then  
             if (exists($facs))
             then 
                 let $log := util:log-app("INFO",$config:app-name, "mets:div @ID "||$mets:div/@ID||" contains refence to facs "||string-join($facs/@ID,', ')||" - inserting fptrs into generated fragment.")
@@ -292,11 +314,9 @@ declare function resource:add-fragment($div as element(mets:div),$resource-pid a
                         then ()
                         else update insert <mets:fptr FILEID="{$f/@ID}"/> into $mets:resource//mets:div[@ID eq $this:fragmentID]
             else 
-                let $log := util:log-app("DEBUG",$config:app-name,'replacing existing resource fragment mets:div ID '||$this:fragmentID)
+                let $log := util:log-app("INFO",$config:app-name,'replacing existing resource fragment mets:div ID '||$this:fragmentID)
                 return update replace $mets:div with $div
         else
-            let $log := util:log-app("DEBUG",$config:app-name, "could not locate $div in resource")
-            return
             if (exists($mets:resource))
             then (
                 update insert $div into $mets:resource,
@@ -320,17 +340,17 @@ declare function resource:remove-file($fileid as xs:string,$resource-pid as xs:s
  :  - resourcefragments  
  :
  : @param $resource-pid: the PID of the resource
- : @param $project-pid: the ID of the current project
+ : @param $project-pid: the ID of the current project or the project-mets record
  : @param $key: the key of the data to get
 ~:)
-declare function resource:path($resource-pid as xs:string, $project-pid as xs:string, $key as xs:string) as xs:string? {
-    let $file := resource:file($resource-pid, $project-pid, $key)
+declare function resource:path($resource-pid as xs:string, $project, $key as xs:string) as xs:string? {
+    let $file := resource:file($resource-pid, $project, $key)
     return $file/mets:FLocat/@xlink:href
 };
 
-declare function resource:file($resource-pid as xs:string, $project-pid as xs:string, $key as xs:string) as element(mets:file)? {
-    let $config:=   project:get($project-pid),
-        $file:=     resource:files($resource-pid,$project-pid),
+declare function resource:file($resource-pid as xs:string, $project, $key as xs:string) as element(mets:file)? {
+    let $config:=   project:get($project),
+        $file:=     resource:files($resource-pid,$project),
         $use:=  
             switch($key)
                 case "master"           return $config:RESOURCE_MASTER_FILE_USE
@@ -349,20 +369,20 @@ declare function resource:file($resource-pid as xs:string, $project-pid as xs:st
 (:~
  :  @return the mets:file-Element of the Master File.
 ~:)
-declare function resource:get-master($resource-pid as xs:string, $project-pid as xs:string) as element(mets:file)? {
-    let $mets:resource:=resource:get($resource-pid,$project-pid),
-        $mets:resource-files:=resource:files($resource-pid,$project-pid)
+declare function resource:get-master($resource-pid as xs:string, $project) as element(mets:file)? {
+    let $mets:resource:=resource:get($resource-pid,$project),
+        $mets:resource-files:=resource:files($resource-pid,$project)
     let $mets:master:=$mets:resource-files/mets:file[@USE eq $config:RESOURCE_MASTER_FILE_USE]
     return $mets:master
 };
 
-declare function resource:master($resource-pid as xs:string, $project-pid as xs:string) as document-node()? {
-    let $doc := doc(resource:path($resource-pid,$project-pid,'master'))
+declare function resource:master($resource-pid as xs:string, $project) as document-node()? {
+    let $doc := doc(resource:path($resource-pid,$project,'master'))
     return $doc
 };
 
-declare function resource:get-data($resource-pid as xs:string, $project-pid as xs:string, $type as xs:string) as document-node()? {
-    let $doc := doc(resource:path($resource-pid,$project-pid,$type))
+declare function resource:get-data($resource-pid as xs:string, $project, $type as xs:string) as document-node()? {
+    let $doc := doc(resource:path($resource-pid,$project,$type))
     return $doc
 };
 
@@ -409,11 +429,11 @@ declare %private function resource:master($data as document-node(), $resource-pi
  : @param $project-id: the id of the project the resource belongs to
  : @return the db path to the file
 ~:)
-declare function resource:store-dmd($data as document-node(), $mdtype as xs:string,$resource-pid as xs:string?, $project-pid as xs:string) as xs:string? {
+declare function resource:store-dmd($data as document-node(), $mdtype as xs:string,$resource-pid as xs:string?, $project) as xs:string? {
     let $this:filename := $config:RESOURCE_DMD_FILENAME_PREFIX||$resource-pid||".xml"
-    let $targetpath:= replace(project:path($project-pid,'metadata'),'/$','')||"/"||$mdtype
+    let $targetpath:= replace(project:path($project,'metadata'),'/$','')||"/"||$mdtype
     let $store:= 
-            try {repo-utils:store($targetpath,$this:filename,$data,true(),project:get($project-pid))
+            try {repo-utils:store($targetpath,$this:filename,$data,true(),project:get($project))
             } catch * {
                util:log-app("INFO", $config:app-name,"metadata for resource "||$resource-pid||" could not be stored at "||$targetpath) 
             }, 
@@ -500,8 +520,21 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
         else util:log-app("INFO",$config:app-name,"No Metadata is registered for resource "||$resource-pid||".")
 };
 
-declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $data as item(), $mdtype as xs:string*) as empty() {
-    resource:dmd($resource-pid,$project-pid,$data,$mdtype[1],())
+(:~ create an empty record for a resource
+using existing mdtype specific templates 
+:)
+declare function resource:create-dmd-from-template($resource-pid as xs:string, $project, $dmd-template as xs:string?) as empty() {
+
+    let $template := resource:dmd-template($dmd-template)
+    let $mdtype := substring-before($dmd-template,'_')    
+    return if ($template) then 
+            resource:dmd($resource-pid,$project,$template,$mdtype,true())
+        else
+           util:log-app("ERROR",$config:app-name,"coulnt create a md-record, dmd-template "||$dmd-template||" not available.")
+};
+
+declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string*) as empty() {
+    resource:dmd($resource-pid,$project,$data,$mdtype[1],())    
 };
 
 (:~
@@ -513,9 +546,9 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
  : @param $store-to-db if set to true(), the metdata resource is stored as an independend resource to the database () and only referenced in the mets record (default behaviour), if set to false(), the metadata is inlined in the the project's mets record.   
  : @return empty()
 ~:)
-declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:string, $data as item(), $mdtype as xs:string, $store-to-db as xs:boolean?) as empty() {
-    let $doc:=          project:get($project-pid),
-        $current :=     resource:dmd($resource-pid,$project-pid),
+declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string, $store-to-db as xs:boolean?) as empty() {
+    let $doc:=          project:get($project),
+        $current :=     resource:dmd($resource-pid,$project),
         $data-location:=base-uri($current),
         $dmdid :=       $resource-pid||$mdtype||$config:RESOURCE_DMDID_SUFFIX,
         $dmdSec :=      $doc//mets:dmdSec[@ID = $dmdid]
@@ -547,7 +580,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                     if (exists($doc//mets:div[matches(@DMDID,'\s*'||$dmdid||'\s*')])) 
                     then () 
                     else 
-                        let $res-div := resource:get($resource-pid,$project-pid)
+                        let $res-div := resource:get($resource-pid,$project)
                         let $existing-dmdid := $res-div/@DMDID
                         return if (exists($existing-dmdid)) then
                             update value $existing-dmdid with $existing-dmdid||' '||$dmdid
@@ -575,7 +608,7 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
                             util:log-app("INFO",$config:app-name,"The metdata resource referenced in "||$data||"is not available. dmdSec-Update aborted for resource "||$resource-pid)
                     else 
                         (: $data contains metadata content, so we store it to the db and create a new mdRef :)
-                        let $mdpath := resource:store-dmd(if ($data instance of document-node()) then $data else document{$data},$mdtype,$resource-pid,$project-pid),
+                        let $mdpath := resource:store-dmd(if ($data instance of document-node()) then $data else document{$data},$mdtype,$resource-pid,$project),
                             $mdRef:= 
                                 if ($mdtype = $resource:mdtypes)
                                 then <mdRef MDTYPE="{$mdtype}" LOCTYPE="URL" xmlns="http://www.loc.gov/METS/" xlink:href="{normalize-space($mdpath)}"/>
@@ -643,12 +676,12 @@ declare function resource:dmd($resource-pid as xs:string, $project-pid as xs:str
 };
 
 
-declare function resource:label($resource-pid as xs:string, $project-pid as xs:string) as xs:string? {
-    let $resource := resource:get($resource-pid, $project-pid)
+declare function resource:label($resource-pid as xs:string, $project) as xs:string? {
+    let $resource := resource:get($resource-pid, $project)
     return $resource/xs:string(@LABEL)[.!=""]
 };
 
-declare function resource:label($data as document-node(), $resource-pid as xs:string, $project-pid as xs:string) as element(cr:response)? {
+(:declare function resource:label($data as document-node(), $resource-pid as xs:string, $project-pid as xs:string) as element(cr:response)? {
     let $resource := resource:get($resource-pid, $project-pid)
     let $update :=   
         if ($data/* instance of element(cr:data))
@@ -659,7 +692,15 @@ declare function resource:label($data as document-node(), $resource-pid as xs:st
         then <cr:response path="/cr_xq/{$project-pid}/{$resource-pid}/label" datatype="xs:string">{$resource/xs:string(@LABEL)}</cr:response>
         else ()
 };
+:)
 
+declare function resource:label($label, $resource-pid as xs:string, $project)  {
+    let $resource := resource:get($resource-pid, $project)
+    let $update := update value $resource/@LABEL with xs:string($label)    
+    return $update    
+};
+
+(:~  :)
 declare function resource:cite($resource-pid, $project-pid, $config) {
 let $cite-template := config:param-value($config,'cite-template')
 let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
@@ -682,9 +723,9 @@ declare function resource:link($resource-pid, $project-pid, $config) {
  : @param $project-pid the pid of the project
  : @return   
 ~:)
-declare function resource:get-toc($resource-pid as xs:string, $project-pid as xs:string) as element()? {
-    let $toc := project:get-toc($project-pid),
-        $mets:record := project:get($project-pid),
+declare function resource:get-toc($resource-pid as xs:string, $project) as element()? {
+    let $toc := project:get-toc($project),
+        $mets:record := project:get($project),
         $resource-ref := '#'||$resource-pid
         (:$frgs := resource:get($resource-pid, $project-pid)//mets:div[@TYPE='resourcefragment']:)
        
@@ -846,18 +887,18 @@ declare function resource:refresh-aux-files($toc-indexes as xs:string*, $resourc
 
 
 
-declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:string) as element(cmd:CMD)?{
-    resource:dmd("CMDI",$resource-pid,$project-pid)
+declare function resource:cmd($resource-pid as xs:string, $project) as element(cmd:CMD)?{
+    resource:dmd("CMDI",$resource-pid,$project)
 };
 
-declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:string, $data as element(cmd:CMD)?) as empty() {
-    let $doc:=      project:get($project-pid),
-        $resource := resource:get($resource-pid,$project-pid),
+declare function resource:cmd($resource-pid as xs:string, $project, $data as element(cmd:CMD)?) as empty() {
+    let $doc:=      project:get($project),
+        $resource := resource:get($resource-pid,$project),
         $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],
         $dmdSec :=  $dmdSecs[*/@MDTYPE='OTHER' and */@OTHERMDTYPE = "CMDI"],
         $dmdSecID := $dmdSec/@ID,
-        $current:=  resource:cmd($resource-pid,$project-pid) 
-    let $location := replace(project:path($project-pid,'metadata'),'/$','')||"/CMDI/"||$resource-pid||".xml"
+        $current:=  resource:cmd($resource-pid,$project) 
+    let $location := replace(project:path($project,'metadata'),'/$','')||"/CMDI/"||$resource-pid||".xml"
     let $update := 
         if (exists($current))
         then 
@@ -875,7 +916,7 @@ declare function resource:cmd($resource-pid as xs:string, $project-pid as xs:str
                             <mdRef MDTYPE="OTHER" OTHERMDTYPE="CMDI" xlink:href="{$location}" LOCTYPE="URL"/>
                         </dmdSec> 
                      following $doc//mets:metsHdr
-            return xmldb:store(replace(project:path($project-pid,'metadata'),'/$','')||"/CMDI",$resource-pid||".xml",$data)
+            return xmldb:store(replace(project:path($project,'metadata'),'/$','')||"/CMDI",$resource-pid||".xml",$data)
     return ()
 };
 
@@ -1091,4 +1132,15 @@ declare function resource:dmd2dc($resource-pid as xs:string, $project-pid as xs:
         $xsl := doc(config:path("scripts")||"/dc/cmdi2dc.xsl"),
         $params := <parameters><param name='fedora-pid-namespace-prefix' value="{config:param-value(config:module-config(),'fedora-pid-namespace-prefix')}"/></parameters>
     return transform:transform($dmd,$xsl,$params)
+};
+
+(:~ this allows to fetch one of the packaged templates for metadata.
+The function may move to a metadata-module yet to be created.
+:)
+declare function resource:dmd-template($dmd-type) {
+    let $path := $config:app-root||"/modules/md/"||$dmd-type||".xml" 
+    return if (doc-available($path)) then 
+                doc($path)
+            else
+               util:log-app("ERROR",$config:app-name,"dmd-template "||$dmd-type||" not available.")
 };

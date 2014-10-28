@@ -4,6 +4,8 @@ module namespace fcs-tests  = "http://clarin.eu/fcs/1.0/tests";
 import module namespace httpclient = "http://exist-db.org/xquery/httpclient";
 import module namespace t="http://exist-db.org/xquery/testing";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
+import module namespace resource="http://aac.ac.at/content_repository/resource" at "../../core/resource.xqm";
+import module namespace f="http://aac.ac.at/content_repository/file" at "../../core/file.xqm";
 import module namespace xqjson="http://xqilla.sourceforge.net/lib/xqjson";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 
@@ -25,6 +27,7 @@ declare variable $fcs-tests:cr-config := repo-utils:config("/db/apps/cr-xq/modul
 declare variable $fcs-tests:results-coll := "/db/cr/modules/testing/results/";
 :)
 declare variable $fcs-tests:href-prefix := "tests.xql";
+declare variable $fcs-tests:qs-template := doc("qs-template.xml");
 
 (:~ this function is accessed by the testing-code to get configuration-options from the run-config :)
 declare function fcs-tests:config-value($config, $type, $key as xs:string?) as xs:string* {
@@ -67,14 +70,38 @@ declare function fcs-tests:get-result($target  as xs:string, $queryset as xs:str
 @returns testset-file if available, otherwise empty result
 :)
 declare function fcs-tests:get-queryset($queryset as xs:string, $config) as item()* {
-    let $queryset-basepath := repo-utils:config-value($config, "queryset.path") 
+     let $queryset-basepath := repo-utils:config-value($config, "queryset.path") 
     let $queryset-path := concat($queryset-basepath, $queryset, ".xml")
     return if (doc-available($queryset-path)) then                        
                     doc($queryset-path)
                   else 
                   <diagnostic>unknown testset: {$queryset}</diagnostic>
+                  
+    (:let $qs-res := resource:get-data($qs-key, $config,'master')
+    return if ($qs-res) then                        
+                    $qs-res
+                  else
+                    <diagnostic>unknown queryset: {$qs-key}</diagnostic>:)
 };
 
+(: create a new queryset with given id register it as a resource and register also appropriate md-record
+
+:)  
+declare function fcs-tests:create-queryset($qs-key as xs:string, $label as xs:string, $config) {
+
+    let $qs-exists := fcs-tests:get-queryset($qs-key, $config) 
+    return if ($qs-exists/queryset) then
+                   <diagnostic>queryset already exists: {$qs-key}</diagnostic>                    
+                  else
+                     let $qs-res-id := resource:new-with-label($fcs-tests:qs-template,$config,$label, $qs-key)
+                     let $qs-res := resource:get-data($qs-res-id, $config,'master')
+                     let $update-key := update value $qs-res/queryset/@id with $qs-res-id
+                     let $update-key := update value $qs-res/queryset/div[@class='title'] with $label
+                     let $md-record := resource:create-dmd-from-template($qs-res-id, $config, "CMDI_collection")                     
+                     return ($qs-res-id, $md-record)
+
+
+};
 
 (:~ main function governing the execution of the tests
 
@@ -92,7 +119,8 @@ declare function fcs-tests:run-testset($target-key as xs:string, $queryset-key a
     :)
     (: for now put the whole config plus the action-param
         perhaps this could be cleaned up :) 
-    let $run-config := <config>{($config, <property key="action">{$action}</property>)}</config>
+    let $run-config := map { "config" := $config, "action" := $action} 
+(:    <config>{($config, <property key="action">{$action}</property>)}</config>:)
 (:    let $run-config := ($config, <property key="operation">{$action}</property>):)
     
     
@@ -122,9 +150,9 @@ declare function fcs-tests:run-testset($target-key as xs:string, $queryset-key a
                                    $queryset 
             let $end-time := util:system-dateTime()
             let $test-wrap := <testrun duration="{$end-time - $start-time}" on="{fn:current-dateTime()}" >{$result}</testrun>
-            let $store-result := fcs-tests:store-result($target, $queryset-key, $test-wrap, $config)
-            (:for $test in $tests/tests/test return fcs-tests:run-test($test):)
-            return $store-result
+                let $store-result := fcs-tests:store-result($target, $queryset-key, $test-wrap, $config)
+(:            for $test in $tests/tests/test return fcs-tests:run-test($test):)
+            return             $store-result
         
 };
 
@@ -190,14 +218,14 @@ declare function fcs-tests:process-test($test as node(), $target-key, $config) a
         $test-id := xs:string($test/@id),
         $test-list := xs:string($test/@list),
         $list-doc := if (doc-available($test-list)) then doc($test-list) else (),
-        $target-uri := fcs-tests:config-value($config, "target", $target-key), 
+        $target-uri := fcs-tests:config-value($config("config"), "target", $target-key), 
 (:        $target-key := fcs-tests:config-key("target"),:)
-        $action := fcs-tests:config-value($config, "action", ())
+        $action := $config("action") (:        fcs-tests:config-value($config, "action", ()):)
 
 
     return if (empty($list-doc)) then 
                 let $request := concat($target-uri, xs:string($a/@href))                
-                return fcs-tests:process-request ($test, $request, $a/text(), $target-key, $test-id, $action, $config)
+                return fcs-tests:process-request ($test, $request, $a/text(), $target-key, $test-id, $action, $config("config"))
             else 
             (: if we have a list, iterate over the items of the list and run a request for each :)
             
@@ -206,7 +234,7 @@ declare function fcs-tests:process-test($test as node(), $target-key, $config) a
                       $i-id := if ($i/@id) then xs:string($i/@id) else $c,
                       $request-id := concat($test-id, $i-id),
                       $a-text := fcs-tests:subst(xs:string($a/text()), $i)
-                  return fcs-tests:process-request ($test, $request, $a-text, $target-key, $request-id, $action, $config)
+                  return fcs-tests:process-request ($test, $request, $a-text, $target-key, $request-id, $action, $config("config"))
 };
 
 (:~ executes one URL-request. 
@@ -308,7 +336,7 @@ let $store := if (contains($action,'run-store')) then fcs-tests:store-result($ta
                     </div>
                     
      (: checking extra for diagnostics :)
-     let $http-status := $result-data//xs:string(@statusCode)     
+     let $http-status := $result-data-raw//xs:string(@statusCode)     
      let $diag := ($result-data//diag:diagnostic, $result-data//exception, 
                 if ($http-status ne '200') then <http-status>{$http-status}</http-status> else ())      
       let $wrapped-diag := if (exists($diag)) then 
@@ -324,7 +352,7 @@ declare function fcs-tests:store-result($target as xs:string, $queryset as xs:st
 };
 
 
-(:~ stores the result of a testset 
+(:~ stores the result of a testset as a resource 
 @returns reference to the stored document (as the underlying function repo-utils:store())
 :)
 declare function fcs-tests:store-result($target as xs:string, $queryset as xs:string, $test as xs:string, $result as node(), $config) as item()* {
@@ -336,9 +364,18 @@ declare function fcs-tests:store-result($target as xs:string, $queryset as xs:st
 (:                           xmldb:create-collection($store-path, $target) else ():)
 
   
-  let $result-path := fcs-tests:get-result-paths($target, concat($queryset, $test), $config)
-   
-  let $store-result := repo-utils:store($result-path[1], $result-path[2], $result, true(),$config)
+  let $result-paths := fcs-tests:get-result-paths($target, concat($queryset, $test), $config)
+
+(:  let  $resource-pid := resource:new-with-label($data, $project-pid, $resource-label)  :)
+
+(:~ 4. add a metadata record for given resource :)
+(:let $md := doc("/db/cr-data/_tmp/path/to/metadata_record.xml")/*:)
+(:return resource:dmd($resource-pid,$project-pid,$md,"TEIHDR",true()):)
+  let $id := string-join(($target, concat($queryset, $test)),'_')
+  let $entry := f:set-file-entry($id, string-join($result-paths,''), 'result', 'results', $config )
+  let $log := util:log("DEBUG", "storing id: "||$id||$entry)
+
+  let $store-result := repo-utils:store($result-paths[1], $result-paths[2], $result, true(),$config)
 
 return $store-result
 };

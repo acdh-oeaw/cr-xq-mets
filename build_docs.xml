@@ -40,6 +40,16 @@
 		</ant>
 	</target>
 	
+	<target name="gen-md2html" description="generate the html version from README and all markdown files (.md) in docs">
+		<ant antfile="${scripts.dir}\build_docs.xml" target="md2html">			
+			<property name="src.file" location="README.md" />
+			<property name="out.file" location="README.html"/>
+		</ant>
+		<ant antfile="${scripts.dir}\build_docs.xml" target="md2html-all">
+		</ant>			
+	</target>
+	
+	
 	<target name="gen-xsldocs" >
 		<property name="out.fn" value="c_s-xsl"></property>
 		<ant antfile="${scripts.dir}\build_docs.xml" target="ay-xsl">
@@ -67,6 +77,18 @@
 	</target>    	
 	
 	<target name="gen-xqdocs" >
+<!--		<antcall target="gen-xq-callgraph" />-->
+		
+		<xslt basedir="${docs.dir}/xqdocs/xml" destdir="${docs.dir}/xqdocs/html" 
+			style="src/modules/gendocs/html-module.xsl"    	 >    				
+			<param name="style_dir" expression="${style.dir}"/>
+			<!--  <param name="out_dir" expression="${out.dir}" />
+			<param name="out_dir" expression="'.'" />
+			<param name="image_file" expression="${image.file}" />-->
+		</xslt>   		  
+	</target>
+	
+	<target name="gen-xq-callgraph">
 		<property name="out.fn" value="cr-xq-calls"></property>
 		<property name="out.dir" value="${docs.dir}/xqdocs/graph"></property>
 		
