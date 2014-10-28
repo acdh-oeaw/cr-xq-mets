@@ -14,6 +14,10 @@ src/repo.xml
 src/expath-pkg.xml
 build/*
 
+# dynamically generated module for index-functions #
+# ##################################################
+src/modules/index-functions/index-functions.xqm
+
 # imported cs-xsl files #
 #########################
 #src/modules/cs-xsl
