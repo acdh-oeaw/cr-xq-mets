@@ -200,7 +200,7 @@ declare function config:path($key as xs:string) as xs:string? {
  : @return the resolved path (zero or one string)  
 :)
 declare function config:path($paths as element(config:path)*, $key as xs:string)  {
-    let $path:=$paths[@key eq $key]
+    let $path:=$paths/self::config:path[@key eq $key]
     return
         if (exists($path))
         then config:path-relative-to-absolute($paths,$path)
@@ -320,10 +320,15 @@ declare function config:resolve($model as map(*), $relPath as xs:string) as docu
  : @return the absolute path to the resource as anyURI
  :)
 declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:string) as xs:anyURI {
-    let $project-template-dir := config:param-value($model, 'project-template-dir'),
-        $project-dir := config:param-value($model, 'project-static-dir'),
+    
+    let $project-dir := config:param-value($model, 'project-dir'), 
+    $project-template-dir := config:param-value($model, 'project-template-dir'),
+(:        $project-dir := config:param-value($model, 'project-static-dir'),        :)
         $template-dir := config:param-value($model, 'template-dir')
-    return 
+    return
+        if (doc-available($project-dir||$relPath)) 
+         then xs:anyURI($project-dir||$relPath)
+        else        
         if (doc-available($project-template-dir||$relPath)) 
         then xs:anyURI($project-template-dir||$relPath)
         else 
@@ -765,7 +770,7 @@ declare function config:module-config() as item()* {
  :  
  : @param $project project identifier
 ~:)
-declare function config:project-exists($project as xs:string?) {
+declare function config:project-exists($project as xs:string) {
     exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
 };
 
