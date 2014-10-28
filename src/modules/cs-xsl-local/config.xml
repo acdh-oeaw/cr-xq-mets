@@ -18,6 +18,7 @@
         <param key="explain-json.xsl">fcs/explain2json.xsl</param>
         <param key="static.xsl">misc/static2view.xsl</param>
         <param key="xml.xsl">misc/xml2view_v2.xsl</param>
+        <param key="xml-htmltable.xsl">misc/xml2htmltable.xsl</param>
         <param key="html.xsl">misc/html2view.xsl</param>
         <param key="test.xsl">misc/test2view.xsl</param>
         <param key="projectDMD.xsl">md/project2view.xsl</param>
