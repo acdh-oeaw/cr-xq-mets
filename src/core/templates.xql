@@ -310,9 +310,10 @@ function templates:include($node as node(), $model as map(*), $path as xs:string
 :)
 declare
 %templates:wrap
-%templates:default("filter", "") 
+%templates:default("filter", "")
 function templates:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string) {
     let $content := config:resolve($model, $path-detail)
+        let $log := util:log-app("DEBUG",$config:app-name,"templates:include-detail.path-detail: "||$path-detail)
     let $restricted-content := if ($filter != '' and exists($content)) then 
             (: try to handle namespaces dynamically 
                 by switching  to source namespace :)
