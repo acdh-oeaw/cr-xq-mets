@@ -172,9 +172,8 @@ declare function resource:generate-pid($project-pid as xs:string, $random-seed a
         else $this:pid
 };
 
-(: checks if the passed string is not used yet as resource-pid, 
+(:~ checks if the passed string is not used yet as resource-pid, 
 so that it can be used as a new pid :)
-
 declare function resource:ensure-pid($project, $resource-pid-inspe as xs:string?) as xs:string {
     let $project-mets:=  project:get($project),
         $project-pid := repo-utils:get-record-pid($project),
