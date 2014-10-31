@@ -16,8 +16,8 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-let $resource-pid := "prj.1",
-    $project-pid := "prj",
+let $rid := "abacus.7",
+    $project-pid := "abacus",
     $resource-label := "My first resource"
 
 let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
@@ -28,6 +28,11 @@ let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
 (:~ 2. use this to generate/refresh all auxiliary files for given resource :)
 (:let $gen-aux := resource:refresh-aux-files(('front','chapter','back','index'), $resource-pid, $project-pid) return $gen-aux:)
 
+(: uncomment this to refresh aux-files for all resources :)
+(:for $rid in project:list-resource-pids($project-pid):)
+    return resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) 
+    
+    
 (:~ alternatively you can do it one by one:  :)
 (: let $wc-gen :=  wc:generate($resource-pid, $project-pid) return $wc-gen:)
 (: let $lt-gen :=  lt:generate($resource-pid, $project-pid) return $lt-gen:)
