@@ -17,12 +17,12 @@ declare variable $gen:project-index-functions-module-filename := $gen:project-in
 
 (:~ generates the code for translating abstract index names to explicit xpaths based on the mappings defined for given project
 and stores it as a file in the modules collection of given project 
-@param $project-pid project identifier
+@param $project project identifier as xs:string or project config as element(mets:METS)
 @returns result of storing the module
 :)
-declare function gen:generate-index-functions($project-pid) as item()* {
-
-(:let $project-pid := 'abacus':)
+declare function gen:generate-index-functions($project) as item()* {
+let $project-pid := project:get-id($project)
+let $log := util:log-app("DEBUG",$config:app-name, "gen:generate-index-functions("||$project-pid||")")
 let $config := config:config($project-pid)
 let $map := index:map($project-pid)
 (:    <map><index name="person">:)
@@ -83,9 +83,10 @@ declare {"function "||gen:ns-short($project-pid)||":apply-index" (: this is just
 (:"&#09;default return util:eval('$data//'||$index-name) ", $gen:cr:)
 
 let $store := gen:store-index-functions($generated-code, $project-pid)
-(:return $generated-code/text():)
-return $store
 
+(: regenerate the top-level index-functions module, so that the new index functions are available immediately :)
+(:return gen:register-project-index-functions():)
+return $store
 };
  
 (:~ stores given code as a file in the modules collection of given project
