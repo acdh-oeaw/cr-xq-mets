@@ -5,6 +5,7 @@ import module namespace project = "http://aac.ac.at/content_repository/project" 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 import module namespace ixfn = "http://aac.ac.at/content-repository/projects-index-functions/" at "../modules/index-functions/index-functions.xqm";
+import module namespace ixgen = "http://aac.ac.at/content_repository/generate-index" at "../modules/index-functions/generate-index-functions.xqm";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
 declare namespace xconf = "http://exist-db.org/collection-config/1.0";
@@ -134,9 +135,22 @@ This obsoletes the original fcs:apply-index()
 @returns result of evaluating given index's path on given data. or empty node if no mapping index was found, or no matching data
 :)
 declare function index:apply-index($data as item()*, $index as xs:string, $project, $type as xs:string?) as item()* {
-    let $apply-ixfn := ixfn:apply-index($data,$index, $project, $type)
-    return $apply-ixfn
-(:    return if ($apply-ixfn) then $apply-ixfn else index:apply-index-eval($data,$index, $project, $type) :)
+    let $project-pid := project:get-id($project)
+    let $apply-ixfn := ixfn:apply-index($data,$index, $project-pid, $type)
+    return
+        if ($apply-ixfn)
+        then $apply-ixfn
+        (: if ixfn:apply-index() results to the empty sequence, it might be that the project's index-function module has not been generated yet :)
+        else 
+            let $proj-module-path := project:path($project-pid,'home')||'/modules/'||$ixgen:project-index-functions-module-filename,
+                $top-module-path:= $config:app-root||'/modules/'||$ixgen:project-index-functions-module-name||'/'||$ixgen:project-index-functions-module-filename
+            return 
+                if (not(util:binary-doc-available($proj-module-path) or not(contains(util:binary-doc($top-module-path),"case '"||$project-pid||"'"))))
+                then (
+                    ixgen:generate-index-functions($project-pid),
+                    index:apply-index($data, $index, $project, $type)
+                )
+                else ()
 };
 
 (:~ evaluate given index on given piece of data
