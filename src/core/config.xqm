@@ -323,7 +323,7 @@ declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:strin
     
     let $project-dir := config:param-value($model, 'project-dir'), 
     $project-template-dir := config:param-value($model, 'project-template-dir'),
-(:        $project-dir := config:param-value($model, 'project-static-dir'),        :)
+        $project-static-dir := config:param-value($model, 'project-static-dir'),        
         $template-dir := config:param-value($model, 'template-dir')
     return
         if (doc-available($project-dir||$relPath)) 
@@ -331,6 +331,9 @@ declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:strin
         else        
         if (doc-available($project-template-dir||$relPath)) 
         then xs:anyURI($project-template-dir||$relPath)
+        else 
+        if (doc-available($project-static-dir||$relPath)) 
+        then xs:anyURI($project-static-dir||$relPath)
         else 
             if (doc-available($project-dir||$relPath)) 
             then xs:anyURI($project-dir||$relPath)
