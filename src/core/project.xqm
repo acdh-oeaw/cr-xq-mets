@@ -261,6 +261,16 @@ declare function project:get($project) as element(mets:mets)? {
                           
 };
 
+
+(:~ 
+ : Helper functions that resolves a polymorph $project object to its ID.
+ : @param $project may be a string, a mets element, document node containing a mets element or even a map containing a "config" key with a mets element   
+ :)
+declare function project:get-id($project as item()) as xs:string? {
+    let $project-data := project:get($project)
+    return xs:string($project-data/@OBJID)
+};
+
 declare function project:usersaccountname($project-pid as xs:string) as xs:string {
     $config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_PREFIX||$project-pid||$config:PROJECT_ACCOUNTS_USER_ACCOUNTNAME_SUFFIX
 };
