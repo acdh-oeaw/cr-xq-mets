@@ -7,7 +7,7 @@
     #main-container
     #detail/#tabs
    
-   more info on the expected HTML-structure of the page: https://github.com/vronk/SADE/blob/cr-xq/docs/template_layout_parts.png   
+    more info on the expected HTML-structure of the page: https://github.com/vronk/SADE/blob/cr-xq/docs/template_layout_parts.png   
  */
 
 /**
@@ -179,6 +179,21 @@ cr_config.params)
     return link;    
 }
 
+/** generic function for ajax-loading snippets into page
+just a wrapper around jQuery.load() to ensure consistent functionality 
+*/
+function load_(targetContainer, targetRequest, callback) {
+
+     targetContainer.toggleClass("cmd_get");
+     targetContainer.html('');
+     targetContainer.load(targetRequest, function( response, status, xhr ) {
+            targetContainer.toggleClass("cmd_get");
+            if (status=='error') { targetContainer.append("Sorry, Error!"); }
+                else  { callback();}
+     });        
+     
+}
+
 function load_explain(event) {
     event.preventDefault();
     var target = $(this).parents('.links');
@@ -210,7 +225,9 @@ function load_scan(event) {
         console.log("targetRequest");
         console.log(target);
         target.show();
-     target.load(targetRequest);        
+/*       target.toggleClass("cmd_get");*/
+       load_(target, targetRequest, function() {console.log("HEYHOU")} ); 
+/*     target.load(targetRequest, function() {target.toggleClass("cmd_get");});        */
      
 }
 
@@ -226,7 +243,7 @@ function load_toc(event) {
             var targetRequest = $(this).attr('href');
     //var detailFragment = targetRequest + ' ' + search_container_selector;
         
-        $(target).load(targetRequest,function() {
+        load_(target, targetRequest, function() {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
                 close_button.click(function() { target.toggle(); });                
@@ -246,7 +263,7 @@ function query(event) {
     var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     cr_config.params["query"] = query;    
-    $(target).load(targetRequest);
+    load_(target, targetRequest);
 }
 
 
@@ -274,8 +291,7 @@ function load_main(event) {
     params["x-dataview"] = 'title,kwic,facets'; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     
-        
-    $(target).load(targetRequest);
+    load_(target,targetRequest);
 }
 
 function toggle_info(event) {
