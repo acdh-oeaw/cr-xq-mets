@@ -188,7 +188,10 @@ function load_(targetContainer, targetRequest, callback) {
      targetContainer.html('');
      targetContainer.load(targetRequest, function( response, status, xhr ) {
             targetContainer.toggleClass("cmd_get");
-            if (status=='error') { targetContainer.append("Sorry, Error!"); }
+            if (status=='error') { 
+            
+            targetContainer.append("<p class='error'>Sorry, there was an error!</p>" +
+            "<p>calling <a href='" + targetRequest + "' >" + targetRequest + "</a></p>"); }
                 else  { callback();}
      });        
      

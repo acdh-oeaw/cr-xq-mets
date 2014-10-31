@@ -97,7 +97,7 @@ a.cmd { width: auto; height:auto; top: 0px; }
 /*.cmd_detail { background-image: url("imgs/cdb-icon-detail.png");}*/
 .cmd_down {	background-image: url("imgs/cdb-icon-down.png"); }
 .cmd_filter { background-image: url("imgs/cdb-icon-filter.png"); }
-.cmd_get { background-image: url("imgs/icon_get.gif");}
+.cmd_get { background: url("imgs/icon_get.gif") no-repeat ;}
 .cmd_info { background-image: url("imgs/cdb-icon-info.png");}
 .cmd_query {	background-image: url("imgs/cdb-icon-load.png");}
 .cmd_load {	background-image: url("imgs/cdb-icon-load.png");}
