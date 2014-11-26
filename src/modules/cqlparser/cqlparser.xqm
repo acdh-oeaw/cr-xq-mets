@@ -8,8 +8,8 @@ xquery version "3.0";
 module namespace cql = "http://exist-db.org/xquery/cql";
 
 import module namespace cqlparser = "http://exist-db.org/xquery/cqlparser";
-import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "/db/cr/repo-utils.xqm";
-import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "/db/cr/modules/diagnostics/diagnostics.xqm";
+import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
+import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../../modules/diagnostics/diagnostics.xqm";
 
 (:declare variable $cql:transform-doc := doc("XCQL2Xpath.xsl");:)
 declare variable $cql:transform-doc := doc(concat(system:get-module-load-path(),"/XCQL2Xpath.xsl"));
