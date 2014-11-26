@@ -45,6 +45,7 @@ import module namespace project="http://aac.ac.at/content_repository/project" at
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "../../core/resource.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "../../core/resourcefragment.xqm";
+import module namespace functx="http://www.functx.com";
 
 declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
@@ -883,27 +884,40 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 (:	let $resource-pid:= util:eval("$record-data-input/ancestor-or-self::*[1]/data(@cr:"||$config:RESOURCE_PID_NAME||")"):)
 	let $project-id := cr:resolve-id-to-project-pid($x-context)
     
-    (: if no exist:match, take the root of the matching snippet :)
-    let $match-ids := if (exists($record-data-input//exist:match/parent::*/data(@cr:id)))
-                      then $record-data-input//exist:match/parent::*/data(@cr:id)
+    (: if no exist:match, take the root of the matching snippet,:)
+    let $match-ids := if (exists(util:expand($record-data-input)//exist:match/parent::*/data(@cr:id)))
+                      then 
+                          let $exist-matches := util:expand($record-data-input)//exist:match
+                          return (:$exist-match/parent::*/data(@cr:id):)
+                                for $exist-match in $exist-matches
+                                return
+                                    if ($exist-match/parent::* = $exist-match) 
+                                    then $exist-match/parent::*/data(@cr:id)
+                                    else $exist-match/parent::*/data(@cr:id)
+                                        (:for $substrPos in functx:index-of-string(xs:string($exist-match/parent::*),$exist-match)
+                                        return $exist-match/parent::*/data(@cr:id)||":"||$substrPos||":"||string-length($exist-match):)
                       else $record-data-input/data(@cr:id)
-    
     (: if the match is a whole resourcefragment we dont need a lookup, its ID is in the attribute :)   
     let $resourcefragment-pid :=    if ($record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
                                     then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
-                                    else if (exists($match-ids)) then rf:lookup-id($match-ids[1],$resource-pid, $project-id)[1]
-    else ()
-    (: HERE we are losing  the exist:match, when looking up the resource fragment :)
+                                    else 
+                                        if (exists($match-ids)) 
+                                        then 
+                                            let $cr-id-to-lookup := (:if(matches($match-ids[1],':\d+:\d+$')) then replace($match-ids[1],':\d+:\d+$','') else:) $match-ids[1]
+                                            return rf:lookup-id($cr-id-to-lookup,$resource-pid, $project-id)[1]
+                                        else util:log-app("ERROR", $config:app-name, "$match-ids is empty")
     let $rf :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
                     then $record-data-input
-                    else rf:lookup($match-ids[1],$resource-pid, $project-id)
+                    else rf:lookup((:if(matches($match-ids[1],':\d+:\d+$')) then replace($match-ids[1],':\d+:\d+$','') else :)$match-ids[1],$resource-pid, $project-id)
                     
-(:    let $dumy := util:log-app("INFO",$config:app-name,("$record-data-input:",$record-data-input))                    :)
-(:    let $dumy2 := util:log-app("INFO",$config:app-name,("$match-ids:",$match-ids)):)
+    let $dumy := util:log-app("INFO",$config:app-name,"$match-ids: "||string-join($match-ids,' '))                    
+    let $dumy2 := util:log-app("INFO",$config:app-name,concat("cr-id to be looked up: ",if(matches($match-ids[1],':\d+:\d+$')) then replace($match-ids[1],':\d+:\d+$','') else $match-ids[1]))
+    let $dumy3 := util:log-app("INFO",$config:app-name,"$resourcefragment-pid: '"||$resourcefragment-pid||"'")
     let $rf-entry :=  if (exists($resourcefragment-pid)) then rf:record($resourcefragment-pid,$resource-pid, $project-id)
     else ()
     let $res-entry := $rf-entry/parent::mets:div[@TYPE=$config:PROJECT_RESOURCE_DIV_TYPE]
 	
+    (: $match-ids are always cr:ids of whole elements - it may be :)
     let $matches-to-highlight:= (tokenize(request:get-parameter("x-highlight",""),","),$match-ids)
     let $record-data := 
     (: not sure if to work with $record-data-input or $rf :)
