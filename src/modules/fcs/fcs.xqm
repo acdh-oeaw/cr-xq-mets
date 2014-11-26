@@ -934,6 +934,19 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 	                                         )
 	                               else ""
 	
+    
+    let $rf-window := if (config:param-value($config,"rf.window") != '' and config:param-value($config,"rf.window") castable as xs:integer) 
+                      then xs:integer(config:param-value($config,"rf.window")) 
+                      else 1
+    
+    let $rf-window-prev := for $rfp in reverse(subsequence(reverse($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),1,$rf-window)) 
+                           return rf:get($rfp/@ID,$resource-pid,$project-id)/*
+                            
+    let $rf-window-next := for $rfp in subsequence($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],1,$rf-window) 
+                            return rf:get($rfp/@ID,$resource-pid,$project-id)/*
+    
+    
+    
     let $kwic := if (contains($data-view,'kwic')) then
                    let $kwic-config := <config width="{$fcs:kwicWidth}"/>
                    
@@ -1035,13 +1048,15 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
         then $record-data
         else <fcs:Resource pid="{$resource-pid}" ref="{$resource-ref}">                
                 { (: if not resource-fragment couldn't be identified, don't put it in the result, just DataViews directly into Resource :)
-                if ($rf-entry) then         
+                if ($rf-entry) then 
                     <fcs:ResourceFragment pid="{$resourcefragment-pid}" ref="{$resourcefragment-ref}">{
                     for $d in tokenize($data-view,',\s*') 
                     return 
                         let $data:= switch ($d)
 (:                                        case "full"         return $rf[1]/*:)
-                                        case "full"         return $record-data[1]/*
+                                        case "full"         return (if ($rf-window gt 1) then $rf-window-prev else (),
+                                                                   $record-data[1]/*,
+                                                                   if ($rf-window gt 1) then $rf-window-next else ())
                                         case "facs"         return $dv-facs
                                         case "title"        return $dv-title
                                         case "cite"        return $dv-cite
