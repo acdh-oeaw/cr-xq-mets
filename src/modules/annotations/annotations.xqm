@@ -78,7 +78,13 @@ declare %private function annotations:doReplace($annotations:old as element(anno
 };
 
 declare %private function annotations:doInsert($annotations:document as element(annotations:annotations), $annotations:new as element(annotations:annotation)) as empty() {
-    update insert $annotations:new into $annotations:document
+    let $log := util:log-app("DEBUG", $config:app-name, "inserting annotation")
+    return 
+        try {
+            update insert $annotations:new into $annotations:document 
+        } catch * {
+            util:log-app("ERROR", $config:app-name, "annotations:doInsert() could not insert annotation")
+        }
 };
 
 declare %private function annotations:doRemove($annotations:annotation as element(annotations:annotation)) as empty() {
@@ -156,38 +162,56 @@ declare function annotations:data2XML($projectPID as xs:string, $resourcePID as 
  : "crID" (generic) annotations: only one per annotation class and cr-element,
  :)
 declare function annotations:new($annotations:data as element(annotations:annotation)) as empty() {
+    let $log := util:log-app("DEBUG", $config:app-name, "annotations:new()"),
+        $log := util:log-app("DEBUG", $config:app-name, $annotations:data)
+        
     let $projectPID := xs:string($annotations:data/@projectPID),
         $resourcePID := xs:string($annotations:data/@resourcePID),
         $className := xs:string($annotations:data/@class),
         $resourcefragmentPID := xs:string($annotations:data/@resourcefragmentPID),
         $crID := xs:string($annotations:data/@crID)
+    
+    let $log := util:log-app("DEBUG", $config:app-name, "$projectPID: "||$projectPID),
+        $log := util:log-app("DEBUG", $config:app-name, "$resourcePID: "||$resourcePID),
+        $log := util:log-app("DEBUG", $config:app-name, "$className: "||$className)
+    
     let $annotations:document := 
         if ($projectPID != "" and $resourcePID != "")
         then
-            let $d:= annotations:getDocument($projectPID, $resourcePID)
-            return if (exists($d)) then doc($d) else doc(annotations:createDocument($projectPID, $resourcePID))
-        else ()
-    return            
+            let $d:= annotations:getDocument($projectPID, $resourcePID) 
+            return 
+                if (exists($d)) 
+                then $d 
+                else doc(annotations:createDocument($projectPID, $resourcePID))
+        else util:log-app("ERROR", $config:app-name, "$projectPID ("||$projectPID||") or $resourcePID ("||$resourcePID||") empty")
+    return
+    
+    
     switch(true())
         case ($projectPID = "") return util:log-app("ERROR", $config:app-name, "missing or empty attribute @projectPID on new annotation")
+        
         case ($resourcePID = "") return util:log-app("ERROR", $config:app-name, "missing or empty attribute @resourcePID on new annotation")
+        
         case ($className = "") return util:log-app("ERROR", $config:app-name, "missing or empty attribute @class on new annotation")
+        
         case ($className = "resource") return
             if (exists(annotations:getByResourcePID($projectPID,$resourcePID)))
             then util:log-app("WARN",$config:app-name,"tried to create new annotation, which exists already (existing data was not altered): className='"||$className||"', resource='"||$resourcePID||"', project='"||$projectPID||"'")
-            else annotations:doInsert($annotations:document, $annotations:data)
+            else annotations:doInsert($annotations:document/*, $annotations:data)
+        
         case ($className = "resourcefragment") return
             switch (true())
                 case ($resourcefragmentPID = "") return util:log-app("ERROR", $config:app-name, "missing or empty attribute @resourcefragmentPID on new annotation")
                 case exists(annotations:getByResourcefragmentPID($projectPID,$resourcePID,$resourcefragmentPID)) return 
                     util:log-app("WARN",$config:app-name,concat("tried to create new annotation, which exists already (existing data was not altered): ", string-join((for $c in ("$className", "$resourcePID", "$resourcefragmentPID", "$projectPID") return concat($c,"=",util:eval($c))),', ')))
-                default return annotations:doInsert($annotations:document, $annotations:data)
+                default return annotations:doInsert($annotations:document/*, $annotations:data)
+        
         default return
             switch (true())
                 case ($crID = "") return util:log-app("ERROR", $config:app-name, "missing or empty attribute @crID on new annotation")
                 case exists(annotations:getByCrID($projectPID, $resourcePID, $crID, $className)) return
                     util:log-app("WARN",$config:app-name,concat("tried to create new annotation, which exists already (existing data was not altered): ", string-join((for $c in ("$className", "$resourcePID", "crID", "$projectPID") return concat($c,"=",util:eval($c))),', ')))
-                default return annotations:doInsert($annotations:document, $annotations:data)
+                default return annotations:doInsert($annotations:document/*, $annotations:data)
 };
 
 declare function annotations:path($projectPID as xs:string) as xs:string? {
@@ -200,6 +224,7 @@ declare function annotations:path($projectPID as xs:string) as xs:string? {
 
 
 declare function annotations:createDocument($projectPID as xs:string, $resourcePID as xs:string) as xs:string? {
+    let $log := util:log-app("DEBUG", $config:app-name, "annotations:createDocument("||$projectPID||", "||$resourcePID||")")
     let $annotations:path := annotations:path($projectPID),
         $annotations:filename := $resourcePID||".xml"
     return
@@ -207,18 +232,50 @@ declare function annotations:createDocument($projectPID as xs:string, $resourceP
         then 
             let $col := 
                 if (xmldb:collection-available($annotations:path)) 
-                then ()
-                else xmldb:create-collection(project:path($projectPID,"home"),replace($annotations:path, "^"||project:path($projectPID,"home")||"/?",''))
-            return xmldb:store($annotations:path,$annotations:filename,<annotations xmlns="http://aac.ac.at/content_repository/annotations" resourcePID="{$resourcePID}" projectPID="{$projectPID}"/>)
-        else util:log-app("ERROR", $config:app-name, "cannot create annotations document for resource "||$resourcePID||" in proejct "||$projectPID)
+                then util:log-app("DEBUG", $config:app-name, "col available "||$annotations:path)
+                else
+                    let $log := util:log-app("DEBUG", $config:app-name, "collection "||$annotations:path||" is not available")
+                    
+                    let $project-home := project:path($projectPID,"home"),
+                        $col-path := replace($annotations:path, "^"||$project-home||"/?",'')
+                    
+                    let $log := util:log-app("DEBUG", $config:app-name, $project-home||" "||$col-path)
+                    
+                    let $create-collection := 
+                        try {
+                            xmldb:create-collection($project-home,$col-path)
+                        } catch * {
+                            util:log-app("DEBUG", $config:app-name, "user "||xmldb:get-current-user()||" could not create collection "||$col-path||" in "||project:path($projectPID,"home"))
+                        }
+                    
+                    return 
+                        if ($create-collection and $create-collection != '')
+                        then 
+                            let $log := util:log-app("DEBUG", $config:app-name, "created collection "||$col-path||" in "||project:path($projectPID,"home"))
+                            return $create-collection
+                        else ()
+            return 
+                let $doc-path := 
+                xmldb:store($annotations:path,$annotations:filename,<annotations xmlns="http://aac.ac.at/content_repository/annotations" resourcePID="{$resourcePID}" projectPID="{$projectPID}"/>)
+                let $log := util:log-app("DEBUG", $config:app-name, "storing annotations document at "||$doc-path)
+                return $doc-path
+                
+        else util:log-app("ERROR", $config:app-name, "cannot create annotations document for resource "||$resourcePID||" in project "||$projectPID||" ($annotations:path is empty")
 };
 
-declare function annotations:getDocument($projectPID as xs:string, $resourcePID as xs:string) {
+declare function annotations:getDocument($projectPID as xs:string, $resourcePID as xs:string) as document-node()? {
+    let $log := util:log-app("DEBUG", $config:app-name, "annotations:getDocument("||$projectPID||","||$resourcePID||")")
     let $annotations:path := annotations:path($projectPID),
-        $annotations:filename := $resourcePID||".xml"
+        $annotations:filename := $resourcePID||".xml",
+        $filepath := $annotations:path||"/"||$annotations:filename
     return 
         if ($annotations:path != "")
-        then doc($annotations:path||"/"||$annotations:filename)
+        then 
+            let $log := util:log-app("DEBUG",$config:app-name,"path to annotations document: "||$filepath)
+            return
+                if (doc-available($filepath))
+                then (util:log-app("DEBUG",$config:app-name,"doc available"),doc($filepath))
+                else util:log-app("ERROR",$config:app-name,"annotations document at "||$filepath||" not found")
         else util:log-app("ERROR", $config:app-name, "cannot load annotations document for resource "||$resourcePID||" in project " ||$projectPID)
 };
 
@@ -251,6 +308,15 @@ declare function annotations:form($projectPID as xs:string, $className as xs:str
 ~:)
 declare function annotations:form($projectPID as xs:string, $annotations:id as xs:string?, $className as xs:string, $resourcePID as xs:string?, $resourcefragmentPID as xs:string?, $crID as xs:string?, $request as map()?) as element(html:form)? {
     let $data := annotations:get($projectPID, $annotations:id, $className, $resourcePID,$resourcefragmentPID,$crID)
+    let $log := util:log-app("DEBUG", $config:app-name, "annotations:form()"),
+        $log := util:log-app("DEBUG", $config:app-name, "$projectPID: "||$projectPID),
+        $log := util:log-app("DEBUG", $config:app-name, "$annotations:id:  "||$annotations:id),
+        $log := util:log-app("DEBUG", $config:app-name, "$className: "||$className),
+        $log := util:log-app("DEBUG", $config:app-name, "$resourcePID: "||$resourcePID),
+        $log := util:log-app("DEBUG", $config:app-name, "$resourcefragmentPID: "||$resourcefragmentPID),
+        $log := util:log-app("DEBUG", $config:app-name, "$crID: "||$crID),
+        $log := util:log-app("DEBUG", $config:app-name, "$request: "||string-join(for $k in map:keys($request) return concat($k,'=',map:get($request,$k)),' - ')),
+        $log := util:log-app("DEBUG", $config:app-name, $data)
     return
         if ($projectPID != "" and $className != "")
         then
@@ -273,6 +339,7 @@ declare function annotations:form($projectPID as xs:string, $annotations:id as x
                                  else ()
                                  }
                            </parameters>
+             let $log := util:log-app("DEBUG", $config:app-name, $params)
             return transform:transform($class, doc('form.xsl'), $params)
         else ()
 };
@@ -351,5 +418,10 @@ declare function annotations:getByResourcePID($projectPID as xs:string, $resourc
 
 
 declare function annotations:getByResourcefragmentPID($projectPID as xs:string, $resourcePID as xs:string, $resourcefragmentPID as xs:string) as element(annotations:annotation)*{
-    annotations:getDocument($projectPID,$resourcePID)//annotations:annotation[@class = "resourcefragment"][@resourcefragmentPID = $resourcefragmentPID]
+    let $doc := annotations:getDocument($projectPID,$resourcePID)
+    let $annotations := $doc//annotations:annotation[@class = "resourcefragment"][@resourcefragmentPID = $resourcefragmentPID]
+    return 
+        if ($doc)
+        then $annotations
+        else ()
 };
