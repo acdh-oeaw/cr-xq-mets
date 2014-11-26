@@ -102,7 +102,26 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
                     
                     <xsl:template match="/" priority="1">
                         <mets:div TYPE="resource" CONTENTIDS="#{$resource-pid}" LABEL="{xs:string($resource-label)}" ID="{$resource-pid}_toc">
-                            <xsl:apply-templates/>
+                            <!--<xsl:apply-templates/>-->
+                            <xsl:variable name="cr:id" select="*/@cr:id"/>
+				        	<xsl:variable name="rf" select="key('rf',$cr:id,$ltb)"/>
+				        	<xsl:variable name="content" as="item()*">
+				        		<xsl:apply-templates/>
+				        	</xsl:variable>
+				        	<xsl:variable name="contentFirstRfs" select="for $cID in $content/@ID return key('rf',$cID,$ltb)[1]"/>
+				        	<xsl:variable name="contentRfs" select="for $cID in $content/@ID return key('rf',$cID,$ltb)"/>
+				        	<xsl:for-each select="$rf">
+				        		<xsl:variable name="rfPID" select="@resourcefragment-pid"/>
+				        		<xsl:choose>
+				        			<xsl:when test="@resourcefragment-pid = $contentFirstRfs/@resourcefragment-pid">
+				        				<xsl:sequence select="$content[key('rf',@ID,$ltb)[1]/@resourcefragment-pid = $rfPID]"/>
+				        			</xsl:when>
+				        			<xsl:when test="@resourcefragment-pid = $contentRfs/@resourcefragment-pid"/>
+				        			<xsl:otherwise>
+				        				<xsl:sequence select="key('rf-div',@resourcefragment-pid,$project)/mets:fptr[mets:area]"/>
+				        			</xsl:otherwise>
+				        		</xsl:choose>
+				        	</xsl:for-each>
                         </mets:div>
                     </xsl:template>
                     
