@@ -579,7 +579,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
     :)
     let $terms-unordered :=           
         for $g at $pos in $nodes
-        let $term-value-g := xs:string(index:apply-index($g,$index-key,$project-pid,'match-only'))
+        let $term-value-g := string-join(index:apply-index($g,$index-key,$project-pid,'match-only'),' ')
         group by $term-value-g 
         return
             let $m-value := map:entry("value",$term-value-g),
