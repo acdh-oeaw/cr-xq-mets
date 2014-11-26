@@ -188,7 +188,7 @@ declare
 %templates:default("res-type", "xml")
 function app:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string, $res-type as xs:string, $x-format as xs:string) {
     let $content := config:resolve($model, $path-detail)
-        let $log := util:log-app("DEBUG",$config:app-name,"app:include-detail.path-detail: "||$path-detail)
+        let $log := util:log-app("DEBUG",$config:app-name,"app:include-detail.path-detail: "||$path-detail||" res-type:"||$res-type)
     let $restricted-content := if ($filter != '' and exists($content)) then 
             (: try to handle namespaces dynamically 
                 by switching  to source namespace :)
