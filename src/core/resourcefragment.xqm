@@ -179,6 +179,10 @@ declare function rf:lookup($element-id as xs:string, $resource-pid as xs:string,
 (:    rf:dump($resource-pid, $project-pid)/id($element-id)/ancestor::fcs:resourceFragment    :)
 (:    rf:dump($resource-pid, $project-pid)//*[@cr:id eq $element-id]/ancestor::fcs:resourceFragment    :)
     let $ids := lt:lookup($element-id,$resource-pid,$project-pid)
+    let $log := util:log-app("DEBUG",$config:app-name,"$element-id ")
+    let $log := util:log-app("DEBUG",$config:app-name,$element-id)
+    let $log := util:log-app("DEBUG",$config:app-name,"$ids ")
+    let $log := util:log-app("DEBUG",$config:app-name,$ids)
     return 
         for $i in $ids return rf:get($i,$resource-pid,$project-pid)
 };
@@ -204,7 +208,7 @@ declare function rf:lookup-id($element-id as xs:string, $resource-pid as xs:stri
  : @param $project-pid the pid of the project
  : @return the content of the resourcefragments chache 
 ~:)
-declare function rf:dump($resource-pid as xs:string, $project-pid as xs:string) as document-node() {
+declare function rf:dump($resource-pid as xs:string, $project-pid as xs:string) as document-node()? {
     let $rf:location:=  rf:path($resource-pid, $project-pid)
     return 
         if (doc-available($rf:location))
@@ -269,8 +273,9 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                         let $log:=util:log-app("INFO",$config:app-name,"processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
                             let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
                         (: if no subsequent element, dont trying to generate fragment will fail :)
-                            return if (empty($pb2)) then $pb1 
-                                     else
+                        return
+(:                            return if (empty($pb2)) then $pb1 :)
+(:                                     else:)
                                         let $frag :=util:get-fragment-between($pb1, $pb2, true(), true())
                                         let $analyzed :=  analyze-string($frag,'&amp;(amp;)?')
                                         let $replaced := string-join((for $i in $analyzed/* return if($i/self::fn:non-match) then $i else '&amp;amp;'),'')
