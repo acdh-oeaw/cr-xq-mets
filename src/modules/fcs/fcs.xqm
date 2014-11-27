@@ -1,5 +1,5 @@
 xquery version '3.0';
-
+ 
 (:
 : Module Name: FCS
 : Date: 2012-03-01
@@ -68,7 +68,7 @@ regards config given as parameter + the predefined sys-config
 @returns the result document (in xml, html or json)
 :)
 (: declare function fcs:repo($config-file as xs:string) as item()* { :)
-declare function fcs:repo($config) as item()* {
+declare function fcs:main($config) as item()* {
   let    
     (: $config := repo-utils:config($config-file), :)   
      
@@ -111,11 +111,13 @@ declare function fcs:repo($config) as item()* {
 		    $scanClause :=    if ($index ne '' and  not(starts-with($scanClause-param, $index)) ) 
 		                      then concat( $index, '=', $scanClause-param)
 		                      else $scanClause-param,
-		    $mode := request:get-parameter("x-mode", ""),
-		    $start-term := request:get-parameter("startTerm", 1),
+		    $mode := request:get-parameter("x-mode", ""),		    
+(:		    protocol defines startTerm as the term in the scanClause
+            $start-term := request:get-parameter("startTerm", 1),  :)
 		    $response-position := request:get-parameter("responsePosition", 1),
 		    $max-terms := request:get-parameter("maximumTerms", 50),
-	        $max-depth := request:get-parameter("x-maximumDepth", 1),
+	        $x-filter := request:get-parameter("x-filter", ''),
+	        $max-depth := request:get-parameter("x-maximumDepth", 1),	        
 		    $sort := request:get-parameter("sort", 'text')
 		 return 
 		  if ($scanClause='') 
@@ -139,7 +141,7 @@ declare function fcs:repo($config) as item()* {
                         {diag:diagnostics('unsupported-param-value',"responsePosition")}
    		             </sru:scanResponse>
 		             else 
-		              fcs:scan($scanClause, $x-context, $start-term, $max-terms, $response-position, $max-depth, $sort, $mode, $config) 
+		              fcs:scan($scanClause, $x-context, $max-terms, $response-position, $max-depth, $x-filter, $sort, $mode, $config) 
       (: return fcs:scan($scanClause, $x-context) :)
 	  else if ($operation eq $fcs:searchRetrieve) then
         if ($query eq "") then <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
@@ -147,26 +149,26 @@ declare function fcs:repo($config) as item()* {
         else 
       	 let 
 (:      	 $cql-query := $query,:)
-			$start-item := request:get-parameter("startRecord", 1),
-			$max-items := request:get-parameter("maximumRecords", 50),
+			$start-record:= request:get-parameter("startRecord", 1),
+			$maximum-records  := request:get-parameter("maximumRecords", 50),
 			$x-dataview := request:get-parameter("x-dataview", repo-utils:config-value($config, 'default.dataview'))
             
             return 
             if (not($recordPacking = ('string','xml'))) then 
                         <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("unsupported-record-packing", $recordPacking)}</sru:searchRetrieveResponse>
-                else if (not(number($max-items)=number($max-items)) or number($max-items) < 0 ) then
+                else if (not(number($maximum-records)=number($maximum-records)) or number($maximum-records) < 0 ) then
                         <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("unsupported-param-value", "maximumRecords")}</sru:searchRetrieveResponse>
-                else if (not(number($start-item)=number($start-item)) or number($start-item) <= 0 ) then
+                else if (not(number($start-record)=number($start-record)) or number($start-record) <= 0 ) then
                         <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("unsupported-param-value", "startRecord")}</sru:searchRetrieveResponse>
                 else
-            fcs:search-retrieve($query, $x-context, xs:integer($start-item), xs:integer($max-items), $x-dataview, $config)
+            fcs:search-retrieve($query, $x-context, xs:integer($start-record), xs:integer($maximum-records), $x-dataview, $config)
     else 
       diag:diagnostics('unsupported-operation',$operation)
     
-   return  repo-utils:serialise-as($result, $x-format, $operation, $config)
+   return  repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, ())
    
 };
 
@@ -294,14 +296,17 @@ declare function fcs:scan($scanClause as xs:string, $x-context as xs:string*) {
 :   there either scanClause-filter or x-context is used as constraint (scanClause-filter is prefered))
 
 :)
-declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, $start-item as xs:integer, $max-items as xs:integer, $response-position as xs:integer, $max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {
+declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, $max-terms as xs:integer, $response-position as xs:integer, $max-depth as xs:integer, $x-filter as xs:string?, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {
 
   let $scx := tokenize($scan-clause,'='),
 	 $index-name := $scx[1],  
 	 (:$index := fcs:get-mapping($index-name, $x-context, $config ), :)
 	 (: if no index-mapping found, dare to use the index-name as xpath :) 
      (:$index-xpath := index:index-as-xpath($index-name,$x-context),:)
- 	 $filter := ($scx[2],'')[1],	 
+     (: 
+      from the protocol spec:
+      The term [from the scan clause] is the position within the ordered list of terms at which to start, and is referred to as the start term.       :)
+ 	 $start-term:= ($scx[2],'')[1],	 
 	 $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else $fcs:scanSortText	
 	 
 	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
@@ -311,16 +316,17 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
         $log := (util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
                 util:log-app("DEBUG", $config:app-name, "scan-clause="||$scan-clause),
                 util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
-                util:log-app("DEBUG", $config:app-name, "start-item="||$start-item),
-                util:log-app("DEBUG", $config:app-name, "max-items="||$max-items),
+                util:log-app("DEBUG", $config:app-name, "x-filter="||$x-filter),
+                util:log-app("DEBUG", $config:app-name, "max-terms="||$max-terms),
                 util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
                 util:log-app("DEBUG", $config:app-name, "p-sort="||$p-sort)
         ),
   (: get the base-index from cache, or create and cache :)
   $index-scan :=
         (: scan overall existing indices, do NOT store the result! :)        
-        if ($index-name= 'cql.serverChoice') then 
-                    fcs:scan-all($x-context, $filter, $config)
+        if ($index-name= 'cql.serverChoice') then
+        (: FIXME: the start-term/x-filter is temporary hack until the client-side adapts the new param-semantics :) 
+                    fcs:scan-all($x-context, ($start-term, $x-filter)[1], $config)
         else
         if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
           let $dummy := util:log-app("DEBUG", $config:app-name, "reading index "||$index-doc-name||" from cache")
@@ -381,7 +387,9 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     (: use only module-config here - otherwise scripts.path override causes problems :) 
                     let $xsl := repo-utils:xsl-doc('metsdiv-scan', "xml", $config)
                     
-                    return transform:transform($metsdivs,$xsl,())
+                    (: if no data was retrieved ($metsdivs empty) pass at least an empty element, so that the basic envelope gets rendered 
+                    FIXME: actually this should return an empty envelope without any sru:term if there is no data (now it is one) :)
+                    return transform:transform(($metsdivs,<mets:div/>)[1],$xsl,())
 (:                    return $context-map:)
                 else
                     fcs:do-scan-default($scan-clause, $x-context, $sort, $config)         
@@ -389,18 +397,23 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
           (: if empty result, return the empty result, but don't store
             to not fill cache with garbage:)
 (:            return $data:)
-        let $dummy := util:log-app("DEBUG", $config:app-name, "generating index "||$index-doc-name)
-        return  repo-utils:store-in-cache($index-doc-name , $data, $config,'indexes')
+        
+        return  if (exists($data)) then 
+                        let $dummy := util:log-app("DEBUG", $config:app-name, "generating index "||$index-doc-name)
+                        return repo-utils:store-in-cache($index-doc-name , $data, $config,'indexes') 
+                    else 
+                        let $dummy := util:log-app("DEBUG", $config:app-name, "no data for index "||$index-doc-name)
+                        return ()
 
         (:if (number($data//sru:scanResponse/sru:extraResponseData/fcs:countTerms) > 0) then
         
                 else $data:)
 
     (: extra handling if fcs.resource=root :)
-    let $filterx := if ($index-name= 'fcs.resource' and $filter='root') then '' else $filter
+    let $start-term := if ($index-name= 'fcs.resource' and $start-term='root') then '' else $start-term
     
 	(: extract the required subsequence (according to given sort) :)
-	let $res-nodeset :=  if ($index-name= 'cql.serverChoice') then
+	(:let $res-nodeset :=  if ($index-name= 'cql.serverChoice') then
 	                           $index-scan
 	                    else transform:transform($index-scan,$fcs:indexXsl, 
 			<parameters><param name="scan-clause" value="{$scan-clause}"/>
@@ -413,64 +426,78 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 						<param name="max-items" value="{$max-items}"/>
 			</parameters>),
 		$count-items := count($res-nodeset/sru:term),
-		(: $colls := if (fn:empty($collection)) then '' else fn:string-join($collection, ","), :)
+		(\: $colls := if (fn:empty($collection)) then '' else fn:string-join($collection, ","), :\)
         $colls := string-join( $x-context, ', ') ,
-		$created := fn:current-dateTime()
-		(: $scan-clause := concat($xpath, '=', $filter) :)
-		(: $res := <Terms colls="{$colls}" created="{$created}" count_items="{$count-items}" 
-					start-item="{$start-item}" max-items="{$max-items}" sort="{$sort}" scanClause="{$scan-clause}"  >{$res-term}</Terms> 
-					  count_text="{$count-text}" count_distinct_text="{$distinct-text-count}" :)
-        (: $res := <sru:scanResponse>
-                    <sru:version>1.2</sru:version>
-                    {$res-nodeset}        			    
-                    <sru:echoedScanRequest>                        
-                        <sru:scanClause>{$scan-clause}</sru:scanClause>
-                        <sru:maximumTerms>{ $count-items }</sru:maximumTerms>    
-
-                    </sru:echoedScanRequest>
-    			</sru:scanResponse>
-           :)         
-(:	let	$result-count := $doc/Term/@count,
-    $result-seq := fn:subsequence($doc/Term/v, $start-item, $end-item),
-	$result-frag := ($doc/Term, $result-seq),
-    $seq-count := fn:count($result-seq) :)
-
-  return $res-nodeset   
-(:return $index-scan  DEBUG:)
+		$created := fn:current-dateTime():)
+	let $terms-subsequence := fcs:scan-subsequence($index-scan/sru:scanResponse/sru:terms/sru:term, $start-term , $max-terms, $response-position, $x-filter)
+    (:  return $res-nodeset   :)
+(:    return $index-scan  :)
+    (:DEBUG
+    
+    :)
+    
+    return <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
+            <sru:version>1.2</sru:version>
+            <sru:terms>
+    {$terms-subsequence}        
+            </sru:terms>            
+            {$index-scan/sru:scanResponse/sru:extraResponseData}            
+            <sru:echoedScanRequest>
+                <sru:scanClause>{$scan-clause}</sru:scanClause>
+                <sru:maximumTerms>{$max-terms}</sru:maximumTerms>
+                <fcs:x-context>{$x-context}</fcs:x-context>
+            </sru:echoedScanRequest>
+        </sru:scanResponse>
 };
 
+(:~ returns appropriate subsequence of the index based on filter, startTerm and maximumTerms as defined in
+@seeAlso http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/cs01/part6-scan/searchRetrieve-v1.0-cs01-part6-scan.html#responsePosition
 
-(:OBSOLETED ! 
-    aggregation, sorting and serializing is handled by fcs:term-from-nodes() and fcs:group-by-facet()
+:)
+declare function fcs:scan-subsequence($terms as element(sru:term)+, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
+(:$max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {:)
 
-declare function fcs:do-scan-default($scan-clause as xs:string, $x-context as xs:string, $sort as xs:string, $config) as item()* {
-    let $path := index:index-as-xpath($scan-clause,$x-context)
-    let $data-collection := repo-utils:context-to-collection($x-context, $config)
-    let $getnodes := util:eval(fn:concat("$data-collection//", $path)),
-        $match-path := index:index-as-xpath($scan-clause,$x-context,'match-only'),
-        $label-path := index:index-as-xpath($scan-clause,$x-context,'label-only'),
-        $log := util:log-app("INFO",$config:app-name,$match-path||" "||$label-path),
-        (\: if we collected strings, we have to wrap them in elements 
-           to be able to work with them in xsl :\)
-        $prenodes :=    if ($label-path!='') then 
-                             for $t in $getnodes 
-                             return 
-                                <v displayTerm="{string-join(util:eval("$t/"||$label-path),'')}">{string-join(util:eval("$t/"||$match-path),'')}</v>
-                        else if ($getnodes[1] instance of xs:string or $getnodes[1] instance of text()) then
-                                for $t in $getnodes return <v>{$t}</v>
-                        else if ($getnodes[1] instance of attribute()) then
-                                for $t in $getnodes return <v>{xs:string($t)}</v>
-                        else for $t in $getnodes return <v>{string-join($t//text()," ")}</v>
-    let $nodes := <nodes path="{fn:concat('//', $match-path)}"  >{$prenodes}</nodes>,
-        	(\: use XSLT-2.0 for-each-group functionality to aggregate the values of a node - much, much faster, than XQuery :\)
-   	    $data := transform:transform($nodes,$fcs:indexXsl, 
-   	                <parameters>
-   	                    <param name="scan-clause" value="{$scan-clause}"/>
-   	                    <param name="sort" value="{$sort}"/>
-   	                </parameters>)
-   	    
-    return $data
-};:)
+let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) then (: if there are more levels of terms :) 
+                        for $term in $terms
+                                let $children-subsequence := if ($term/sru:extraTermData/sru:terms/sru:term) then (: go deeper if children terms :) 
+                                            fcs:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
+                                            else ()
+                                            (: only return term if it has any child terms (after filtering) :)
+                                return if (exists($children-subsequence)) then 
+                                          <sru:term>{($term/*[not(local-name()='extraTermData')],
+                                         if ($term/sru:extraTermData) then (: if given term has extraTermData :)
+                                                <sru:extraTermData>
+                                                { if ($term/sru:extraTermData/sru:terms) then (: term could have extraTermData but no children terms :) 
+                                                        ($term/sru:extraTermData/*[not(local-name()='terms')],
+                                                        <sru:terms>{$children-subsequence}</sru:terms>)
+                                                   else $term/sru:extraTermData/*                                                  
+                                                } </sru:extraTermData>
+                                              else ()
+                                          )} </sru:term>
+                                       else ()
+                    else (: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) :)                    
+                        if ($x-filter='' or not(exists($x-filter))) then
+                            if ($start-term='' or not(exists($start-term))) then 
+                            (: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence :)
+                                subsequence($terms,1,$maximum-terms)
+                              else
+                              (: start-term and no x-filter, return the following siblings of the startTerm :)
+(:  TODO: regard response position :)
+                                let $start-term-node := $terms[starts-with(sru:value,$start-term)][1]
+                                return ($start-term-node, $start-term-node/following-sibling::sru:term[position()<$maximum-terms])
+                          else       
+                            if ($start-term='' or not(exists($start-term))) then
+                            (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
+(:  TODO: regard other types of matches :)
+                                subsequence($terms[starts-with(sru:value,$x-filter)],1,$maximum-terms)
+                              else 
+                              (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
+                                $terms[starts-with(sru:value,$start-term)]/following-sibling::sru:term[starts-with(sru:value,$x-filter)][position()<=$maximum-terms]
+
+return  $recurse-subsequence
+(:return subsequence($filteredData,  , $maximumTerms):)
+
+};
 
 (:~ delivers matching(!) terms from all indexes marked as scan=true(!) 
     to prevent too many records results are only returned, when the filter is at least $fcs:filterScanMinLength (current default=2)  
@@ -625,33 +652,26 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
 
 declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string, $index as element(index), $project-pid) as item()* {
     let $index-key := $index/xs:string(@key)
-        (:$match:= index:index-as-xpath($key,$project-pid,'match-only'),
-        $label-path := index:index-as-xpath($key,$project-pid,'label-only'):)
     let $termlabels := project:get-termlabels($project-pid,$index-key)     
     let $groups := 
         let $maps := 
             for $x in $data 
-(:            let $g := util:eval("$x/"||$match)[1]:)
-              let $g := index:apply-index ($x, $index-key, $project-pid,'match-only')
+              let $g := index:apply-index ($x, $index-key, $project-pid,'match-only')              
             group by $g 
-            return if (exists($g)) then map:entry(($g)[1],$x)
-        else ()
+                return if (exists($g)) then                    
+                        map:entry(($g)[1],$x)
+                    else ()
         let $map := map:new($maps)
         return $map
     
     return
      <sru:terms> {
         for $group-key in map:keys($groups)
-        let $entries := map:get($groups, $group-key)
-        (:let $label :=  if ($label-path='') 
-                            then fcs:term-to-label($group-key, $key,$project-pid)
-                            else data(util:eval("$entries[1]/"||$label-path)):)
-(:         let $label := (fcs:term-to-label($group-key,$key,$project-pid), data(util:eval("$entries[1]/"||$label-path)))[1]:)
+        let $entries := map:get($groups, $group-key)        
          let $term-label := fcs:term-to-label($group-key,$index-key,$project-pid,$termlabels)
          let $label := if ($term-label) then $term-label
                                         else index:apply-index($entries[1],$index-key,$project-pid,'label-only')
-        let $count := count($entries)
-        let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:group by facet: "||$group-key||"##"||$index-key||"##"||$label||" count-group: "||$count)
+        let $count := count($entries)        
         order by
             if ($sort='size') then $count else true() descending,
             if ($sort='text') then $label else true() ascending            
@@ -929,7 +949,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     if ($config("x-highlight") = "off") 
                                     then $rf
                                     else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
-                                else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
+(:    DEBUG:                             else fcs:highlight-matches-in-copy(($rf,<missing-rf match-ids="{$match-ids[1]}" >{$record-data-input}</missing-rf>)[1], $matches-to-highlight):)
+                                 else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
                             else $rf
                         
 
@@ -1101,7 +1122,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 
 
 declare function fcs:get-pid($mdRecord as element()) {
-    let $log := util:log("INFO",name($mdRecord))
+    let $log := util:log-app("INFO",$config:app-name,name($mdRecord))
     return
     switch (name($mdRecord))
         case "teiHeader" return $mdRecord//(idno|tei:idno)[@type='cr-xq']/xs:string(.)
@@ -1120,6 +1141,6 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
             then 
                 for $c in $copy
                 return transform:transform($copy,$stylesheet,$params) 
-            else util:log("ERROR","stylesheet "||$stylesheet-file||" not available.")
+            else util:log-app("ERROR",$config:app-name,"stylesheet "||$stylesheet-file||" not available.")
 }; 
 
