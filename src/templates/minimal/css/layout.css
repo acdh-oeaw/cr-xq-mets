@@ -196,6 +196,8 @@ height:90px;
     padding:0 0 0 6px;
 }
 
+.cmd_close {float:right;}
+
 @media print {
 /*	ul { list-style-type: disc;	} */	
 	button {display:none;}

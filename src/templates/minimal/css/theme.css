@@ -29,7 +29,7 @@ input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area
 }
  
 .explain h3 {display:none;}
-.explain li {float:left;}
+.explain li {/*float:left;*/ margin-left: 1em;}
  
 div.teaser {clear:both; border-top: 1px solid #A6C9E2; padding: 1em 0; }
 img.teaser { float:left; margin-right: 1em; margin-bottom: 1em;}
@@ -97,7 +97,7 @@ a.cmd { width: auto; height:auto; top: 0px; }
 /*.cmd_detail { background-image: url("imgs/cdb-icon-detail.png");}*/
 .cmd_down {	background-image: url("imgs/cdb-icon-down.png"); }
 .cmd_filter { background-image: url("imgs/cdb-icon-filter.png"); }
-.cmd_get { background: url("imgs/icon_get.gif") no-repeat ;}
+.cmd_get { background: url("imgs/icon_get.gif") no-repeat ; min-width:20px;}
 .cmd_info { background-image: url("imgs/cdb-icon-info.png");}
 .cmd_query {	background-image: url("imgs/cdb-icon-load.png");}
 .cmd_load {	background-image: url("imgs/cdb-icon-load.png");}
