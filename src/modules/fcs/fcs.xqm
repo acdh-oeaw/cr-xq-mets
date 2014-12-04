@@ -45,7 +45,6 @@ import module namespace project="http://aac.ac.at/content_repository/project" at
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "../../core/resource.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "../../core/resourcefragment.xqm";
-import module namespace functx="http://www.functx.com";
 
 declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
