@@ -22,15 +22,11 @@
             <xsl:apply-templates select="node() | @*" mode="#current"/>
         </xsl:copy>
     </xsl:template>
-
-
     <xsl:template match="searchClause[index = ('resourcefragment-pid','resource-pid')]" mode="remove-pids"/>
-
     <xsl:template match="triple[(rightOperand|leftOperand)[not(*)]]" mode="sanitize">
         <xsl:apply-templates select="leftOperand[*]|rightOperand[*]" mode="#current"/>
     </xsl:template>
     <xsl:template mode="sanitize" match="leftOperand[*]|rightOperand[*]">
         <xsl:apply-templates mode="#current"/>
     </xsl:template>
-
 </xsl:stylesheet>

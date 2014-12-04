@@ -35,7 +35,7 @@
     </xsl:variable>
     <xsl:template match="/map">
         <collection>
-            <index xmlns:cr="http://aac.ac.at/content_repository" xmlns:fcs="http://clarin.eu/fcs/1.0">
+            <index xmlns:fcs="http://clarin.eu/fcs/1.0" xmlns:cr="http://aac.ac.at/content_repository">
                 <xsl:namespace name="xs">http://www.w3.org/2001/XMLSchema</xsl:namespace>
                 <xsl:apply-templates select="namespaces/ns"/>
                 
