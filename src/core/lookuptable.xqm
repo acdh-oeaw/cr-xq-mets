@@ -108,7 +108,11 @@ declare function ltb:get(){
 :)
 declare function ltb:lookup($element-id as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:string* {
 (:    rf:dump($resource-pid, $project-pid)/id($element-id)/ancestor::fcs:resourceFragment    :)
-    ltb:dump($resource-pid, $project-pid)//fcs:resourceFragment[cr:id eq $element-id]/xs:string(@resourcefragment-pid)         
+    let $ltb := ltb:dump($resource-pid, $project-pid)
+    return
+        if (exists($ltb))
+        then $ltb//fcs:resourceFragment[cr:id eq $element-id]/xs:string(@resourcefragment-pid)
+        else util:log-app("ERROR", $config:app-name, "lookup table does not exist / is empty for resource "||$resource-pid||" in "||$project-pid)
 };
 
 

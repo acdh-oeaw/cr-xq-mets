@@ -202,16 +202,22 @@ declare function facs:generate($version-param as xs:string?, $resource-pid as xs
         $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     (: we generate the first fragment outside of the for-in expression in order to make 
        sure it is instantly written to the project.xml :)
-    let $log := util:log-app("INFO",$config:app-name,"Generating "||count($fragments)||" facs entries for "||$resource-pid||" (project "||$project-pid||")")
-    let $first :=
-        let $resourcefragment-pid := $fragments[1]/@ID
-        let $file := facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
-        return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
-    return  
-        for $f in $fragments[position() gt 1]
-        let $resourcefragment-pid := $f/@ID
-        let $file := facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
-        return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
+    return 
+        if (count($fragments) > 0)
+        then
+            let $log := util:log-app("INFO",$config:app-name,"Generating "||count($fragments)||" facs entries for "||$resource-pid||" (project "||$project-pid||")")
+            let $first :=
+                let $resourcefragment-pid := $fragments[1]/@ID
+                let $file :=facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
+                return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
+            return  
+                for $f in $fragments[position() gt 1]
+                    let $resourcefragment-pid := $f/@ID
+                    let $file := facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
+                    return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
+        else 
+            let $log := util:log-app("INFO",$config:app-name,"not generating any facs entries - no fragments found in "||$resource-pid||" (project "||$project-pid||").")
+            return ()
 };
 
 

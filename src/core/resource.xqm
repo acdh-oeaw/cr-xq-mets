@@ -729,7 +729,7 @@ declare function resource:get-toc($resource-pid as xs:string, $project) as eleme
         (:$frgs := resource:get($resource-pid, $project-pid)//mets:div[@TYPE='resourcefragment']:)
        
     let $toc-resource := $toc[@CONTENTIDS=$resource-ref]
-    return resource:do-get-toc-resolved($toc-resource,$resource-pid,$mets:record)
+    return if (exists($toc-resource)) then resource:do-get-toc-resolved($toc-resource,$resource-pid,$mets:record) else ()
 };
 
 declare function resource:do-get-toc-resolved($node as node(), $resource-pid as xs:string?, $mets-record as element(mets:mets)) as node()* {
@@ -871,17 +871,23 @@ declare function resource:refresh-aux-files($toc-indexes as xs:string*, $resourc
     let $start-time := util:system-time()
     let $log := util:log-app("INFO",$config:app-name,"rebuilding auxiliary files for resource "||$resource-pid||" (project "||$project-pid||")")
     let $log := util:log-app("INFO",$config:app-name,"please bear with me, this might take a while ... ")
-    let $wc := wc:generate($resource-pid,$project-pid),
-        $rf := rf:generate($resource-pid, $project-pid),
-        $lt := lt:generate($resource-pid,$project-pid)
-    let $toc := 
-        if (not(exists($toc-indexes)))
-        then ()
-        else toc:generate($toc-indexes,$resource-pid,$project-pid)
-    let $stop-time := util:system-time()
-    let $duration := $stop-time - $start-time 
-    let $log := util:log-app("INFO",$config:app-name,"finished rebuilding auxiliary files for resource "||$resource-pid||" (project "||$project-pid||" in "||$duration||")") 
-    return ($wc, $rf, $lt, 'toc:'||$toc, $duration)
+    return
+    	if (resource:get($resource-pid,$project-pid))
+    	then 
+		    let $wc := wc:generate($resource-pid,$project-pid),
+		        $rf := rf:generate($resource-pid, $project-pid),
+		        $lt := lt:generate($resource-pid,$project-pid)
+		    let $toc := 
+		        if (not(exists($toc-indexes)))
+		        then ()
+		        else toc:generate($toc-indexes,$resource-pid,$project-pid)
+		    let $stop-time := util:system-time()
+		    let $duration := $stop-time - $start-time 
+		    let $log := util:log-app("INFO",$config:app-name,"finished rebuilding auxiliary files for resource "||$resource-pid||" (project "||$project-pid||" in "||$duration||")") 
+		    return ($wc, $rf, $lt, 'toc:'||$toc, $duration)
+		else 
+			let $log := util:log-app("ERROR", $config:app-name, "resource "||$resource-pid||" not found in project "||$project-pid)
+			return ()
 };
 
 

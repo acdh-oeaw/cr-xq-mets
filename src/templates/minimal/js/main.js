@@ -22,7 +22,7 @@ var currentUrl = $.url();
  * configuration object
  * currently only parameter: dataview
 */
-var cr_config = { dataview: 'title,cite,navigation,full,facs',
+var cr_config = { main: {dataview: "title,facets,kwic"}, detail: { dataview: 'title,cite,navigation,full,facs'},
                    params: {"x-format":"html"}
                 };
 
@@ -111,11 +111,13 @@ function minimal_template_ui_setup() {
     $("#navigation .toc a").live('click', handle_toc);
     $("#navigation .scan-index-fcs-toc a").live('click', handle_toc);
     
+    $("#navigation a.index").live('click', load_scan);
+        
     $("#navigation .load-detail a").live('click', load_detail);
     
     // register filter
     $("#navigation form").live('submit', filter_default_nav_results);
-
+  
     $("#query-input form").live('submit', query);
 
     // Dialog Link
@@ -184,15 +186,15 @@ just a wrapper around jQuery.load() to ensure consistent functionality
 */
 function load_(targetContainer, targetRequest, callback) {
 
-     targetContainer.toggleClass("cmd_get");
+     targetContainer.addClass("cmd_get");
      targetContainer.html('');
      targetContainer.load(targetRequest, function( response, status, xhr ) {
-            targetContainer.toggleClass("cmd_get");
+            targetContainer.removeClass("cmd_get");
             if (status=='error') { 
             
             targetContainer.append("<p class='error'>Sorry, there was an error!</p>" +
             "<p>calling <a href='" + targetRequest + "' >" + targetRequest + "</a></p>"); }
-                else  { callback();}
+                else  { if (typeof callback == 'function')  { callback();} }
      });        
      
 }
@@ -222,6 +224,11 @@ function load_scan(event) {
     event.preventDefault();
     var target = $(this).parents('.record').find(".scan");
     
+    if (target.length == 0)  
+       { $(this).parents('.record').append("<div class='scan load-main' />") 
+        target = $(this).parents('.record').find(".scan");
+       } else { target.toggle(); return  }
+       
      var targetRequest = $(this).attr('href');
     //var detailFragment = targetRequest + ' ' + search_container_selector;
 
@@ -229,7 +236,12 @@ function load_scan(event) {
         console.log(target);
         target.show();
 /*       target.toggleClass("cmd_get");*/
-       load_(target, targetRequest, function() {console.log("HEYHOU")} ); 
+       load_(target, targetRequest, function() {               
+                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                close_button = $(target).find(".cmd_close");
+                close_button.click(function() { target.toggle(); });                
+            }        
+            ); 
 /*     target.load(targetRequest, function() {target.toggleClass("cmd_get");});        */
      
 }
@@ -245,7 +257,8 @@ function load_toc(event) {
       else { 
             var targetRequest = $(this).attr('href');
     //var detailFragment = targetRequest + ' ' + search_container_selector;
-        
+        /*target.append("<div class='scan load-main' />");
+        wrap = target.find(".scan");*/        
         load_(target, targetRequest, function() {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
@@ -262,11 +275,11 @@ function query(event) {
     event.preventDefault();
     var target = $('#main #results');
     
-    var query = $('#input-query').val() 
+    var query = $(event.target).find("input[name='query']").val();
     var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     cr_config.params["query"] = query;    
-    load_(target, targetRequest);
+    load_(target, targetRequest, customizeIcons );
 }
 
 
@@ -291,10 +304,10 @@ function load_main(event) {
     $('#input-query').val(params["query"]);
     
     // Recreate the x-dataview param from scratch    
-    params["x-dataview"] = 'title,kwic,facets'; //,xmlescaped
+    params["x-dataview"] = cr_config.main.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     
-    load_(target,targetRequest);
+    load_(target,targetRequest, customizeIcons );
 }
 
 function toggle_info(event) {
@@ -398,7 +411,7 @@ function load_detail_data(targetRequest) {
     params = parsedUrl.param();
     // Recreate the x-dataview param from scratch
     
-    params["x-dataview"] = cr_config.dataview; //,xmlescaped
+    params["x-dataview"] = cr_config.detail.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     cr_config.params["detail.query"]=params["query"];
     // The detail view is hidden at first

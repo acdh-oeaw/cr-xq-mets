@@ -200,7 +200,7 @@ declare function config:path($key as xs:string) as xs:string? {
  : @return the resolved path (zero or one string)  
 :)
 declare function config:path($paths as element(config:path)*, $key as xs:string)  {
-    let $path:=$paths/self::config:path[@key eq $key]
+    let $path:=$paths[@key eq $key]
     return
         if (exists($path))
         then config:path-relative-to-absolute($paths,$path)

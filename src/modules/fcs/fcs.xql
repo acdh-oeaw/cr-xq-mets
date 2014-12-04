@@ -7,5 +7,5 @@ import module namespace fcsm = "http://clarin.eu/fcs/1.0" at "fcs.xqm";
 let $project := request:get-parameter("project","")
 let $config := config:config($project) 
 					
-return fcsm:repo($config)					
+return fcsm:main($config)					
 

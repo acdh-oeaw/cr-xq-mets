@@ -9,7 +9,8 @@ dt {margin-top: 1em;}
 
 h1 {font-size: 1.6em; margin: 30px 0 10px 30px;}
 h2 {font-size: 1.4em; margin: 1em 0 0.4em 0;}
-h3 {font-size: 1.2em; margin: 0.8em 0 0.4em 0;}	 
+h3 {font-size: 1.2em; margin: 0.8em 0 0.4em 0;}
+h4 {font-size: 1em; margin: 0.4em 0 0.2em 0;}
 .title {font-size: 1.2em; font-weight: bold; margin: 0.4em 0 0 0.2em;}
 
 p { text-align:justify;}
@@ -22,4 +23,5 @@ td {padding: 1px 2px;}
 
 input, select, button {
     font-size: 1.3em;
+    margin: 2px;
 }

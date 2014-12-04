@@ -130,12 +130,12 @@ This obsoletes the original fcs:apply-index()
 
 @param $data any set of data to evaluate the index against
 @param $index the index identifier as string
-@param $project id of the context project
+@param $project-pid id of the context project
 @param $type governs the xpath generation (do you want the base xpath, or the label, enumeration - one of $gen:xpath-type := ('base','match','label','match-only','label-only')
 @returns result of evaluating given index's path on given data. or empty node if no mapping index was found, or no matching data
 :)
-declare function index:apply-index($data as item()*, $index as xs:string, $project, $type as xs:string?) as item()* {
-    let $project-pid := project:get-id($project)
+declare function index:apply-index($data as item()*, $index as xs:string, $project-pid as xs:string, $type as xs:string?) as item()* {
+(:    let $project-pid := project:get-id($project):)
     let $apply-ixfn := ixfn:apply-index($data,$index, $project-pid, $type)
     return
         if ($apply-ixfn)
@@ -148,7 +148,7 @@ declare function index:apply-index($data as item()*, $index as xs:string, $proje
                 if (not(util:binary-doc-available($proj-module-path) or not(contains(util:binary-doc($top-module-path),"case '"||$project-pid||"'"))))
                 then (
                     ixgen:generate-index-functions($project-pid),
-                    index:apply-index($data, $index, $project, $type)
+                    index:apply-index($data, $index, $project-pid, $type)
                 )
                 else ()
 };
