@@ -847,7 +847,7 @@ declare %private function project:default-acl($project-pid as xs:string) as elem
     <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="{project:adminsaccountname($project-pid)}" group="{project:adminsaccountname($project-pid)}" mode="rwx------">
         <sm:acl entries="3">
             <!-- sm:ace/@who='other' _must_ be present  -->
-            <sm:ace index="0" target="GROUP" who="other" access_type="DENIED" mode="rwx"/>
+            <sm:ace index="0" target="GROUP" who="other" access_type="ALLOWED" mode="r-x"/>
             <sm:ace index="1" target="GROUP" who="{project:adminsaccountname($project-pid)}" access_type="ALLOWED" mode="rwx"/>
             <sm:ace index="2" target="GROUP" who="{project:usersaccountname($project-pid)}" access_type="ALLOWED" mode="r-x"/>
         </sm:acl>
