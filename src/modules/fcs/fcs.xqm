@@ -482,16 +482,16 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                               else
                               (: start-term and no x-filter, return the following siblings of the startTerm :)
 (:  TODO: regard response position :)
-                                let $start-term-node := $terms[starts-with(sru:value,$start-term)][1]
+                                let $start-term-node := $terms[starts-with(sru:displayTerm,$start-term)][1]
                                 return ($start-term-node, $start-term-node/following-sibling::sru:term[position()<$maximum-terms])
                           else       
                             if ($start-term='' or not(exists($start-term))) then
                             (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
 (:  TODO: regard other types of matches :)
-                                subsequence($terms[starts-with(sru:value,$x-filter)],1,$maximum-terms)
+                                subsequence($terms[starts-with(sru:displayTerm,$x-filter)],1,$maximum-terms)
                               else 
                               (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
-                                $terms[starts-with(sru:value,$start-term)]/following-sibling::sru:term[starts-with(sru:value,$x-filter)][position()<=$maximum-terms]
+                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]
 
 return  $recurse-subsequence
 (:return subsequence($filteredData,  , $maximumTerms):)
