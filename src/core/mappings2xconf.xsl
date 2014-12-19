@@ -124,7 +124,7 @@
             </xsl:matching-substring>
             <xsl:non-matching-substring/>
         </xsl:analyze-string>-->
-        <xsl:value-of select="tokenize($path,'/')[last()]"/>
+        <xsl:value-of select="tokenize(replace($path,'\[.+\]',''),'/')[last()]"/>
     </xsl:function>
     <xsl:function name="index:mvToNs">
         <xsl:param name="node" as="item()"/>
