@@ -224,10 +224,11 @@ function load_scan(event) {
     event.preventDefault();
     var target = $(this).parents('.record').find(".scan");
     
-    if (target.length == 0)  
-       { $(this).parents('.record').append("<div class='scan load-main' />") 
-        target = $(this).parents('.record').find(".scan");
-       } else { target.toggle(); return  }
+    if (target.length == 0) { 
+        $(this).parents('.record').append("<div class='scan load-main' />")
+    } else { 
+        target.toggle();   
+    } 
        
      var targetRequest = $(this).attr('href');
     //var detailFragment = targetRequest + ' ' + search_container_selector;
