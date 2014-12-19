@@ -12,18 +12,22 @@
     <xsl:param name="projectPID"/>
     <xsl:param name="resourcePID"/>
     <xsl:param name="resourcefragmentPID"/>
-    <xsl:param name="crID"/>
+	<xsl:param name="crID"/>
     <xsl:param name="annotation-id"/>
     <xsl:param name="annotation-url"/>
     <xsl:param name="method">POST</xsl:param>
-    <xsl:param name="action">annotations</xsl:param>
+    <xsl:param name="action">annotations/annotations.xql</xsl:param>
     <xsl:param name="data"/>
     <xsl:param name="user"/>
+    
     <xsl:variable name="annotation" as="element(an:annotation)*">
         <xsl:for-each select="tokenize($data,'\s*;\s*')">
-            <xsl:sequence select="doc(substring-before(.,':'))//an:annotation[@xml:id = substring-after(current(),':')]"/>
+            <xsl:variable name="doc" select="substring-before(.,':')"/>
+            <xsl:variable name="ann-id" select="substring-after(.,':')"/>
+            <xsl:sequence select="doc($doc)//an:annotation[@xml:id = $ann-id]"/>
         </xsl:for-each>
     </xsl:variable>
+    
     <xsl:template match="an:class">
         <form action="{$action}" method="{$method}">
             <input type="hidden" name="action" value="set"/>
@@ -31,6 +35,7 @@
             <xsl:if test="$user!=''">
                 <input type="hidden" name="user" value="{$user}"/>
             </xsl:if>
+            
             <xsl:if test="$projectPID!=''">
                 <input name="projectPID" type="hidden" value="{$projectPID}"/>
             </xsl:if>
@@ -59,11 +64,18 @@
             </table>
         </form>
     </xsl:template>
+    
+
     <xsl:template match="an:category">
+     <!--<xsl:message select="$annotation"/>
+        <xsl:message select="."/>-->
         <xsl:variable name="category" select="."/>
+        <xsl:variable name="cardinality-defined" select="@cardinality"/>
         <xsl:variable name="cardinality">
             <xsl:choose>
-                <xsl:when test="@cardinality = 'unbound'">1</xsl:when>
+                <xsl:when test="@cardinality = 'unbound'">
+                    <xsl:value-of select="if ($annotation/an:item[@category = $category/@name]) then count($annotation/an:item[@category = $category/@name]) else 1"/>
+                </xsl:when>
                 <xsl:when test="not(@cardinality)">1</xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="@cardinality"/>
@@ -73,41 +85,49 @@
         <tr>
             <xsl:for-each select="1 to $cardinality">
                 <xsl:variable name="pos" select="."/>
+                <xsl:variable name="itemName">
+                    <xsl:choose>
+                        <xsl:when test="$cardinality-defined = 'unbound'">
+                            <xsl:value-of select="concat($category/@name,$pos)"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="$category/@name"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
                 <td>
                     <xsl:value-of select="$category/(@label[.!=''],@name)[1]"/>
                 </td>
                 <td>
                     <xsl:choose>
                         <xsl:when test="$category/@type = 'checkbox'">
-                            <input name="{$category/@name}{.}" type="{$category/@type}">
-                                <xsl:choose>
-                                    <xsl:when test="$pos gt 1 and $annotation/*[local-name() = concat($category/@type,$pos)]">
-                                        <xsl:attribute name="value">
-                                            <xsl:value-of select="$annotation/*[local-name() = concat($category/@type,$pos)]"/>
-                                        </xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:when test="$annotation/*[local-name() = $category/@type]">
-                                        <xsl:attribute name="value">
-                                            <xsl:value-of select="$annotation/*[local-name() = $category/@type]"/>
-                                        </xsl:attribute>
-                                    </xsl:when>
-                                </xsl:choose>
+                            <input name="{$itemName}" type="{$category/@type}">
+                                <xsl:attribute name="value">
+                                    <xsl:value-of select="$annotation/an:item[@name=$itemName]/text()"/>
+                                </xsl:attribute>
                             </input>
                         </xsl:when>
                         <xsl:when test="$category/@type = 'textarea'">
-                            <textarea name="{$category/@name}{.}"/>
+                            <textarea name="{$itemName}">
+                                <xsl:value-of select="$annotation/an:item[@name=$itemName]/text()"/>
+                            </textarea>
                         </xsl:when>
                         <xsl:when test="$category/@type = 'select'">
-                            <select name="{$category/@name}{.}">
+                            <select name="{$itemName}">
                                 <xsl:for-each select="tokenize($category/@values,'\s*,\s*')">
                                     <option value="{.}">
+                                        <xsl:if test="$annotation/an:item[@name=$itemName]/text() = .">
+                                            <xsl:attribute name="selected">selected</xsl:attribute>
+                                        </xsl:if>
                                         <xsl:value-of select="."/>
                                     </option>
                                 </xsl:for-each>
                             </select>
                         </xsl:when>
                         <xsl:otherwise>
-                            <input name="{$category/@name}{.}"/>
+                            <input name="{$itemName}">
+                                 <xsl:value-of select="$annotation/an:item[@name=$itemName]/text()"/>
+                            </input>
                         </xsl:otherwise>
                     </xsl:choose>
                     <xsl:if test="$category/@cardinality = 'unbound'">

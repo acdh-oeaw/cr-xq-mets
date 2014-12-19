@@ -60,13 +60,14 @@ return
             let $data := 
                     map:new((
                         for $p in $expectedParameters return 
-                        if ($p/@cardinality and $p/@cardinality != "1")
+                        if (not($p/@cardinality) or $p/@cardinality = "1")
                         then map:entry($p,request:get-parameter($p,""))
                         else 
                             for $q in request:get-parameter-names()[starts-with(.,$p)]
                             return map:entry($q,request:get-parameter($q,""))
                     ))
-            
+            let $log := util:log-app("DEBUG",$config:app-name, "*** annotation data ***")
+            let $log := for $x in map:keys($data) return util:log-app("DEBUG",$config:app-name, concat($x,": ",map:get($data,$x)))
             let $updatedData :=  
                 switch(true())
                     case ($className = '') return <error>missing parameter $className</error>

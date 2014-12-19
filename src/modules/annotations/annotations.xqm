@@ -15,6 +15,8 @@ declare namespace cr="http://aac.ac.at/content_repository";
 (:~ Proxy setter function that routes to the actual setters by the function arguments
 ~:)
 declare function annotations:set($projectPID as xs:string, $annotations:id as xs:string?, $className as xs:string?, $resourcePID as xs:string?, $resourcefragmentPID as xs:string?, $crID as xs:string?, $data as map()){
+    let $log := util:log-app("DEBUG", $config:app-name, "annotations:set()")
+    return 
     switch(true())
         case (exists($annotations:id) and $annotations:id != "") return annotations:setByID($projectPID, $annotations:id, $data)
         case ($className = "resourcefragment" and ($resourcefragmentPID = "" or not($resourcefragmentPID))) return util:log-app("ERROR", $config:app-name, "missing parameter $resourcefragmentPID in setter function")
@@ -32,6 +34,7 @@ declare function annotations:set($projectPID as xs:string, $annotations:id as xs
 (:~ setter for annotations by project-wide id ~:)
 declare function annotations:setByID($projectPID as xs:string, $annotations:id as xs:string, $data as map()) as element(annotations:annotation)? {
     let $annotations:data := annotations:getByID($projectPID, $annotations:id)
+    let $log := util:log-app("DEBUG",$config:app-name, "annotations:setByID()")
     return 
         if (count($annotations:data) ge 1)
         then
@@ -50,21 +53,28 @@ declare function annotations:setByID($projectPID as xs:string, $annotations:id a
 
 declare function annotations:setByCrID($projectPID as xs:string, $resourcePID as xs:string, $crID as xs:string, $className as xs:string, $data as map()) {
     let $annotations:data := annotations:getByCrID($projectPID, $resourcePID, $crID, $className)
+    let $log := util:log-app("DEBUG", $config:app-name, "annotations:setByCrID()")
     return ()
 };
 
 declare function annotations:setByResourcePID($projectPID as xs:string, $resourcePID as xs:string, $data as map()) {
-    ()
+    util:log-app("DEBUG", $config:app-name, "annotations:setByResourcePID()")
 };
 
 declare function annotations:setByResourcefragmentPID($projectPID as xs:string, $resourcePID as xs:string, $resourcefragmentPID as xs:string, $data as map()) {
     let $annotations:data := annotations:getByResourcefragmentPID($projectPID, $resourcePID, $resourcefragmentPID)
+    let $log := util:log-app("DEBUG", $config:app-name, "annotations:setByResourcefragmentPID()"),
+        $log := util:log-app("DEBUG", $config:app-name, "annotations:data"),
+        $log := util:log-app("DEBUG", $config:app-name, $annotations:data)
     return 
         if (count($annotations:data) ge 1)
-        then (annotations:doReplace($annotations:data[1],annotations:data2XML($projectPID, $resourcePID, $resourcefragmentPID, (), $annotations:data/@class, $data)),
-             if (count($annotations:data) gt 1)
-             then util:log-app("WARN", $config:app-name, "more than one annotations found for resourcefragment "||$resourcefragmentPID||" in project "||$projectPID||" - updating only first")
-             else ())
+        then 
+             let $xmldata := annotations:data2XML($projectPID, $resourcePID, $resourcefragmentPID, (), $annotations:data/@class, $data) 
+             let $replace := annotations:doReplace($annotations:data[1],$xmldata)
+             return 
+                if (count($annotations:data) gt 1)
+                then util:log-app("WARN", $config:app-name, "more than one annotations found for resourcefragment "||$resourcefragmentPID||" in project "||$projectPID||" - updating only first")
+                else true()
         else 
             (util:log-app("INFO", $config:app-name, "annotation for resource fragment  "||$resourcefragmentPID||" not found in project "||$projectPID||" - creating it anew"),
             annotations:new(annotations:data2XML($projectPID,$resourcePID,$resourcefragmentPID,(), "resourcefragment", $data))) 
@@ -97,16 +107,20 @@ declare %private function annotations:doRemove($annotations:annotation as elemen
 declare function annotations:data2XML($projectPID as xs:string, $resourcePID as xs:string, $resourcefragmentPID as xs:string?, $crID as xs:string?, $className as xs:string, $data as map()) as element(annotations:annotation)? {
     (: get the annotation class definition :)
     (: iterate over map:keys :)
+    let $annotation := 
     <annotation xmlns="http://aac.ac.at/content_repository/annotations" xml:id="ann_{$projectPID}_{util:uuid()}" class="{$className}" projectPID="{$projectPID}" created="{current-dateTime()}">{
         if ($crID != "") then attribute {"crID"} {$crID} else (),
         if ($resourcePID != "") then attribute {"resourcePID"} {$resourcePID} else (),
         if ($resourcefragmentPID != "") then attribute {"resourcefragmentPID"} {$resourcefragmentPID} else (),
         let $expectedParameters :=  annotations:class($projectPID, $className)/annotations:category
         for $p in $expectedParameters return
+            (:let $log := util:log-app("DEBUG", $config:app-name, $p)
+            return:)
             switch(true())
-                case ($p/@cardinality and $p/@cardinality != "1" and $p/@cardinality castable as xs:integer) return 
+                case ($p/@cardinality and $p/@cardinality castable as xs:integer) return 
                     for $c at $pos in number($p/@cardinality)
-                    let $content := map:get($data,$p/@name)
+                    let $content := map:get($data,concat($p/@name,$pos))
+                    let $log := util:log-app("DEBUG", $config:app-name, concat($p/@name,$pos)||" -- content: "||$content)
                     return
                         if (exists($content))
                         then 
@@ -115,9 +129,9 @@ declare function annotations:data2XML($projectPID as xs:string, $resourcePID as 
                                             case ($p/@values and $content = tokenize($p/@values,'\s*,\s*')) return true()
                                             default return true()
                             return
-                                if ($valid) 
-                                then <item name="{$p}" category="{$p/@name}">{$content}</item>
-                                else ()
+                                (:if ($valid) 
+                                then :)<item name="{$p}" category="{$p/@name}">{$content}</item>
+                                (:else ():)
                         else ()
                         
                 case ($p/@cardinality = 'unbound') return 
@@ -125,6 +139,7 @@ declare function annotations:data2XML($projectPID as xs:string, $resourcePID as 
                     where matches($k,'^'||$p/@name||'\d+$') 
                     return
                         let $content := map:get($data,$k)
+                        let $log := util:log-app("DEBUG", $config:app-name, $k||" -- content: "||$content)
                         return 
                             if (exists($content))
                             then 
@@ -133,13 +148,14 @@ declare function annotations:data2XML($projectPID as xs:string, $resourcePID as 
                                                 case ($p/@values and $content = tokenize($p/@values,'\s*,\s*')) return true()
                                                 default return true()
                                 return 
-                                    if ($valid)
-                                    then <item name="{$k}" category="{$p/@name}">{$content}</item>
-                                    else () 
+                                    (:if ($valid)
+                                    then :)<item name="{$k}" category="{$p/@name}">{$content}</item>
+                                    (:else ():) 
                             else ()
 
                 case (not($p/@cardinality) or $p/@cardinality = "1") return
                     let $content := map:get($data,$p/@name)
+                    let $log := util:log-app("DEBUG", $config:app-name, $p/@name||" content: "||$content)
                     return 
                         if (exists($content))
                         then 
@@ -148,12 +164,14 @@ declare function annotations:data2XML($projectPID as xs:string, $resourcePID as 
                                 case ($p/@values and $content = tokenize($p/@values,'\s*,\s*')) return true()
                                 default return true()
                             return 
-                                if ($valid)
-                                then <item name="{$p/@name}" category="{$p/@name}">{$content}</item>
-                                else () 
+                                (:if ($valid)
+                                then :)<item name="{$p/@name}" category="{$p/@name}">{$content}</item>
+                                (:else ():) 
                         else ()
                 default return $p
     }</annotation>
+    let $log := util:log-app("DEBUG", $config:app-name, $annotation)
+    return $annotation
 };
 
 (:~ creates a newly constructed annotation for the resource $resourcePID if it does not exist already: 
@@ -315,7 +333,7 @@ declare function annotations:form($projectPID as xs:string, $annotations:id as x
         $log := util:log-app("DEBUG", $config:app-name, "$resourcePID: "||$resourcePID),
         $log := util:log-app("DEBUG", $config:app-name, "$resourcefragmentPID: "||$resourcefragmentPID),
         $log := util:log-app("DEBUG", $config:app-name, "$crID: "||$crID),
-        $log := util:log-app("DEBUG", $config:app-name, "$request: "||string-join(for $k in map:keys($request) return concat($k,'=',map:get($request,$k)),' - ')),
+        $log := util:log-app("DEBUG", $config:app-name, concat("$request: ",if (exists($request)) then string-join(for $k in map:keys($request) return concat($k,'=',map:get($request,$k)),' - ') else ())),
         $log := util:log-app("DEBUG", $config:app-name, $data)
     return
         if ($projectPID != "" and $className != "")
