@@ -32,7 +32,7 @@ declare function local:mkcol($collection, $path) {
 
 declare variable $local:cr-writer:=doc($target||"/modules/access-control/writer.xml")/write;
 
-declare variable $local:projects-xconf := doc($target||"/_cr-projects.xconf");  
+declare variable $local:projects-xconf := doc($target||"/_cr-projects_xconf.xml");  
     
 util:log("INFO", "$target: "|| $target),
 (: setup projects-dir :)
@@ -44,6 +44,8 @@ xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf")
 (: store the cr-projects collection configuration :)
 local:mkcol("/db/system/config", $config:projects-dir),
 xdb:store("/db/system/config/"||$config:projects-dir,'collection.xconf',$local:projects-xconf),
+(: preparea a collection for the cr-data collection configuration :)
+local:mkcol("/db/system/config", $config:data-dir),
 xdb:reindex($config:projects-dir),
 xdb:reindex($target),
 
@@ -52,7 +54,7 @@ xdb:reindex($target),
 util:log("INFO", "** setting up writer account **"),
 if (not(sm:user-exists(xs:string($local:cr-writer/write-user)))) then sm:create-account(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred),()) else sm:passwd(xs:string($local:cr-writer/write-user),xs:string($local:cr-writer/write-user-cred)),
 util:log("INFO", "** setting up cr-xq system account **"),
-if (not(sm:user-exists($config:system-account-user))) then sm:create-account($config:system-account-user,$config:system-account-pwd,()) else sm:passwd($config:system-account-user,$config:system-account-pwd),
+if (not(sm:user-exists($config:system-account-user))) then sm:create-account($config:system-account-user,$config:system-account-pwd,$config:system-account-user,()) else sm:passwd($config:system-account-user,$config:system-account-pwd),
 if (not(sm:group-exists("cr-admin"))) then sm:create-group("cr-admin",$config:system-account-user,"admin") else (),
 util:log("INFO", "** chown "||$config:projects-dir||" "||$config:system-account-user||":cr-admin"),
 sm:chown(xs:anyURI($config:projects-dir),$config:system-account-user),
