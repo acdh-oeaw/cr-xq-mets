@@ -25,7 +25,7 @@ declare
     %output:media-type("text/xml")
     %output:method("xml")
 function projectAdmin:labels($form-id as xs:string?, $lang as xs:string) as element(xf:instance) {
-    let $form := $projectAdmin:config//form[@xml:id eq $form-id],
+    let $form := $projectAdmin:config//form[@xml:id = $form-id],
         $labels := ($form/labels[@xml:lang = $lang]|$projectAdmin:config//i18n/common/labels[@xml:lang = $lang])
     return
         <xf:instance id="labels" xmlns="">
