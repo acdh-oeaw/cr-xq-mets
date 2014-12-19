@@ -777,7 +777,7 @@ $ordered-result := fcs:sort-result($result, $query, $x-context, $config),
              let $records :=
                <sru:records>{
                 for $rec at $pos in $result-seq-expanded
-         	        let $rec-data := fcs:format-record-data( $rec, $x-dataview, $x-context, $config-param)
+         	        let $rec-data := fcs:format-record-data($result-seq[$pos], $rec, $x-dataview, $x-context, $config-param)
                     return 
          	          <sru:record>
          	              <sru:recordSchema>http://clarin.eu/fcs/1.0/Resource.xsd</sru:recordSchema>
@@ -905,9 +905,10 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     
     (: if no exist:match, take the root of the matching snippet,:)
     let $match-ids := if (exists(util:expand($record-data-input)//exist:match/parent::*/data(@cr:id)))
-                      then 
+                      then
                           let $exist-matches := util:expand($record-data-input)//exist:match
-                          return (:$exist-match/parent::*/data(@cr:id):)
+                          let $log := util:log-app("DEBUG", $config:app-name, $exist-matches/parent::*)
+                          return (:$exist-matches/parent::*/data(@cr:id):)
                                 for $exist-match in $exist-matches
                                 return
                                     if ($exist-match/parent::* = $exist-match) 
@@ -915,7 +916,9 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     else $exist-match/parent::*/data(@cr:id)
                                         (:for $substrPos in functx:index-of-string(xs:string($exist-match/parent::*),$exist-match)
                                         return $exist-match/parent::*/data(@cr:id)||":"||$substrPos||":"||string-length($exist-match):)
-                      else $record-data-input/data(@cr:id)
+                      else 
+                        let $log := util:log-app("DEBUG", $config:app-name, "$record-data-input contains no exist:match, falling back to its own @cr:id")
+                        return $record-data-input/data(@cr:id)
     (: if the match is a whole resourcefragment we dont need a lookup, its ID is in the attribute :)   
     let $resourcefragment-pid :=    if ($record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
                                     then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
@@ -983,13 +986,22 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     
     let $kwic := if (contains($data-view,'kwic')) then
                    let $kwic-config := <config width="{$fcs:kwicWidth}"/>
-                   
                    (: tentatively kwic-ing from original input - to get the closest match
                     however this fails when matching on attributes, where the exist:match is only added in the highlighting function,
                     thus we need the processed record-data :)
 (:                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config):)
-                 let $flattened-record := transform:transform($record-data[1], $fcs:flattenKwicXsl,())
+                (: we create the kwic from the working copy, thus we look up the resourcefragment :)
+                 (:let $wc-fragment :=  (for $m in $matches-to-highlight return wc:lookup($m,$resource-pid,$project-id))/ancestor-or-self::*[string-length(.) > $fcs:kwicWidth][1]
+                 let $wc-fragment-highlighted := fcs:highlight-matches-in-copy($wc-fragment,$matches-to-highlight) 
+                 let $flattened-record := transform:transform($wc-fragment-highlighted, $fcs:flattenKwicXsl,()):)
+                 (:let $kwicInput := $record-data[1]:)
+                 let $kwicInput := ($orig-sequence-record-data/ancestor-or-self::*[string-length(.) ge $fcs:kwicWidth][1],$record-data[1])[1]
+(:                 let $kwicInput-highlighted := $kwicInput:)
+                 let $kwicInput-highlighted := fcs:highlight-matches-in-copy($kwicInput,$matches-to-highlight)
+                 (:let $log := util:log-app("DEBUG", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs:kwicWidth][1]):)
+                 let $flattened-record := transform:transform($kwicInput-highlighted, $fcs:flattenKwicXsl,())
 (:                 let $flattened-record := repo-utils:serialise-as($record-data[1], 'html', $fcs:searchRetrieve, $config):)
+                 
                  let $kwic-html := kwic:summarize($flattened-record, $kwic-config)
                        
                     return 
