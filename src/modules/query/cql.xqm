@@ -158,7 +158,7 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
                         default return
                                switch ($match-mode) 
                                     case ('exact') return $match-on||"='"||$sanitized-term||"'"
-                                    case ('starts-with') return 'stars-with('||$match-on||",'"||$sanitized-term||"')"
+                                    case ('starts-with') return 'starts-with('||$match-on||",'"||$sanitized-term||"')"
                                     case ('ends-with') return 'ends-with('||$match-on||",'"||$sanitized-term||"')"
                                     case ('contains') return 'contains('||$match-on||",'"||$sanitized-term||"')"
                                     default return $match-on||"='"||$sanitized-term||"'"                        
@@ -222,7 +222,8 @@ declare function cql:prox($leftOperand as element(leftOperand), $rightOperand as
 
 (:~ remove quotes :)
 declare function cql:sanitize-term($term) {
- $term
+ (: remove leading and/or trailing stars :)
+ replace($term,'(\*$|^\*)','')
              (:switch (true())
                 case (starts-with($term, '''')) return translate($term,'''','')
                 case (starts-with($term, '%22')) return translate($term,'%22','')
