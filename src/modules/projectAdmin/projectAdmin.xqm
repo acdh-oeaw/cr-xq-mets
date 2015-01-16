@@ -3,7 +3,7 @@ module namespace projectAdmin = "http://aac.ac.at/content_repository/projectAdmi
 import module namespace project = "http://aac.ac.at/content_repository/project" at "../../core/project.xqm";
 import module namespace resource = "http://aac.ac.at/content_repository/resource" at "../../core/resource.xqm";
 
-declare namespace rest="http://exquery.org/ns/restxq";
+
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace xf="http://www.w3.org/2002/xforms";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
