@@ -1,5 +1,4 @@
-xquery version '3.0';
- 
+xquery version "3.0";
 (:
 : Module Name: FCS
 : Date: 2012-03-01
@@ -45,6 +44,7 @@ import module namespace project="http://aac.ac.at/content_repository/project" at
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "../../core/resource.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "../../core/resourcefragment.xqm";
+import module namespace functx="http://www.functx.com";
 
 declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
@@ -58,8 +58,8 @@ declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/ind
 declare variable $fcs:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
 declare variable $fcs:kwicWidth := 40;
 declare variable $fcs:filterScanMinLength := 2;
-(: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)  
-declare variable $fcs:maxScanSize:= 100000;
+declare variable $fcs:defaultMaxTerms := 50;
+declare variable $fcs:defaultMaxRecords := 10;
 
 
 (:~ The main entry-point. Processes request-parameters
@@ -100,7 +100,7 @@ declare function fcs:main($config) as item()* {
       (: if ($operation eq $cr:getCollections) then
 		cr:get-collections($query-collections, $format, $max-depth)
       else :)
-      if ($operation eq $fcs:explain) then
+      if ($operation[1] eq $fcs:explain) then
           fcs:explain($x-context, $config)		
       else if ($operation eq $fcs:scan) then
         (: allow optional $index-parameter to be prefixed to the scanClause 
@@ -114,7 +114,7 @@ declare function fcs:main($config) as item()* {
 (:		    protocol defines startTerm as the term in the scanClause
             $start-term := request:get-parameter("startTerm", 1),  :)
 		    $response-position := request:get-parameter("responsePosition", 1),
-		    $max-terms := request:get-parameter("maximumTerms", 50),
+		    $max-terms := request:get-parameter("maximumTerms", $fcs:defaultMaxTerms),
 	        $x-filter := request:get-parameter("x-filter", ''),
 	        $max-depth := request:get-parameter("x-maximumDepth", 1),	        
 		    $sort := request:get-parameter("sort", 'text')
@@ -149,7 +149,7 @@ declare function fcs:main($config) as item()* {
       	 let 
 (:      	 $cql-query := $query,:)
 			$start-record:= request:get-parameter("startRecord", 1),
-			$maximum-records  := request:get-parameter("maximumRecords", 50),
+			$maximum-records  := request:get-parameter("maximumRecords", $fcs:defaultMaxRecords),
 			$x-dataview := request:get-parameter("x-dataview", repo-utils:config-value($config, 'default.dataview'))
             
             return 
@@ -445,6 +445,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                 <sru:scanClause>{$scan-clause}</sru:scanClause>
                 <sru:maximumTerms>{$max-terms}</sru:maximumTerms>
                 <fcs:x-context>{$x-context}</fcs:x-context>
+                <fcs:x-filter>{$x-filter}</fcs:x-filter>
             </sru:echoedScanRequest>
         </sru:scanResponse>
 };
@@ -480,10 +481,12 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                             (: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence :)
                                 subsequence($terms,1,$maximum-terms)
                               else
-                              (: start-term and no x-filter, return the following siblings of the startTerm :)
-(:  TODO: regard response position :)
-                                let $start-term-node := $terms[starts-with(sru:displayTerm,$start-term)][1]
-                                return ($start-term-node, $start-term-node/following-sibling::sru:term[position()<$maximum-terms])
+                              (: start-term and no x-filter, return the following siblings of the startTerm; regard response-position :)
+                                let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1
+                                let $start-list-term-position := $start-search-term-position - $response-position + 1
+                                let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
+(:                                $terms[$start-search-term-node/position() - $response-position]:)
+                                return subsequence($terms,$start-list-term-position,$maximum-terms)
                           else       
                             if ($start-term='' or not(exists($start-term))) then
                             (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
@@ -491,7 +494,13 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                 subsequence($terms[starts-with(sru:displayTerm,$x-filter)],1,$maximum-terms)
                               else 
                               (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
-                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]
+                                let $filtered-terms := $terms[starts-with(sru:displayTerm,$x-filter)]
+                                (: need to reapply the filter :)
+                                let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*[starts-with(sru:displayTerm,$x-filter)]) + 1
+                                let $start-list-term-position := $start-search-term-position - $response-position + 1
+                                let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
+                                return subsequence($filtered-terms,$start-list-term-position,$maximum-terms)
+(:                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]:)
 
 return  $recurse-subsequence
 (:return subsequence($filteredData,  , $maximumTerms):)
@@ -842,24 +851,35 @@ For now only for faceting over resources
 xsi:schemaLocation="http://docs.oasis-open.org/ns/search-ws/facetedResults http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/os/schemas/facetedResults.xsd"
 :)
 declare function fcs:generateFacets($result, $orig-query) {
- let $project-id := ($result/data(@cr:project-id))[1]
+ let $project-id := ($result/xs:string(@cr:project-id))[1]
+ let $resources-in-result := distinct-values ( $result/data(@cr:resource-pid)) 
+ (:for $hit in $result
+                let $id := $hit/data(@cr:resource-pid)                 
+                group by $id
+                return 
+ :)
+ (: using this to get a consistent / the correct order :)  
+ let $resource-list := project:list-resources($project-id)[xs:string(@ID) = $resources-in-result]
+ 
 return <sru:facetedResults>
     <sru:facet>
-        <sru:facetDisplayLabel>Resource</sru:facetDisplayLabel>
+<sru:terms>{
+                for $res in $resource-list
+                let $res-id := $res/data(@ID)
+                let $count := count($result[data(@cr:resource-pid) = $res-id ])
+                let $label := $res/data(@LABEL)
+(:                resource:label($res-id,$project-id):)
+                return <sru:term>
+                <sru:actualTerm>{$label}</sru:actualTerm>
+                <sru:query>{$res-id}</sru:query>
+                <sru:requestUrl>?operation=searchRetrieve&amp;query={$orig-query}&amp;x-context={$res-id}</sru:requestUrl>
+                <sru:count>{$count}</sru:count>
+            </sru:term>
+            }
+      <sru:facetDisplayLabel>Resource</sru:facetDisplayLabel>
         <sru:index>fcs.resource</sru:index>
         <sru:relation>=</sru:relation>        
-        <sru:terms>{
-                for $hit in $result
-                let $id := $hit/data(@cr:resource-pid)
-                 
-                group by $id
-                return <sru:term>
-                <sru:actualTerm>{resource:label($id,$project-id)}</sru:actualTerm>
-                <sru:query>{$id}</sru:query>
-                <sru:requestUrl>?operation=searchRetrieve&amp;query={$orig-query}&amp;x-context={$id}</sru:requestUrl>
-                <sru:count>{count($hit)}</sru:count>
-            </sru:term>
-        }</sru:terms>
+        </sru:terms>
     </sru:facet>
 </sru:facetedResults>
 
@@ -869,6 +889,8 @@ return <sru:facetedResults>
 declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
     fcs:format-record-data($record-data, $record-data, $data-view, $x-context, $config)
 };
+
+
 
 (:~ generates the inside of one record according to fcs/Resource.xsd 
 fcs:Resource, fcs:ResourceFragment, fcs:DataView 
@@ -994,15 +1016,17 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                  (:let $wc-fragment :=  (for $m in $matches-to-highlight return wc:lookup($m,$resource-pid,$project-id))/ancestor-or-self::*[string-length(.) > $fcs:kwicWidth][1]
                  let $wc-fragment-highlighted := fcs:highlight-matches-in-copy($wc-fragment,$matches-to-highlight) 
                  let $flattened-record := transform:transform($wc-fragment-highlighted, $fcs:flattenKwicXsl,()):)
-                 (:let $kwicInput := $record-data[1]:)
-                 let $kwicInput := ($orig-sequence-record-data/ancestor-or-self::*[string-length(.) ge $fcs:kwicWidth][1],$record-data[1])[1]
+(: DEBUG                 let $kwicInput := $record-data[1]:)
+                let $kwicInput := ($orig-sequence-record-data/ancestor-or-self::*[string-length(.) ge $fcs:kwicWidth][1],$record-data[1])[1]
 (:                 let $kwicInput-highlighted := $kwicInput:)
                  let $kwicInput-highlighted := fcs:highlight-matches-in-copy($kwicInput,$matches-to-highlight)
                  (:let $log := util:log-app("DEBUG", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs:kwicWidth][1]):)
-                 let $flattened-record := transform:transform($kwicInput-highlighted, $fcs:flattenKwicXsl,())
+                  let $flattened-record := transform:transform($kwicInput-highlighted, $fcs:flattenKwicXsl,())
 (:                 let $flattened-record := repo-utils:serialise-as($record-data[1], 'html', $fcs:searchRetrieve, $config):)
                  
                  let $kwic-html := kwic:summarize($flattened-record, $kwic-config)
+(:                       DEBUG:)
+(:                    let $kwic-html := $record-data[1]:)
                        
                     return 
                         if (exists($kwic-html)) 
