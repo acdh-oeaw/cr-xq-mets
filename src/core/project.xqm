@@ -36,7 +36,6 @@ declare namespace xi="http://www.w3.org/2001/XInclude";
 
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace sru = "http://www.loc.gov/zing/srw/";
-declare namespace rest="http://exquery.org/ns/restxq";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
 declare namespace oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/";
@@ -619,7 +618,9 @@ declare function project:list-resources($project) as element(mets:div)* {
                 else $project   
     let $structMap:=$doc//mets:structMap[@ID eq $config:PROJECT_STRUCTMAP_ID and @TYPE eq $config:PROJECT_STRUCTMAP_TYPE]
 (:    return <mets:structMap>{$structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]}</mets:structMap>:)
-    return $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
+    return for $div in $structMap//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]
+        order by $div/xs:integer(@ORDER)
+        return $div
 
 };
 
@@ -847,7 +848,7 @@ declare %private function project:default-acl($project-pid as xs:string) as elem
     <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="{project:adminsaccountname($project-pid)}" group="{project:adminsaccountname($project-pid)}" mode="rwx------">
         <sm:acl entries="3">
             <!-- sm:ace/@who='other' _must_ be present  -->
-            <sm:ace index="0" target="GROUP" who="other" access_type="ALLOWED" mode="r-x"/>
+            <sm:ace index="0" target="GROUP" who="other" access_type="DENIED" mode="rwx"/>
             <sm:ace index="1" target="GROUP" who="{project:adminsaccountname($project-pid)}" access_type="ALLOWED" mode="rwx"/>
             <sm:ace index="2" target="GROUP" who="{project:usersaccountname($project-pid)}" access_type="ALLOWED" mode="r-x"/>
         </sm:acl>
