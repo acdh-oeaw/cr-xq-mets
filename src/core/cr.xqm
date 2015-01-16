@@ -13,9 +13,6 @@ declare namespace mods="http://www.loc.gov/mods/v3";
 declare namespace metsrights = "http://cosimo.stanford.edu/sdr/metsrights/";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
-declare namespace rest="http://exquery.org/ns/restxq";
-
-
 
 declare function cr:project-pids(){
     let $projects:=collection(config:path("projects"))//mets:mets[@TYPE eq "cr-xq project"]
