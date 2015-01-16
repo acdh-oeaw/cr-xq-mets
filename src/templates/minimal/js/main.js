@@ -94,8 +94,6 @@ function minimal_template_ui_setup() {
     // refresh persistent link
     $("a#persistent-link").live('hover', persistentLink);
     
-    // handle loading to main (scan -> search)
-    $("#navigation .load-main a").live('click', load_main);
     
     // handle link to toggle info
     $("#navigation a.link-info").live('click', toggle_info);    
@@ -104,6 +102,11 @@ function minimal_template_ui_setup() {
     // handle link to explain
     $("#navigation a.link-explain").live('click', load_explain);
     $("#navigation .indexInfo a").live('click', load_scan);
+    
+    // handle loading to main (scan -> search) (.content - to distinguish from .header .prev-next) 
+    $("#navigation .load-main .content a").live('click', load_main);
+    // paging in scan
+    $("#navigation .scan .prev-next a").live('click', load_scan);
     
     //
     $("#navigation a.toc").live('click', load_toc);
@@ -240,7 +243,8 @@ function load_scan(event) {
        load_(target, targetRequest, function() {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
-                close_button.click(function() { target.toggle(); });                
+                close_button.click(function() { target.toggle(); });
+                customizeIcons();                
             }        
             ); 
 /*     target.load(targetRequest, function() {target.toggleClass("cmd_get");});        */
@@ -363,7 +367,7 @@ function filter_default_nav_results(event) {
         var targetRequest = baseurl + '?' + $(this).serialize();
         // + ' #' + loadParentID;
         console.log(targetRequest);
-        loadParent.load(targetRequest);
+        loadParent.load(targetRequest,customizeIcons);
     //}
 }  
 
