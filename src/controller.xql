@@ -138,7 +138,7 @@ let $file-type := tokenize($exist:resource,'\.')[last()]
  : actual location in the database should be autogmagically resolved by config:resolve-template-to-uri().
  : This is used to serve files which reside in 'templates'.  
 ~:)
-let $web-resources := ('js', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'eot')
+let $web-resources := ('js', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'eot', 'ico')
 
 (: remove project from the path to the resource needed for web-resources (css, js, ...) :)
 let $rel-path := 
