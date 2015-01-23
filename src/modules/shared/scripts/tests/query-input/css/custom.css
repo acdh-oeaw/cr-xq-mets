@@ -1,0 +1,188 @@
+@import url("custom-tei.css");
+@import url("abacus.1.css"); 
+@import url("abacus.3.css");
+@import url("abacus.5.css");
+@import url("abacus.7.css");
+@import url("abacus.9.css");
+/* colors */
+
+body{    
+}
+
+#site-name { padding-left: 5px;
+    padding-top: 42px; 
+    font-family: "Segoe UI";
+    letter-spacing: 3px;
+    font-size: 40px;
+    line-height: auto;
+    position: static;
+    float:left;
+    
+    /*color: #fafacd; */
+   }
+
+#site-name a:link, #site-name { color: #222222; }
+
+h1, h2 {  background: url("images/bg_pergament.jpg"); color: #222222; /* color: #d3d3d3; */ 
+padding: 0px;}
+ 
+h2 { margin:0;}
+.title, h1, h2, h3, h4 { font-family: "Cambria";  } 
+
+.title {color: #222222;  }
+
+h2 img {height:26px;}
+h3 img {height:20px;}
+
+h4{ font-size: 1.2em; margin: 0.6em 0 0.2em 0;}
+
+/* layout customizations */
+
+.title {font-size: 1.2em; } /*  margin: 0.4em 0 0 0.2em;} */
+
+#header {
+    /* background: #222222;
+    color: #fafacd;
+    */
+    background: url("images/bg_pergament.jpg");
+    border-bottom: 2px solid #c00000;
+    border-left: 2px solid #c00000;
+    color: #222222;    
+    height:75px;
+    
+}
+
+#user a, #menu a { color: #c00000; }
+#logo {  padding-top:5px; }
+
+#top-menu {
+    top: 54px;
+    padding-left: 30px;
+}
+
+/* hide the filter-form in toc-scan */
+#navigation .resource .scan-index-fcs-toc .header {display:none;}
+/*#qi-advanced {
+      background: #D3D3D3;
+    border: 1px solid #222222;
+}*/
+
+/* OBSOLETED
+/\* temporary tweak, due to jquery-ui version jump *\/
+.ui-accordion-header .ui-icon {
+    left: 0.5em;
+    margin-top: -8px;
+    position: absolute;
+    top: 50%;
+}
+
+.ui-accordion .ui-accordion-header {
+    padding-left: 2.2em;
+}*/
+
+/* FCS style customizations */
+
+.data-view.image a img {
+    border: 1px solid gray;
+}
+
+
+#navigation .toc .chapter ,
+#navigation .toc .resourcefragment {    display: none; }
+
+/* top level and chapter level listitems should go on separate lines (only rf inline) */
+.toc div > ul > li,
+ul.resource > li {clear:both;}
+ul.chapter li, ul.front li { float:left; margin: 1px; background: none; padding-left: 2px; }
+ul.chapter li:after, ul.front li:after { content: "/"; }
+span.resourcefragment {background-color:#E6e6e6; margin:1px; padding:1px;}
+
+/* using jquery icon-set
+.navigation .prev { display: inline-block; background: url("dotred/cdb-icon-prev.png") no-repeat center right; padding-right:1.2em; }
+.navigation .next { display: inline-block; background: url("dotred/cdb-icon-next.png") no-repeat center left; padding-left:1.2em; margin-left:0.5em;}
+*/
+
+.hilight.match {
+    background-color:#E6E6E6;
+    font-size: inherit; 
+    margin: 0; /* otherwise highlighting results in hyphens being detached from the word */ 
+}
+
+label, .label, .cmds-elem-prop .label { color: #A8A7A3; } 
+.cmds-xmlelem.has-children { border: 1px solid #A8A7A3; } 
+.cmds-xmlelem { border:none; }
+
+input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button, button {
+    border:  1px solid #999;
+    border-radius: 2px;
+    padding: 2px;
+    margin: 2px;
+}
+
+.ui-icon, .ui-widget-content .ui-icon {
+    background-color: #d3d3d3;
+    border: 1px solid #222222;
+    border-radius: 2px;
+    float:left;
+}
+
+.ui-icon:hover { border: 1px solid #c00000;	}
+
+input.type-cql { width: 70%;}
+
+#input-submit { background: url("../images/ihr_findet_padded.jpg") no-repeat; color: transparent; background-size: cover; width: 75px; }
+
+/* customize the login page */
+h1.login-form-heading{background: url("../images/login.jpg") transparent no-repeat; background-size: contain; color:transparent; height:30px; 
+                        margin: 2em 0;}
+button.login.btn {background: url("../images/melde_dich_an.jpg") #d3d3d3 no-repeat; width:154px; color:transparent; height:26px; }
+label.login-user {background: url("../images/mit_Nahmen.jpg") no-repeat; background-size: contain; width:148px; color:transparent; height:20px; display:block;  }
+label.login-password {background: url("../images/Geheimwort.jpg") no-repeat; background-size: contain; width:140px; color:transparent; height:20px;  display:block;    }
+
+#query-widget { display: inline; /* display: table; */ }
+.search-clauses-table {display: table; position: absolute; background-color: #d3d3d3; border: 1px solid #222222;
+    border-radius: 2px;}
+.widget-cql-sc { display: table-row;  }
+.widget-cql-sc input, .widget-cql-sc select, span.cmd-wrapper span 
+{ display: table-cell;}
+
+.widget-cql-sc .rel_input { width: 10%;}
+.widget-cql-sc input {width: 33%;}
+
+#flip-layout, .cmd_close {float:right; margin: 2px;}
+
+.inline-wrap {position: relative;}
+.inline-wrap .attributes { 
+    background-color: #d3d3d3; 
+    padding: 0.2em; 
+    font-size: 0.8em!important; 
+    text-indent: 0; 
+    position: absolute; 
+    top: 1.5em; 
+    z-index:4; 
+    left: 0; 
+    font-style: normal!important;  
+    font-weight: normal!important;
+    font-size: 14px!important; 
+    font-variant:normal; 
+    letter-spacing: 0; 
+    font-family: arial, helvetica, sans-serif;
+    text-align: left !important;
+}
+
+/*.inline-wrap:hover {
+    border-left: 1px;
+    border-top: 1px;
+    border-color: gray;
+    border-style: solid;
+    border-right: 0;
+    border-bottom: 0;
+}*/
+
+/* no record count delimiters for TOC */
+.context-detail span[data-content="recordcount"] {
+    display: none;
+}
+
+.static-text em {font-weight:bold;font-style:normal;}
+.static-text quote {font-style:italic;}

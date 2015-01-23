@@ -1,0 +1,320 @@
+/* Toten-Capelle */
+
+div[data-resource-pid="abacus.3"].data-view.full  {    
+    font-size: 15px;
+}
+
+/* Blattspiegel */
+div[data-resource-pid="abacus.3"].data-view.full .tei-TEI {     
+    width: 85%;
+    padding-top: 7%;
+    padding-left: 4%;
+}
+
+div[data-resource-pid="abacus.3"].data-view.full .tei-head.tei-type-main {
+    /* lt. Kiki heads in TC nicht zentrieren */
+    /*text-align: center;*/
+    
+    /*margin-left: 1.9em;
+    margin-right: 1.9em;*/
+}
+
+/* Abb. vor Titel recto (doppelseitig) */
+div[data-resourcefragment-pid="abacus.3_6"].data-view.full .tei-figure {    
+    height: 22%;
+    padding: 2em;
+}
+
+/* Ganzseitige tei:figures am Kapitelanfang  */
+div[data-resourcefragment-pid="abacus.3_71"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_77"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_83"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_87"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_93"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_97"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_105"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_113"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_121"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_129"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_133"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_141"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_149"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_153"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_161"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_169"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_175"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_181"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_187"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_193"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_199"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_205"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_211"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_217"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_223"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_229"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_233"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_239"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_245"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_253"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_263"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_271"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_277"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_283"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_291"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_299"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_303"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_309"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_315"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_321"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_329"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_335"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_339"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_347"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_353"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_359"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_365"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_371"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_379"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_385"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_393"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_401"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_407"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_413"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_421"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_427"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_433"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_439"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_445"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_453"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_459"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_465"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_475"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_481"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_493"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_503"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_511"].data-view.full .tei-figure,
+div[data-resourcefragment-pid="abacus.3_517"].data-view.full .tei-figure {
+    /*height: 59%;
+    padding: 1em;*/
+    /*height: 15%;
+    text-align: center;
+    padding-top: 140%;
+    padding-left: 1em;*/
+    height: 59%;
+    position: relative;
+}
+
+div[data-resourcefragment-pid="abacus.3_71"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_77"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_83"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_87"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_93"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_97"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_105"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_113"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_121"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_129"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_133"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_141"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_149"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_153"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_161"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_169"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_175"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_181"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_187"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_193"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_199"].data-view.full .tei-figure .tei-lg,
+div[data-resourcefragment-pid="abacus.3_205"].data-view.full .tei-figure .tei-lg,
+div[data-resourcefragment-pid="abacus.3_211"].data-view.full .tei-figure .tei-lg,
+div[data-resourcefragment-pid="abacus.3_217"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_223"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_229"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_233"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_239"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_245"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_253"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_263"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_271"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_277"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_283"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_291"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_299"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_303"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_309"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_315"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_321"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_329"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_335"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_339"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_347"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_353"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_359"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_365"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_371"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_379"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_385"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_393"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_401"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_407"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_413"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_421"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_427"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_433"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_439"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_445"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_453"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_459"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_465"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_475"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_481"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_493"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_503"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_511"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_517"].data-view.full .tei-figure .tei-p {
+    display: block;
+    position: absolute;
+    bottom: 2em;
+    width: 75%;
+    margin-left: 14%!important; /* muss den margin:0!important; von div[data-resource-pid="abacus.3"] .tei-p überschreiben*/
+}
+
+/* Abb. nach S. 242 und S. 252: Text auf Figure ist etwas breiter */
+div[data-resourcefragment-pid="abacus.3_421"].data-view.full .tei-figure .tei-p,
+div[data-resourcefragment-pid="abacus.3_433"].data-view.full .tei-figure .tei-p{
+    width: 80%;
+}
+
+/* auf S. 302 Abb. u Abb. nach S. 124 gibt es 2 p-Elemente in figure - zur vermeidung von überlagerung, muss das 2. explizit positioniert werden */
+
+div[data-resourcefragment-pid="abacus.3_503"].data-view.full .tei-figure .tei-p:first-child,
+div[data-resourcefragment-pid="abacus.3_253"].data-view.full .tei-figure .tei-p:first-child {
+    top: 14em;
+}
+
+/* lg + p in figure auf Abb. vor S. 98 */
+div[data-resourcefragment-pid="abacus.3_199"].data-view.full .tei-figure .tei-p:first-child, 
+div[data-resourcefragment-pid="abacus.3_205"].data-view.full .tei-figure .tei-p:first-child,
+div[data-resourcefragment-pid="abacus.3_211"].data-view.full .tei-figure .tei-p:first-child{
+    display: block;
+    position: absolute;
+    bottom: 5em;
+    width: 75%;
+    margin-left: 14%!important /* notwendig, um margin:0!important von div[data-resource-pid="abacus.3"] .tei-p  zu überschreiben */;
+}
+/* Widmung [S.1] soll zentriert sein */
+div[data-resourcefragment-pid="abacus.3_13"] .tei-TEI {
+    text-align: center;
+}
+/* tei-p ist per default justified, daher hier explizit inherit */
+div[data-resourcefragment-pid="abacus.3_13"] p {
+    text-align: inherit;
+}
+
+/* Zitate in lgs an Kapitelenden sollen zentriert im Blocksatz stehen u. ein bißchen größer sein */ 
+div[data-resourcefragment-pid="abacus.3_76"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_81"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_86"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_91"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_96"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_104"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_112"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_120"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_127"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_132"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_139"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_147"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_152"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_160"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_168"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_174"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_180"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_186"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_192"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_197"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_203"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_209"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_215"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_221"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_227"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_232"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_237"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_244"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_252"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_262"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_270"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_282"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_289"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_297"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_302"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_307"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_313"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_319"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_327"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_333"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_338"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_357"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_377"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_383"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_391"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_399"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_406"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_412"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_419"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_426"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_432"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_437"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_443"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_452"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_458"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_464"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_474"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_480"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_492"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_501"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_510"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_515"] .tei-lg,
+div[data-resourcefragment-pid="abacus.3_522"] .tei-lg{
+    margin-left: 4em;
+    margin-top: 0.4em;
+    margin-bottom: 1em;
+    font-size: 1.1em;
+}
+
+/* auf S. 22 weniger margin-left */
+div[data-resourcefragment-pid="abacus.3_104"] .tei-lg {
+    margin-left: 1em;
+}
+
+div[data-resourcefragment-pid="abacus.3_81"] .tei-l br + .w-wrap,
+div[data-resourcefragment-pid="abacus.3_120"] .tei-l br + .w-wrap,
+div[data-resourcefragment-pid="abacus.3_139"] .tei-l br + .w-wrap,
+div[data-resourcefragment-pid="abacus.3_160"] .tei-l br + .w-wrap {
+    margin-left: 2em;
+}
+
+/* Vignetten auf S. 34, S. 39, S. 308, S. 316 */
+div[data-resourcefragment-pid="abacus.3_120"] .tei-figure,
+div[data-resourcefragment-pid="abacus.3_127"] .tei-figure,
+div[data-resourcefragment-pid="abacus.3_510"] .tei-figure,
+div[data-resourcefragment-pid="abacus.3_522"] .tei-figure{
+    width: 11em;
+    height: 11em;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0.1em;
+}
+
+div[data-resource-pid="abacus.3"] .tei-p {
+/*    margin: 0!important; /\* ansonsten überschreibt custom-tei.css den margin *\/*/
+}
+
+/* Überschriften im Register ohne margin */
+div.tei-type-index .tei-head {
+    margin-top: 0.5em;
+    margin-bottom: 0.3em;
+}
+
+.tei-lb.tei-rend-line_high {
+    height: 40px;
+}

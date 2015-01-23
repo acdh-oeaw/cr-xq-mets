@@ -1,0 +1,30 @@
+/* CSS für Lösch Wien */
+
+div[data-resource-pid="abacus.5"].data-view.full {
+    line-height: 1.2em;
+    font-size: 19px;
+    margin-top: 30px;
+}
+
+/* Lösch Wienn, Abb. vor Titel recto */
+div[data-resourcefragment-pid="abacus.5_5"] {
+    margin-top: 0!important;
+}
+
+div[data-resourcefragment-pid="abacus.5_5"] .tei-figure {
+    height: 69%;
+    padding: 1em;
+}
+
+div[data-resource-pid="abacus.5"] .tei-p {
+    margin: 0;
+}
+
+div[data-resourcefragment-pid="abacus.5_25"] .tei-lb.tei-rend-line_high {
+    height: 100px;
+}
+
+div[data-resource-pid="abacus.5"] .fw.catch {
+    float:right;
+    margin-right: 30%;
+}

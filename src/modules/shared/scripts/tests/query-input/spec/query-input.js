@@ -1,9 +1,6 @@
 describe("Virtual-Keyboard tests:", function() {
     beforeEach(function(){
-        VirtualKeyboard.keys = {
-            "arz_eng_006":["ʔ","ā","ḅ","ʕ","ḍ","ḏ","ē","ġ","ǧ","ḥ","ī","ᴵ","ḷ","ṃ","ō","ṛ","ṣ","š","ṭ","ṯ","ū","ẓ","ž"],
-            "mecmua":["ʾ","ā","ä","s̱","ç","ḥ","ḫ","ẕ"]
-        }; //map
+        this.cql_config = new CQLConfig( {"base_url": "fcs" });
     });
     
     afterEach(function(){});
@@ -29,6 +26,10 @@ describe("Virtual-Keyboard tests:", function() {
 
     simpleFixtureSetup = function() {
         loadFixtures("query-input.html");
+        this.sthToBeReplaced = $("#qi");
+        expect(this.sthToBeReplaced).toBeInDOM();
+        this.randomId = SpecHelper.generateUUID();
+        this.sthToBeReplaced.attr('id', this.randomId);
     };
 
     randomizeFirstInputId = function() {
@@ -44,82 +45,48 @@ describe("Virtual-Keyboard tests:", function() {
         return $(".virtual-keyboard-input#"+randomId);
     };
 
-    describe("Attaching to inputs of class .virtual-keyboard-input:", function() {
+    describe("Replacing dummy input", function() {
         beforeEach(simpleFixtureSetup);
         describe("one input:", function() {
-            it("should add a keyboard to inputs of class virtual keyboard input", function() {
-                expect($(".virtual-keyboard-input")).toBeInDOM();
-                expect($(".virtual-keyboard-input")).toHaveData('context', 'arz_eng_006');
-                expect($(".virtual-keyboard-input")).toHaveId('sth-unique');
-                var randomId = SpecHelper.generateUUID();
-                $(".virtual-keyboard-input").attr('id', randomId);
-                VirtualKeyboard.attachKeyboards();
-                expect($(".virtual-keyboard")).toBeInDOM();
-                expect($(".virtual-keyboard")).toHaveData('linked_input', randomId);
-            });
-            it("should display the keyboard if the toggle is enabled and the input is focused", function() {
-                var randomId = SpecHelper.generateUUID();
-                $(".virtual-keyboard-input").attr('id', randomId);
-                VirtualKeyboard.attachKeyboards();                
-                expect($(".virtual-keyboard")).toBeInDOM();
-                expect($(".virtual-keyboard").css("display")).toEqual("none");
-                $("#" + randomId + " ~ .virtual-keyboard-toggle").attr("checked", true);
-                $("#" + randomId).focus();
-                // Not working in netbeans/chrome debugger, never mind.
-                expect($(".virtual-keyboard")).toBeVisible();
-            });
-            it("should hide the display if ESC key is pressed", function(){
-                var randomId = SpecHelper.generateUUID();
-                $(".virtual-keyboard-input").attr('id', randomId);
-                VirtualKeyboard.attachKeyboards();                
-                expect($(".virtual-keyboard")).toBeInDOM();
-                expect($(".virtual-keyboard").css("display")).toEqual("none");
-                $("#" + randomId + " ~ .virtual-keyboard-toggle").attr("checked", true);
-                $("#" + randomId).focus();
-                // Not working in netbeans/chrome debugger, never mind.
-                expect($(".virtual-keyboard")).toBeVisible();
-                var downEvent = $.Event("keydown");
-                var ESCAPE = 27;
-                downEvent.which = ESCAPE;
-                $(document.activeElement).trigger(downEvent);
-                expect($(".virtual-keyboard")).toBeHidden();
-            });
-            it("should replace the text of the label with the first three characters of the virtual keyboard", function() {
-                
-            });
-            it("should not add keyboards to inputs that don't provide context data", function() {
-                $(".virtual-keyboard-input#sth-unique").data('context', '');
-                VirtualKeyboard.attachKeyboards();
-                expect($(".virtual-keyboard")).not.toExist();
-            });
-            it("should not add keyboards to inputs that provide unknown context data", function() {
-                $(".virtual-keyboard-input#sth-unique").data('context', 'fasel');
-                VirtualKeyboard.attachKeyboards();
-                expect($(".virtual-keyboard")).not.toExist();
-            });
-            it("should add keyboards to inputs that don't provide context data if a default is given", function() {
-                $(".virtual-keyboard-input#sth-unique").data('context', '');
-                VirtualKeyboard.attachKeyboards('arz_eng_006');
-                expect($(".virtual-keyboard")).toExist();
-            });
-            it("should add those keys to the template", function() {
-                VirtualKeyboard.attachKeyboards();
-                // Currently may fail because of unsupported CORS for JSON on IE up to 9. Keyboard unuseabel (no keys)
-                expect($(".virtual-keyboard *").length).toEqual(VirtualKeyboard.keys["arz_eng_006"].length);
-                $(".virtual-keyboard *").each(function(i, element) {
-                    expect($(element).text()).toEqual(VirtualKeyboard.keys["arz_eng_006"][i]);
+            it("should replace the contents of the specified tag with sth. generated", function() {
+                // initialize query input
+                $('#' + this.randomId).QueryInput({
+                    params: {
+                        query: {label: "", value: "", widget: "cql", cql_config: this.cql_config},
+                        submit: {label: "", value: "suchen", widget: "submit"}
+                    },
+                    onValueChanged: function (v) {
+                        console.log(this, v);
+                    }
                 });
+                expect($("#input-query")).toBeInDOM();
+                expect($("#input-query")).toHaveClass('type-cql');
+                expect($("#query-widget")).toBeInDOM();                
+                expect($(".cmd-wrapper")).toBeInDOM();                               
+                expect($(".search-clauses-table")).toBeInDOM();                
+                expect($("#input-submit")).toBeInDOM();
+                expect($("#input-submit")).toHaveClass('type-submit');
             });
-            it("should change the keyboard if the context changes", function() {
-                VirtualKeyboard.attachKeyboards();
-                expect($('.virtual-keyboard')).toExist();
-                $('#sth-unique').data('context', '');
-                VirtualKeyboard.attachKeyboards();
-                expect($('.virtual-keyboard')).not.toExist();
+            it("should be able to replace the contents of the specified tag with a virtual keyboard combo", function() {
+                // initialize query input
+                $('#' + this.randomId).QueryInput({
+                    params: {
+                        query: {label: "", value: "", widget: "vkb-cql", cql_config: this.cql_config},
+                        submit: {label: "", value: "suchen", widget: "submit"}
+                    },
+                    onValueChanged: function (v) {
+                        console.log(this, v);
+                    }
+                });
+                expect($("#input-submit")).toBeInDOM();
+                expect($("#input-submit")).toHaveClass('type-submit');
+            });
+            xit("should check many more things", function(){
+                
             });
         });
 
-        describe("many inputs", function() {
+        xdescribe("many inputs", function() {
             beforeEach(function(){
                 this.firstInput = randomizeFirstInputId();
             });
@@ -161,7 +128,7 @@ describe("Virtual-Keyboard tests:", function() {
         });
     });
 
-    describe("Manipulating inputs:", function() {
+    xdescribe("Manipulating inputs:", function() {
         beforeEach(simpleFixtureSetup);
         describe("many inputs", function() {
             beforeEach(randomizeFirstInputId);

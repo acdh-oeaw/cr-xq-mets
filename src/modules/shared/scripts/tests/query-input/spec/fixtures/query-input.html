@@ -1,3 +1,13 @@
 <!DOCTYPE html>
-<input name="query" type="text" size="18" class="virtual-keyboard-input" data-context="arz_eng_006" id="sth-unique"/>
-<input type="checkbox" value="unused" class="virtual-keyboard-toggle" id="someid3"/><label for="someid3">äöü</label>
+<div id="query-input">
+    <div id="qi">
+        <!-- should get replaced on load by the query_input widget -->
+        <form action="" method="GET">
+            <div class="inputrow">
+                <!--            <label for="query">Query: </label>-->
+                <input id="input-simple-query" name="query" class="templates:form-control" value="" type="text">
+                <button id="submit-query" type="submit">Suche</button>
+            </div>
+        </form>
+    </div>
+</div>

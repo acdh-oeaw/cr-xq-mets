@@ -1,0 +1,116 @@
+/* CSS Anpassungen für Mercks Wien */
+
+div[data-resource-pid="abacus.1"].data-view.full  {
+    line-height: 1.2em;
+    font-size: 18px;
+}
+
+/* Seitenspiegel */
+div[data-resource-pid="abacus.1"].data-view.full .tei-TEI {
+    padding-top: 3%;
+    padding-left: 4%;
+    width: 88%;
+}
+
+/* Footerpositionierung */
+div[data-resource-pid="abacus.1"] .tei-fw.tei-type-footer ~ .tei-fw.tei-type-catch.tei-place-bot_right {
+    position: relative;
+    top: -1.3em;
+}
+
+div[data-resource-pid="abacus.1"] .tei-fw.tei-place-bot_right, 
+div[data-resource-pid="abacus.1"] .tei-fw.tei-place-top_right {
+    position: relative;
+    left: -2em;
+}
+/* Kustode und Bogenzahl in einer zeile */
+div[data-resource-pid="abacus.1"] div.tei-fw.tei-type-footer + .tei-fw {
+    top: -1.3em!important;
+}
+
+/*div[data-resourcefragment-pid="abacus.1_9"] div.tei-seg.tei-type-footer + span.tei-fw {
+    top: -1em!important;
+}*/
+
+div[data-resource-pid="abacus.1"] .tei-p {
+/*    margin: 0px;*/
+}
+
+div[data-resource-pid="abacus.1"] .tei-p.tei-rend-indent {
+    text-indent: 1.5em;
+}
+
+/* Tabelle auf S. 379 */
+div[data-resourcefragment-pid="abacus.1_399"] .tei-table td {
+    padding: 0;
+}
+
+/* figure im text */
+div[data-resourcefragment-pid="abacus.1_399"] .tei-figure:empty {
+    display: inline-block;
+    float: left;
+    height: 4em;
+    margin: 0.3em 0.8em 0 0;
+    width: 6em;
+}
+
+
+
+/*div[data-resource-pid="abacus.1"] .tei-rend-initialCapital {
+    font-size: 27px!important;
+}*/
+
+/*div[data-resource-pid="abacus.1"] .tei-fw.tei-type-catch, 
+div[data-resource-pid="abacus.1"] .tei-type-catch.tei-place-bot_right {
+    font-size: 16px;
+}
+*/
+
+div[data-resource-pid="abacus.1"] .tei-titlePage {
+    margin-top: 40px;
+}
+
+/* hr his on specific pages */
+div[data-resourcefragment-pid="abacus.1_9"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_21"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_34"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_78"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_123"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_152"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_187"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_235"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_274"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_308"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_341"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_366"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_394"] .tei-lb.tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.1_414"] .tei-lb.tei-rend-line_high{
+    height: 4em;
+}
+
+
+/* figures on specific pages */
+/* S. 13, 57, 102, 131, 166, 214*/
+div[data-resourcefragment-pid="abacus.1_33"] .tei-figure,
+div[data-resourcefragment-pid="abacus.1_77"] .tei-figure,
+div[data-resourcefragment-pid="abacus.1_122"] .tei-figure,
+div[data-resourcefragment-pid="abacus.1_151"] .tei-figure,
+div[data-resourcefragment-pid="abacus.1_186"] .tei-figure,
+div[data-resourcefragment-pid="abacus.1_234"] .tei-figure,
+div[data-resourcefragment-pid="abacus.1_273"] .tei-figure,
+div[data-resourcefragment-pid="abacus.1_307"] .tei-figure {
+    height: 350px;
+    display: block;
+    border: 1px solid gray;
+}
+
+
+/* Lösch Wienn, Abb. vor Titel recto */
+div[data-resourcefragment-pid="abacus.1_5"] {
+    margin-top: 0!important;
+}
+
+div[data-resourcefragment-pid="abacus.1_5"] .tei-figure {
+    height: 55%;
+    padding: 1em;
+}

@@ -1,0 +1,362 @@
+/* TEI style customizations */
+/*p {font-family: "Times New Roman", serif; }*/
+/*@import url(http://fonts.googleapis.com/css?family=Crimson+Text:400,400italic,700,700italic,600,600italic);*/
+/*@import url(http://fonts.googleapis.com/css?family=Mate+SC);*/
+
+/* overwrite text-align: justify of elements.css*/
+.data-view.full p {
+    text-align: left;
+}
+
+.data-view.full {
+   font-family: "Cambria", serif; /* Crimson Text"; */ 
+    font-size: 17px;
+    padding: 0 0.6em;
+    width: 48% !important;
+}
+
+.tei-head {
+    font-size: 1.2em;
+    line-height: 1.2em;
+    display: block;
+}
+
+/* erster head im div */
+.tei-div > .tei-head:first-child {
+    margin: 2ex 0 0 0;
+}
+
+/* head vor p, l usw */
+.tei-head + :not(.tei-head) {
+    /*margin: 0 0 2ex 0!important;*/
+    margin-top: 0.5em;
+}
+
+/* head nach head */
+.tei-head + .tei-head {
+    margin: 0 0 1ex 0;
+}
+
+/* <tei:seg rend="initialCapital">Kapitäl<lb/>chen</tei:seg> 
+wird per XSL zerlegt in
+<html:span class="tei-rend-initialCapital">K</html:span>apitäl<html:br/>chen</html:span>
+*/
+.tei-rend-initialCapital {
+    font-size: 1.5em;
+}
+
+/* CSS für alternatives Markup:
+<span class="tei-rend-initialCapital">Kapitälchen</span>
+.tei-rend-initialCapital {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    text-indent: 0; 
+}
+
+.tei-rend-initialCapital:first-letter,
+.tei-rend-initialCapital::first-letter{
+    font-size: 1.5em;
+}*/
+
+/*
+.tei-head {
+    display: block;
+}*/
+
+/* tei:head endet immer mit eine tei:lb, der zu einem html:br wird - da head bereits display:block hat, muss der br ausgeblendet werden. */
+.tei-head + br {
+    display: none;
+}
+
+/* Einzug soll nur bei jenen .tei-ps gerendert werden, die nach einem anderen p [+ ... ? ] stehen */
+.tei-lb.tei-rend-line + .tei-p.tei-rend-indent,  
+.tei-p + .tei-p.tei-rend-indent {
+    text-indent: 1.5em;
+}
+
+.tei-fw.tei-type-header + .tei-p.tei-rend-indent {
+    margin: 0;
+}
+
+.tei-fw.tei-type-header, 
+.tei-fw.tei-type-footer {
+    height: 1.5em;
+    line-height: 1.5em; /*TESTME*/
+    /* .tei-place-top_center is positioned absolutely in order to 
+        keep a following .tei-place-top_right on the same line. 
+        In order to allow .tei-place-top_center to set its width 
+        relative to its parent .tei-fw.tei-type-header, we position it relatively. */
+    position: relative; 
+    display: block;
+}
+
+/* tei-p rend indent direkt am seitenanfang sollen keinen Einzug haben  */
+/*.tei-p.tei-rend-indent > .tei-fw.tei-type-header {
+    text-indent: 0;
+}*/
+
+/* auch keine ps innerhalb von figures, die innerhalb eines p-tags mit einzug stehen */
+.tei-p.tei-rend-indent .tei-figure .tei-p {
+    text-indent: 0;
+}
+
+.tei-fw {
+    text-indent: 0;
+    min-width: 5em;
+}
+
+.tei-fw.tei-type-catch {
+    /* Kustoden lt. Claudia gleich groß wie Grundschrift */
+    /*font-size: 14px;*/
+}
+
+.tei-fw.tei-place-top_left,
+.tei-fw.tei-place-bot_left {
+    float: left;
+    margin-left: 0.2em;
+}
+
+.tei-fw.tei-place-bot_right,
+.tei-fw.tei-place-top_right{
+    float: right;
+    margin-right: 0.2em;
+    text-align: right;
+}
+
+.tei-fw.tei-place-bot_center, 
+.tei-fw.tei-place-top_center {
+    display: inline-block;
+    text-align: center;
+    /* .tei-place-top_center is positioned absolutely in order to 
+        keep a following .tei-place-top_right on the same line, 
+        it's set left:0 to be always centered, even if there's a preceding
+        .tei-place-top_left with a defined width.
+        In order to allow .tei-place-top_center to set its width 
+        relative to its parent .tei-fw.tei-type-header, we position it relatively. */
+   /* Cf. Todten Capelle, S. 1 bzw. 8*/
+    position: absolute;
+    left: 0;
+    width: 100%;
+}
+
+/* header/footer = div, die Kustode muss aber in gleicher Zeile positioniert werden, 
+darum wird sie hier hinaufgeschoben. */
+.tei-fw.tei-type-footer ~ .tei-fw.tei-type-catch.tei-place-bot_right {
+    position: relative;
+    top: -1.5em;
+}
+
+/* meistens steht ein footer direkt unter einem p, der einen margin-bottom hat; wenn nicht, dann muss der footer einen top-margin bekommen */   
+br + .tei-fw.tei-type-footer {
+    margin-top: 1ex;
+}
+
+/*alle pageNums sollen die gleiche font-family wie .antiqua bekommen. */
+.tei-fw.tei-type-pageNum {
+    font-family:  Helvetica, Verdana, sans-serif;
+    /* Kustoden lt. Claudia gleich groß wie Grundschrift, daher auch die Bogennummern */
+    /* font-size: 0.8em; */
+}
+
+.tei-choice .tei-orig { 
+    /*text-decoration: line-through;*/
+}
+
+.tei-note.tei-type-footnote.tei-place-bottom {
+    display: inline-block;
+    margin-top: 33px;
+    text-indent: 1em!important;
+}
+
+.tei-note.tei-type-footnote.tei-place-bottom ~ .tei-note.tei-type-footnote.tei-place-bottom {
+    display: inline;
+}
+
+
+/* WATCHME: auch alle pageNums sollen die gleiche font-family wie .antiqua bekommen */
+.tei-rend-antiqua {
+    font-family:  Helvetica, Verdana, sans-serif;
+/*    set smaller font size to match glyph heights better with main font */
+    font-size: 0.9em; 
+}
+
+.tei-rend-bold {
+    font-weight: bold;
+}
+
+.tei-rend-italicised {
+    font-style: italic;
+}
+
+/* TESTME */
+/* spaced with no preceding sibling  */
+.tei-rend-spaced {
+    letter-spacing: 0.3em;
+    margin-right: -0.2em; /* experimental to get rid off the space after last letter */
+}
+
+/* spaced with preceding sibling: add 3px on the left side */
+* ~ .tei-rend-spaced {
+    letter-spacing: 0.3em;
+    position: relative;
+    left: 3px;
+}
+
+.tei-rend-spaced .pc.final:last-child {
+    margin-left: -4px;
+}
+
+.tei-rend-smallCaps {
+    /*text-transform: uppercase;
+    font-size: 0.9em;
+    display: inline-block;
+    margin: 0;
+    text-indent: 0;*/
+    font-variant: small-caps;
+}
+
+.tei-rend-smallCaps::first-letter,
+.tei-rend-smallCaps:first-letter{
+    font-size: 1.3em;
+}
+
+
+.tei-rend-gothic {
+    font-family: "Cambria", serif;
+}
+
+.tei-titlePage {
+    display: block;
+    text-align: center;
+}
+
+/*these are defaults set in cr.css, which is imported _after_ custom.css, 
+so we have to override its rules explicitly here.*/
+span.persName, span.person, span.place, span.placeName, span.bibl {
+    color: inherit !important;
+    font-weight: inherit !important;
+    font-style: inherit !important;
+}
+
+
+/* custom symbols  */
+.tei-seg.tei-type-ornament.tei-rend-bracketsMW {
+    font-size:15pt;
+    font-weight:bold;
+    display: block;
+    margin-top: 0.6em;
+    letter-spacing: 0.2em;
+}
+
+.dots-triangle {
+    letter-spacing: 1px;
+}
+
+.dots-triangle.sup {
+    position: relative;
+    bottom: 1ex;
+}
+
+
+.tei-milestone.tei-type-separator {
+    display: block;
+    text-align: center; 
+}
+
+/* Schriftfamilie für generische separators muss explizit gesetzt werden, 
+ansonsten erscheinen sie unterschiedlich groß */
+.tei-milestone.tei-type-separator.tei-unit-undetermined {
+    font-family: arial, helvetica, sans-serif;
+    text-align: center;
+}
+
+/* show correction on hover */
+.tei-choice { position:relative; }
+.tei-corr {
+    text-decoration: none;
+    position: absolute;
+    /*margin-top: -0.5em;
+    margin-left: -3px;*/
+    bottom: 0.8em;
+    /*left: 0.8em;*/
+    text-indent: 0!important;
+    font-size: 0.7em;
+    z-index:2;
+    display:inline;
+    text-align: left;
+}
+
+.tei-corr a {
+    color: #c00000;    
+}
+
+.tei-corr a .tei-corr-content {
+    display: none;
+}
+
+.tei-corr a:hover {
+    min-width: 250px;
+    display: inline-block;
+}
+
+.tei-corr a:hover .tei-corr-content {
+    display: inline;
+    background: white;
+    padding: 1px;
+}
+
+.tei-figure {
+    display: block;
+    border: 1px solid gray;
+    margin: 0 0 1em 0;
+}
+
+/* this doesn't seem to be used anywhere (however @type='hr' is common ... ) */
+.tei-milestone.tei-rend-hr {
+    display: block;
+    line-height: 6px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid gray;
+}
+
+
+.tei-lb.tei-rend-line_high {
+    height: 25px;
+    border: 1px solid gray;
+    display: block;
+    margin-bottom: 0.8em;
+}
+
+.tei-lb.tei-rend-line {
+    border-top: 1px solid gray;
+    margin-bottom: 0px;
+    display: block;
+    line-height: 0.5em;
+    margin-top: 0.1em;
+}
+
+/* im JQuery Theme und in elements.css sind font und padding 
+    von table explizit gesetzt, müssen für TEI tables hier zurückgsetzt werden. */
+.tei-table {
+    font-size: inherit!important;
+    font-family: inherit!important;
+}
+
+.tei-table td {
+    vertical-align: top;
+}
+
+/* tei:lg und tei:p sind html:spans */
+.tei-lg, .tei-p {
+    display: block;
+    margin: 0.3em 0px;
+}
+
+
+.data-view.cite,
+.data-view.cite .tei-p {
+    line-height: 1.8em;
+    font-size: 1em;
+}
+

@@ -1,0 +1,45 @@
+/* CSS für Todtenbruderschaft */
+div[data-resource-pid="abacus.7"].data-view.full  {
+    line-height: 1.2em;
+    font-size: 17px;
+}
+
+div[data-resourcefragment-pid="abacus.7_7"] .tei-figure {
+    height: 72%;
+    padding: 1em;
+}
+
+div[data-resourcefragment-pid="abacus.7_9"] .tei-titlePage {
+    margin-top: 25px;
+    font-size: 19px;
+    line-height: 1.3em;
+}
+
+div[data-resourcefragment-pid="abacus.7_9"] .tei-figure {
+    width: 7em;
+    height: 7em;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1em;
+}
+
+
+/* Einzüge */
+div[data-resourcefragment-pid="abacus.7_13"] .tei-head + .tei-p.tei-rend-indent /* TB, S. 1 */,
+div[data-resourcefragment-pid="abacus.7_14"] .tei-fw.tei-type-header + .tei-p.tei-rend-indent /* TB, S. 2 */,
+.tei-lg + .tei-p.tei-rend-indent /* TB, S. 26 */
+{
+    text-indent: 1.5em;
+/*    margin: 1ex 0px;*/
+}
+
+div[data-resourcefragment-pid="abacus.7_10"] .tei-rend-line_high,
+div[data-resourcefragment-pid="abacus.7_61"] .tei-rend-line_high {
+    height: 100px;  
+}
+
+/* Positionierung Catchwords */
+div[data-resource-pid="abacus.7"].data-view.full .tei-fw.tei-place-bot_right, 
+div[data-resource-pid="abacus.7"].data-view.full .tei-fw.tei-place-top_right {
+    margin-right: 3.5em;
+}

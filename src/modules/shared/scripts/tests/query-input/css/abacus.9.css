@@ -1,0 +1,64 @@
+/* Augustini Feuriges Hertz */
+
+div[data-resource-pid="abacus.9"] .tei-TEI {
+    margin-left: 2%;
+    margin-top: 3%;
+    width: 96%;
+}
+
+div[data-resource-pid="abacus.9"] .tei-p {
+    line-height: 1.2em;
+}
+
+/* Kustoden */
+div[data-resource-pid="abacus.9"] .tei-fw.tei-place-bot_right, 
+div[data-resource-pid="abacus.9"] .tei-fw.tei-place-top_right {
+    float: right;
+    margin-right: 1.8em;
+} 
+
+/* Titelseite */
+div[data-resource-pid="abacus.9"] .tei-titlePage {
+    padding: 1em;
+    line-height: 1.4em;
+}
+
+/* Überschriften */
+div[data-resource-pid="abacus.9"] .tei-head {
+    /* lt. Kiki heads in AFH nicht zentrieren */
+/*    text-align: center;*/
+    margin: 1em 0 0.5em 0;
+}
+
+/* Ganzseitige Abbildungen  */
+div[data-resourcefragment-pid="abacus.9_7"] .tei-figure {
+    height: 64%;
+    padding: 1em;
+
+}
+/* Abbildungen Kapitelanfänge */
+div[data-resourcefragment-pid="abacus.9_11"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_18"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_26"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_34"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_42"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_51"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_59"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_66"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_74"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_82"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_90"] .tei-figure,
+div[data-resourcefragment-pid="abacus.9_99"] .tei-figure {
+    height: 14em;
+    padding: 1em;
+}
+
+/* Schluss */
+div[data-resourcefragment-pid="abacus.9_108"] .tei-body .tei-p {
+    text-align: center;
+    font-size: 1.1em;
+}
+div[data-resourcefragment-pid="abacus.9_108"] .tei-body .tei-p.tei-rend-indent {
+    text-align: justify;
+    font-size: 1em;
+}
