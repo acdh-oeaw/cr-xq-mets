@@ -1,0 +1,67 @@
+{
+    "explain":"explain",
+    "countIndexes":"23", 
+    "context_sets": {
+        "isocat": "ISOcat data categories", 
+        "fcs": "CLARIN - Federated Content Search"
+    },
+    "indexes": {
+        "auxSubst": {"search": "true", "scan": "true", "sort": "false"}, 
+        "auxSubstId": {"search": "true", "scan": "true", "sort": "false"}, 
+        "auxSubstName": {"search": "true", "scan": "true", "sort": "false"}, 
+        "cql.serverChoice": {"search": "true", "scan": "true", "sort": "false"}, 
+        "facs-uri": {"search": "true", "scan": "true", "sort": "false"}, 
+        "illness": {"search": "true", "scan": "true", "sort": "false"}, 
+        "illnessId": {"search": "true", "scan": "true", "sort": "false"}, 
+        "illnessName": {"search": "true", "scan": "true", "sort": "false"}, 
+        "persId": {"search": "true", "scan": "true", "sort": "false"}, 
+        "person": {"search": "true", "scan": "true", "sort": "false"}, 
+        "personName": {"search": "true", "scan": "true", "sort": "false"}, 
+        "place": {"search": "true", "scan": "true", "sort": "false"}, 
+        "placeId": {"search": "true", "scan": "true", "sort": "false"}, 
+        "placeName": {"search": "true", "scan": "true", "sort": "false"}, 
+        "plant": {"search": "true", "scan": "true", "sort": "false"}, 
+        "plantId": {"search": "true", "scan": "true", "sort": "false"}, 
+        "plantName": {"search": "true", "scan": "true", "sort": "false"}, 
+        "resource-pid": {"search": "true", "scan": "true", "sort": "false"}, 
+        "resourcefragment-pid": {"search": "true", "scan": "true", "sort": "false"}, 
+        "textGenre": {"search": "true", "scan": "true", "sort": "false"}, 
+        "textGenreId": {"search": "true", "scan": "true", "sort": "false"}, 
+        "textGenreName": {"search": "true", "scan": "true", "sort": "false"}, 
+        "title": {"search": "true", "scan": "true", "sort": "false"}
+    },
+    "description": {
+        "title": "mecmua online",
+      
+        "encoding": {
+            "countNonASCIIChars": "8",
+            "chars": {         
+                "u02BE": {
+                    "Unicode": "ʾ"
+                },
+				"u0101": {
+                    "Unicode": "ā"
+                },
+				"u00E4": {
+                    "Unicode": "ä"
+                },
+				"su0331": {
+                    "Unicode": "s̱"
+                },				
+				"u00E7": {
+                    "Unicode": "ç"
+                },
+				"u1E25": {
+                    "Unicode": "ḥ"
+                },
+				"u1E2B": {
+                    "Unicode": "ḫ"
+                },
+				"u1E95": {
+                    "Unicode": "ẕ"
+                }      
+            }
+        }   
+    }
+}
+        

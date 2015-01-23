@@ -390,5 +390,5 @@ $.fn.QueryInput = function (options)
      widgets: {slider: {style:{width:"80px", display:"inline-block", "font-size": "70%",  margin: "6px 12px 0 2px"}}},
     */
 
-})(jQuery, this);
+})(jQuery);
 

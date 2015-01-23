@@ -1,0 +1,117 @@
+{
+    "explain":"explain",
+    "countIndexes":"4", 
+    "context_sets": {
+        "fcs": "CLARIN - Federated Content Search"
+    },
+    "indexes": {
+        "cql.serverChoice": {"search": "true", "scan": "true", "sort": "false"}, 
+        "VICAV Egyptian - English/German any entry": {"search": "true", "scan": "true", "sort": "false"}, 
+        "VICAV Egyptian - English/German translated sense": {"search": "true", "scan": "true", "sort": "false"}, 
+        "Resource Fragement PID": {"search": "true", "scan": "true", "sort": "false"}
+    },
+    "description": {
+        "title": "A machine-readable dictionary of Egyptian Arabic",
+      
+        "encoding": {
+            "countNonASCIIChars": "23",
+            "chars": {
+         
+                "u294": {
+                    "Unicode": "ʔ"
+                }, 
+         
+                "u101": {
+                    "Unicode": "ā"
+                }, 
+         
+                "u1E05": {
+                    "Unicode": "ḅ"
+                }, 
+         
+                "u295": {
+                    "Unicode": "ʕ"
+                }, 
+         
+                "u1E0D": {
+                    "Unicode": "ḍ"
+                }, 
+         
+                "u1E0F": {
+                    "Unicode": "ḏ"
+                }, 
+         
+                "u113": {
+                    "Unicode": "ē"
+                }, 
+         
+                "u121": {
+                    "Unicode": "ġ"
+                }, 
+         
+                "u1E7": {
+                    "Unicode": "ǧ"
+                }, 
+         
+                "u1E25": {
+                    "Unicode": "ḥ"
+                }, 
+         
+                "u12B": {
+                    "Unicode": "ī"
+                }, 
+         
+                "u1D35": {
+                    "Unicode": "ᴵ"
+                }, 
+         
+                "u1E37": {
+                    "Unicode": "ḷ"
+                }, 
+         
+                "u1E43": {
+                    "Unicode": "ṃ"
+                }, 
+         
+                "u14D": {
+                    "Unicode": "ō"
+                }, 
+         
+                "u1E5B": {
+                    "Unicode": "ṛ"
+                }, 
+         
+                "u1E63": {
+                    "Unicode": "ṣ"
+                }, 
+         
+                "u161": {
+                    "Unicode": "š"
+                }, 
+         
+                "u1E6D": {
+                    "Unicode": "ṭ"
+                }, 
+         
+                "u1E6F": {
+                    "Unicode": "ṯ"
+                }, 
+         
+                "u16B": {
+                    "Unicode": "ū"
+                }, 
+         
+                "u1E93": {
+                    "Unicode": "ẓ"
+                }, 
+         
+                "u17E": {
+                    "Unicode": "ž"
+                }
+      
+            }
+        }
+   
+    }
+}
+        

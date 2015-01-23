@@ -60,7 +60,7 @@
         });
     };
     
-    keyClicked = function(event) {
+    var keyClicked = function(event) {
         var key = $(event.currentTarget);
         var container = key.parent();
         var input = $('#' + container.data('linked_input'));
@@ -75,6 +75,13 @@
         }
     };
     
+    var hideKeyboardOnESC = function(e) {
+        if (e.which === 27) {
+            var checkbox = $(e.target).nextAll("input[type='checkbox']");
+            checkbox.prop("checked", false);
+        }
+    };
+    
     /**
      * 
      * @param {string} context a default context used if no data-context is present.
@@ -83,6 +90,7 @@
     module.attachKeyboards = function(defaultContext) {
         if (module.failed) return;
         var inputs = $(".virtual-keyboard-input");
+        inputs.on("keydown", hideKeyboardOnESC);
         var defaultContext = defaultContext;
         inputs.each(function(unused, element) {
             var myInput = $(element);
@@ -92,7 +100,7 @@
                 localContext = defaultContext;
                 myInput.data('context', defaultContext);
             }
-            var existingKeyboard = $(".virtual-keyboard-input#"+myInput.attr('id')+"+.virtual-keyboard");
+            var existingKeyboard = $(".virtual-keyboard-input#"+myInput.attr('id')+"~.virtual-keyboard");
             if (existingKeyboard.size() > 0) {
                 if (existingKeyboard.data('context') !== localContext)
                     existingKeyboard.remove();
@@ -108,7 +116,14 @@
             var virtualKeyboardKeyProto = virtualKeyboard.find(".key-prototype");
             virtualKeyboardKeyProto.removeClass("key-prototype");
             virtualKeyboardKeyProto.on("click", keyClicked);
-            virtualKeyboard.insertAfter(myInput);
+            var insertAfterElement = myInput;
+            var toggleLabel = myInput.nextAll("label");
+            if (toggleLabel.length === 1) {
+                insertAfterElement = toggleLabel;
+                if (toggleLabel.hasClass("virtual-keyboard-first-three"))
+                   toggleLabel.text(module.keys[localContext][0] + module.keys[localContext][1] + module.keys[localContext][2]);
+            }
+            virtualKeyboard.insertAfter(insertAfterElement);
             for (var i in module.keys[localContext]) {
                 var key = virtualKeyboardKeyProto.clone(true);
                 key.text(module.keys[localContext][i]);

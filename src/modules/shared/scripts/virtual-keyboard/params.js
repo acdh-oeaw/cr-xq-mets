@@ -29,7 +29,7 @@ module.switchURL = "http://localhost/corpus_shell/modules/fcs-aggregator/switch.
  * about that. Note that this is assumed to end with a slash (/)
  * @type {url|path}
  */
-module.templateLocation = "modules/shared/scripts/virtual-keyboard/";
+module.templateLocation = "src/";
 
 /**
  * Default width of a new panel.
