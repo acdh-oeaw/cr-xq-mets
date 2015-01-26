@@ -67,6 +67,73 @@ describe("Virtual-Keyboard tests:", function() {
                 expect($("#input-submit")).toBeInDOM();
                 expect($("#input-submit")).toHaveClass('type-submit');
             });
+            it("should be able to create a text input and a submit button", function() {
+                // initialize query input
+                $('#' + this.randomId).QueryInput({
+                    params: {
+                        query: {label: "", value: "", widget: "text", size: 10},
+                        submit: {label: "", value: "suchen", widget: "submit"}
+                    },
+                    onValueChanged: function (v) {
+                        console.log(this, v);
+                    }
+                });
+                expect($("#input-query")).toBeInDOM();               
+                expect($("#input-query")).toHaveClass('type-text');                              
+                expect($("#input-query")).toHaveAttr('size', '10');
+                expect($("#input-submit")).toBeInDOM();
+                expect($("#input-submit")).toHaveClass('type-submit');                
+            });
+            it("should be able to create a text input, a checkbox and a submit button", function() {
+                // initialize query input
+                $('#' + this.randomId).QueryInput({
+                    params: {
+                        query: {label: "", value: "", widget: "text"},
+                        vkbtoggle: {label: "äöü", label_after_input: true, checked: "checked", widget: "checkbox"},
+                        submit: {label: "", value: "suchen", widget: "submit"}
+                    },
+                    onValueChanged: function (v) {
+                        console.log(this, v);
+                    }
+                });
+                expect($("#input-query")).toBeInDOM();               
+                expect($("#input-query")).toHaveClass('type-text');                              
+                expect($("#input-query")).not.toHaveAttr('size');
+                expect($("#input-vkbtoggle")).toBeInDOM();               
+                expect($("#input-vkbtoggle")).toHaveClass('type-checkbox');                              
+                expect($("#input-vkbtoggle")).toHaveAttr('checked');
+                expect($("#input-vkbtoggle + label")).toBeInDOM();
+                expect($("#input-vkbtoggle + label")).toHaveAttr('for', 'input-vkbtoggle'); 
+                expect($("#input-submit")).toBeInDOM();
+                expect($("#input-submit")).toHaveClass('type-submit');                
+            });
+            it("should be able to create a checkbox and a label for that with addional css classes", function() {
+                // initialize query input
+                $('#' + this.randomId).QueryInput({
+                    params: {
+                        vkbtoggle: {
+                            label: "äöü",
+                            additional_classes: 'virtual-keyboard-toggle sth else',
+                            additional_label_classes: 'sth else',
+                            checked: "",
+                            widget: "checkbox"
+                        },
+                    },
+                    onValueChanged: function (v) {
+                        console.log(this, v);
+                    }
+                });
+                expect($("#input-vkbtoggle")).toBeInDOM();               
+                expect($("#input-vkbtoggle")).toHaveClass('type-checkbox');                               
+                expect($("#input-vkbtoggle")).toHaveClass('virtual-keyboard-toggle');                               
+                expect($("#input-vkbtoggle")).toHaveClass('sth');                               
+                expect($("#input-vkbtoggle")).toHaveClass('else');
+                expect($("#input-vkbtoggle")).toHaveAttr('checked');
+                expect($("label + #input-vkbtoggle")).toBeInDOM();
+                expect($("label")).toHaveAttr('for', 'input-vkbtoggle');                               
+                expect($("label")).toHaveClass('sth');                               
+                expect($("label")).toHaveClass('else'); 
+            });
             it("should be able to replace the contents of the specified tag with a virtual keyboard combo", function() {
                 // initialize query input
                 $('#' + this.randomId).QueryInput({
@@ -78,6 +145,8 @@ describe("Virtual-Keyboard tests:", function() {
                         console.log(this, v);
                     }
                 });
+                expect($("#input-query")).toBeInDOM();               
+                expect($("#input-query")).toHaveClass('type-vkb-cql');
                 expect($("#input-submit")).toBeInDOM();
                 expect($("#input-submit")).toHaveClass('type-submit');
             });
