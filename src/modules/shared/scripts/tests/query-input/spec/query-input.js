@@ -1,6 +1,9 @@
 describe("Virtual-Keyboard tests:", function() {
     beforeEach(function(){
-        this.cql_config = new CQLConfig( {"base_url": "fcs" });
+        this.cql_config = new CQLConfig({
+            "base_url": "fcs" ,
+            "context": "somectx"
+        });
     });
     
     afterEach(function(){});
@@ -84,11 +87,11 @@ describe("Virtual-Keyboard tests:", function() {
                 expect($("#input-submit")).toBeInDOM();
                 expect($("#input-submit")).toHaveClass('type-submit');                
             });
-            it("should be able to create a text input, a checkbox and a submit button", function() {
+            it("should be able to create a text input with some data attributes, a checkbox and a submit button", function() {
                 // initialize query input
                 $('#' + this.randomId).QueryInput({
                     params: {
-                        query: {label: "", value: "", widget: "text"},
+                        query: {label: "", value: "", widget: "text", data: {context: 'abacus', sth: 'else'}},
                         vkbtoggle: {label: "äöü", label_after_input: true, checked: "checked", widget: "checkbox"},
                         submit: {label: "", value: "suchen", widget: "submit"}
                     },
@@ -98,7 +101,9 @@ describe("Virtual-Keyboard tests:", function() {
                 });
                 expect($("#input-query")).toBeInDOM();               
                 expect($("#input-query")).toHaveClass('type-text');                              
-                expect($("#input-query")).not.toHaveAttr('size');
+                expect($("#input-query")).not.toHaveAttr('size');                              
+                expect($("#input-query")).toHaveData('context', 'abacus');                              
+                expect($("#input-query")).toHaveData('sth', 'else');
                 expect($("#input-vkbtoggle")).toBeInDOM();               
                 expect($("#input-vkbtoggle")).toHaveClass('type-checkbox');                              
                 expect($("#input-vkbtoggle")).toHaveAttr('checked');
@@ -147,6 +152,9 @@ describe("Virtual-Keyboard tests:", function() {
                 });
                 expect($("#input-query")).toBeInDOM();               
                 expect($("#input-query")).toHaveClass('type-vkb-cql');
+                expect($('#query')).toBeInDOM();                              
+                expect($("#query")).toHaveData('context', 'somectx');                               
+                expect($("#query")).toHaveClass('virtual-keyboard-input');   
                 expect($("#input-submit")).toBeInDOM();
                 expect($("#input-submit")).toHaveClass('type-submit');
             });

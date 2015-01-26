@@ -146,11 +146,18 @@
                     }
 
                     if (new_input) {
-                        $(new_input).data("key", key)
-                                .addClass("type-" + param.widget + ' ' + param.additional_classes)
+                        var new_input = $(new_input);
+                        new_input.data("key", key)
+                                .addClass("type-" + param.widget + (param.additional_classes === undefined ? '' :  ' ' + param.additional_classes))
                                 .attr("id", settings.input_prefix + key)
                                 .data("param-object", param);
 
+                        if (param.data !== undefined) {
+                            for (var k in param.data) {
+                                new_input.attr("data-" + k, param.data[k]);
+                            }
+                        }
+                        
                         if (param.widget !== "link") {
                             // set initial valuelink
                             $(new_input).val(param.value);
@@ -163,7 +170,9 @@
                         
                         if (new_input_label !== undefined) {
                             new_input_label.attr('for', settings.input_prefix + key);
-                            new_input_label.addClass(param.additional_label_classes);
+                            if (param.additional_label_classes !== undefined) {
+                                new_input_label.addClass(param.additional_label_classes);
+                            }
                         }
                         if (settings.params[key].label_after_input === true) {
                             $(form).append(new_input, new_input_label, new_widget);
@@ -206,6 +215,8 @@
         }
         
         function genVKBCombo(key, param_settings, preconfigured_input) {
+            preconfigured_input.attr("data-context", param_settings.cql_config.settings.context);
+            preconfigured_input.addClass("virtual-keyboard-input");
             var input = $('<span class="virtual-keyboard-input-combo virtual-keyboard-input-above">' +
                         $('<div>').append(preconfigured_input).html() +
                         '<input type="checkbox" value="unused" class="virtual-keyboard-toggle" id="vkbt' + key + '" checked="checked"/>' +
@@ -253,7 +264,7 @@
                 var source_url = param_settings.static_source.replace(/&amp;/g, '&');
                 // if static source - try to retrieve the data 
                 $.getJSON(source_url, function (data) {
-                    param_settings.values = data.terms
+                    param_settings.values = data.terms;
                     param_settings.values.forEach(function (v) {
                         $(select).append("<option value='" + v.value + "' >" + v.label + "</option>")
                     });

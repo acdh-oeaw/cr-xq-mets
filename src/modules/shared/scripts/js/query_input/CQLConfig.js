@@ -19,7 +19,7 @@ function CQLConfig(options) {
                     "explain_url": "%s?operation=explain&x-format=json",
                     "scan_base_url": "%s?x-context=&x-format=json&operation=scan&scanClause=%s&sort=size&maximumTerms=%d", /* call without pattern restriction (for initial call) */
                     "scan_pattern_url": "%s?x-context=&x-format=json&operation=scan&scanClause=%s=%s", /* placeholders will be replaced with index and (optional) pattern */
-                   "x_context": "",
+                   "context": "",
                    "values_limit": 200,
                    "onLoaded": function(index) { console.log("loaded index: " + index) }
                   };

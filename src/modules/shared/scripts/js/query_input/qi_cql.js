@@ -22,7 +22,7 @@
 
 
         var query_object = new Query(key, param_settings);
-        var new_cql_widget = $("<div id='" + key + "-widget' >" +
+        var new_cql_widget = $("<div id='" + key + "-widget' class='cql-widget'>" +
                 "<div class='cmd-wrapper'><span id='cmd-advanced-query' class='ui-icon ui-icon-zoomin cmd_detail' title='Komplexere Abfragen'/>" +
                 "</div><div class='search-clauses-table'></div></div>");
 
@@ -44,7 +44,7 @@
         console.log(new_cql_widget_proper.query_object);
         query_object.widget = new_cql_widget_proper;
         query_object.updatedCQL = function () {
-            new_input.val(query_object.cql);
+            $('input#' + key).val(query_object.cql);
         };
         // add first SC 
         query_object.addSearchClause(null, "");
@@ -308,7 +308,7 @@
 
             return div_controls;
 
-        }
+        };
 
 
         this.widget = this.genCQLSearchClauseWidget();
