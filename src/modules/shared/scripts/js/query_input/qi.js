@@ -1,6 +1,6 @@
 // Module QueryInput
 // provides a jQuery plugin with the same name.
-!function ($, URI, qi_cql, console) {
+!function ($, console) {
     // could expose the defaults: $.fn.QueryInput.defaults =
     //{q:{label:"Query", widget:"text"}, submit:{value:"Search", widget:"submit"}}
     var defaults = {
@@ -124,12 +124,12 @@
                             new_input = genAutocomplete(key, param);
                             break;
                         case "cql":
-                            var cql_elems = qi_cql.genCQLInput(key, param);
+                            var cql_elems = QueryInput_CQL.genCQLInput(key, param);
                             new_input = cql_elems[0];
                             new_widget = cql_elems[1];
                             break;
                         case "vkb-cql":                       
-                            var cql_elems = qi_cql.genCQLInput(key, param);
+                            var cql_elems = QueryInput_CQL.genCQLInput(key, param);
                             new_input = genVKBCombo(key, param, cql_elems[0]);
                             new_widget = cql_elems[1];
                             break;
@@ -219,7 +219,7 @@
             preconfigured_input.addClass("virtual-keyboard-input");
             var input = $('<span class="virtual-keyboard-input-combo virtual-keyboard-input-above">' +
                         $('<div>').append(preconfigured_input).html() +
-                        '<input type="checkbox" value="unused" class="virtual-keyboard-toggle" id="vkbt' + key + '" checked="checked"/>' +
+                        '<input type="checkbox" value="unused" class="virtual-keyboard-toggle" id="vkbt' + key + '"/>' +
                         '<label for="vkbt' + key + '" class="virtual-keyboard-first-three">äöü</label>');
             
             return input;
@@ -424,5 +424,5 @@
     // this.QueryInput = module;
     $.fn.QueryInput = module.QueryInput;
 
-}(jQuery, URI, QueryInput_CQL, console);
+}(jQuery, console);
 
