@@ -25,3 +25,4 @@ src/modules/index-functions/index-functions.xqm
 # generated documentation files #
 #################################
 docs/*.docx
+/src/modules/shared/scripts/nbproject/private/
