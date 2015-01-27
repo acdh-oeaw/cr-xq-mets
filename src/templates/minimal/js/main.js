@@ -15,7 +15,7 @@
  */
 
 
-var currentUrl = $.url();
+var currentUrl = new URI();
 
 
 /** 
@@ -43,7 +43,8 @@ var search_container_selector = '#search-result';
  * Base URL for the AJAX calls, replaces index.html
  * (or whatever the original URL ends in)
  */
-var baseurl = currentUrl.attr("base") + currentUrl.attr("directory") + "fcs";
+var baseurl = currentUrl.clone();
+baseurl.filename("fcs");
 
 /**
  * Initialization for the ui.
@@ -152,7 +153,7 @@ $(minimal_template_ui_setup);
 */
 function processParams () {
     
-        cr_config.params = $.extend(cr_config.params, currentUrl.param());
+        cr_config.params = $.extend(cr_config.params, currentUrl.query(true));
         console.log("cr_config.params:")
         console.log(cr_config.params);
         
@@ -178,7 +179,7 @@ function persistentLink() {
         
     link = url.attr("path") + '?' + $.param(cr_config.params);
     
-    $.extend($.url().param(),
+    $.extend((new URI()).query(true),
 cr_config.params)
     $("#persistent-link").attr("href",link);
     return link;    
@@ -225,10 +226,11 @@ function load_explain(event) {
 
 function load_scan(event) {
     event.preventDefault();
-    var target = $(this).parents('.record').find(".scan");
+    //var target = $(this).parents('.record').find(".scan");
+    var target = $(this).parents('div').find(".scan");
     
     if (target.length == 0) { 
-        $(this).parents('.record').append("<div class='scan load-main' />")
+        $(this).parents('div').append("<div class='scan load-main' />")
     } else { 
         target.toggle();   
     } 
@@ -300,8 +302,8 @@ function load_main(event) {
     //var detailFragment = targetRequest + ' ' + search_container_selector;
     
     if (targetRequest == undefined) return;
-    var parsedUrl = $.url(targetRequest);
-    params = parsedUrl.param();
+    var parsedUrl = new URI(targetRequest);
+    params = parsedUrl.query(true);
     
     cr_config.params["query"] = params["query"];
     
@@ -412,8 +414,8 @@ function load_detail_data(targetRequest) {
     var detail = $('#detail');
 
     if (targetRequest == undefined) return;
-    var parsedUrl = $.url(targetRequest);
-    params = parsedUrl.param();
+    var parsedUrl = new URI(targetRequest);
+    params = parsedUrl.query(true);
     // Recreate the x-dataview param from scratch
     
     params["x-dataview"] = cr_config.detail.dataview; //,xmlescaped
