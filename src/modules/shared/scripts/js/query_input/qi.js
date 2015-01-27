@@ -94,7 +94,7 @@
                     $('#' + settings.input_prefix + key).value = param.value;
                 } else if (trg_container) {
                     var label = param.label ? param.label : key;
-                    var new_input_label = param.label === '' ? undefined : $(
+                    var new_input_label = param.label === '' ? $('') : $(
                             "<label for='" + settings.input_prefix + key + "'>" + label + "</label>"
                             );
                     var new_input = null, new_widget = null;
