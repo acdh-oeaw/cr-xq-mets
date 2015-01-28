@@ -614,9 +614,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             else ""
         else
             switch(true())
+                case (exists($param-cr))        return $param-cr[1]
                 case ($param-special != '')     return $param-special
                 case ($param-request != '')     return $param-request[1]
-                case (exists($param-cr))        return $param-cr[1]
                 case (exists($param-container)) return $param-container[1]
                 case (exists($param-repo))      return $param-repo[1]
                 case (exists($param-function))  return $param-function[1]
