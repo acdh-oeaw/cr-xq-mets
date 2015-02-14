@@ -14,6 +14,13 @@ based on text-viewer
 relies to get the data-fragments on (the new) cr or resource modules
 :)
 
+
+
+(:~
+ : Path to the stylesheet which removes any internal attributes (i.e. those in the cr:namespace) from the working copy.
+~:)
+declare variable $viewer:path-to-export-xsl:=      $config:app-root||"/core/remove-cr-ids.xsl";
+
 (: moved to resource-module 
 declare function viewer:get ($config-map, $id as xs:string) {
 
@@ -66,7 +73,11 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
 (:<param name="base_url" value="{repo-utils:base-url($config)}"/>:)
 
      return if ($format='xml') then
-                $data
+                let $xsl := doc($viewer:path-to-export-xsl)
+                return 
+                    if ($xsl)
+                    then transform:transform($data,$xsl,())
+                    else ($data,util:log-app($config:app-name,"ERROR","$viewer:path-to-export-xsl was not found at "||$viewer:path-to-export-xsl))
             else repo-utils:serialise-as($data, $format, $type, $config-map, ()) 
             (:<div class="templates:init">
                <div class="templates:surround?with=page.html&amp;at=content-container">
