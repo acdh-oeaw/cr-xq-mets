@@ -194,6 +194,10 @@ declare function repo-utils:context-to-project-pid($x-context as xs:string?, $co
             default return ()
 };
 
+declare function repo-utils:context-to-resource-pid($x-context as xs:string?) as map()* {
+    repo-utils:context-to-resource-pid($x-context,())
+};
+
 declare function repo-utils:context-to-resource-pid($x-context as xs:string?, $config) as map()* {
     let $projects := collection(config:path("projects"))
     let $div := $projects//mets:div[@ID = $x-context]
