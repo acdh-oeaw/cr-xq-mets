@@ -712,7 +712,7 @@ return util:eval ("<bibl>"||$cite-template||"</bibl>")
 };
 
 declare function resource:link($resource-pid, $project-pid, $config) {
-    config:param-value($config, 'base-url')||'get/'||$resource-pid
+    replace(config:param-value($config, 'base-url-public'),'/$','')||'/'||$project-pid||'/'||'get/'||$resource-pid
 };
 
 (:~

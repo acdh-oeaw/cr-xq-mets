@@ -346,5 +346,5 @@ return util:eval ("<bibl>"||$cite-template||"</bibl>")
 };
 
 declare function rf:link($rf-id, $resource-pid, $project-pid, $config) {
-    config:param-value($config, 'base-url')||'get/'||$resource-pid||'/'||$rf-id
+    replace(config:param-value($config, 'base-url-public'),'/$','')||'/'||$project-pid||'/'||'get/'||$rf-id
 };

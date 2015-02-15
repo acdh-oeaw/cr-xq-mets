@@ -1181,3 +1181,7 @@ declare %private function project:termlabel-new-filename($project-pid as xs:stri
     then project:termlabel-new-filename($project-pid, replace($filename,'\.xml$','_1.xml'))
     else $filename
 };
+
+declare function project:base-url($project-pid as xs:string) as xs:string {
+    config:param-value((),'base-url-public')||"/"||$project-pid
+};
