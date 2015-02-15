@@ -225,7 +225,8 @@ declare function index:facets($index-key as xs:string, $project-pid as xs:string
     let $index := index:index($index-key,$project-pid)
     return
     <index key="{$index-key}">{
+        ($index/@sort,    
         for $f in $index/@facet/tokenize(.,'\s')
-        return index:facets($f,$project-pid)
+        return index:facets($f,$project-pid))
     }</index>
 };

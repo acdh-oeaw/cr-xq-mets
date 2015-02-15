@@ -44,7 +44,7 @@ import module namespace project="http://aac.ac.at/content_repository/project" at
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "../../core/resource.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "../../core/resourcefragment.xqm";
-import module namespace functx="http://www.functx.com";
+
 
 declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
@@ -54,6 +54,7 @@ declare variable $config:app-root external;
 
 declare variable $fcs:scanSortText as xs:string := "text";
 declare variable $fcs:scanSortSize as xs:string := "size";
+declare variable $fcs:scanSortDefault := $fcs:scanSortText;
 declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
 declare variable $fcs:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
 declare variable $fcs:kwicWidth := 40;
@@ -117,7 +118,8 @@ declare function fcs:main($config) as item()* {
 		    $max-terms := request:get-parameter("maximumTerms", $fcs:defaultMaxTerms),
 	        $x-filter := request:get-parameter("x-filter", ''),
 	        $max-depth := request:get-parameter("x-maximumDepth", 1),	        
-		    $sort := request:get-parameter("sort", 'text')
+		    (: removing default value for $sort in order to allow for default @sort on <index> :)
+		    $sort := request:get-parameter("sort", ())
 		 return 
 		  if ($scanClause='') 
 		  then
@@ -239,7 +241,7 @@ declare function fcs:explain($x-context as xs:string*, $config) as item()* {
             let $ix-label := ($index/xs:string(@label),$ix-key)[1]
 (: rather retain explicit order           order by $ix-key:)
             return
-                <zr:index search="true" scan="{($index/data(@scan), 'false')[1]}" sort="false">
+                <zr:index search="true" scan="{($index/data(@scan), 'false')[1]}" sort="{($index/data(@sort), 'false')[1]}" cr:type="{if ($index/@facet) then 'nested' else 'flat'}">
                 <zr:title lang="en">{$ix-label}</zr:title>
                 <zr:map>
                     <zr:name set="fcs">{$ix-key}</zr:name>
@@ -306,7 +308,9 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
       from the protocol spec:
       The term [from the scan clause] is the position within the ordered list of terms at which to start, and is referred to as the start term.       :)
  	 $start-term:= ($scx[2],'')[1],	 
-	 $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else $fcs:scanSortText	
+    (: precedence of sort parameter: 1) user input (via $sort), 2) index map definition @sort in <index>, 3) fallback = 'text' via $fcs:scanSortText :)
+    (: keyword 'text' and 'size', otherwise fall back on index map definitions :)
+    $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else ()	
 	 
 	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
 	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
@@ -318,7 +322,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                 util:log-app("DEBUG", $config:app-name, "x-filter="||$x-filter),
                 util:log-app("DEBUG", $config:app-name, "max-terms="||$max-terms),
                 util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
-                util:log-app("DEBUG", $config:app-name, "p-sort="||$p-sort)
+                util:log-app("DEBUG", $config:app-name, "p-sort="||($p-sort,'no user input (falling back to @sort on <index> map definition)')[1])
         ),
   (: get the base-index from cache, or create and cache :)
   $index-scan :=
@@ -550,10 +554,11 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
                 <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>:)
 };
 
-declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string, $config) as item()* {
+declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string?, $config) as item()* {
     let $ts0 := util:system-dateTime()
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
     let $facets := index:facets($index,$project-pid)
+    let $index-elem := index:index($index,$project-pid)
 (:    let $path := index:index-as-xpath($scan-clause,$project-pid):)
     (:let $data-collection := repo-utils:context-to-collection($x-context, $config),
         $nodes := util:eval("$data-collection//"||$path):)
@@ -562,7 +567,8 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
     (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)
 (:        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize):)
         $nodes := index:apply-index($data, $index,$project-pid,())
-        
+
+    let $index-label := ($index-elem/xs:string(@label), $index-elem/xs:string(@key) )[1]
     let $terms :=
         if ($nodes) then 
             if ($facets/index)
@@ -578,6 +584,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
             <sru:extraResponseData>
                 <fcs:countTerms level="top">{count($terms)}</fcs:countTerms>
                 <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>
+                <fcs:indexLabel>{$index-label}</fcs:indexLabel>
              </sru:extraResponseData>
             <sru:echoedScanRequest>
                 <sru:scanClause>{$index}</sru:scanClause>
@@ -587,7 +594,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
 };
 
 (:%private :)
-declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:string, $index-key as xs:string, $project-pid as xs:string) {
+declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:string?, $index-key as xs:string, $project-pid as xs:string) {
     let $ts0 := util:system-dateTime()
     let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: "||$index-key)
     let $termlabels := project:get-termlabels($project-pid,$index-key)
@@ -607,7 +614,9 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                                 default return $term-value:\)                            
                     let $label-map := map:entry("label",$label-value)                            
                     return map:new(($value-map,$label-map)):)
-    let $ts1 := util:system-dateTime()     
+    let $ts1 := util:system-dateTime()
+    let $index-elem := index:index($index-key,$project-pid)
+    let $sort := ($order-param,$index-elem/@sort[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1]
     (: since an expression like  
         group by $x 
         let $y 
@@ -636,8 +645,8 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                         then $term-label[1]
                         else string-join(index:apply-index($firstOccurence,$index-key,$project-pid,'label-only'),'')
             order by 
-                if ($order-param='size') then $t-count else true() descending,
-                if ($order-param='text') then $label else true() ascending
+                if ($sort='size') then $t-count else true() descending,
+                if ($sort='text') then $label else true() ascending
                  collation "?lang=de-DE"
             return map:new((map:entry("value",$t-value),map:entry("count",$t-count),map:entry("label",$label)))
             
@@ -660,9 +669,12 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
 
 
 
-declare %private function fcs:group-by-facet($data as node()*,$sort as xs:string, $index as element(index), $project-pid) as item()* {
+declare %private function fcs:group-by-facet($data as node()*, $order-param as xs:string?, $index as element(index), $project-pid) as item()* {
     let $index-key := $index/xs:string(@key)
-    let $termlabels := project:get-termlabels($project-pid,$index-key)     
+    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet($data, "||$order-param||", "||$index/@key||", "||$project-pid||")")
+    let $termlabels := project:get-termlabels($project-pid,$index-key)
+    let $index-sorting-key := $index/@sort
+    let $facet_sort := ($order-param,$index-sorting-key[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1]
     let $groups := 
         let $maps := 
             for $x in $data 
