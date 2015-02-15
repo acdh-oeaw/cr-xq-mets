@@ -19,7 +19,7 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace cmd="http://www.clarin.eu/cmd/";
 declare namespace oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/";
-
+declare namespace xi = "http://www.w3.org/2001/XInclude";
 
 (: declaration of helper namespaces for better code structuring :)
 declare namespace param="userinput.parameters";
@@ -502,11 +502,24 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
                     then $dmdSecs[*/@MDTYPE = $type and */@MDTYPE != 'OTHER' or */@MDTYPE='OTHER' and */@OTHERMDTYPE = $type] 
                     else ($dmdSecs[@STATUS='default'],$dmdSecs[1])[1]
     return
+        if (not(exists($resource)))
+        then util:log-app("ERROR",$config:app-name,"resource:dmd 2nd parameter $resource missing")
+        else
+        if (not(exists($project)))
+        then util:log-app("ERROR",$config:app-name,"resource:dmd 3rd parameter $project missing")
+        else
         if (exists($dmdSec))
         then 
-            typeswitch($dmdSec/*)
-                case element(mets:mdWrap) return $dmdSec//mets:xmlData/*
-                case element(mets:mdRef) return 
+            switch(true())
+                case exists($dmdSec/mets:mdWrap/mets:xmlData/xi:include) 
+                    return repo-utils:xinclude-to-fragment($dmdSec/mets:mdWrap/mets:xmlData/xi:include)
+            
+                case exists($dmdSec/mets:mdWrap) 
+                    return 
+                        for $x in $dmdSec//mets:xmlData/*
+                        return $x
+                        
+                case exists($dmdSec/mets:mdRef) return 
                     let $location := $dmdSec/mets:mdRef/@xlink:href
                     return 
                         (:if (util:is-binary-doc($location))
@@ -514,7 +527,8 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
                         else:) 
                             if (doc-available($location))
                             then doc($location)/*
-                            else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
+                        else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
+                
                 default return util:log-app("INFO",$config:app-name,"Invalid content in Metadata Section for resource "||$resource-pid||".")
         else util:log-app("INFO",$config:app-name,"No Metadata is registered for resource "||$resource-pid||".")
 };
