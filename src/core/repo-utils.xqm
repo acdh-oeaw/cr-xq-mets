@@ -4,7 +4,7 @@ declare namespace mets="http://www.loc.gov/METS/";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
-
+declare namespace xi="http://www.w3.org/2001/XInclude";
 
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
@@ -880,3 +880,45 @@ declare function repo-utils:get-record($reference-param) as element()? {
             default return ()
     return $references-resolved
 }; 
+
+
+
+(: returns the database-nodes the given xinclude element refers to (instead of making an in-memory-copy)
+ : @param $include one xi:include element
+ : @return zero or more nodes
+:)
+declare function repo-utils:xinclude-to-fragment($include as element(xi:include)) as element()* {
+    let $doc := doc($include/@href),
+        $xpointer := $include/@xpointer,
+        $xpAna := fn:analyze-string(xs:string($xpointer),'(xpointer\((.+?)\)|xmlns\((.+?)\))')
+    let $xpath :=  $xpAna//fn:group[starts-with(.,'xpointer(')]/fn:group/text(),
+        $nsDecls := $xpAna//fn:group[starts-with(.,'xmlns(')]/fn:group/text()
+    return 
+        switch(true())
+            case (not(exists($doc))) return util:log-app("ERROR",$config:app-name,"repo-utils:xinclude-to-fragment(): document at "||$include/@href||" not available")
+            case (not(exists($xpath)) or $xpath = '') return util:log-app("ERROR",$config:app-name,"repo-utils:xinclude-to-fragment(): could not parse xpath in "||$xpointer)
+            default return  
+                let $ns := for $nsdecl in $nsDecls
+                               let $p := substring-before($nsdecl,'='), 
+                                   $uri := substring-after($nsdecl,'=') 
+                               return 
+                                switch(true())
+                                    case ($uri='') return util:log-app("ERROR",$config:app-name, " empty uri in xpointer")
+                                    case (not($uri castable as xs:anyURI)) return util:log-app("ERROR",$config:app-name, $uri||" could not be cast to xs:anyURI; ignoring")
+                                    case ($p='') return util:log-app("ERROR",$config:app-name, " empty prefix for uri "||$uri)
+                                    default return (
+                                        util:log-app("DEBUG",$config:app-name, "repo-utils:xinclude-to-fragment(): Declaring namespace "||$p||"="||$uri),
+                                        util:declare-namespace($p,xs:anyURI($uri))
+                                    ) 
+                return 
+                    try {
+                        util:eval("$doc"||$xpath)
+                    }
+                    catch * {(
+                        util:log-app("ERROR",$config:app-name, "An error occured evaluating $doc"||$xpath),
+                        util:log-app("ERROR",$config:app-name, concat($err:code, ": ", $err:description)), 
+                        util:log-app("ERROR",$config:app-name, "@xpointer "||$xpointer),
+                        util:log-app("ERROR",$config:app-name, util:serialize($xpAna,'method=xml')),
+                        util:log-app("ERROR",$config:app-name, $nsDecls)
+                    )}
+};
