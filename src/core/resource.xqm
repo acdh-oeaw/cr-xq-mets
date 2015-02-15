@@ -702,6 +702,7 @@ declare function resource:label($label, $resource-pid as xs:string, $project)  {
 (:~  :)
 declare function resource:cite($resource-pid, $project-pid, $config) {
 let $cite-template := config:param-value($config,'cite-template')
+let $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri))
 let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
 let $md := resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid)
 let $link := resource:link($resource-pid, $project-pid, $config)

@@ -335,6 +335,7 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
 
 declare function rf:cite($resourcefragment-pid, $resource-pid, $project-pid, $config) {
 let $cite-template := config:param-value($config,'cite-template')
+let $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri))
 let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
 let $md := resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid)
 let $link := rf:link($resourcefragment-pid, $resource-pid, $project-pid, $config) 
