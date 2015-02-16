@@ -685,18 +685,20 @@ declare %private function fcs:group-by-facet($data as node()*, $order-param as x
                     else ()
         let $map := map:new($maps)
         return $map
-    
-    return
-     <sru:terms> {
-        for $group-key in map:keys($groups)
+    let $group-keys := map:keys($groups)
+    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $group-keys: "||string-join($group-keys,', '))
+    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $order-param="||$order-param||", $index-sorting-key="||$index-sorting-key||", $fcs:scanSortDefault="||$fcs:scanSortDefault)
+    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: sorting facet "||$index-key||" by "||$facet_sort)
+    let $terms := 
+        for $group-key in $group-keys
         let $entries := map:get($groups, $group-key)        
          let $term-label := fcs:term-to-label($group-key,$index-key,$project-pid,$termlabels)
          let $label := if ($term-label) then $term-label
                                         else index:apply-index($entries[1],$index-key,$project-pid,'label-only')
         let $count := count($entries)        
         order by
-            if ($sort='size') then $count else true() descending,
-            if ($sort='text') then $label else true() ascending            
+            if ($facet_sort='size') then $count else true() descending,
+            if ($facet_sort='text') then $label else true() ascending            
         return
             <sru:term>
                 <sru:displayTerm>{$label}</sru:displayTerm>
@@ -705,11 +707,67 @@ declare %private function fcs:group-by-facet($data as node()*, $order-param as x
                 <sru:extraTermData>
                     <cr:type>{$index-key}</cr:type>
                     {if ($index/index)
-                    then fcs:group-by-facet($entries, $sort, $index/index, $project-pid)
-                    else fcs:term-from-nodes($entries, $sort, root($index)/index/@key, $project-pid)}
+                    then fcs:group-by-facet($entries, $order-param, $index/index, $project-pid)
+                    else fcs:term-from-nodes($entries, $order-param, root($index)/index/@key, $project-pid)}
                 </sru:extraTermData>
-            </sru:term>
-            } </sru:terms>
+            </sru:term> 
+    return
+        (: we might have situations where different levels of nesting of facets is required, e.g.  
+            Index "index"
+              |
+              |- Facet "a"
+              |     |
+              |     |- Subfacet "a1"
+              |            |- Value 1
+              |            |- Value 2
+              |                ...
+              |
+              |     |- Subfacet "a1"
+              |            |- Value 1
+              |            |- Value 2
+              |                 ...
+              |- Facet "b"
+                    |- Value 1
+                    |- Value 2
+                         ...
+                         
+        Since the map definitions of the subfacet will be applied to facet "b" as well, 
+        there would occur grouping where this is undesired. 
+        For this a special handling is introduced here: whenever the facet of a term returns 
+        only one term and when this term is the same as its parent term, the facet will be "ignored" (i.e. 
+        will not be output as a term on its own right) and its child terms will be output directly to their 
+        grandparent term. E.g.
+        
+        Data:        
+            <v type="a1x">...</v>
+            <v type="a1y">...</v>
+            <v type="a2x">...</v>
+            <v type="a2y">...</v>
+            <v type="bx">...</v>
+            <v type="by">...</v>
+        
+        Index definitions:  
+            <index key="index" facet="facet">
+                <path match="@type">v</path>
+            </index>
+            
+            <index key="facet" facet="subfacet">
+                <path match="if (@type = ('a1x','a1y','a2x','a2y')) then 'a' else 'b'">v</path>
+            </index>
+            
+            <index key="subfacet">
+                <path match="if (@type = ('a1x','a1y')) then 'a1' else if (@type = ('a2x','a2y')) then 'a2' else 'b'">v</path>
+            </index>
+        
+        defining some values of 'subfacet' to be the same as its parent 'facet', the subgrouping will be ignored and a flat list 
+        of values will be output instead
+        
+        :)
+        if (count($group-keys)=1 and count($terms) = 1 and $terms/sru:value/text() = $group-keys)
+        then 
+            let $log := util:log-app("INFO",$config:app-name,"fcs:group-by-facet: flattening facet "||$index-key||" w/ value "||$terms/sru:value/text()||" because it contains only 1 term with the same index-key as its parent")
+            return $terms/sru:extraTermData/sru:terms
+        else <sru:terms>{$terms}</sru:terms>
 };
 
 (:~ lookup a label to a term using a freshly loaded the projects termlabel map 
