@@ -5,8 +5,15 @@ declare namespace templates="http://exist-db.org/xquery/templates";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "../../core/repo-utils.xqm";
 import module namespace cr = "http://aac.ac.at/content_repository" at  "../../core/cr.xqm";
-import module namespace resource = "http://aac.ac.at/content_repository/resource" at  "../resource/resource.xqm";
-import module namespace project = "http://aac.ac.at/content_repository/project" at  "../resource/project.xqm";
+import module namespace resource = "http://aac.ac.at/content_repository/resource" at  "../../core/resource.xqm";
+import module namespace project = "http://aac.ac.at/content_repository/project" at  "../../core/project.xqm";
+import module namespace index = "http://aac.ac.at/content_repository/index" at  "../../core/index.xqm";
+import module namespace f = "http://aac.ac.at/content_repository/file" at "../../core/file.xqm";
+import module namespace diag  = "http://www.loc.gov/zing/srw/diagnostic/" at "../diagnostics/diagnostics.xqm";
+
+declare namespace mets = "http://www.loc.gov/METS/";
+declare namespace xlink="http://www.w3.org/1999/xlink";
+
 (:declare namespace tei = "http://www.tei-c.org/ns/1.0" ;:)
 
 (:~ default viewer, fetching data, transforming with xslt 
@@ -20,6 +27,16 @@ relies to get the data-fragments on (the new) cr or resource modules
  : Path to the stylesheet which removes any internal attributes (i.e. those in the cr:namespace) from the working copy.
 ~:)
 declare variable $viewer:path-to-export-xsl:=      $config:app-root||"/core/remove-cr-ids.xsl";
+
+(:~
+ : The index of name $viewer.md-is-restriced-indexname is applied to the standard metadata record 
+ : for a resource and must return a value that can be cast to xs:boolean. 
+ : If applying the index returns an empty sequence or a value that cannot be cast to xs:boolean, 
+ : the data will not be available in any format (xml, html etc.), 
+ :)
+declare variable $viewer:md-is-restriced-indexname := 'md.get-data-is-restricted';
+
+
 
 (: moved to resource-module 
 declare function viewer:get ($config-map, $id as xs:string) {
@@ -48,20 +65,55 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
     (:let $debug := 
         let $d := <debug><id>{$id}</id><project>{$project}</project><type>{$type}</type><subtype>{$subtype}</subtype><format>{$format}</format></debug>
         return util:log-app("INFO",$config:app-name,$d):)
-    
+    let $log := util:log-app("DEBUG", $config:app-name, "viewer:display($config-map,"||$id||","||$project||","||$type||","||$subtype||","||$format||")")
     let $data := 
                 switch ($type)
                     case 'data' return 
                         if ($id = $project)
-                            then () (: we don't want to return the whole data of a proejct ... :)
-                            else cr:resolve-id-to-data($id,false())
+                        then () (: we don't want to return the whole data of a proejct ... :)
+                        else 
+                            let $id-parsed := repo-utils:parse-x-context($id,()),
+                                $resource-pid := $id-parsed("resource-pid")
+                            let $is-restricted := 
+                                if ($resource-pid!='') 
+                                then index:apply-index(resource:dmd($resource-pid,$project),$viewer:md-is-restriced-indexname,$project,'match')
+                                else  diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id)
+                            return 
+                                switch (true())
+                                    case ($resource-pid='') return diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id) 
+                                    case ($is-restricted) return diag:diagnostics('record-not-authorised-to-send',('access to the data of this resource is restriced. Please refer to its metadata for further information.'))
+                                    case (not($is-restricted instance of xs:boolean)) return diag:diagnostics('general-error','value "'||$is-restricted||'" is unsuitable to determine whether data access is restriced or not')
+                                    default return cr:resolve-id-to-data($id,false())
+                    
                     case 'metadata' return
                         if ($id = $project)
                         then project:dmd($project) (: projects currently only have CMDI metadata :)
-                        else 
-                            if ($subtype!='')
-                            then resource:dmd-from-id($subtype, $id, $project)
-                            else resource:dmd-from-id($id, $project)
+                        else
+                            let $resource-pid := repo-utils:context-to-resource-pid($id)("resource-pid")
+                            let $data := 
+                                if ($subtype!='')
+                                then resource:dmd-from-id($subtype, $resource-pid, $project)
+                                else resource:dmd-from-id($resource-pid, $project)
+                            return $data
+                    
+                   (: case 'show' return 
+                        switch (true())
+                            case ($id = $project) return viewer:display($config-map,$id,$project,'redirect',$subtype,$format)
+                            case ()
+                            default return ():)
+                    
+                    case 'redirect' return
+                        let $corpusPage := f:get-file-entry('projectCorpusAccessPage', $project)/mets:FLocat/replace(@xlink:href,'^.+/',''),
+                            $corpusURI := project:base-url($project)||"/"||$corpusPage    
+                        let $id-parsed := repo-utils:parse-x-context($id,())
+                        let $resource-pid := $id-parsed("resource-pid"),
+                            $rf-pid := $id-parsed("resourcefragment-pid")
+                        let $q_param :=
+                            switch (true())
+                                case ($rf-pid!='') return "?detail.query=fcs.rf="||$rf-pid
+                                case ($resource-pid!='') return "?detail.query=fcs.r=*&amp;x-highlight=off&amp;x-context="||$resource-pid
+                                default return ()
+                        return response:redirect-to(xs:anyURI($corpusURI||$q_param))
                     default return cr:resolve-id-to-entry($id)
     
 (:    let $params := <parameters>

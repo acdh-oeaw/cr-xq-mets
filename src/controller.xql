@@ -9,6 +9,8 @@ xquery version "3.0";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "core/config.xqm";
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 import module namespace projectAdmin="http://aac.ac.at/content_repository/projectAdmin" at "modules/projectAdmin/projectAdmin.xqm";
+(: needed to parse /get request urls :)
+import module namespace get = "http://aac.ac.at/content_repository/get" at "modules/get/get.xqm";
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
@@ -383,8 +385,19 @@ switch (true())
         (: If the request is made from a module (with separate path-step (currently only /get) :)
         let $corr-rel-path := 
             if (starts-with($rel-path, "/get")) 
-            then substring-after($rel-path, '/get') 
+            then
+                let $path-parsed := get:parse-relPath($rel-path,$project)
+                let $steps-to-remove-from-path := for $s in ('get',$path-parsed("id"),$path-parsed("type"),$path-parsed("subtype")) return replace($s,'([\^\$\.\-\?\+\(\)\]\[\}\{])','\\$1')
+                let $regex := "("||string-join($steps-to-remove-from-path!concat('/',.),'|')||")"
+                let $log := util:log-app("DEBUG",$config:app-name,"$regex = "||$regex)
+                return replace(
+                            $rel-path,
+                            $regex,
+                            ""
+                       )
             else $rel-path
+            
+        let $log := util:log-app("DEBUG", $config:app-name, "$corr-rel-path = "||$corr-rel-path)
         let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path)
         let $facs-requested:=starts-with($path,'/facs')
         return
@@ -398,9 +411,11 @@ switch (true())
                     </forward>
                 </dispatch>    
             else
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{$path}" />        
-                </dispatch>
+                (:let $log := util:log-app("DEBUG",$config:app-name, "forwarding webresource "||$path)
+                return:)
+                    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                        <forward url="{$path}" />        
+                    </dispatch>
 
 
     (:~
