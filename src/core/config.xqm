@@ -521,6 +521,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
     
     let $param-special:=
         switch($param-key)
+            case "project-pid"              return $mets/xs:string(@OBJID)
             case "app-root"                 return $config:app-root
             case "app-root-collection"      return $config:app-root-collection
             case "projects-baseuri"         return $config-params:projects-baseuri            
