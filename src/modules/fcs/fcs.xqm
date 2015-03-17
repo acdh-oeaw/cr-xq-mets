@@ -412,8 +412,6 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
         
                 else $data:)
 
-    (: extra handling if fcs.resource=root :)
-    let $start-term := if ($index-name= 'fcs.resource' and $start-term='root') then '' else $start-term
     
 	(: extract the required subsequence (according to given sort) :)
 	(:let $res-nodeset :=  if ($index-name= 'cql.serverChoice') then
@@ -432,7 +430,11 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 		(\: $colls := if (fn:empty($collection)) then '' else fn:string-join($collection, ","), :\)
         $colls := string-join( $x-context, ', ') ,
 		$created := fn:current-dateTime():)
-	let $terms-subsequence := fcs:scan-subsequence($index-scan/descendant-or-self::sru:scanResponse/sru:terms/sru:term, $start-term , $max-terms, $response-position, $x-filter)
+	
+	(: extra handling if fcs.resource=root, and for cql.serverChoice (there we did the filtering already in scan-all() :)
+    let $start-term-subseq := if (($index-name= 'fcs.resource' and $start-term='root') or $index-name='cql.serverChoice') then '' else $start-term
+    
+	let $terms-subsequence := fcs:scan-subsequence($index-scan/descendant-or-self::sru:scanResponse/sru:terms/sru:term, $start-term-subseq, $max-terms, $response-position, $x-filter)
     (:  return $res-nodeset   :)
 (:    return $index-scan  :)
     (:DEBUG
@@ -457,9 +459,11 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 (:~ returns appropriate subsequence of the index based on filter, startTerm and maximumTerms as defined in
 @seeAlso http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/cs01/part6-scan/searchRetrieve-v1.0-cs01-part6-scan.html#responsePosition
 
+@param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
 :)
 declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
 (:$max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {:)
+let $x-filter-lc := lower-case($x-filter)
 
 let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) then (: if there are more levels of terms :) 
                         for $term in $terms
@@ -479,32 +483,37 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                               else ()
                                           )} </sru:term>
                                        else ()
-                    else (: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) :)                    
-                        if ($x-filter='' or not(exists($x-filter))) then
-                            if ($start-term='' or not(exists($start-term))) then 
-                            (: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence :)
-                                subsequence($terms,1,$maximum-terms)
-                              else
-                              (: start-term and no x-filter, return the following siblings of the startTerm; regard response-position :)
-                                let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1
-                                let $start-list-term-position := $start-search-term-position - $response-position + 1
-                                let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
-(:                                $terms[$start-search-term-node/position() - $response-position]:)
-                                return subsequence($terms,$start-list-term-position,$maximum-terms)
-                          else       
-                            if ($start-term='' or not(exists($start-term))) then
-                            (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
-(:  TODO: regard other types of matches :)
-                                subsequence($terms[starts-with(sru:displayTerm,$x-filter)],1,$maximum-terms)
-                              else 
-                              (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
-                                let $filtered-terms := $terms[starts-with(sru:displayTerm,$x-filter)]
-                                (: need to reapply the filter :)
-                                let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*[starts-with(sru:displayTerm,$x-filter)]) + 1
-                                let $start-list-term-position := $start-search-term-position - $response-position + 1
-                                let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
-                                return subsequence($filtered-terms,$start-list-term-position,$maximum-terms)
-(:                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]:)
+                    else (: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) :)
+                        (: if $maximum-terms=0 return all terms :)   
+                        let $maximum-terms-resolved := if ($maximum-terms=0) then count($terms) else $maximum-terms                    
+                        return if ($x-filter='' or not(exists($x-filter))) then
+                                    if ($start-term='' or not(exists($start-term))) then    
+                                    (: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence :)
+                                        subsequence($terms,1,$maximum-terms-resolved)
+                                      else
+                                      (: start-term and no x-filter, return the following siblings of the startTerm; regard response-position :)
+(:                                        let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1:)
+(:                                        let $start-search-term-position := $terms[starts-with(sru:value,$start-term)][1]/sru:extraTermData/fcs:position:)
+                                            let $start-search-term-position := index-of ($terms, $terms[starts-with(sru:value,$start-term)][1])
+                                        let $start-list-term-position := $start-search-term-position - $response-position + 1
+                                        let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
+        (:                                $terms[$start-search-term-node/position() - $response-position]:)
+                                        return subsequence($terms,$start-list-term-position,$maximum-terms-resolved)
+                                  else       
+                                    if ($start-term='' or not(exists($start-term))) then
+                                    (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
+        (:  TODO: regard other types of matches :)
+                                        subsequence($terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)],1,$maximum-terms-resolved)
+                                      else 
+                                      (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
+                                        let $filtered-terms := $terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]
+                                        let $start-search-term-position := index-of ($filtered-terms, $filtered-terms[starts-with(sru:value,$start-term)][1])
+                                        (: thought would need to reapply the filter :)
+(:                                        let $start-search-term-position := count($filtered-terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]) + 1:)
+                                        let $start-list-term-position := $start-search-term-position - $response-position + 1
+                                        let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
+                                        return subsequence($filtered-terms,$start-list-term-position,$maximum-terms-resolved)
+        (:                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]:)
 
 return  $recurse-subsequence
 (:return subsequence($filteredData,  , $maximumTerms):)
@@ -836,12 +845,15 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                 if (contains($query,$config:INDEX_INTERNAL_RESOURCEFRAGMENT))
                 then $result-unfiltered
                 else repo-utils:filter-by-context($result-unfiltered,$context-parsed,$config)
-        let	$result-count := fn:count($result),
+        let	$result-count := fn:count($result),            
             $facets := if (contains($x-dataview,'facets') and $result-count > 1) then fcs:generateFacets($result, $query) else (),
-(:  temporarily deactivated during the cleanup of fcs 2014-08-22
-$ordered-result := fcs:sort-result($result, $query, $x-context, $config),                              
-            $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),:)
-            $result-seq := fn:subsequence($result, $startRecord, $maximumRecords),
+
+            $ordered-result := if (contains($query,$config:INDEX_INTERNAL_RESOURCEFRAGMENT))
+                then $result
+                else fcs:sort-result($result, $query, $config),                
+                                           
+            $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),
+(:            $result-seq := fn:subsequence($result, $startRecord, $maximumRecords),:)
             $seq-count := fn:count($result-seq),        
             $end-time := util:system-dateTime()
         (: when displaying certain indexes (e.g. toc) we only want to show the first resource fragment :) 
@@ -905,7 +917,7 @@ $ordered-result := fcs:sort-result($result, $query, $x-context, $config),
                             </sru:echoedSearchRetrieveRequest>
                             <sru:extraResponseData>
                               	<fcs:returnedRecords>{$seq-count}</fcs:returnedRecords>
-                                <fcs:numberOfMatches>{ () (: count($match) :)}</fcs:numberOfMatches>
+
                                 <fcs:duration>{($end-time - $start-time, $end-time2 - $end-time) }</fcs:duration>
                                 <fcs:transformedQuery>{ $xpath-query }</fcs:transformedQuery>
                             </sru:extraResponseData>
@@ -916,8 +928,24 @@ $ordered-result := fcs:sort-result($result, $query, $x-context, $config),
                             }
                             {$facets}                     
                         </sru:searchRetrieveResponse>
+                        
+(:                                <fcs:numberOfMatches>{ () (\: count($match) :\)}</fcs:numberOfMatches>:)
 };
 
+(:~ sort result 
+currently supporting only default sort by resource (the explicit resource order as defined in project.xml 
+TODO: read the sortkeys from orig-query and order by those :)
+declare function fcs:sort-result ($result, $orig-query as xs:string, $config) as node()* {
+let $project-id := ($result/xs:string(@cr:project-id))[1]
+let $resources-in-result := distinct-values ( $result/data(@cr:resource-pid))
+let $resource-list := project:list-resources($project-id)[xs:string(@ID) = $resources-in-result]
+ 
+for $res in $resource-list
+        let $res-id := $res/data(@ID)
+        let $resource-hits := $result[data(@cr:resource-pid) = $res-id ]
+          return $resource-hits
+ 
+};
 
 (:~ facets are only available in SRU 2.0, but we need them now.
 
@@ -1064,11 +1092,16 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     	
         (: $match-ids are always cr:ids of whole elements - it may be :)
         
-        let $matches-to-highlight:= (tokenize(request:get-parameter("x-highlight",""),","),$match-ids)[rf:lookup-id(.,$resource-pid, $project-id) = $resourcefragment-pid]
+(:        let $matches-to-highlight := (tokenize(request:get-parameter("x-highlight",""),","),$match-ids):)
+(:  the predicate makes the function by SLOWER by factor 10 !!! [rf:lookup-id(.,$resource-pid, $project-id) = $resourcefragment-pid]:)
+    let $matches-to-highlight:= (tokenize(request:get-parameter("x-highlight",""),","),$match-ids)[. = $rf//@cr:id]
+    
+    let $dumy4 := util:log-app("INFO",$config:app-name,"$match-ids / rf: "||$resourcefragment-pid||":: "||string-join($matches-to-highlight,' '))
+    
     (:    let $record-data-toprocess := if (string-length(string-join($rf,'')) > string-length(string-join($record-data-input,''))) then $rf else $record-data-input:)
-            let $record-data-toprocess := <rec> { if (not($record-data-input/local-name() = $parent-elem)) then $rf else $record-data-input } </rec>
-            
-         let $log := util:log-app("DEBUG", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*))
+            let $record-data-toprocess := <rec> { if (not($record-data-input/local-name() = $parent-elem)) then $rf else $orig-sequence-record-data } </rec>
+(:            let $record-data-toprocess := $rf:)
+         let $log := util:log-app("DEBUG", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*)||" record-data-input/name():"||local-name($record-data-input))
          let $log := util:log-app("DEBUG", $config:app-name, "$matches-to-highlight: "||string-join($matches-to-highlight,';'))
          
                                                 
@@ -1116,7 +1149,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     let $rf2 := fcs:highlight-matches-in-copy($record-data-input, $matches-to-highlight)
     (:    ,$rf-window-next:)
     (:   let $debug :=   <fcs:DataView type="debug" count="{count($record-data-highlighted)}">{transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,())}</fcs:DataView>:)
-         let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$match-ids}">{$record-data-highlighted}</fcs:DataView>
+         let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
         
         let $kwic := if (contains($data-view,'kwic')) then
                        let $kwic-config := <config width="{$fcs:kwicWidth}"/>
