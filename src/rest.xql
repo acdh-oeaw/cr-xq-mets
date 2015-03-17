@@ -8,7 +8,7 @@ import module namespace repo-utils="http://aac.ac.at/content_repository/utils" a
 (:~ delivers a sequence of resources or resourcefragments based on the ids requested
  : does not return full project collection, if project-id is requested, the response is empty 
  :)
-declare
+(:declare
     %rest:GET
     %rest:path("/cr-xq/get-data/{$ids}")
 function crxq-rest:get-data($ids as xs:string){
@@ -23,7 +23,7 @@ function crxq-rest:get-entry($ids as xs:string){
     let $data := cr:resolve-id-to-entry($ids)
     return <cr:response count="{count($data)}">{$data}</cr:response>
 };
-    
+    :)
     
     
     
