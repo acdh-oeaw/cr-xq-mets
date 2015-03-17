@@ -13,10 +13,13 @@ h3 {font-size: 1.2em; margin: 0.8em 0 0.4em 0;}
 h4 {font-size: 1em; margin: 0.4em 0 0.2em 0;}
 .title {font-size: 1.2em; font-weight: bold; margin: 0.4em 0 0 0.2em;}
 
-p { text-align:justify;}
+img {border:0;}
+
+p { text-align:justify; margin: 0.5em 0;}
 
 ul { padding-left: 4px; list-style-type: none; margin: 0;}
 li { background: url('dotred/icon-dot-4-grey.png') no-repeat; background-position: 0px 7px; padding-left: 8px;  }
+ul.ui-autocomplete li { background: none;}
 
 table {border-collapse: collapse;}
 td {padding: 1px 2px;}

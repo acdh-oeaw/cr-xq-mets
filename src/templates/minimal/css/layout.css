@@ -1,14 +1,152 @@
 /*********************/
 /* basic page/blocks layout */
-/* wireframe for debugging */ /*div {border:1px dotted grey; }*/
-body{
-margin:10px;
+/* wireframe for debugging */
+/*div {border:1px dotted grey; }*/
+
+@import "font-awesome.min.css";
+@import "layout-2c.css";
+
+html {
+    width: 100%;
+    height: 100%;
+    -webkit-box-sizing: border-box; 
+    -moz-box-sizing: border-box;   
+    box-sizing: border-box;
+    -moz-background-clip:padding-box;
+    -webkit-background-clip:padding-box;
+    background-clip:padding-box; 
 }
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0 0 0 0;
+}
+* { 
+    -webkit-box-sizing: border-box; 
+    -moz-box-sizing: border-box;   
+    box-sizing: border-box;
+    -moz-background-clip:padding-box;
+    -webkit-background-clip:padding-box;
+    background-clip:padding-box;
+}
+
+.content-part {
+    position: relative;
+}
+
+#detail.content-part {    
+    /* where is that 1% used ?!*/
+    height: 99%;
+}
+
+.container-fluid {
+    overflow-y: auto;
+    position: relative;
+    height: 80%;
+    height: -webkit-calc(100% - 90px - 12px);
+    height: -moz-calc(100% - 90px - 12px);
+    height: calc(100% - 90px  - 12px);
+}
+
+.scrollable-content-box {
+    overflow-y: auto;
+}
+
+/* ********************* */
+/* layout switcher (radio buttons) */
+
+#options-invoke {
+    position: fixed;
+    right:0px;
+    top:0px;
+/*    z-index: 999;*/
+    width: 10px;
+    height: 10px;
+}
+
+#options-labels {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    background: #eee;
+    display: block;
+    width: 20em;
+    height: 6.7em;
+    z-index: 999;    
+}
+
+.col-layout-label {
+    display: block;
+    font-size: 12px;
+    color: black;
+    height: 20px;
+    padding: 0 0.4em 0 1.9em;
+    font-style: normal;
+}
+
+#options-invoke:hover ~ input[type=radio],
+#options-invoke:hover ~ #options-labels,
+#options-labels:hover {
+    display: block;   
+}
+
+#col-layout-1c,
+#col-layout-2c,
+#col-layout-3c,
+#col-layout-auto,
+#options-labels
+ {
+    position: fixed;
+    z-index: 1000;
+    display: none;
+}
+
+.col-layout-label {
+    padding-left: 1.6em;
+}
+
+#col-layout-2c,
+#label-2c {
+    top: 1.7em;
+}
+
+#col-layout-3c,
+#label-3c {
+    top: 3.3em;
+}
+
+#col-layout-auto,
+#label-auto {
+    top: 4.9em;
+}
+
+#col-layout-1c:checked ~ #options-labels #label-1c,
+#col-layout-2c:checked ~ #options-labels #label-2c,
+#col-layout-3c:checked ~ #options-labels #label-3c,
+#col-layout-auto:checked ~ #options-labels #label-auto {
+    padding-left: 0;
+}
+
+#col-layout-1c:checked ~ #options-labels #label-1c:before,
+#col-layout-2c:checked ~ #options-labels #label-2c:before,
+#col-layout-3c:checked ~ #options-labels #label-3c:before,
+#col-layout-auto:checked ~ #options-labels #label-auto:before {
+    font-family: FontAwesome;
+     content: "\f05d";
+    display: inline-block;
+    width: 1.5em;
+}
+
+/*.col-layout-label {
+    left: 1.6em;
+}*/
+
 /* ********************* */
 /* header */
-#header{
-margin-bottom:1em;
-height:90px;
+#header {
+    margin-bottom: 12px;
+    height:90px;
+    z-index: 2;
 }
 #site-name{
     display:inline;
@@ -21,95 +159,187 @@ height:90px;
     padding-top:10px;
     float:left;
 }
-/*#top-menu {position: absolute; top: 50px; display:inline-block; padding-left: 20px; left:30%; }
 
-#query-input { padding: 4px;  max-width:700px;  }
-#repositories {margin: 6px 0px; }
-#notify {display:none; /\* max-width: 400px; position: relative; overflow: auto; height: 40px; *\/}
-#user {text-align: right;}
-#welcome {max-width: 600px; padding: 10px;}
-*/
 /* ********** */
 /* menu */
 #menu{
-/*    display:inline;*/
+    /*    display:inline;*/
 }
+
 #top-menu{
-    display:inline;
+    display:inline-block;
     position:absolute;
-    top:50px;
+    z-index: 100;
 }
+
 #top-menu li{
-    display:inline;
-    padding:0 1em;
+    display:inline-block;
     background:none;
 }
 
-#user {float:right;}
+#user {float:right; margin-right: 1em;}
+
+#content-container {
+    z-index: 0;
+}
 
 /*#persistent-link-wrapper {position: absolute; right: 1.2em; top:65px;}  */
 
-/* set the box-model to border for easier widths setting */
-#navigation, #main, #detail,
-.static-text, .intro-image{
-/*    float:left;*/
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;
-    box-sizing:border-box;
-    -moz-background-clip:padding-box !important;
-    -webkit-background-clip:padding-box !important;
-    background-clip:padding-box !important;
-/*    border:1px dashed red;*/
-    margin-right: 1%; 
+/*******************/
+/* site part show/hide */
+
+#main > h2 ~ *,            
+#navigation > h2 ~ * {                
+    display: none;
+}    
+
+#main-show:checked ~ #main > *,            
+#navigation-show:checked ~ #navigation > *           
+{                
+    display: block;
 }
 
-    
-/* basic positioning of the main blocks on the screen */
-@media all and (min-width: 1200px) {
-    #navigation, #detail { position:absolute; bottom:0; top:110px; overflow: auto;  }
-    #main { position:absolute; bottom:0; top:110px; overflow: hidden;  }
-    #results {overflow: auto; height:90%;}
-    
-    #navigation { width:24%; min-width:150px; float:left;    /*margin-right:1em; */ }
-    /*#left-menu {float: left; width:250px; height:500px; overflow:auto;}*/
-    #main{    /* margin-left:2em;     float:left; */ position:absolute;    left:25%; width:29%; /* + 1% margin-right */ }
-    #detail {     right:0; width:45%;     margin-right:10px; }
+.flexbox #main-show:checked ~ #main > #results {
+    display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+    display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+    display: -ms-flexbox;      /* TWEENER - IE 10 */
+    display: -webkit-flex;     /* NEW - Chrome */
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-flow: column nowrap;
 }
 
-@media all and (max-width: 1199px) {
-    #navigation-main-wrapper {position:absolute; top:110px; bottom:0; overflow:auto; width:39%; min-width:150px; }
-    #navigation, #main { float:none;}
-    #navigation { /* width:100%; margin-right:1em; */ }
-    /*#left-menu {float: left; width:250px; height:500px; overflow:auto;}*/
-    #main{    /* margin-left:2em;     width:39%; *//* + 1% margin-right */ }
-    #detail {     position:fixed; right:0; width:59%;     margin-right:10px; }
+.flexbox .result-header {
+    order: 1;
+    height: auto;
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
 }
+
+.flexbox .result-body {
+    order: 1;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+
+#main-show, #navigation-show {
+    position: absolute;
+    /* hide the check boxes*/
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    display: block;
+}
+
+
+/** enable this block to see the checkboxes that actually switch the layout */
+/*
+#main-show, #navigation-show {
+    left: 5em;
+    width: 10em;
+    height: 26px;
+    opacity: 1;
+    z-index: 999;    
+}
+
+#main-show {
+    top:20px;
+}
+
+#navigation-show {
+    top: 40px;
+}
+
+#main-show:after {
+    content: "show main";
+    padding-left: 1.5em;
+}
+
+#navigation-show:after {
+    content: "show navigation";
+    padding-left: 1.5em;
+}*/
+
+#main-showing, #navigation-showing,
+#main-hidden, #navigation-hidden {
+    width: 16px;
+    height: 16px;
+    padding-right: 0.8em;
+    position: absolute;
+    display: inline-block;
+    text-align: center;
+}
+
+#main-showing, #main-hidden,
+#navigation-showing, #navigation-hidden {
+    display: block;
+    position: absolute;
+    right: 1em;
+}
+
+#main-showing, #navigation-showing {    
+    display: none;
+}
+
+#main-hidden, #navigation-hidden {
+    display: inline-block;
+}
+
+#main-show:checked ~ div #main-showing,
+#navigation-show:checked ~ div #navigation-showing {
+    display: inline-block;
+}
+
+#main-show:checked ~ div #main-hidden,
+#navigation-show:checked ~ div #navigation-hidden {
+    display: none;
+}
+
 /*******************/
 /* main */
 
+
+@media all and (min-width: 772px) {
+
 .static-text{
-    float:left;
-    width:40%;
+   /*    float:left;*/
+       width:50%;    
+       max-width:700px;
+       padding:10px;
+       margin-left: 80px;
+       /*    clear:both;*/
+   }
+   
+   .intro-image {
+       position:absolute;
+       padding: 10px 30px;
+    padding-right: 10%;
+       width: calc(50% - 80px);
+/*       max-width:600px;*/
+       left: calc(50% + 80px);
+   }
+} 
+
+@media all and (max-width: 771px) {
+.static-text, .intro-image {    
+/*    width:80%;*/
     max-width:600px;
     padding:10px;
-    margin-left: 5%;
-/*    clear:both;*/
+    margin: auto;    
+    /*    clear:both;*/
 }
 
-.intro-image {
-    float: left;
-    padding: 10px 30px;
-    width: 40%;
-}
+} 
 
 .intro-image img { width: 100%; }
 
 /* resource overview */
 
 .data-view.metadata {
-/*    display: table-cell;
-    vertical-align: top;
-    clear: both; */
+    /*    display: table-cell;
+        vertical-align: top;
+        clear: both; */
 }
 
 .data-view.metadata > h4 {
@@ -118,12 +348,21 @@ height:90px;
 
 .record {
     margin: 1em 0;
-/*    border-top: 1px solid #A8A7A3;*/
+    /*    border-top: 1px solid #A8A7A3;*/
+}
+
+#main h2 ~ #query-input {                
+    display: block;
 }
 
 #query-input,
 .record .header {    
-    padding: 0 5px;
+/*    padding: 0 5px;*/
+}
+
+#qi,
+#qi > form {
+    height: 100%;
 }
 
 .record .header .links a {
@@ -131,19 +370,11 @@ height:90px;
     padding-right: 7px;
 }
 
-
-
-/*.listing {max-width: 600px;}*/
-#results{
-    float:left;
-}
-
 .result-header .note {display:none;}
 
 .result-navigation {float:right;}
 
-/*.result-body, .detail-content {overflow: auto; height:90%;}*/
-
+/*.result-body,  {overflow: auto; height:90%;}*/
 
 
 /*#content, #main {float: left;}*/
@@ -151,12 +382,17 @@ height:90px;
 /* detail */
 
 
-#detail .navigation {float:right;}
+#detail .navigation {
+  position: absolute;
+  right: 0;
+/*  top: 7%;*/
+/*  top: calc(26px);*/
+}
 
 /*.data-view.cite {display:none;}*/
 
 #detail .data-view.full, #detail .data-view.facs {
-     width: 48%;
+    width: 48%;
     float:left;
 }
 
@@ -166,14 +402,30 @@ height:90px;
 }
 
 #detail .data-view img {
-    width: 100%;    
+/*    width: 100%;    */
+    height: 100%;    
 }
 
+#detail .detail-header {
+    /* There is some myterious space above here again.*/
+    height: 4%;
+    height: calc(1.5em);
+}
+
+#detail .context-detail {
+    height: 9%;
+    height: calc(4em);
+    overflow-y: auto;
+}
+#detail .detail-content-outer {
+    height: 82%;
+    height: calc(100% - 1.5em - 4em - 26px);
+}
 
 /* padding-top: 5em;
-			#impressum {float:left; margin-left: 2%; width:60%; }
-			#detail {float:right; width:36%; display:none; }
-			#detail-front {float:right; width:35%; margin-top:7em; margin-left:3%;}
+                        #impressum {float:left; margin-left: 2%; width:60%; }
+                        #detail {float:right; width:36%; display:none; }
+                        #detail-front {float:right; width:35%; margin-top:7em; margin-left:3%;}
 */
 /* customize jquery-ui*/
 .ui-widget{
@@ -199,19 +451,269 @@ height:90px;
 .cmd_close {float:right;}
 
 @media print {
-/*	ul { list-style-type: disc;	} */	
-	button {display:none;}
+    /*	ul { list-style-type: disc;	} */	
+    button {display:none;}
     .select-layout {display:none}
 }
 
 /*
  * .ui-accordion .ui-accordion-header { 	padding-left: 12px; }
 .ui-accordion .ui-accordion-header .ui-icon {	left: -0.2em; }
-	
+        
 .ui-widget {font-size: 1em; font-family: inherit;}
-	.ui-tabs .ui-tabs-panel { padding:1em;}
-	.ui-tabs .ui-tabs-nav li a, .result-header {padding: 0.2em 0.5em; }
-	.ui-accordion .ui-accordion-header a {padding: 0.1em 0.3em;}
+        .ui-tabs .ui-tabs-panel { padding:1em;}
+        .ui-tabs .ui-tabs-nav li a, .result-header {padding: 0.2em 0.5em; }
+        .ui-accordion .ui-accordion-header a {padding: 0.1em 0.3em;}
     .ui-datepicker {width: auto;}  
     .ui-datepicker table {width: 100%;}
     .ui-datepicker select.ui-datepicker-month, .ui-datepicker select.ui-datepicker-year {    width: auto; }*/
+
+/* basic positioning of the main blocks on the screen */
+@media all and (min-width: 1200px) {
+    /*disable column show/hide*/
+    #main-show,
+    #main-hidden,
+    #main-showing,
+    #navigation-show,
+    #navigation-hidden,
+    #navigation-showing,
+    #main-show:checked ~ div #main-showing,
+    #navigation-show:checked ~ div #navigation-showing
+    {
+        display: none;
+    }
+    #main #results,            
+    #navigation #navigation-content {                
+        display: block;
+    }  
+}
+
+@media all and (max-width: 799px) {
+    #navigation, #main {
+        float:none;
+    }
+    #navigation {
+        margin-bottom: 0.5em;
+    }
+
+    #main {
+        margin-bottom: 0.5em;
+    }
+
+    #detail.content-part {
+        display: block;
+    }
+    #main h2 ~ #query-input {
+        height: 2.5em;
+    }
+    #detail .navigation {
+        top: 28px;
+    }
+    
+    #detail .detail-content-outer {
+        height: auto;
+    }
+    
+    .result-body table.show {
+        width: 100%;
+    }
+}
+
+/* like < 800 px */
+
+#col-layout-1c:checked ~ #content-container #navigation, 
+#col-layout-1c:checked ~ #content-container #main,
+#col-layout-1c:checked ~ #content-container #detail.content-part {
+    float:none;
+    width: 100%;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+}
+#col-layout-1c:checked ~ #content-container #navigation {
+    margin-bottom: 0.5em;
+}
+
+#col-layout-1c:checked ~ #content-container #main {
+    margin-bottom: 0.5em;
+}
+
+#col-layout-1c:checked ~ #content-container #detail.content-part {
+    display: block;
+}
+
+
+#col-layout-1c:checked ~ #content-container #query-input {
+    height: 2.5em;
+}
+
+/* resetter */
+#col-layout-1c:checked ~ #content-container .content-part,
+#col-layout-1c:checked ~ #content-container #navigation-content,
+#col-layout-1c:checked ~ #content-container #detail.content-part,
+#col-layout-1c:checked ~ #content-container #main > h2,
+#col-layout-1c:checked ~ #content-container #main-showing,
+#col-layout-1c:checked ~ #content-container #main-hidden,
+#col-layout-1c:checked ~ #content-container #navigation > h2,
+#col-layout-1c:checked ~ #content-container #navigation-showing,
+#col-layout-1c:checked ~ #content-container #navigation-hidden,
+#col-layout-1c:checked ~ #content-container #detail.content-part > h2,
+#col-layout-1c:checked ~ #content-container #results,
+#col-layout-1c:checked ~ #content-container .result-header,
+#col-layout-1c:checked ~ #content-container .result-body,
+#col-layout-1c:checked ~ #content-container #detail .detail-header,
+#col-layout-1c:checked ~ #content-container #detail .context-detail,
+#col-layout-1c:checked ~ #content-container #detail .detail-content-outer,
+#col-layout-1c:checked ~ #content-container #detail .detail-content
+{
+    height: auto;
+}
+
+#col-layout-1c:checked ~ #content-container .result-header,
+#col-layout-1c:checked ~ #content-container .result-body {
+    /* Where the heck does this whitespace between #result and it's contents come from? */
+    margin-top: auto;
+}
+
+
+/*force column show/hide*/
+#col-layout-1c:checked ~ #content-container #main-show,
+#col-layout-1c:checked ~ #content-container #main-hidden,
+#col-layout-1c:checked ~ #content-container #navigation-show,
+#col-layout-1c:checked ~ #content-container #navigation-hidden,
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ div #main-showing,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ div #navigation-showing {
+    top: 0;
+    display: block;
+    z-index: 99;
+}
+
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ div #main-hidden,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ div #navigation-hidden {
+    top: 0;
+    display: none;
+}
+
+#col-layout-1c:checked ~ #content-container #main-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #main-showing,            
+#col-layout-1c:checked ~ #content-container #navigation-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #navigation-showing,
+#col-layout-1c:checked ~ #content-container #main #results,            
+#col-layout-1c:checked ~ #content-container #navigation #navigation-content {                
+    display: none;
+}
+
+
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main #results,            
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation #navigation-content {
+    display: block;
+}
+
+#col-layout-1c:checked ~ #content-container .result-body table.show {
+    width: 100%;
+}
+
+/* like >= 1200 px */
+#col-layout-3c:checked ~ #content-container .content-part {        
+    height: 100%;
+}
+
+#col-layout-3c:checked ~ #content-container #detail.content-part {
+    /* Why ...? */
+    height: 99%;
+}
+
+#col-layout-3c:checked ~ #content-container #navigation,
+#col-layout-3c:checked ~ #content-container #main {
+    padding-right: 0.8em;
+}
+
+#col-layout-3c:checked ~ #content-container #main,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #main,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #main  {
+    float: left;
+    width: 24%;
+    height: 100%;
+}
+
+#col-layout-3c:checked ~ #content-container #navigation,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #navigation,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #navigation,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation {
+    float: left;
+    width: 24%;
+    height: 100%;
+}
+
+#col-layout-3c:checked ~ #content-container #detail.content-part { 
+    margin-left: 48%;   
+    width: 52%; 
+}
+
+#col-layout-3c:checked ~ #content-container #detail.content-part > h2,
+#col-layout-3c:checked ~ #content-container #main > h2,
+#col-layout-3c:checked ~ #content-container #navigation > h2,
+#col-layout-3c:checked ~ #content-container #navigation #navigation-hidden,
+#col-layout-3c:checked ~ #content-container #navigation #navigation-showing, 
+#col-layout-3c:checked ~ #content-container #main #main-hidden,
+#col-layout-3c:checked ~ #content-container #main #main-showing{
+    height: 5%;
+    height: calc(26px);
+}
+
+#col-layout-3c:checked ~ #content-container  #navigation-content {
+    height: 95%;
+    display: block;
+}
+
+#col-layout-3c:checked ~ #content-container #query-input {
+    height: 7%;
+    height: calc(2.5em);
+    overflow-y: hidden;
+}
+
+#col-layout-3c:checked ~ #content-container #results {
+    height: 88%;
+    overflow-y: hidden;
+}
+
+#col-layout-3c:checked ~ #content-container .result-header {
+    height: 20%;
+    overflow-y: hidden;
+}
+#col-layout-3c:checked ~ #content-container .result-body {
+    height: 80%;
+}
+
+.flexbox #col-layout-3c:checked ~ #content-container .result-header,
+.flexbox #col-layout-3c:checked ~ #content-container .result-body {
+    height: auto;
+}
+
+/* resetter */
+
+#col-layout-3c:checked ~ #content-container #main {
+    clear: none;
+}
+
+#col-layout-3c:checked ~ #content-container #main > h2 ~ *,            
+#col-layout-3c:checked ~ #content-container #navigation > h2 ~ * {
+    display: block;
+}
+
+#col-layout-3c:checked ~ #content-container #main-showing,
+#col-layout-3c:checked ~ #content-container #main-hidden,
+#col-layout-3c:checked ~ #content-container #navigation-showing,
+#col-layout-3c:checked ~ #content-container #navigation-hidden,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #main #main-showing,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #main #main-hidden,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-showing,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-hidden,       
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main #main-showing,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main #main-hidden,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #navigation #navigation-showing,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #navigation #navigation-hidden {
+    display: none;
+}

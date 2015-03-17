@@ -9,8 +9,8 @@
         <link rel="stylesheet" type="text/css" href="css/theme.css"/>
         <link rel="stylesheet" type="text/css" href="css/layout.css"/>
         <link rel="stylesheet" type="text/css" href="css/elements.css"/>
-        <link rel="stylesheet" type="text/css" href="modules/shared/scripts/css/cr.css"/>
-        <link rel="stylesheet" type="text/css" href="css/custom.css"/>
+<!--        <link rel="stylesheet" type="text/css" href="modules/shared/scripts/css/cr.css"/>-->
+<!--     moved to project specific setup (to take precedence)  <link rel="stylesheet" type="text/css" href="css/custom.css"/>-->
 
         <!--<link rel="stylesheet" type="text/css" href="modules/shared/scripts/style/bootstrap.min.css"/>
         <link rel="stylesheet" type="text/css" href="modules/shared/scripts/style/jquery/base/jquery.ui.resizable.css"/>
@@ -21,6 +21,8 @@
         <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-1.11.2.min.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-migrate-1.2.1.min.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-ui-1.10.4.custom.min.js"/>
+        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery.treeview.js"/>
+        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery.modern-blink.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/codemirror/codemirror.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/codemirror/mode/xml/xml.js"/>                                                      
         <script type="text/javascript" src="modules/shared/scripts/js/URI.js"/>
@@ -38,6 +40,19 @@
         <link class="config:html-head"/>
     </head>
     <body id="body">
+        <div id="options-invoke" title="Layout-Optionen"/>
+        <input type="radio" id="col-layout-1c" name="layout-switch"/>
+        <input type="radio" id="col-layout-2c" name="layout-switch"/>
+        <input type="radio" id="col-layout-3c" name="layout-switch"/>
+        <input type="radio" id="col-layout-auto" name="layout-switch" checked="checked"/>        
+        <div id="options-labels" class="bg">
+            <span>Layout</span>
+            <label for="col-layout-1c" id="label-1c" class="col-layout-label">1 Spalte</label>
+            <label for="col-layout-2c" id="label-2c" class="col-layout-label">2 Spalten</label>
+            <label for="col-layout-3c" id="label-3c" class="col-layout-label">3 Spalten</label>
+            <label for="col-layout-auto" id="label-auto" class="col-layout-label">automatisch</label>
+            
+        </div>        
         <div class="templates:include?path=header.html"/>
         <div id="content-container" class="container-fluid"/>
     </body>
