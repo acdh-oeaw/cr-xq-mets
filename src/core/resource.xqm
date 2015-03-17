@@ -391,13 +391,16 @@ declare function resource:get-data($resource-pid as xs:string, $project, $type a
 
 
 (:~
- : Gets a master file for a resource as a document-node and stores it to the project's data directory. It does *not* register it with the resource.
+ : Gets a master file for a resource as a document-node and stores it to the project's data collection. 
+ : If the data already resides in the data collection, only permissions are reset. 
+ : This function does *not* register the master file with the resource's mets entry, but is called 
+ : by resource:new() which updates the METS record by the function's return value.
  : 
  : @param $content: the content of the resource 
  : @param $filename: the filename of the resource to store.
  : @param $resource-pid: the pid of the resource to store
  : @param $project-id: the id of the project the resource belongs to
- : @return the db path to the file
+ : @return the db path to the master file
 ~:)
 declare %private function resource:master($data as document-node(), $resource-pid as xs:string, $project-pid as xs:string) as xs:string? {
     let $current := resource:master($resource-pid,$project-pid)
@@ -406,14 +409,20 @@ declare %private function resource:master($data as document-node(), $resource-pi
     then
         update replace $current with $data
     else 
-        let $this:filename := $resource-pid||".xml"
         let $master_targetpath:= project:path($project-pid,'master')
-        let $store:= 
-                try {repo-utils:store($master_targetpath,$this:filename,$data,true(),project:get($project-pid))
-                } catch * {
-                   util:log-app("ERROR", $config:app-name,"master doc of resource "||$resource-pid||" could not be stored at "||$master_targetpath)
-                }, 
-            $this:filepath:=$master_targetpath||"/"||$this:filename
+        let $data-already-in-data-collection := util:collection-name($data) = $master_targetpath  
+        let $this:filename := if ($data-already-in-data-collection) then util:document-name($data) else $resource-pid||".xml"
+        let $store:=
+                if ($data-already-in-data-collection) 
+                then ()
+                else 
+                    try {
+                        repo-utils:store($master_targetpath,$this:filename,$data,true(),project:get($project-pid))
+                    } catch * {
+                       util:log-app("ERROR", $config:app-name,"master doc of resource "||$resource-pid||" could not be stored at "||$master_targetpath)
+                    }
+
+        let $this:filepath:=$master_targetpath||"/"||$this:filename
         let $chown := sm:chown(xs:anyURI($this:filepath),project:adminsaccountname($project-pid)),
             $chgrp := sm:chgrp(xs:anyURI($this:filepath),project:adminsaccountname($project-pid)),
             $chmod := sm:chmod(xs:anyURI($this:filepath), 'rwxrwxr--')
@@ -480,7 +489,7 @@ declare function resource:dmd-from-id($type as xs:string, $resource-pid as xs:st
  
  
 declare function resource:dmd($resource, $project) as element()? {
-    resource:dmd((),$resource,$project)    
+    resource:dmd((),$resource,$project)
 };
 
 (:~ if reference to $resource and $project-config already available, skip the id-based resolution :)
