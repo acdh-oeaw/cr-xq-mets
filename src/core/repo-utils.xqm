@@ -665,6 +665,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
         repo-utils:serialise-as($item, $format, $operation, $config, '', $parameters)
 };
 declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $x-context as xs:string, $parameters as node()* ) as item()? {
+    let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as: $format = "||$format||" $operation = "||$operation||" $x-context = "||$x-context)
+    return
     switch(true())
         case ($format eq $repo-utils:responseFormatJSon) return	       
 	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config),
@@ -675,7 +677,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
 	                               {let $base-url-public := config:param-value($config,'base-url-public')
 	                                return if ($base-url-public) then <param name="base_url_public" value="{$base-url-public}"/> else ()}
-	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
+	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs_prefix')}"/>
 	                               <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
@@ -702,7 +704,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               {let $base-url-public := config:param-value($config,'base-url-public')
 	                                return if ($base-url-public) then <param name="base_url_public" value="{$base-url-public}"/> else ()}
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
-                                    <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
+                                    <param name="fcs_prefix" value="{config:param-value($config,'fcs_prefix')}"/>
                                     <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>
                                     <param name="dict_file" value="{config:param-value($config, 'dict_file')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
