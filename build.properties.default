@@ -26,7 +26,7 @@ public.repo.displayname=Content Repository
 
 
 # allows to exclude individual directories (especially modules) from the build package
-exclude.dirs=modules/admin/**,modules/text-viewer/**
+exclude.dirs=modules/admin/**,modules/text-viewer/**,modules/cs-xsl/tests/**
 
 # dir where the build_docs.xml lies
 scripts.dir=../utils
