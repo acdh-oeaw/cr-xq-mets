@@ -33,21 +33,7 @@ declare function local:mkcol($collection, $path) {
 declare variable $local:cr-writer:=doc($target||"/modules/access-control/writer.xml")/write;
 
 declare variable $local:projects-xconf := doc($target||"/_cr-projects_xconf.xml");  
-    
-util:log("INFO", "$target: "|| $target),
-(: setup projects-dir :)
-local:mkcol("", $config:projects-dir),
-local:mkcol("", $config:data-dir),
-(: store the collection configuration :)
-local:mkcol("/db/system/config", $target),
-xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
-(: store the cr-projects collection configuration :)
-local:mkcol("/db/system/config", $config:projects-dir),
-xdb:store("/db/system/config/"||$config:projects-dir,'collection.xconf',$local:projects-xconf),
-(: preparea a collection for the cr-data collection configuration :)
-local:mkcol("/db/system/config", $config:data-dir),
-xdb:reindex($config:projects-dir),
-xdb:reindex($target),
+
 
 (: we need two system users for the data maangement :)
 (: TODO merge these into one? :)
@@ -56,11 +42,35 @@ if (not(sm:user-exists(xs:string($local:cr-writer/write-user)))) then sm:create-
 util:log("INFO", "** setting up cr-xq system account **"),
 if (not(sm:user-exists($config:system-account-user))) then sm:create-account($config:system-account-user,$config:system-account-pwd,$config:system-account-user,()) else sm:passwd($config:system-account-user,$config:system-account-pwd),
 if (not(sm:group-exists("cr-admin"))) then sm:create-group("cr-admin",$config:system-account-user,"admin") else (),
+util:log("INFO", "$target: "|| $target),
+(: setup projects-dir :)
+local:mkcol("", $config:projects-dir),
+local:mkcol("", $config:data-dir),
+local:mkcol(""||$config:data-dir, "_indexes"),
+(: store the cr-projects collection configuration :)
+local:mkcol("/db/system/config", $config:projects-dir),
+(: store the collection configuration :)
+local:mkcol("/db/system/config", $target),
+(: preparea a collection for the cr-data collection configuration :)
+local:mkcol("/db/system/config", $config:data-dir),
+local:mkcol("/db/system/config"||$config:data-dir, "_workingcopies"),
 util:log("INFO", "** chown "||$config:projects-dir||" "||$config:system-account-user||":cr-admin"),
 sm:chown(xs:anyURI($config:projects-dir),$config:system-account-user),
+sm:chgrp(xs:anyURI($config:projects-dir),'cr-admin'),
+sm:chown(xs:anyURI($config:data-dir),$config:system-account-user),
 sm:chgrp(xs:anyURI($config:data-dir),'cr-admin'),
+sm:chown(xs:anyURI($config:data-dir||"_indexes"),$config:system-account-user),
+sm:chgrp(xs:anyURI($config:data-dir||"_indexes"),'cr-admin'),
+sm:chmod(xs:anyURI($config:data-dir||"_indexes"),'group=+write'), 
+sm:chmod(xs:anyURI($config:data-dir||"_indexes"),'other=+write'),
+sm:chown(xs:anyURI("/db/system/config"||$config:data-dir||"_workingcopies"),$config:system-account-user),
+sm:chgrp(xs:anyURI("/db/system/config"||$config:data-dir||"_workingcopies"),'cr-admin'),
+sm:chmod(xs:anyURI("/db/system/config"||$config:data-dir||"_workingcopies"),'group=+write'), 
 util:log("INFO", "** chown "||$config:data-dir||" "||$config:system-account-user||":cr-admin"),
-sm:chown(xs:anyURI($config:projects-dir),$config:system-account-user),
-sm:chgrp(xs:anyURI($config:data-dir),'cr-admin'),
+xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
+xdb:store("/db/system/config/"||$config:projects-dir,'collection.xconf',$local:projects-xconf),
+xdb:reindex($config:projects-dir),
+xdb:reindex($target),
+
 util:log("INFO", "** setting up default project 'defaultProject' **"),
 project:new("defaultProject")
