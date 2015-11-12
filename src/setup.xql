@@ -30,9 +30,20 @@ declare function local:mkcol($collection, $path) {
     local:mkcol-recursive($collection, tokenize($path, "/"))
 };
 
+declare function local:store-prepared-collection-xconf($xconfs, $path, $from-path) {
+for $xconf in $xconfs
+  let $relPath := replace(resolve-uri("", base-uri($xconf)), $from-path||"/", ''),
+      $newCollection := local:mkcol($path, $relPath),
+      $newXconf := xdb:store($path||"/"||$relPath, "collection.xconf", $xconf)
+  return ()
+};
+
 declare variable $local:cr-writer:=doc($target||"/modules/access-control/writer.xml")/write;
 
-declare variable $local:projects-xconf := doc($target||"/_cr-projects_xconf.xml");  
+declare variable $local:projects-xconf := doc($target||"/_cr-projects_xconf.xml");
+declare variable $local:data-xconfs-from-path := "/db_system_config_db_cr-data";
+declare variable $local:data-xconfs-to-path := translate($local:data-xconfs-from-path, '_', '/');
+declare variable $local:data-xconfs := collection($target||$local:data-xconfs-from-path);  
 
 
 (: we need two system users for the data maangement :)
@@ -54,6 +65,7 @@ local:mkcol("/db/system/config", $target),
 (: preparea a collection for the cr-data collection configuration :)
 local:mkcol("/db/system/config", $config:data-dir),
 local:mkcol("/db/system/config"||$config:data-dir, "_workingcopies"),
+local:store-prepared-collection-xconf($local:data-xconfs, $local:data-xconfs-to-path, $target||$local:data-xconfs-from-path),
 util:log("INFO", "** chown "||$config:projects-dir||" "||$config:system-account-user||":cr-admin"),
 sm:chown(xs:anyURI($config:projects-dir),$config:system-account-user),
 sm:chgrp(xs:anyURI($config:projects-dir),'cr-admin'),

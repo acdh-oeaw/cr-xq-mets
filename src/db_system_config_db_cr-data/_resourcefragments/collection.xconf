@@ -1,0 +1,14 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <validation mode="no"/>
+    <index xmlns:cr="http://aac.ac.at/content_repository" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xqdoc="http://www.xqdoc.org/1.0">
+        <!--        <fulltext default="none" attributes="no"/>-->
+        <lucene>
+            <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+            <text qname="@resourcefragment-pid"/>
+        </lucene>
+        <!--<create qname="@value" type="xs:string"/> -->
+        <create qname="@resourcefragment-pid" type="xs:string"/>
+        <create qname="@resource-pid" type="xs:string"/>
+        <create qname="@cr:id" type="xs:string"/>
+    </index>
+</collection>
