@@ -269,7 +269,7 @@ declare function config:path-relative-to-absolute($paths as element(config:path)
             else string-join(($path,reverse($steps-before)),'/')
 };
 
-declare variable $config:paths as map := 
+declare variable $config:paths as map(*) := 
     map:new(for $p in $config:cr-config//config:path
             return map:entry($p/@key, data($p)))
 ;
