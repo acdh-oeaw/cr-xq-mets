@@ -118,13 +118,19 @@
     </xsl:template>
     <xsl:function name="index:qnamesFromPath" as="xs:string">
         <xsl:param name="path" as="xs:string"/>
-        <!--<xsl:analyze-string select="$path" regex="^@?([a-zA-Z]([a-zA-Z0-9\.\-_]+)?:)?[a-zA-Z]([a-zA-Z0-9\.\-_]+)?">
+        <xsl:variable name="lastPart" select="tokenize(replace($path,'\[.+\]',''),'/')[last()]"/>
+        <xsl:variable name="ret">
+            <!-- Is this a function call? Then we need to fetch the parameter for the function. -->
+            <xsl:analyze-string select="$lastPart" regex="^[:A-Z_a-z&#x00C0;-&#x00D6;&#x00D8;-&#x00F6;&#x00F8;-&#x02FF;&#x0370;-&#x037D;&#x037F;-&#x1FFF;&#x200C;-&#x200D;&#x2070;-&#x218F;&#x2C00;-&#x2FEF;&#x3001;-&#xD7FF;&#xF900;-&#xFDCF;&#xFDF0;-&#xFFFD;][-.:A-Z_a-z0-9&#x00C0;-&#x00D6;&#x00D8;-&#x00F6;&#x00F8;-&#x02FF;&#x0370;-&#x037D;&#x037F;-&#x1FFF;&#x200C;-&#x200D;&#x2070;-&#x218F;&#x2C00;-&#x2FEF;&#x3001;-&#xD7FF;&#xF900;-&#xFDCF;&#xFDF0;-&#xFFFD;]*\(([@:A-Z_a-z&#x00C0;-&#x00D6;&#x00D8;-&#x00F6;&#x00F8;-&#x02FF;&#x0370;-&#x037D;&#x037F;-&#x1FFF;&#x200C;-&#x200D;&#x2070;-&#x218F;&#x2C00;-&#x2FEF;&#x3001;-&#xD7FF;&#xF900;-&#xFDCF;&#xFDF0;-&#xFFFD;][-.:A-Z_a-z0-9&#x00C0;-&#x00D6;&#x00D8;-&#x00F6;&#x00F8;-&#x02FF;&#x0370;-&#x037D;&#x037F;-&#x1FFF;&#x200C;-&#x200D;&#x2070;-&#x218F;&#x2C00;-&#x2FEF;&#x3001;-&#xD7FF;&#xF900;-&#xFDCF;&#xFDF0;-&#xFFFD;]*).*$">
             <xsl:matching-substring>
-                <xsl:value-of select="."/>
+                <xsl:value-of select="regex-group(1)"/>
             </xsl:matching-substring>
-            <xsl:non-matching-substring/>
-        </xsl:analyze-string>-->
-        <xsl:value-of select="tokenize(replace($path,'\[.+\]',''),'/')[last()]"/>
+            <xsl:non-matching-substring>
+                <xsl:value-of select="$lastPart"/>
+            </xsl:non-matching-substring>
+        </xsl:analyze-string>
+        </xsl:variable>    
+        <xsl:value-of select="$ret"/>
     </xsl:function>
     <xsl:function name="index:mvToNs">
         <xsl:param name="node" as="item()"/>
