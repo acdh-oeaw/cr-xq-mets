@@ -315,14 +315,16 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
 	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
     let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index-name, $sort, $max-depth)),
-        $dummy2 := util:log-app("DEBUG", $config:app-name, "is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
+        $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:scan: is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
         $log := (util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
                 util:log-app("DEBUG", $config:app-name, "scan-clause="||$scan-clause),
                 util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
                 util:log-app("DEBUG", $config:app-name, "x-filter="||$x-filter),
                 util:log-app("DEBUG", $config:app-name, "max-terms="||$max-terms),
                 util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
-                util:log-app("DEBUG", $config:app-name, "p-sort="||($p-sort,'no user input (falling back to @sort on <index> map definition)')[1])
+                util:log-app("DEBUG", $config:app-name, "p-sort="||($p-sort,'no user input (falling back to @sort on <index> map definition)')[1]),
+                util:log-app("DEBUG", $config:app-name, "$index-name="||$index-name),
+                util:log-app("DEBUG", $config:app-name, "$start-term="||($start-term, "no start term given")[1])
         ),
   (: get the base-index from cache, or create and cache :)
   $index-scan :=
@@ -332,8 +334,10 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     fcs:scan-all($x-context, ($start-term, $x-filter)[1], $config)
         else
         if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
-          let $dummy := util:log-app("DEBUG", $config:app-name, "reading index "||$index-doc-name||" from cache")
-          return repo-utils:get-from-cache($index-doc-name, $config)            
+          let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:scan: reading index "||$index-doc-name||" from cache"),
+              $ret := repo-utils:get-from-cache($index-doc-name, $config),
+              $logIndexScan := util:log-app("DEBUG", $config:app-name, "fcs:scan: $index-scan := "||serialize(subsequence($ret//sru:term,1,3))||"...")
+          return $ret          
         else
         (: TODO: cmd-specific stuff has to be integrated in a more dynamic way! :)
             let $dummy := util:log-app("DEBUG", $config:app-name, "generating index "||$index-doc-name)
@@ -395,7 +399,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     return transform:transform(($metsdivs,<mets:div/>)[1],$xsl,())
 (:                    return $context-map:)
                 else
-                    fcs:do-scan-default($scan-clause, $x-context, $sort, $config)         
+                    fcs:do-scan-default($index-name, $x-context, $sort, $config)         
 
           (: if empty result, return the empty result, but don't store
             to not fill cache with garbage:)
@@ -432,7 +436,8 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 		$created := fn:current-dateTime():)
 	
 	(: extra handling if fcs.resource=root, and for cql.serverChoice (there we did the filtering already in scan-all() :)
-    let $start-term-subseq := if (($index-name= 'fcs.resource' and $start-term='root') or $index-name='cql.serverChoice') then '' else $start-term
+    let $start-term-subseq := if (($index-name= 'fcs.resource' and $start-term='root') or $index-name='cql.serverChoice') then '' else $start-term,
+        $logSTS := util:log-app("DEBUG", $config:app-name, "fcs:scan: $start-term-subseq := "||$start-term-subseq||", $start-term := "||$start-term)
     
 	let $terms-subsequence := fcs:scan-subsequence($index-scan/descendant-or-self::sru:scanResponse/sru:terms/sru:term, $start-term-subseq, $max-terms, $response-position, $x-filter)
     (:  return $res-nodeset   :)
@@ -462,10 +467,13 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 @param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
 :)
 declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
+let $log := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $start-term := "||$start-term||", $terms := "||serialize(subsequence($terms,1,3))||"...")
 (:$max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {:)
 let $x-filter-lc := lower-case($x-filter)
 
-let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) then (: if there are more levels of terms :) 
+let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) then
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: there are more levels of terms:"||serialize($terms/sru:extraTermData/sru:terms/sru:term))
+                        return
                         for $term in $terms
                                 let $children-subsequence := if ($term/sru:extraTermData/sru:terms/sru:term) then (: go deeper if children terms :) 
                                             fcs:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
@@ -484,14 +492,16 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                           )} </sru:term>
                                        else ()
                     else (: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) :)
-                        (: if $maximum-terms=0 return all terms :)   
+                        (: if $maximum-terms=0 return all terms :)
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) if $maximum-terms=0 return all terms")
                         let $maximum-terms-resolved := if ($maximum-terms=0) then count($terms) else $maximum-terms                    
                         return if ($x-filter='' or not(exists($x-filter))) then
-                                    if ($start-term='' or not(exists($start-term))) then    
-                                    (: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence :)
-                                        subsequence($terms,1,$maximum-terms-resolved)
+                                    if ($start-term='' or not(exists($start-term))) then
+                                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence") 
+                                        return subsequence($terms,1,$maximum-terms-resolved)
                                       else
-                                      (: start-term and no x-filter, return the following siblings of the startTerm; regard response-position :)
+                                        let $log := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: start-term and no x-filter, return the following siblings of the startTerm; regard response-position"),
+                                            $logTerms := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $terms := "||serialize($terms))
 (:                                        let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1:)
 (:                                        let $start-search-term-position := $terms[starts-with(sru:value,$start-term)][1]/sru:extraTermData/fcs:position:)
                                             let $start-search-term-position := index-of ($terms, $terms[starts-with(sru:value,$start-term)][1])
@@ -514,7 +524,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                         let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
                                         return subsequence($filtered-terms,$start-list-term-position,$maximum-terms-resolved)
         (:                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]:)
-
+let $logRet := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $recurse-subsequence := "||serialize(subsequence($recurse-subsequence,1,3))||"...")
 return  $recurse-subsequence
 (:return subsequence($filteredData,  , $maximumTerms):)
 
@@ -564,6 +574,8 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
 };
 
 declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string?, $config) as item()* {
+    let $log := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $index := "||$index||", $x-context := "||$x-context||", $sort := "||$sort)
+    let $logConfig := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: $config := "||serialize($config))
     let $ts0 := util:system-dateTime()
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
     let $facets := index:facets($index,$project-pid)
@@ -577,7 +589,8 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
 (:        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize):)
         $nodes := index:apply-index($data, $index,$project-pid,())
 
-    let $index-label := ($index-elem/xs:string(@label), $index-elem/xs:string(@key) )[1]
+    let $index-label := ($index-elem/xs:string(@label), $index-elem/xs:string(@key) )[1],
+    $logSettings := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $project-pid :="||$project-pid||", $facets := "||serialize($facets)||", $index-elem := "||$index-elem||", $index-label := "||$index-label)
     let $terms :=
         if ($nodes) then 
             if ($facets/index)
