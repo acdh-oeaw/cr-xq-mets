@@ -336,7 +336,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
         if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
           let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:scan: reading index "||$index-doc-name||" from cache"),
               $ret := repo-utils:get-from-cache($index-doc-name, $config),
-              $logIndexScan := util:log-app("DEBUG", $config:app-name, "fcs:scan: $index-scan := "||serialize(subsequence($ret//sru:term,1,3))||"...")
+              $logIndexScan := util:log-app("DEBUG", $config:app-name, "fcs:scan: $index-scan := "||substring(serialize($ret),1,80)||"...")
           return $ret          
         else
         (: TODO: cmd-specific stuff has to be integrated in a more dynamic way! :)
@@ -467,12 +467,12 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 @param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
 :)
 declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
-let $log := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $start-term := "||$start-term||", $terms := "||serialize(subsequence($terms,1,3))||"...")
+let $log := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $start-term := "||$start-term||", $terms := "||substring(serialize($terms),1,80)||"...")
 (:$max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {:)
 let $x-filter-lc := lower-case($x-filter)
 
 let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) then
-                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: there are more levels of terms:"||serialize($terms/sru:extraTermData/sru:terms/sru:term))
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: there are more levels of terms:"||serialize($terms/sru:extraTermData/sru:terms/sru:term[1]))
                         return
                         for $term in $terms
                                 let $children-subsequence := if ($term/sru:extraTermData/sru:terms/sru:term) then (: go deeper if children terms :) 
@@ -501,7 +501,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                         return subsequence($terms,1,$maximum-terms-resolved)
                                       else
                                         let $log := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: start-term and no x-filter, return the following siblings of the startTerm; regard response-position"),
-                                            $logTerms := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $terms := "||serialize($terms))
+                                            $logTerms := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $terms := "||substring(serialize($terms),1,80)||"...")
 (:                                        let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1:)
 (:                                        let $start-search-term-position := $terms[starts-with(sru:value,$start-term)][1]/sru:extraTermData/fcs:position:)
                                             let $start-search-term-position := index-of ($terms, $terms[starts-with(sru:value,$start-term)][1])
@@ -575,7 +575,7 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
 
 declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string?, $config) as item()* {
     let $log := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $index := "||$index||", $x-context := "||$x-context||", $sort := "||$sort)
-    let $logConfig := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: $config := "||serialize($config))
+    let $logConfig := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: $config := "||substring(serialize($config),1,80)||"...")
     let $ts0 := util:system-dateTime()
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
     let $facets := index:facets($index,$project-pid)
@@ -590,7 +590,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
         $nodes := index:apply-index($data, $index,$project-pid,())
 
     let $index-label := ($index-elem/xs:string(@label), $index-elem/xs:string(@key) )[1],
-    $logSettings := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $project-pid :="||$project-pid||", $facets := "||serialize($facets)||", $index-elem := "||$index-elem||", $index-label := "||$index-label)
+    $logSettings := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $project-pid :="||$project-pid||", $facets := "||serialize($facets)||", $index-elem := "||serialize($index-elem)||", $index-label := "||$index-label)
     let $terms :=
         if ($nodes) then 
             if ($facets/index)
@@ -636,9 +636,10 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                                 default return $term-value:\)                            
                     let $label-map := map:entry("label",$label-value)                            
                     return map:new(($value-map,$label-map)):)
-    let $ts1 := util:system-dateTime()
     let $index-elem := index:index($index-key,$project-pid)
-    let $sort := ($order-param,$index-elem/@sort[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1]
+    let $sort := ($order-param,$index-elem/@sort[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1],
+        $logSettings := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: $sort :="||$sort||", $index-elem := "||$index-elem)
+    let $ts1 := util:system-dateTime()
     (: since an expression like  
         group by $x 
         let $y 
