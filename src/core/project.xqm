@@ -743,7 +743,9 @@ declare function project:dmd($project, $data as element(cmd:CMD)?) as empty() {
         if (exists($current))
         then 
             if (exists($data))
-            then update value $current with $data
+            (: Update replace cannot do anything about the root element of the document and update value replaces inside the node given.
+               TODO: to update any namespace, schema or attribute to cmd:CMD using this code has to be added! :)
+            then update value $current with $data/*
             else (update delete $dmdSec/mets:mdRef[@MDTYPE = 'OTHER'][@OTHERMDTYPE = 'CMDI'],xmldb:remove(util:collection-name($current),util:document-name($current)))
         else
             let $path := 
