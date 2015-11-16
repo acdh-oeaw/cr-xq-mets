@@ -16,12 +16,14 @@ import module namespace ltb = "http://aac.ac.at/content_repository/lookuptable" 
 import module namespace ixgen="http://aac.ac.at/content_repository/generate-index" at "modules/index-functions/generate-index-functions.xqm";
 import module namespace ixfn = "http://aac.ac.at/content-repository/projects-index-functions/" at "modules/index-functions/index-functions.xqm";
 
-let $project-pid := "tunico",
+let $project-pid := "abacus",
     $resource-pid := $project-pid||".1",
     $config:=config:project-config($project-pid)
     
-(:return ixgen:generate-index-functions($project-pid):)
-(:return xmldb:reindex(project:path($project-pid,"workingcopies")):)
+return ixgen:generate-index-functions($project-pid)
+(: or if an existing project is restored: :)
+(:return ixgen:register-project-index-functions():)
 (:return index:store-xconf($project-pid ):)
+(:return xmldb:reindex(project:path($project-pid,"workingcopies")):)
 (:return ltb:dump($resource-pid, $project-pid):)
 (:return :)
