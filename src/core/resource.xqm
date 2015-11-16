@@ -568,18 +568,19 @@ declare function resource:dmd($resource-pid as xs:string, $project, $data as ite
  : @param $resource-pid the PID of the resource
  : @param $project-pid the PID of the project
  : @param $data either a string with an db-path leading to an (existing) file or a xpointer expression leading to a resource fragment, a xi:include fragment, or the content of the metadata as a element or document-node.
- : @param $store-to-db possible values are 'db' (default behaviour: metdata resource is stored as an independent resource to the database and only referenced in the mets record, 'inline' (metadata resource is embedded in the project.xml) or 'xinclude' (an xi:include element is inserted pointing to $data)
+ : @param $store-location_param possible values are 'db' (default behaviour: metdata resource is stored as an independent resource to the database and only referenced in the mets record, 'inline' (metadata resource is embedded in the project.xml) or 'xinclude' (an xi:include element is inserted pointing to $data)
  TODO implement xinclude-storage
  : @return empty()
 ~:)
-declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string, $store-location as xs:string?) as empty() {
+declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string, $store-location_param as xs:string?) as empty() {
     let $doc:=          project:get($project),
         $current :=     resource:dmd($resource-pid,$project),
         $data-location:=base-uri($current),
         $dmdid :=       $resource-pid||$mdtype||$config:RESOURCE_DMDID_SUFFIX,
         $dmdSec :=      $doc//mets:dmdSec[@ID = $dmdid],
         $store-location := ($store-location_param,$resource:defaultMDStoreLocation)[1],
-        $store-to-db := xs:boolean($store-location='db')
+        $store-to-db := xs:boolean($store-location='db'),
+        $log := util:log-app("DEBUG",$config:app-name,"resource:dmd: $doc := "||base-uri($doc)||", $data-location := "||$data-location||", $store-location := "||$store-location)
     return 
         switch (true())
             (: wrong declaration of Metadata Format :)

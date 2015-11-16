@@ -16,7 +16,7 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
-let $rid := "abacus.7",
+let $rid := "abacus.1",
     $project-pid := "abacus",
     $resource-label := "My first resource"
 
@@ -30,7 +30,8 @@ let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
 
 (: uncomment this to refresh aux-files for all resources :)
 (:for $rid in project:list-resource-pids($project-pid):)
-    return resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) 
+(:    return resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) :)
+    
     
     
 (:~ alternatively you can do it one by one:  :)
@@ -43,8 +44,14 @@ let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
 
 
 (:~ 4. add a metadata record for given resource :)
-(:let $md := doc("/db/cr-data/_tmp/path/to/metadata_record.xml")/*:)
-(:return resource:dmd($resource-pid,$project-pid,$md,"TEIHDR",true()):)
+(:Register the teiHeader:)
+(:Register CMDI:)
+for $rid in project:list-resource-pids($project-pid)
+   let $master := resource:master($rid,$project-pid),
+       $masterURI := base-uri($master),
+       $masterName := util:document-name($master),
+       $md := doc(resolve-uri('metadata/CMDI/', $masterURI)||$masterName)
+   return resource:dmd($rid,$project-pid,$md,"CMDI")
 
  
 
