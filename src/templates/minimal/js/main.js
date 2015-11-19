@@ -470,7 +470,7 @@ function load_detail_data(targetRequest) {
     // persistentLink();
     // The detail view is hidden at first
     detail.show();
-    var classes_interested_in = " .title, .data-view, .navigation";
+    var classes_interested_in = " .title, .data-view";
     var detailFragment = targetRequest + classes_interested_in;
     
     loading(detail.find('.detail-header'),"start");
@@ -490,9 +490,9 @@ function load_detail_data(targetRequest) {
                         //detail.find(".data-view.facs img").elevateZoom({ zoomType : "lens", lensShape : "round", lensSize : 200 });
                          
                         // move Title and navigation above the content
-                        $('.detail-header').html($(this).find(".navigation")).append($(this).find(".title"));
+                        $('.detail-header').html($(this).find(".data-view.navigation")).append($(this).find(".title"));
                         // move cite below the detail content
-                        detail.find('.context-detail').html($(this).find(".cite"));
+                        detail.find('.context-detail').html($(this).find(".data-view.cite"));
                         customizeIcons(); 
                         /*
                         var detail_anno = $(this).html();

@@ -382,7 +382,7 @@ body {
 /* detail */
 
 
-#detail .navigation {
+#detail .data-view.navigation {
   position: absolute;
   right: 0;
 /*  top: 7%;*/
