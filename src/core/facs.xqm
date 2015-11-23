@@ -38,21 +38,26 @@ declare function facs:generate-file($resourcefragment-pid as xs:string, $resourc
  : @param $project-pid 
 ~:)
 declare function facs:generate-file($version-param as xs:string?, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element(mets:file)* {
-    let $log := util:log-app("DEBUG",$config:app-name,"facs:generate-file("||$version-param||", "||$resourcefragment-pid||", "||$resource-pid||", "||$project-pid||")")
+    let $log := util:log-app("TRACE",$config:app-name,"facs:generate-file("||$version-param||", "||$resourcefragment-pid||", "||$resource-pid||", "||$project-pid||")")
     let $file-id := facs:id-by-resourcefragment($resourcefragment-pid,$resource-pid,$project-pid)
-    let $log := util:log-app("DEBUG",$config:app-name,"$file-id: "||$file-id)
+    let $log := util:log-app("TRACE",$config:app-name,"$file-id := "||string-join($file-id, ', '))
     let $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     let $url :=     facs:generate-url($file-id, $version, $resourcefragment-pid,$resource-pid,$project-pid)
+    let $log := util:log-app("TRACE",$config:app-name,"$url := "||$url)
     let $file-elt:=
         switch(true())
             case $file-id ="" return util:log-app("ERROR",$config:app-name,"No value in index 'facs' for resource fragment "||$resourcefragment-pid)
-            case $url = "" return ()
+            case $url = "" return 
+                let $log := util:log-app("INFO",$config:app-name,"No url for this file ID")
+                return ()
             default return         
                 for $f at $pos in $file-id
+                let $log := util:log-app("TRACE",$config:app-name,"$file-id["||$pos||"] := "||$f)
                 return
                     <mets:file ID="{$resourcefragment-pid}_{$version}{$config:RESOURCE_FACS_SUFFIX}{$pos}">
                         <mets:FLocat LOCTYPE="URL" xlink:href="{$url}"/>
                     </mets:file>
+    let $log := util:log-app("TRACE",$config:app-name,"facs:generate-file return "||serialize($file-elt))
     return $file-elt
       
 };
@@ -76,6 +81,7 @@ declare function facs:get-fileGrp($project-pid as xs:string) as element(mets:fil
  : @param $project-pid the PID of the Project 
 ~:)
 declare function facs:set($version as xs:string, $mets:file as element(mets:file)+, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+    let $log := util:log-app("TRACE",$config:app-name,"facs:set $version := "||$version||" $mets:file := "||substring(serialize($mets:file),1,240)||"... $resourcefragment-pid := "||$resourcefragment-pid||" $resource-pid := "||$resource-pid||" $project-pid := "||$project-pid)
     let $file := facs:get-file($version,$resourcefragment-pid, $resource-pid, $project-pid)
     let $mets:div := rf:record($resourcefragment-pid, $resource-pid, $project-pid)
     (: set the mets:fptr in mets:div :)
@@ -198,6 +204,7 @@ declare function facs:generate($resource-pid as xs:string, $project-pid as xs:st
  : @param $project-pid the pid of the project
 ~:)
 declare function facs:generate($version-param as xs:string?, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+    let $log := util:log-app("DEBUG",$config:app-name,"facs:generate $version-param := "||$version-param||" $resource-pid := "||$resource-pid||" $project-pid := "||$project-pid)
     let $fragments := resource:get($resource-pid, $project-pid)/mets:div[@TYPE=$config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],
         $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     (: we generate the first fragment outside of the for-in expression in order to make 
@@ -232,25 +239,25 @@ declare function facs:generate($version-param as xs:string?, $resource-pid as xs
  : @result one or more file-ids (filenames) 
 ~:)
 declare %private function facs:id-by-resourcefragment($resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:string?{
-    let $log := util:log-app("DEBUG",$config:app-name,"facs:id-by-resourcefragment("||$resourcefragment-pid||", "||$resource-pid||", "||$project-pid||")")
+    let $log := util:log-app("TRACE",$config:app-name,"facs:id-by-resourcefragment("||$resourcefragment-pid||", "||$resource-pid||", "||$project-pid||")")
     let $rf := rf:get($resourcefragment-pid, $resource-pid,$project-pid)
-    let $log := util:log-app("DEBUG",$config:app-name,"$rf:"),
-        $log := util:log-app("DEBUG",$config:app-name,$rf)
+    let $log := util:log-app("TRACE",$config:app-name,"$rf := "||substring(serialize($rf),1,240)),
+        $log := util:log-app("TRACE",$config:app-name,$rf)
      (: let's get the element that the "resourcefragment-pid" index refers to in the full data. 
         (in the variable $fragment-elt-in-wc). 
         This indirection is necessary, as our "facs" index does not have to point to 
         a descendant of the resourcefragment, so that an expression like $rf/preceding::pb 
         will easily lead to strange results. :)       
-    let $fragment-pid-in-rf:= index:apply-index($rf,"rf",$project-pid)/ancestor-or-self::*[@cr:id][1],
-        $log := util:log-app("DEBUG",$config:app-name,"$fragment-pid-in-rf:"),
-        $log := util:log-app("DEBUG",$config:app-name,index:apply-index($rf,"rf",$project-pid)),
+    let $fragment-pid-in-rf-candidates := index:apply-index($rf,"rf",$project-pid), 
+        $fragment-pid-in-rf:= $fragment-pid-in-rf-candidates/ancestor-or-self::*[@cr:id][1],
+        $log := util:log-app("TRACE",$config:app-name,"$fragment-pid-in-rf := "||serialize($fragment-pid-in-rf)),
+        $log := util:log-app("TRACE",$config:app-name, "$fragment-pid-in-rf-candidates := "||serialize($fragment-pid-in-rf-candidates)),
         $fragment-in-wc := wc:lookup($fragment-pid-in-rf/xs:string(@cr:id),$resource-pid,$project-pid)    
     (: ... then apply the "facs" index to the fragment-element in the working copy :)
-    let $log := (util:log-app("DEBUG",$config:app-name,"$fragment-in-wc:"),
-                util:log-app("DEBUG",$config:app-name,$fragment-in-wc))
+    let $log := util:log-app("TRACE",$config:app-name,"$fragment-in-wc := "||serialize($fragment-in-wc))
     let $facs:= index:apply-index($fragment-in-wc,"facs",$project-pid)
     let $return := $facs/xs:string(.)
-    let $log := util:log-app("DEBUG",$config:app-name,"return "||$return)
+    let $log := util:log-app("TRACE",$config:app-name,"facs:id-by-resourcefragment return "||$return)
     return $return
 };
 
@@ -288,18 +295,20 @@ declare %private function facs:generate-url($file-id as xs:string, $resourcefrag
  : @return zero or more URLs (a resourcefragment may be split or span over more than one page)
 ~:)
 declare function facs:generate-url($file-id as xs:string, $version as xs:string?, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:string* {
+    let $log := util:log-app("TRACE",$config:app-name,"facs:generate-url file-id := "||$file-id)
     let $config := project:get($project-pid)
     let $facs:pattern:= repo-utils:config-value($config,"facs.url-pattern")
+    let $log2 := util:log-app("TRACE",$config:app-name,"$facs:pattern := "||$facs:pattern)
     let $config-ok := 
         switch(true())
             case repo-utils:config-value($config,"facs.url-pattern")="" return (util:log-app("ERROR",$config:app-name,"config parameter facs.url-pattern missing in project "||$project-pid),false())
             (:case repo-utils:config-value($config,"facs.default")="" return (util:log-app("ERROR",$config:app-name,"config parameter facs.default missing in project "||$project-pid),false()):)
             case repo-utils:config-value($config,"facs.base-uri")="" return (util:log-app("ERROR",$config:app-name,"config parameter facs.base-uri missing in project "||$project-pid),false())
             default return true()
-    return
+    let $return :=
         if ($config-ok)
         then 
-            let $substrings := fn:analyze-string($facs:pattern,"\$([\w+\-\.]+)"),
+            let $substrings := fn:analyze-string($facs:pattern,"\{\$([-.:\w]+)\}"),
                 $keys:= $substrings//fn:group/xs:string(.),   
                 $maps := 
                     for $k in $keys 
@@ -307,12 +316,15 @@ declare function facs:generate-url($file-id as xs:string, $version as xs:string?
                                     (util:eval("$"||$k),repo-utils:config-value($config,"facs."||$k))[1]
                                 } catch  * {
                                     repo-utils:config-value($config,"facs."||$k)
-                                } 
+                                }
+                    let $log := util:log-app("TRACE",$config:app-name,$k||" => "||$val)
                     return map:entry($k,$val)
             let $params := map:new($maps)
             let $pattern-expanded := facs:generate-url-expandParams($substrings,$params) 
             return string-join($pattern-expanded,'')
         else util:log-app("INFO",$config:app-name,"Can't generate facsimile because of missing config parameters.")
+    let $log := util:log-app("TRACE",$config:app-name,"facs:generate-url return "||$return)
+    return $return
 };
 
 (:~
