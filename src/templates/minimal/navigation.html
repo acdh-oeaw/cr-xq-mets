@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div xmlns="http://www.w3.org/1999/xhtml" id="navigation">
-    <div>
-        <h2>Index</h2>
-        <div class="app:info?key=projectDMD">project metadata</div>
+    <!-- from navigation.html -->
+    <h2>
+        Index
+        <label for="navigation-show" id="navigation-showing" class="fa fa-angle-up"/>
+        <label for="navigation-show" id="navigation-hidden" class="fa fa-angle-down"/>
+    </h2>
+    <div id="navigation-content" class="scrollable-content-box">
+        <div class="indexes"/>
+        <h3>
+            Books
+        </h3>
         <div class="app:list-resources">app:list-resources</div>
-    </div>
-    <div class="templates:if-parameter-set?param=debug">
-        <h2>App Info</h2>
-        <div class="config:app-info"/>
+        <div class="templates:if-parameter-set?param=debug">
+            <h2>App Info</h2>
+            <div class="config:app-info"/>
+        </div>
     </div>
 </div>

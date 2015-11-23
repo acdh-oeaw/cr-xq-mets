@@ -14,6 +14,7 @@
  * @module minimal_template
  */
 
+!function($, URI){
 
 var currentUrl = new URI();
 
@@ -574,3 +575,4 @@ if (startstop=='start') {
       loading.remove();
  }  
 }
+}(jQuery, URI)

@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" class="templates:init">
-    <!-- 
+<div xmlns="http://www.w3.org/1999/xhtml" class="templates:init"><!-- 
 corpus.html meant as alternative layout when "entering" the resource/collection, 
 as opposed to static/intro pages (index.html) 
 -->
     <div class="templates:surround?with=page.html&amp;at=content-container">
-        <div>
-            <div class="templates:include?path=detail.html">detail</div>
-            <div id="navigation-main-wrapper">
-                <div class="templates:include?path=navigation.html">navigation</div>
-                <div class="templates:include?path=main.html">main</div>
-            </div>
-        </div>
+        <input type="checkbox" id="navigation-show" name="navigation-show" checked="checked"/>
+        <input type="checkbox" id="main-show" name="main-show"/>
+        <div class="templates:include?path=navigation.html">navigation</div>
+        <div class="templates:include?path=main.html">main</div>
+        <div class="templates:include?path=detail.html">detail</div>
     </div>
 </div>
