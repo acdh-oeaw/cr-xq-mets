@@ -49,9 +49,14 @@ declare
 function app:logo($node as node(), $model as map(*)) {
     let $logo-image := config:param-value($model, 'logo-image')
     let $logo-link := if (config:param-value($model, 'logo-link')='') then './' else config:param-value($model, 'logo-link')  
-    return 
+    return
+        if ($logo-image != '' and $logo-link != '') then
         <a xmlns="http://www.w3.org/1999/xhtml" href="{$logo-link}" >
             <img src="{$logo-image}" class="logo right"/>
+        </a>
+        else        
+        <a xmlns="http://www.w3.org/1999/xhtml" href="./index.html" >
+            <img src="modules/shared/default_logo.png" class="logo right"/>
         </a>
 };
 
