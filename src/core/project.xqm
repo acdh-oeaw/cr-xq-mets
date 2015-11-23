@@ -25,6 +25,7 @@ import module namespace repo-utils="http://aac.ac.at/content_repository/utils" a
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "index.xqm";
 import module namespace handle = "http://aac.ac.at/content_repository/handle" at "../modules/resource/handle.xqm";
+import module namespace ixgen="http://aac.ac.at/content_repository/generate-index" at "modules/index-functions/generate-index-functions.xqm";
 
 declare namespace mets = "http://www.loc.gov/METS/";
 declare namespace mods="http://www.loc.gov/mods/v3";
@@ -513,6 +514,8 @@ declare function project:purge($project-pid as xs:string, $delete-data as xs:boo
                   let $log :=           util:log-app("INFO",$config:app-name,"removed project dir "||$project-dir)
                   let $rm-accounts :=   project:remove-accounts($project-pid)
                   let $log :=           util:log-app("INFO",$config:app-name,"removed project accounts")
+                  let $rebuild-index-fn := ixgen:register-project-index-functions() 
+                  let $log :=           util:log-app("INFO",$config:app-name,"rebuilt system-wide index functions")
                   let $log :=           util:log-app("INFO",$config:app-name,"finished purging project "||$project-pid)
                   return ()
               else 
