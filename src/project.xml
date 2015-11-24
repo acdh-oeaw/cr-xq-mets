@@ -34,30 +34,7 @@
     </dmdSec>
     <amdSec ID="projectAMD">
         <techMD ID="projectMappings">
-            <mdWrap MDTYPE="OTHER">
-                <xmlData>
-                    <map xmlns="">
-                        <namespaces>
-                            <ns prefix="tei" uri="http://www.tei-c.org/ns/1.0"/>
-                        </namespaces>
-                        <map key="" path="" title="">
-                            <index key="resourcefragment-pid">
-                                <path/>
-                            </index>
-                            <index key="cql.serverChoice" type="ft">
-                                <path/>
-                            </index>
-                        </map>
-                        <!-- fulltext index setup -->
-                        <ft>
-                            <!-- 0-n "inline" elements with QNames to not be treated as a token boundary by the fulltext indexer -->
-                            <!--<inline/>-->
-                            <!-- 0-n "ignore" elements with QNames be ignored by the fulltext indexer -->
-                            <!--<ignore/>-->
-                        </ft>
-                    </map>
-                </xmlData>
-            </mdWrap>
+            <mdRef MDTYPE="OTHER" xlnk:href=""/>
         </techMD>
         <techMD ID="projectParameters" GROUPID="config.xml">
             <mdWrap MDTYPE="OTHER">

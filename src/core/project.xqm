@@ -777,25 +777,41 @@ declare function project:dmd($project, $data as element(cmd:CMD)?) as empty() {
 
 (: getter and setter for index-map :)
 declare function project:map($project) as element(map)? {
-    let $doc:=project:get($project)
-    return $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/*
+    let $doc:=project:get($project),
+        $mappings := $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID],
+        $map := ($mappings/mets:mdWrap/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map)[1]
+    return 
+        if (exists($map))
+        then $map
+        else ()
 };
 
 
-declare function project:map($data as element(map), $project-pid as xs:string) as empty() {
+declare function project:map($data as element(map)?, $project-pid as xs:string) as empty() {
     let $doc:=      project:get($project-pid),
         $current:=  project:map($project-pid)
     return 
         if (exists($current))
-        then
-            if (exists($data))
-            then update replace $current with $data
-            else update delete $current
+        then 
+            (update delete $current/self::map/node(),
+            if ($data) then update insert $data/self::map/node() into $current/self::map else ())
         else
-            if (exists($doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]))
-            then update value $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
-                 with <mdWrap MDTYPE="OTHER" xmlns="http://www.loc.gov/METS/"><xmlData>{$data}</xmlData></mdWrap>
-            else update insert <techMD ID="{$config:PROJECT_MAPPINGS_ID}" xmlns="http://www.loc.gov/METS/"><mdWrap MDTYPE="OTHER"><xmlData>{$data}</xmlData></mdWrap></techMD> into $doc//mets:amdSec[@ID eq $config:PROJECT_AMDSEC_ID]
+            let $project-home := project:path($project-pid,'home'),
+                $path-to-map-instance := $project-home||"/map.xml",
+                $map-file-exists := doc-available($path-to-map-instance),
+                $mappings := $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
+            return 
+            if (not($data/self::map[map]))
+            then util:log-app($config:app-name, "ERROR", "invalid map format")
+            else 
+                let $store-map-instance := xmldb:store($project-home, "map.xml", $data)
+                let $register-map := 
+                    if (exists($mappings) and not($mappings/mets:mdRef[@xlink:href = $path-to-map-instance]))
+                    then 
+                        update insert <mdRef MDTYPE="OTHER" xmlns="http://www.loc.gov/METS/" xlink:href="{$path-to-map-instance}" LOCTYPE="URL"/>
+                        into $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
+                    else update insert <techMD ID="{$config:PROJECT_MAPPINGS_ID}" xmlns="http://www.loc.gov/METS/"><mdRef MDTYPE="OTHER" xlink:href="{$path-to-map-instance}" LOCTYPE="URL"/></techMD> into $doc//mets:amdSec[@ID eq $config:PROJECT_AMDSEC_ID]
+                return ()
 };
 
 (: getter and setter for project parameters :)
