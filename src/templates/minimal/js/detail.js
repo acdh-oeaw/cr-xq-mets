@@ -1,5 +1,5 @@
 
-$(function(){
+!function($){
 
 var search_container_selector = '#search-result';
 
@@ -143,4 +143,4 @@ var baseurl = "fcs";
 					       }
 				});
 				
-});   
+}(jQuery);   
