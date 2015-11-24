@@ -198,8 +198,8 @@ declare function index:generate-xconf($project-pid as xs:string) as element(xcon
     let $mappings := index:map($project-pid),
         $xsl := doc("mappings2xconf.xsl"),
         $params := <parameters></parameters>,
-        $xconf := transform:transform($mappings,$xsl,$params)
-    let $log := util:log-app("DEBUG",$config:app-name,$xconf)
+        $xconf := transform:transform($mappings,$xsl,$params),
+        $log := util:log-app("DEBUG",$config:app-name,"index:generate-xconf return "||substring(serialize($xconf),1,240)||"...")
     return $xconf
 };
 
