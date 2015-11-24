@@ -164,8 +164,11 @@ declare function rf:path($resource-pid as xs:string, $project-pid as xs:string) 
 ~:)
 declare function rf:get($resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element()? {
     let $rf:location:=  rf:path($resource-pid, $project-pid),
-        $rf:doc := if (doc-available($rf:location)) then doc($rf:location) else util:log-app("INFO",$config:app-name,"Could not locate resourcefragments from "||$rf:location) 
-    return util:eval('$rf:doc//*[@'||$config:RESOURCEFRAGMENT_PID_NAME||'="'||$resourcefragment-pid||'"]') 
+        $rf:doc := if (doc-available($rf:location)) then doc($rf:location) else util:log-app("INFO",$config:app-name,"Could not locate resourcefragments from "||$rf:location),
+        $xpath := '$rf:doc//*[@'||$config:RESOURCEFRAGMENT_PID_NAME||'="'||$resourcefragment-pid||'"]',
+        $return := util:eval($xpath),
+        $logRet := util:log-app("TRACE", $config:app-name, "rf:get return "||$xpath||" "||substring(serialize($return),1,240)||"... "||string-join(for $x in $return return base-uri($x), ","))
+    return $return
 };
 
 (:~ Finds the resourcefragmentS(!) containing an element with given @cr:id
