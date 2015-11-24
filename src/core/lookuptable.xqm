@@ -6,7 +6,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
-import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "workingcopy.xqm";
+import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "wc.xqm";
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 
 declare namespace mets="http://www.loc.gov/METS/";
