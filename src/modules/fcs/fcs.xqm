@@ -862,11 +862,11 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
         let	$result-count := fn:count($result),            
             $facets := if (contains($x-dataview,'facets') and $result-count > 1) then fcs:generateFacets($result, $query) else (),
 
+            $result-seq := fn:subsequence($result, $startRecord, $maximumRecords),
             $ordered-result := if (contains($query,$config:INDEX_INTERNAL_RESOURCEFRAGMENT))
                 then $result
-                else fcs:sort-result($result, $query, $config),                
-                                           
-            $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),
+                else fcs:sort-result($result-seq, $query, $config),                
+                
 (:            $result-seq := fn:subsequence($result, $startRecord, $maximumRecords),:)
             $seq-count := fn:count($result-seq),        
             $end-time := util:system-dateTime()
