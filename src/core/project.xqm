@@ -242,23 +242,7 @@ declare function project:available($project-pid as xs:string) as xs:boolean {
  : @return zero or one cr_xq object.
 ~:)
 declare function project:get($project) as element(mets:mets)? {
-    if ($project instance of  element(mets:mets)) then $project
-        else
-        if ($project instance of map())
-        then $project("config")[self::mets:mets]
-        else
-        (: also try to get it out of the mixed config-sequence: :)
-           if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
-           else 
-           let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
-           return
-            if (count($project_) gt 1)
-            then 
-                let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
-                return $project_[1]
-            else $project_
-            
-                          
+    config:project-config($project)                          
 };
 
 
@@ -777,13 +761,7 @@ declare function project:dmd($project, $data as element(cmd:CMD)?) as empty() {
 
 (: getter and setter for index-map :)
 declare function project:map($project) as element(map)? {
-    let $doc:=project:get($project),
-        $mappings := $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID],
-        $map := ($mappings/mets:mdWrap/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map)[1]
-    return 
-        if (exists($map))
-        then $map
-        else ()
+    config:mappings($project)
 };
 
 

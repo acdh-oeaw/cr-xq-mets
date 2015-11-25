@@ -590,7 +590,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))/cmd:CMD
             case 'project-title'            return ($mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))//cmd:CollectionInfo/cmd:Title[text()],$mets/@LABEL)[1]
 
-            case 'mappings'                 return $mets//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap/mets:xmlData/map
+            case 'mappings'                 return config:mappings($config)
             case 'teaser-text'              return config:mets-file($mets//mets:file[@USE='projectTeaserText'])
             case 'logo-image'               return config:mets-file($mets//mets:file[@USE='projectLogoImage']) 
             case 'logo-text'                return config:mets-file($mets//mets:file[@USE='projectLogoLink'])
@@ -703,8 +703,19 @@ declare function config:config-map($project as xs:string) as item()* {
  : @return config element with relevant parameters.
  :)
 declare function config:project-config($project as xs:string) as element()* {
-    let $project := collection($config-params:projects-dir)//mets:mets[@OBJID eq $project]
-    return $project
+    if ($project instance of element(mets:mets)) then $project
+    else
+        if ($project instance of map()) then $project("config")[self::mets:mets]
+        else
+        (: also try to get it out of the mixed config-sequence: :)
+           if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
+           else 
+               let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
+               return
+               if (count($project_) gt 1) then 
+                   let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+                   return $project_[1]
+               else $project_
 };
 
 
@@ -721,15 +732,16 @@ declare function config:project-config($project as xs:string) as element()* {
  ~:)
 declare function config:mappings($config as item()*) as element(map)* {
     for $item in $config return 
-        typeswitch ($item)
+        let $mappings := typeswitch ($item)
             case map()          return 
-                                    ($item("config")//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/map,
-                                    $item("mets")//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/map,
+                                    ($item("config")//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID],
+                                    $item("mets")//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID],
                                     $item("mappings"))[1]
-            case xs:string      return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/*
-            case text()         return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/*
-            case element()      return $item//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]/mets:mdWrap[1]/mets:xmlData/*
-            default             return ()
+            case xs:string      return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
+            case text()         return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
+            case element()      return $item//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
+            default             return ()              
+         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1]
 };
 
 (:~ lists all defined projects based on the project-id param in the config.
