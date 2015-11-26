@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <head>
+        <title>Upload Resource</title>
+        <xf:model>
+            <xf:instance xmlns="">
+                <data>
+                    <projectName xsi:type="xs:string"/>
+                    <status/>
+                    <file mediaType="" filename="" xsi:type="xs:base64Binary"/>
+                    <mediatype/>
+                </data>
+            </xf:instance>
+            <!--<xf:bind nodeset="projectName" constraint="string-length(.) > 3" required="true()"/>-->
+            <xf:submission id="post-to-echo" action="uploadResource.xql" replace="instance" method="post"/>
+        </xf:model>
+    </head>
+    <body>
+        <h1>Upload Resource</h1>
+        <div>
+            <div>
+                <ul>
+                    <li>
+                        <a href="createProject.xhtml">Create a new Project</a>
+                    </li>
+                    <li>
+                        <a href="uploadResource.xhtml">Upload a Resource</a>
+                    </li>
+                    <li>
+                        <a href="processResource.xhtml">Process a Resource</a>
+                    </li>
+                    <li>
+                        <a href="deleteProject.xhtml">Delete a Project</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div>
+            <table>
+                <tr>
+                    <td>
+                        The name of the Project:
+                    </td>
+                    <td>
+                        <xf:input ref="projectName">
+                            <xf:hint>Enter the name of the Project</xf:hint>
+                            <xf:alert>enter more than 3 characters</xf:alert>
+                        </xf:input>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Upload File:
+                    </td>
+                    <td>
+                        <xf:upload ref="file" mediatype="application/xml">
+                            <xf:filename ref="@filename"/>
+                            <xf:mediatype ref="@mediaType"/>
+                        </xf:upload>
+                    </td>
+                </tr>
+                <!--<tr>
+                    <td>
+                        <xf:submit submission="post-to-echo">
+                            <xf:label>Post to Echo</xf:label>
+                        </xf:submit>
+                    </td>
+                </tr>-->
+                <tr>
+                    <td>
+                        <xf:submit submission="post-to-echo">
+                            <xf:label>Upload</xf:label>
+                        </xf:submit>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <hr/>
+        <h2>Status</h2>
+        <table>
+            <tr>
+                <td>
+                    <strong>ProjectName:</strong>
+                </td>
+                <td>
+                    <xf:output ref="projectName"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Status:</strong>
+                </td>
+                <td>
+                    <xf:output ref="status"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>File:</strong>
+                </td>
+                <td>
+                    <xf:output ref="file"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>mediatyp:</strong>
+                </td>
+                <td>
+                    <xf:output ref="mediatype"/>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

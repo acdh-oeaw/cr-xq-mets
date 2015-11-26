@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <head>
+        <title>Edit METS</title>
+        <xf:model>
+            <xf:instance>
+                <data xmlns="" id="someData">
+                    <projectName/>
+                    <status/>
+                    <projects/>
+                </data>
+            </xf:instance>
+            <xf:submission id="post-instance" method="post" replace="instance" action="test.xql"/>
+        </xf:model>
+    </head>
+    <body>
+        <h2>List of all Projects</h2>
+        <xf:submit submission="post-instance">
+            <xf:label>Get list of all projects</xf:label>
+        </xf:submit>
+        <hr/>
+        <h4>List of projects</h4>
+        <xf:output ref="projects/projectName"/>
+    </body>
+</html>
