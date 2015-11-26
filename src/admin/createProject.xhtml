@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <head>
+        <title>CreateProject</title>
+        <xf:model>
+            <xf:instance>
+                <data xmlns="">
+                    <projectName/>
+                    <status/>
+                </data>
+            </xf:instance>
+            <xf:bind nodeset="projectName" constraint="string-length(.) &gt; 3" required="true()"/>
+            <xf:submission id="post-instance" method="post" replace="instance" action="createProject.xql"/>
+        </xf:model>
+    </head>
+    <body>
+        <h1>Create a new Project</h1>
+        <div>
+            <ul>
+                <li>
+                    <a href="createProject.xhtml">Create a new Project</a>
+                </li>
+                <li>
+                    <a href="uploadResource.xhtml">Upload a Resource</a>
+                </li>
+                <li>
+                    <a href="processResource.xhtml">Process a Resource</a>
+                </li>
+                <li>
+                    <a href="deleteProject.xhtml">Delete a Project</a>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <table>
+                <tr>
+                    <td>
+                    The name of the Project:
+                </td>
+                    <td>
+                        <xf:input ref="projectName">
+                            <xf:hint>Enter the name of the Project</xf:hint>
+                            <xf:alert>enter more than 3 characters</xf:alert>
+                        </xf:input>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <xf:submit submission="post-instance">
+                            <xf:label>Create</xf:label>
+                        </xf:submit>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <hr/>
+        <h2>Status</h2>
+        <xf:output ref="status">
+            <label>Confirmation</label>
+        </xf:output>
+    </body>
+</html>

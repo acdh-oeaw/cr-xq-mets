@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <head>
+        <title>Process a Resource</title>
+        <xf:model>
+            <xf:instance>
+                <data xmlns="">
+                    <projectName/>
+                    <fileName/>
+                    <status/>
+                    <resource-label/>
+                    <resource/>
+                    <resourcedata/>
+                    <resource-pid/>
+                </data>
+            </xf:instance>
+            <xf:bind nodeset="projectName" constraint="string-length(.) &gt; 3" required="true()"/>
+            <xf:submission id="post-instance" method="post" replace="instance" action="processResource.xql"/>
+            <xf:action ev:event="xforms-submit-error">
+                <xf:message level="alert">Unable to process the resource. Sorry!
+                    <xf:output value="event('response-reason-phrase')"/>
+                </xf:message>
+            </xf:action>
+        </xf:model>
+    </head>
+    <body>
+        <h1>Process a Resource</h1>
+        <div>
+            <ul>
+                <li>
+                    <a href="createProject.xhtml">Create a new Project</a>
+                </li>
+                <li>
+                    <a href="uploadResource.xhtml">Upload a Resource</a>
+                </li>
+                <li>
+                    <a href="processResource.xhtml">Process a Resource</a>
+                </li>
+                <li>
+                    <a href="deleteProject.xhtml">Delete a Project</a>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <table>
+                <tr>
+                    <td>
+                        The name of the Project:
+                    </td>
+                    <td>
+                        <xf:input ref="projectName">
+                            <xf:hint>Enter the name of the Project</xf:hint>
+                            <xf:alert>enter more than 3 characters</xf:alert>
+                        </xf:input>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Enter the name of the Resource you would like to process.
+                    </td>
+                    <td>
+                        <xf:input ref="fileName">
+                            <xf:hint>Enter the name of the file</xf:hint>
+                        </xf:input>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <xf:submit submission="post-instance">
+                            <xf:label>Process</xf:label>
+                        </xf:submit>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <hr/>
+        <h2>Status</h2>
+        <table>
+            <tr>
+                <td>
+                    <strong>Resource Label:</strong>
+                </td>
+                <td>
+                    <xf:output ref="resource-label"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Resource storing place:</strong>
+                </td>
+                <td>
+                    <xf:output ref="resource"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Resource Pid:</strong>
+                </td>
+                <td>
+                    <xf:output ref="resource-pid"/>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
