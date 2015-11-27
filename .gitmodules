@@ -1,3 +1,6 @@
 [submodule "src/modules/cs-xsl"]
 	path = src/modules/cs-xsl
 	url = https://github.com/acdh-oeaw/cs-xsl.git
+[submodule "src/modules/text-viewer/resources/tei/stylesheet"]
+	path = src/modules/text-viewer/resources/tei/stylesheet
+	url = https://github.com/TEIC/Stylesheets.git
