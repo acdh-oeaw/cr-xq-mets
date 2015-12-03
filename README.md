@@ -59,8 +59,22 @@ Edit `build.properties`
 	Upon installation `setup.xql` is executed which generates the `$projects.dir`
 	and sets up the default project.
 
-Setup a project
+There are basically two ways to set up a new project. Either you configure and execute the responsible sandbox xQuery functions using eXist´s xml editor eXide or you use a very basic admin interface. 
+
+admin interface
 ---------------
+1. Browse to apps/cr-xq-mets/admin/createProject.xhtml, enter the name of the project you would like to create, and hit “Create”.
+    1.   Make sure you are logged in eXist and that have the necessary rights to execute the xql-document admin/createProject.xql. You can do this by browsing to www.mysite/path/to/exist/apps/cr-xq-mets/admin/createProject.xql. If you are not logged in, a log-in window should pop up.) 
+    2.   If nothing went wrong, you should see the status message: Created project: NewProject in /db/cr-projects/NewProject (“NewProject” will be of course replaced with the name you entered before.)
+2. To upload a new resource - probably an TEI/XML document -  follow the link “Upload a resource”) which leads you to, after you confirmed that you really want to leave the page, to /apps/cr-xq-mets/admin/uploadResource.xhtml. 
+    1. Enter the name of the project to which your document belongs, upload the file, confirm that you want to upload the file. Now you should see in the Status bar the project name and some strange combination of letters and numbers.
+    2. Finally press “Upload”. You should receive the message that your “Resource was successfully saved”, the name of the file and the files media type.
+    3. You can check that the file has been uploaded by browsing to eXist´s dasboard, opening “Collections” and changing into the directory: /db/cr-data/NewProject where you should see the uploaded file.
+3. To process this resource follow the link “Process a Resource” which leads you to /apps/cr-xq-mets/admin/processResource.xhtml. 
+    1. There again enter the name of your project and the name of the resource you have already uploaded and which you would like to process.
+    2. Hit “Process” after some little time in the status bar your will see the “Resource Label”, the stroing place of the resource and its PID. 
+
+
 
 There is currently no administrative interface for managing the project and its resources. (#8)
 However there is a set of high-level functions for this purpose.
