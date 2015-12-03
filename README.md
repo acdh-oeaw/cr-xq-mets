@@ -81,7 +81,7 @@ admin interface
 sandbox-scripts
 ---------------
 
-If you want to create a new project open the following documents and follow the inline documentation
+If you want to create a new project open the following documents and follow the inline documentation. See therefore also the section Add Resource at the very end of this Readme.
 ```
 /db/apps/cr-xq-mets/sandbox_init_project.xql
 ```
