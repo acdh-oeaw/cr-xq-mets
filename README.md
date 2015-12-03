@@ -59,6 +59,9 @@ Edit `build.properties`
 	Upon installation `setup.xql` is executed which generates the `$projects.dir`
 	and sets up the default project.
 
+Set up a project
+----------------
+
 There are basically two ways to set up a new project. Either you configure and execute the responsible sandbox xQuery functions using eXist´s xml editor eXide or you use a very basic admin interface. 
 
 admin interface
@@ -75,19 +78,20 @@ admin interface
     2. Hit “Process” after some little time in the status bar your will see the “Resource Label”, the stroing place of the resource and its PID. 
 
 
+sandbox-scripts
+---------------
 
-There is currently no administrative interface for managing the project and its resources. (#8)
-However there is a set of high-level functions for this purpose.
-
-Thus for administering the cr-projects you need to go to eXide to execute these functions.
-
-Upon installation a default project with the id `defaultProject` is automatically set up.
-
-If you want to create a new project, use:
+If you want to create a new project open the following documents and follow the inline documentation
 ```
-project:new('project1')
+/db/apps/cr-xq-mets/sandbox_init_project.xql
 ```
-
+```
+/db/apps/cr-xq-mets/sandbox_init_resource.xql
+```
+and 
+```
+/db/apps/cr-xq-mets/sandbox_ixgen.xql
+```
 For every project, you need to configure 
 
 1. permissions
