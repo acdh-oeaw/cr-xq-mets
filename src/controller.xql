@@ -78,8 +78,7 @@ let $project-config-map := map{"config" := $project-config}
  :      <li>the configuration files (<code>conf.xml</code>) of all available cr-xq modules located in $app-root/modules</li>
  : </ol>
 ~:)
-let $full-config := config:config($project), 
-    $full-config-map := map{"config" := $full-config}
+let $full-config-map := config:config-map($project)
     
 let $module := local:get-cr-xq-module($project, $params)
 

@@ -761,7 +761,7 @@ declare function project:dmd($project, $data as element(cmd:CMD)?) as empty() {
 
 (: getter and setter for index-map :)
 declare function project:map($project) as element(map)? {
-    config:mappings($project)
+    config:mappings($project)[1]
 };
 
 

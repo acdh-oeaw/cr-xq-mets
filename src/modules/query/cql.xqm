@@ -8,6 +8,7 @@ xquery version "3.0";
 module namespace cql = "http://exist-db.org/xquery/cql";
 
 import module namespace cqlparser = "http://exist-db.org/xquery/cqlparser";
+import module namespace config = "http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "../../core/repo-utils.xqm";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at "../diagnostics/diagnostics.xqm";
 import module namespace index = "http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
@@ -49,13 +50,15 @@ This happens in two steps:
 : @returns xpath-string, or if not a string, whatever came from the parsing (if not a string, it must be a diagnostic) 
 :)
 declare function cql:cql-to-xpath($cql-expression as xs:string, $context)  as item()* {
-    let $xcql := cql:cql-to-xcql($cql-expression)
-(:    return transform:transform ($xcql, $cql:transform-doc, <parameters><param name="mappings-file" value="{repo-utils:config-value('mappings')}" /></parameters>):)
-    return 
+    let $xcql := cql:cql-to-xcql($cql-expression),
+        $log := util:log-app("TRACE", $config:app-name, 'cql:cql-to-xpath $cql-expression := '||$cql-expression||', $context := '||substring(serialize($context),1,240)||', $xcql := '||substring(serialize($xcql),1,240)),        
+        $ret :=
         if (not($xcql instance of element(diagnostics))) 
             then cql:xcql-to-xpath($xcql, $context)            
-            else $xcql
-};
+            else $xcql,
+        $logRet := util:log-app("TRACE", $config:app-name, 'cql:cql-to-xpath return '||substring(serialize($ret),1,240))
+    return $ret
+};      
 
 (:~ translate a query in CQL-syntax to a corresponding XPath 
 a variant expecting map already as parameter  ($context parameter is ignored)

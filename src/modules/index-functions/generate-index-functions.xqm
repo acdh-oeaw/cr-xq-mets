@@ -68,10 +68,11 @@ declare {"function "||gen:ns-short($project-pid)||":apply-index" (: this is just
         for $ix in $indexes
         let $ix-name := $ix/data(@key)         
 (:        let $ix-path := $ix/path/text():)
-        let $ix-path := index:index-as-xpath($ix-name,$config, $xtype)
+        let $ix-path := index:index-as-xpath($ix-name,$config, $xtype),
+            $relative-ix-path := if (starts-with($ix-path, '/')) then $ix-path else '/'||$ix-path
         
         return 
-           "&#09;case '"||$ix-name||"' return $data/"||$ix-path||$gen:cr,
+           "&#09;case '"||$ix-name||"' return $data"||$relative-ix-path||$gen:cr,
            
            (:"&#09;default return util:log-app('WARN',$config:app-name, concat('Index ',$index-name,' is not defined.'))"||$gen:cr:)
            "&#09;default return ()"||$gen:cr

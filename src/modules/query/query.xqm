@@ -55,13 +55,13 @@ declare function query:execute-query($q as xs:string, $data as node()*, $project
             return 
                 if ($namespace-uri castable as xs:anyURI)
                 then 
-                    let $log := util:log-app("DEBUG", $config:app-name, "declaring ns "||$prefix||"="||$namespace-uri)
+                    let $log := util:log-app("TRACE", $config:app-name, "query:execute-query declaring ns "||$prefix||"="||$namespace-uri)
                     return util:declare-namespace(xs:string($prefix), xs:anyURI($namespace-uri))
                 else util:log-app("ERROR", $config:app-name, $namespace-uri||" cannot be cast to xs:anyURI")
-    let $log := util:log-app("DEBUG", $config:app-name, "$data/"||$xpath)
-    return util:eval("$data/"||$xpath)
-(:  return $xpath:)
-    
+    let $log := util:log-app("TRACE", $config:app-name, "query:execute-query $data/"||$xpath),
+        $ret := util:eval("$data/"||$xpath),
+        $logRet := util:log-app("TRACE", $config:app-name, "query:execute-query return "||substring(serialize($ret),1,240)||"...")       
+    return $ret
 };
 
 declare function query:execute-query-map($q as xs:string, $data as node()*, $map) as node()* {
@@ -73,9 +73,11 @@ declare function query:execute-query-map($q as xs:string, $data as node()*, $map
             return 
                 if ($namespace-uri castable as xs:anyURI)
                 then 
-                    let $log := util:log-app("DEBUG", $config:app-name, "declaring ns "||$prefix||"="||$namespace-uri)
+                    let $log := util:log-app("TRACE", $config:app-name, "query:execute-query-map declaring ns "||$prefix||"="||$namespace-uri)
                     return util:declare-namespace(xs:string($prefix), xs:anyURI($namespace-uri))
                 else util:log-app("ERROR", $config:app-name, $namespace-uri||" cannot be cast to xs:anyURI")
-    let $log := util:log-app("DEBUG", $config:app-name, "$data/"||$xpath)
-    return util:eval("$data/"||$xpath)
+    let $log := util:log-app("TRACE", $config:app-name, "query:execute-query-map $data/"||$xpath),
+        $ret := util:eval("$data/"||$xpath),
+        $logRet := util:log-app("TRACE", $config:app-name, "query:execute-query-map return "||substring(serialize($ret),1,240)||"...")
+    return $ret
 };

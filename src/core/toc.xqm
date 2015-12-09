@@ -131,10 +131,10 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
 
     
     let $resource := wc:get-data($resource-pid,$project-pid),
-        (:$log := util:log-app("DEBUG",$config:app-name, "xsl: "),
-        $log := util:log-app("DEBUG",$config:app-name, $xsl),:)
+        $log := util:log-app("TRACE",$config:app-name, "toc:generate $xsl := "||substring(serialize($xsl),1,240)),
         (:$store := xmldb:store(project:path($project-pid,"home"),$resource-pid||".xsl",$xsl),:)
-        $toc := if ($resource) then transform:transform($resource,$xsl,()) else ()
+        $toc := if ($resource) then transform:transform($resource,$xsl,()) else (),
+        $logToc := util:log-app("DEBUG",$config:app-name, "toc:generate $resource := "||substring(serialize($resource),1,240)||"... $toc := "||substring(serialize($toc),1,2400)||"...")
             
         
    let $mets:record := project:get($project-pid),
@@ -144,16 +144,21 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
     switch (true())
         case (not(exists($mets:record))) return util:log-app("ERROR",$config:app-name,"no METS-Record found in config for "||$project-pid )
         case (not($resource)) return util:log-app("ERROR", $config:app-name,"no working copy data found for resource "||$resource-pid||".")
-        case (exists($mets:structMap-exists)) return 
+        case (exists($mets:structMap-exists)) return
+          let $log := util:log-app("TRACE", $config:app-name, "toc:generate $mets:structMap-exists")
+          return
                     if (exists($mets:structMap-exists/mets:div/mets:div[@CONTENTIDS=$resource-ref])) then 
                         (update replace $mets:structMap-exists/mets:div/mets:div[@CONTENTIDS=$resource-ref] with $toc,
-                         util:log-app("INFO",$config:app-name,"updated ToC for "||$resource-pid||" from indexes "||string-join($mapping-keys,',')||" (project "||$project-pid||")")
+                         util:log-app("INFO",$config:app-name,"updated ToC for "||$resource-pid||" from indexes "||string-join($mapping-keys,',')||" (project "||$project-pid||")"),
+                         util:log-app("TRACE",$config:app-name,"toc:generate $toc := "||serialize($toc))
                         )
                       else 
                         (update insert $toc into $mets:structMap-exists/mets:div,
                         util:log-app("INFO",$config:app-name,"inserting ToC for "||$resource-pid||" from indexes "||string-join($mapping-keys,',')||" into logical structMap (project "||$project-pid||")")
                         )
-        default return 
+        default return
+        let $log := util:log-app("TRACE", $config:app-name, "toc:generate not $mets:structMap-exists")
+        return
             (update insert <mets:structMap TYPE="{$config:PROJECT_TOC_STRUCTMAP_TYPE}" >
                                    <mets:div>{$toc}</mets:div>
                                </mets:structMap>
@@ -214,6 +219,8 @@ declare function toc:get($resource-pid as xs:string, $project-pid as xs:string) 
  : Returns the (logical) TOC of a given project. 
 ~:)
 declare function toc:get($project-pid as xs:string) as element(mets:div)? {
-    project:get($project-pid)//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE]/mets:div
+    let $ret := project:get($project-pid)//mets:structMap[@TYPE=$config:PROJECT_TOC_STRUCTMAP_TYPE]/mets:div,
+        $log := util:log-app("DEBUG", $config:app-name, "toc:get return "||$ret)
+    return $ret
 };
 

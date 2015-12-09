@@ -731,7 +731,8 @@ declare function config:project-config($project as xs:string) as element()* {
  : @result: one or more <map> elements 
  ~:)
 declare function config:mappings($config as item()*) as element(map)* {
-    for $item in $config return 
+    let $log := util:log-app("TRACE", $config:app-name, 'config:mappings $config := '||string-join(for $c in $config return substring(serialize($c),1,80), '... ,&#xa;')),
+        $ret := for $item in $config return 
         let $mappings := typeswitch ($item)
             case map()          return 
                                     ($item("config")//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID],
@@ -741,7 +742,9 @@ declare function config:mappings($config as item()*) as element(map)* {
             case text()         return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             case element()      return $item//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             default             return ()              
-         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1]
+         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1],
+        $logRet := util:log-app("TRACE", $config:app-name, 'config:mappings return '||string-join(for $r in $ret return substring(serialize($r),1,80), '... ,&#xa;'))
+    return $ret
 };
 
 (:~ lists all defined projects based on the project-id param in the config.
@@ -786,8 +789,9 @@ declare function config:module-config() as item()* {
  :  
  : @param $project project identifier
 ~:)
-declare function config:project-exists($project as xs:string) {
-    exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
+declare function config:project-exists($project as xs:string?) {
+    if (exists($project)) then exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
+    else false()
 };
 
 declare function config:shib-user() {

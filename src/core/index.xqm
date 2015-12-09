@@ -27,7 +27,10 @@ declare function index:index($key as xs:string+, $project) as element(index)? {
  };
 
 declare function index:index-from-map($key as xs:string+, $map) as element(index)? {
-    $map//index[@key=$key]
+    let $log := util:log-app("TRACE", $config:app-name, 'index:index-from-map $key := '||string-join($key, ', ')||', $map := '||substring(serialize($map),1,240)),
+        $ret := $map//index[@key=$key],
+        $logRet := util:log-app("TRACE", $config:app-name, 'index:index-from-map return '||substring(serialize($ret),1,240))
+    return $ret
 };
 
 (:~ gets the mapping for the index and creates an xpath (UNION)
@@ -59,11 +62,11 @@ declare function index:index-as-xpath($key as xs:string, $project, $type as xs:s
 @returns the full generated path (excluding starting '/'!) 
 :)
 declare function index:index-as-xpath-from-map($key as xs:string, $map, $type as xs:string?) as xs:string {    
-    let $index := index:index-from-map($key, $map)        
-    let $default-prefix := 'descendant-or-self::'
+    let $index := index:index-from-map($key, $map),        
+        $default-prefix := 'descendant-or-self::',
     (: added check for text in path defintion - this is important because if $index exists and has a <path> child without text() 
     the returned xpath is invalid - like 'descendant::' - thus breaking the automatically generated index functions :)
-    return if (exists($index) and $index/path[text()]) then
+        $ret := if (exists($index) and $index/path[text()]) then
        (:                 let $match-on := if (exists($index-map/@use) ) then 
                                             if (count($index-map/@use) > 1) then  
                                                concat('/(', string-join($index-map/@use,'|'),')')
@@ -73,9 +76,13 @@ declare function index:index-as-xpath-from-map($key as xs:string, $map, $type as
 
                         let $paths := switch (true()) 
                                     case ($type='label' and $index/path/@label) return 
-                                        for $x in $index/path[@label] return concat($default-prefix,$x,'/',$x/@label)
+                                        for $x in $index/path[@label]
+                                        let $relative-label := if (starts-with($x/@label, '/')) then $x/@label else '/'||$x/@label
+                                        return concat($default-prefix,$x,$relative-label)
                                     case ($type='match' and $index/path/@match) return 
-                                        for $x in $index/path[@match] return concat($default-prefix,$x,'/', $x/@match)
+                                        for $x in $index/path[@match]
+                                        let $relative-match := if (starts-with($x/@match, '/')) then $x/@match else '/'||$x/@match
+                                        return concat($default-prefix,$x,$relative-match)
                                     case ($type='label-only' and $index/path/@label) return $index/path[@label]/@label
                                     case ($type='label-only' and not($index/path/@label)) return '.'
                                     case ($type='match-only' and $index/path/@match) return $index/path[@match]/@match
@@ -93,8 +100,9 @@ declare function index:index-as-xpath-from-map($key as xs:string, $map, $type as
                   else if ($type = ('label-only', 'match-only')) then '.'
                             (: translating the key to a path does not work as before since we have keys with a prefix like 'fcs.toc' :)
                             (:else translate($key,'.','/'):)
-                            else $key
-    
+                            else $key,
+        $log := util:log-app('TRACE', $config:app-name, 'index:index-as-xpath-from-map return '||$ret)
+    return $ret
 };
 
 (:~
