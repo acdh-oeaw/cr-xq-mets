@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:cr="http://aac.ac.at/content_repository" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fcs="http://clarin.eu/fcs/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" version="2.0">
+<xsl:stylesheet xmlns:cr="http://aac.ac.at/content_repository" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fcs="http://clarin.eu/fcs/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" version="2.0" exclude-result-prefixes="#all">
     <xd:doc scope="component">a list of comma seperated ids, either full @cr:id values or @cr:id + offsets of a substring:
         
     </xd:doc>
+    <xsl:preserve-space elements="*"/>
     <xsl:param as="xs:string*" name="cr-ids"/>
     <xsl:variable name="ids-parsed" as="element()*">
         <xsl:for-each select="tokenize($cr-ids,'\s*,\s*')">
@@ -51,14 +51,14 @@
                                 <xsl:copy-of select="@*"/>
                             	<xsl:for-each select="$id-parsed">
                             		<xsl:if test="offset &gt; 0">
-                            			<xsl:value-of select="substring($elt,0,xs:integer(offset)-1)"/>
+                            		    <xsl:value-of select="substring($elt,0,xs:integer(offset))"/>
                             		</xsl:if>
-                            		<exist:match>
-                            			<xsl:value-of select="substring($elt,offset,length)"/>
-                            		</exist:match>
-                            		<xsl:if test="string-length($elt) &gt; (xs:integer(length)+xs:integer(offset))">
-                            			<xsl:value-of select="substring($elt,xs:integer(length)+xs:integer(offset))"/>
-                            		</xsl:if>
+                            	    <exist:match>
+                            	        <xsl:value-of select="substring($elt,offset,length)"/>
+                            	    </exist:match>
+                            	    <xsl:if test="string-length($elt) &gt; (xs:integer(length)+xs:integer(offset))">
+                            	        <xsl:value-of select="substring($elt,xs:integer(length)+xs:integer(offset))"/>
+                            	    </xsl:if>
                             	</xsl:for-each>
                             </xsl:copy>
                         </xsl:when>
