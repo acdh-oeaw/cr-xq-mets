@@ -131,10 +131,10 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
 
     
     let $resource := wc:get-data($resource-pid,$project-pid),
-        $log := util:log-app("TRACE",$config:app-name, "toc:generate $xsl := "||substring(serialize($xsl),1,240)),
+        $log := util:log-app("TRACE",$config:app-name, "toc:generate $xsl := "||substring(serialize($xsl),1,24000)),
         (:$store := xmldb:store(project:path($project-pid,"home"),$resource-pid||".xsl",$xsl),:)
         $toc := if ($resource) then transform:transform($resource,$xsl,()) else (),
-        $logToc := util:log-app("DEBUG",$config:app-name, "toc:generate $resource := "||substring(serialize($resource),1,240)||"... $toc := "||substring(serialize($toc),1,2400)||"...")
+        $logToc := util:log-app("TRACE",$config:app-name, "toc:generate $resource := "||substring(serialize($resource),1,240)||"..., URI:"||base-uri($resource)||", $toc := "||substring(serialize($toc),1,240)||"...")
             
         
    let $mets:record := project:get($project-pid),
