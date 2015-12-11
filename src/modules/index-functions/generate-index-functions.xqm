@@ -106,15 +106,19 @@ declare function gen:store-index-functions($code as xs:string, $project-pid) {
                     else repo-utils:mkcol("/", $module-dir-path)
                     
     let $module-path := project:path($project-pid,'home')||'/modules/'||$gen:project-index-functions-module-filename
-    let $regenerate-top-level-module := not(util:binary-doc-available($module-path))
+    let $generate-top-level-module-first-time := not(util:binary-doc-available($module-path))
     
                     
     let $store:=    xmldb:store($module-dir-path, $gen:project-index-functions-module-filename, $code, 'application/xquery')
     let $exec:=     xmldb:set-resource-permissions($module-dir-path, $gen:project-index-functions-module-filename, 'guest', 'guest', 755)
     (: top-level module generation only after storing the project-specific module, because the generating function checks for existence of the file :)
-    let $top-level-module :=  if ($regenerate-top-level-module) then gen:register-project-index-functions() else ()
-    
-(:    return $exec!='':)
+    let $top-level-module :=
+        if ($generate-top-level-module-first-time) then 
+            let $log := util:log-app("INFO",$config:app-name,"gen:store-index-functions first time generating, registering module using gen:register-project-index-functions()")
+            return gen:register-project-index-functions()
+        else 
+            let $log := util:log-app("INFO",$config:app-name,"gen:store-index-functions regenerating, NOT registering module!")
+            return ()
     return $store 
 };
 
