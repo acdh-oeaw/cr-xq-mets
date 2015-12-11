@@ -39,8 +39,9 @@ declare function facs:generate-file($resourcefragment-pid as xs:string, $resourc
 ~:)
 declare function facs:generate-file($version-param as xs:string?, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as element(mets:file)* {
     let $log := util:log-app("TRACE",$config:app-name,"facs:generate-file("||$version-param||", "||$resourcefragment-pid||", "||$resource-pid||", "||$project-pid||")")
-    let $file-id := facs:id-by-resourcefragment($resourcefragment-pid,$resource-pid,$project-pid)
-    let $log := util:log-app("TRACE",$config:app-name,"$file-id := "||string-join($file-id, ', '))
+    let $file-id := facs:id-by-resourcefragment($resourcefragment-pid,$resource-pid,$project-pid),
+        $log := util:log-app("TRACE",$config:app-name,"$file-id := "||string-join($file-id, ', '))
+    return if ($file-id != "") then
     let $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     let $url :=     facs:generate-url($file-id, $version, $resourcefragment-pid,$resource-pid,$project-pid)
     let $log := util:log-app("TRACE",$config:app-name,"$url := "||$url)
@@ -59,7 +60,7 @@ declare function facs:generate-file($version-param as xs:string?, $resourcefragm
                     </mets:file>
     let $log := util:log-app("TRACE",$config:app-name,"facs:generate-file return "||serialize($file-elt))
     return $file-elt
-      
+    else ()  
 };
 
 (:~
@@ -216,12 +217,16 @@ declare function facs:generate($version-param as xs:string?, $resource-pid as xs
             let $first :=
                 let $resourcefragment-pid := $fragments[1]/@ID
                 let $file :=facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
-                return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
+                return 
+                   if (exists($file)) then facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
+                   else ()
             return  
                 for $f in $fragments[position() gt 1]
                     let $resourcefragment-pid := $f/@ID
                     let $file := facs:generate-file($version,$resourcefragment-pid,$resource-pid,$project-pid)
-                    return facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
+                return 
+                   if (exists($file)) then facs:set($version,$file,$resourcefragment-pid,$resource-pid,$project-pid)
+                   else ()
         else 
             let $log := util:log-app("INFO",$config:app-name,"not generating any facs entries - no fragments found in "||$resource-pid||" (project "||$project-pid||").")
             return ()
