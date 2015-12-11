@@ -762,11 +762,13 @@ declare function resource:get-toc($resource-pid as xs:string, $project) as eleme
         (:$frgs := resource:get($resource-pid, $project-pid)//mets:div[@TYPE='resourcefragment']:)
        
     let $toc-resource := $toc[@CONTENTIDS=$resource-ref]
-    return if (exists($toc-resource)) then resource:do-get-toc-resolved($toc-resource,$resource-pid,$mets:record) else ()
+    let $ret := if (exists($toc-resource)) then resource:do-get-toc-resolved($toc-resource,$resource-pid,$mets:record) else (),
+        $logRet := util:log-app("DEBUG", $config:app-name, "resource:get-toc retrun "||substring(serialize($ret),1,240)||"...")
+    return $ret
 };
 
 declare function resource:do-get-toc-resolved($node as node(), $resource-pid as xs:string?, $mets-record as element(mets:mets)) as node()* {
-    typeswitch ($node)
+    let $ret := typeswitch ($node)
         case attribute() return $node
         
         case text() return $node
@@ -824,7 +826,9 @@ declare function resource:do-get-toc-resolved($node as node(), $resource-pid as 
                             return resource:do-get-toc-resolved($n,$resource-pid,$mets-record)
                        }
 
-        default return $node
+        default return $node,
+      $logRet := util:log-app("TRACE", $config:app-name, "resource:do-get-toc-resolve return "||substring(serialize($ret),1,240))
+   return $ret
 };
 
 

@@ -186,11 +186,15 @@ declare function wc:get-path($resource-pid,$project-pid) as xs:anyURI? {
  : @return if available, the document node of the working copy, otherwise an empty sequence. 
 ~:)
 declare function wc:get-data($resource-pid,$project-pid) as document-node()? {
-    let $wc-path:=wc:get-path($resource-pid,$project-pid)
-    return 
+    let $wc-path:=wc:get-path($resource-pid,$project-pid),
+        $log := util:log-app("TRACE", $config:app-name, "wc:get-data $wc-path := "||$wc-path)
+    return
+    let $ret :=
         if (doc-available($wc-path))
         then doc($wc-path)
-        else util:log-app("INFO",$config:app-name,"requested working copy  at "||$wc-path||" is not available.")
+        else util:log-app("INFO",$config:app-name,"requested working copy  at "||$wc-path||" is not available."),
+        $logRet := util:log-app("TRACE", $config:app-name, "wc:get-data return "||substring(serialize($ret),1,240)||"...")
+    return $ret
 };
 
 
