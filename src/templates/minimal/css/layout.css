@@ -396,6 +396,13 @@ body {
     float:left;
 }
 
+#detail .data-view.full {
+    padding-right:0.25em;
+}
+#detail .data-view.facs {
+    padding-left:0.25em;
+}
+
 /* helper to finish off floating sequences */
 .div-after {
     clear:both;    
