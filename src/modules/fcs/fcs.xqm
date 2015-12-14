@@ -663,7 +663,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
             let $m-value := map:entry("value",$term-value-g),
                 $m-count := map:entry("count",count($g)),
                 $firstOccurence := map:entry("firstOccurence",$g[1]),
-                $log := util:log-app("TRACE", $config:app-name, 'fcs:term-from-nodes: $terms-unordered value => '||substring($term-value-g,1,240)||'... , count => '||$g)
+                $log := util:log-app("TRACE", $config:app-name, 'fcs:term-from-nodes: $terms-unordered value => '||substring($term-value-g,1,240)||'... , count => '||count($g))
             return map:new(($m-value,$m-count,$firstOccurence))
     let $terms := 
             for $t in $terms-unordered
