@@ -663,7 +663,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
             let $m-value := map:entry("value",$term-value-g),
                 $m-count := map:entry("count",count($g)),
                 $firstOccurence := map:entry("firstOccurence",$g[1]),
-                $log := util:log-app("TRACE", $config:app-name, 'fcs:term-from-nodes: $terms-unordered value => '||substring($term-value-g,1,240)||'... , count => '||count($g))
+                $log := util:log-app("TRACE", $config:app-name, 'fcs:term-from-nodes: $terms-unordered value => '||$term-value-g||', count => '||count($g))
             return map:new(($m-value,$m-count,$firstOccurence))
     let $terms := 
             for $t in $terms-unordered
@@ -671,7 +671,8 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                 $t-count := $t("count"),
                 $firstOccurence := $t("firstOccurence"),
                 $label := 
-                    let $term-label := string-join(fcs:term-to-label($t-value,$index-key,$project-pid,$termlabels),'')
+                    let  $log := util:log-app("TRACE", $config:app-name, 'fcs:term-from-nodes: $terms value => '||$t("value")||', count => '||$t("count")||', $firstOccurence := '||substring(serialize($t("firstOccurence")),1,240)||'...'),
+                         $term-label := string-join(fcs:term-to-label($t-value,$index-key,$project-pid,$termlabels,$firstOccurence),'')
                     return
                         if ($term-label) 
                         then $term-label[1]
@@ -812,27 +813,45 @@ it spears you a lot of time
 :)
 (:%private :)
 declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string) as xs:string?{
-    
-(:    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]:)
-    if ($term) then 
-            let $termlabels := project:get-termlabels($project-pid)
-            return fcs:term-to-label($term,$index,$project-pid, $termlabels)
-         else  ()
+    let $log := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label $term := '||$term||', $index := '||$index),
+        $ret := if ($term) then 
+                   let $termlabels := project:get-termlabels($project-pid)
+                   return fcs:term-to-label($term,$index,$project-pid, $termlabels)
+                else (),
+         $logRet := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label return '||$ret)
+    return $ret
 };
 
+declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string, $termlabels) {
+    fcs:term-to-label($term, $index, $project-pid, $termlabels, ())
+};
 (:~ lookup a label to a term using the termlabel map passed as argument
 this is the preferred method, the resolution of the projects termlabels map should happen before the scan loop, 
 to prevent repeated lookup of this map, which has serious performance impact
-:)
-(:%private :)
-declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string, $termlabels) as xs:string?{
-    
-(:    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]:)
-    if ($term and $termlabels) then 
-            $termlabels//term[@key=$term][ancestor::*/@key=$index]
-         else  ()
+~:)
+declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string, $termlabels, $firstOccurence as node()?) as xs:string?{
+    let $log := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label $term := '||$term||', $index := '||$index||', $termlabels := '||substring(serialize($termlabels),1,240)),
+        $ret := if ($term and $termlabels) then 
+            $termlabels//term[data(@key) eq $term][ancestor::*/data(@key) eq $index]
+         else if ($term and $firstOccurence[@ref]) then fcs:term-to-label-from-xml-id($term, $index, $project-pid, $firstOccurence)
+         else (),
+        $logRet := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label return '||$ret)
+    return $ret
+};
+(:~ lookup a label to a term using a ref attribute that links an occurence to some other part of the same document.
+This may not scale very well so cached indexes are used here to speed up further scans.
+~:)
+declare function fcs:term-to-label-from-xml-id($term as xs:string, $index as xs:string, $project-pid as xs:string, $firstOccurence as node()) as xs:string? {
+    let $referencedNode := fcs:get-referenced-node($firstOccurence),
+        $log := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label-from-xml-id $term := '||$term||', $index := '||$index||', $firstOccurence := '||substring(serialize($firstOccurence),1,240)||'...,  $referencedNode := '||substring(serialize($referencedNode),1,240)||'...'),
+        $ret := if ($referencedNode) then index:apply-index($referencedNode, $index, $project-pid, 'label-only') else (),
+        $logRet := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label-from-xml-id return '||$ret) 
+    return $ret
 };
 
+declare %private function fcs:get-referenced-node($node as node()) as node() {
+    root($node)//*[@xml:id eq replace(data($node/@ref), '^#', '')]
+};
 
 (:~ 
  : Main search function that handles the searchRetrieve-operation request)
