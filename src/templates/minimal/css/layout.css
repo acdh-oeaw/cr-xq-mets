@@ -57,8 +57,8 @@ body {
 
 #options-invoke {
     position: fixed;
-    right:0px;
-    top:0px;
+    right:5px;
+    top:5px;
 /*    z-index: 999;*/
     width: 10px;
     height: 10px;
@@ -71,7 +71,7 @@ body {
     background: #eee;
     display: block;
     width: 20em;
-    height: 6.7em;
+    height: 8em;
     z-index: 999;    
 }
 
@@ -144,10 +144,28 @@ body {
 /* ********************* */
 /* header */
 #header {
+    padding-top: 2px;
     margin-bottom: 12px;
     height:90px;
     z-index: 2;
 }
+
+#header .inst-logos {
+    height: 80%;
+    float: right;    
+}
+
+#header .inst-logo {
+    height: 100%;
+    margin-left: 5px;
+}
+
+#header .inst-logo-vert {
+    height: 50%;
+    margin-bottom: 5px;
+    display: block;
+}
+
 #site-name{
     display:inline;
     padding-left:20px;
@@ -177,7 +195,7 @@ body {
     background:none;
 }
 
-#user {float:right; margin-right: 1em;}
+#user {float:right; margin-right: 1.5em; margin-left:1em;}
 
 #content-container {
     z-index: 0;
@@ -391,7 +409,12 @@ body {
 
 /*.data-view.cite {display:none;}*/
 
+#detail .detail-content {
+    height: 100%;
+}
+
 #detail .data-view.full, #detail .data-view.facs {
+    height: 100%;
     width: 48%;
     float:left;
 }
@@ -426,7 +449,7 @@ body {
 }
 #detail .detail-content-outer {
     height: 82%;
-    height: calc(100% - 1.5em - 4em - 26px);
+    height: calc(100% - 1.5em - 4em - 26px - 1em - 0.4em - 0.6em);
 }
 
 /* padding-top: 5em;

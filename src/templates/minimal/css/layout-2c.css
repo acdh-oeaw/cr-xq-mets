@@ -36,7 +36,7 @@
 
     #navigation-content {
         height: 95%;
-        height: calc(100% - 26px);
+        height: calc(100% - 1em - 0.4em - 26px - 0.6em);
     }
 
     #main h2 ~ #query-input {
@@ -46,7 +46,7 @@
 
     #results {
         height: 88%;
-        height: calc(100% - 26px - 2.5em);
+        height: calc(100% - 1em - 0.4em - 26px - 1.5em - 1.6em);
         overflow-y: hidden;
     }
 
