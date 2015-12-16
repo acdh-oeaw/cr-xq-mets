@@ -86,9 +86,10 @@ declare %private function templates:get-instructions($class as xs:string?) as xs
 };
 
 declare %private function templates:call($class as xs:string, $node as element(), $model as map(*)) {
-    let $paramStr := substring-after($class, "?")
-    let $parameters := templates:parse-parameters($paramStr)
-    let $func := if ($paramStr) then substring-before($class, "?") else $class
+    let $paramStr := substring-after($class, "?"),
+        $parameters := templates:parse-parameters($paramStr),
+        $func := if ($paramStr) then substring-before($class, "?") else $class,
+        $log := util:log-app('TRACE', $config:app-name, "templates:call $class := "||$class||', $paramStr := '||$paramStr||', $func := '||$func)
     let $call := templates:resolve(10, $func, $model($templates:CONFIGURATION)("resolve"))
     return
         if (exists($call)) then
@@ -222,7 +223,7 @@ declare %private function templates:resolve($arity as xs:int, $func as xs:string
 };
 
 declare %private function templates:parse-parameters($paramStr as xs:string?) as element(parameters) {
-    <parameters>
+    <parameters xmlns="">
     {
         for $param in tokenize($paramStr, "&amp;")
         let $key := substring-before($param, "=")
@@ -312,14 +313,18 @@ declare
 %templates:wrap
 %templates:default("filter", "")
 function templates:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string) {
-    let $content := config:resolve($model, $path-detail)
-        let $log := util:log-app("DEBUG",$config:app-name,"templates:include-detail.path-detail: "||$path-detail)
-    let $restricted-content := if ($filter != '' and exists($content)) then 
+    let $content := config:resolve($model, $path-detail),
+        $log := util:log-app("TRACE",$config:app-name,"templates:include-detail path-detail := "||$path-detail||', $filter := '||$filter)
+    let $restricted-content := 
+        if ($filter != '' and exists($content)) then 
             (: try to handle namespaces dynamically 
                 by switching  to source namespace :)
-            let $ns-uri := namespace-uri($content[1]/*)        	       
-            let $ns := util:declare-namespace("",xs:anyURI($ns-uri))
-           return util:eval(concat("$content//", $filter)) else $content 
+            let $ns-uri := namespace-uri($content[1]/*),        	       
+                $ns := util:declare-namespace("",xs:anyURI($ns-uri)),
+                $ret := util:eval(concat("$content//", $filter)),
+                $logRet := util:log-app("TRACE",$config:app-name,"templates:include-detail return restricted-content "||serialize($ret))
+            return $ret
+        else $content 
     return templates:process($restricted-content , $model)
 };
 
