@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ul xmlns="http://www.w3.org/1999/xhtml">
+    <li>
+        <a href="./?">home</a>
+    </li>
+    <li>
+        <a href="corpus.html">resources</a>
+    </li>
+    <li>
+        <a href="impressum.html">impressum</a>
+    </li>
+</ul>
