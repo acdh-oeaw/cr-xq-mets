@@ -664,6 +664,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
                                     <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
                                     <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
+                                    <param name="dict_file" value="{config:param-value($config, 'dict_file')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site-name')}"/>
 	                               <param name="site_logo" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'site-logo'))}"/>
