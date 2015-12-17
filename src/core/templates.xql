@@ -9,6 +9,9 @@ module namespace templates="http://exist-db.org/xquery/templates";
  : @author Wolfgang Meier
 :)
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
+
+declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
 declare variable $templates:CONFIG_STOP_ON_ERROR := "stop-on-error";
 
@@ -283,8 +286,8 @@ declare %private function templates:cast($values as item()*, $targetType as xs:s
  : @param $project project-identifier
  :)
 declare function templates:init($node as node(), $model as map(*), $project as xs:string?) {
-       map { 
-       "config" := config:config($project)      
+       map {
+       "config": config:config($project)
        }
 };
  
@@ -314,7 +317,7 @@ declare
 %templates:default("filter", "")
 function templates:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string) {
     let $content := config:resolve($model, $path-detail),
-        $log := util:log-app("TRACE",$config:app-name,"templates:include-detail path-detail := "||$path-detail||', $filter := '||$filter)
+        $log := util:log-app("DEBUG",$config:app-name,"templates:include-detail path-detail := "||$path-detail||', $filter := '||$filter)
     let $restricted-content := 
         if ($filter != '' and exists($content)) then 
             (: try to handle namespaces dynamically 
@@ -322,7 +325,7 @@ function templates:include-detail($node as node(), $model as map(*), $path-detai
             let $ns-uri := namespace-uri($content[1]/*),        	       
                 $ns := util:declare-namespace("",xs:anyURI($ns-uri)),
                 $ret := util:eval(concat("$content//", $filter)),
-                $logRet := util:log-app("TRACE",$config:app-name,"templates:include-detail return restricted-content "||serialize($ret))
+                $logRet := util:log-app("DEBUG",$config:app-name,"templates:include-detail return restricted-content "||serialize($ret))
             return $ret
         else $content 
     return templates:process($restricted-content , $model)
@@ -413,20 +416,31 @@ declare function templates:load-source($node as node(), $model as map(*)) as nod
     values found in the request - if present.
  :)
 declare function templates:form-control($node as node(), $model as map(*)) as node()* {
-    typeswitch ($node)
-        case element(input) return
-            let $name := $node/@name
-            let $value := request:get-parameter($name, ())
-            return
+    let $log := util:log-app("TRACE",$config:app-name,"templates:form-control $node := "||serialize($node))
+    return typeswitch ($node)
+        case element(xhtml:input) return
+            let $name := $node/@name,
+                $value := request:get-parameter($name, ()),
+                $retValueSet := 
                 if ($value) then
                     element { node-name($node) } {
                         $node/@* except $node/@value,
                         attribute value { $value },
                         $node/node()
                     }
-                else
-                    $node
-        case element(select) return
+                else $node,
+                $ret :=
+                if ($retValueSet/@type eq 'text') then
+                    let $value := $model('config')//@OBJID
+                    return element { node-name($retValueSet) } {
+                        $node/@* except $node/@value,
+                        attribute data-context { $value },
+                        $retValueSet/node()
+                    }
+                 else $retValueSet,
+                 $logRet := util:log-app("TRACE",$config:app-name,"templates:form-control return element(input) "||serialize($ret))
+             return $ret
+        case element(xhtml:select) return
             let $value := request:get-parameter($node/@name/string(), ())
             return
                 element { node-name($node) } {
