@@ -31,7 +31,7 @@ a, a:link, a:hover {
 }
 
 #logo {
-    width: 10%;
+    min-width: 10%;
 }
 
 input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button {

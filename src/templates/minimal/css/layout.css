@@ -170,7 +170,7 @@ body {
     display:inline;
     padding-left:20px;
     position:absolute;
-    top:20px;
+    top:1.2em;
 }
 #logo{
     display:block;
@@ -183,6 +183,11 @@ body {
 /* menu */
 #menu{
     /*    display:inline;*/
+}
+
+#message {
+    position: absolute;
+    top: 90px;
 }
 
 #top-menu{

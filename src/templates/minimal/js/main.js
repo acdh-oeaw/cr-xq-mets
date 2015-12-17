@@ -138,6 +138,7 @@ function minimal_template_ui_setup() {
     });
 
     $('.result-header a').live("click", load_main);
+    $("#navigation .indexes .scan a").live('click', load_main);
     $('.result-body a').live("click", load_detail);
     // navigation links target:#detail itself
     $('#detail .navigation a').live("click", load_detail);
