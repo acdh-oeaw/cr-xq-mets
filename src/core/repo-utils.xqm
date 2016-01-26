@@ -38,16 +38,19 @@ declare variable $repo-utils:responseFormatHTMLpage as xs:string := "htmlpage";
 
 declare variable $repo-utils:sys-config-file := "conf/config-system.xml";
 
-(:~ not solved yet - look at cr-xq/core/config.xqm: config:param-value('base-url') !  :)
 declare function repo-utils:base-url($config as item()*) as xs:string* {
-    (:let $server-base := if (repo-utils:config-value($config, 'server.base') = '') then ''  else repo-utils:config-value($config, 'server.base')
-    let $config-base-url := if (repo-utils:config-value($config, 'base.url') = '') then request:get-uri() else repo-utils:config-value($config, 'base.url')
-    return concat($server-base, $config-base-url):)
-(:    let $url := request:get-url():)
-let $url := request:get-uri()
-    return $url
-};  
+        (: On Jetty 9+ this is actually done by Jetty, exist-db usess Jetty 8 :)
+    let $mets :=    $config/descendant-or-self::mets:mets[@TYPE='cr-xq project'],
+        $urlScheme := if ((lower-case(request:get-header('X-Forwarded-Proto')) = 'https') or 
+                          (lower-case(request:get-header('Front-End-Https')) = 'on')) then 'https:' else 'http:',
+        $realUrl := replace(request:get-url(), '^http:', $urlScheme)
+    return substring-before($realUrl,$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/"     
+};
 
+declare function repo-utils:base-uri($config as item()*) as xs:string* {
+   let $mets :=    $config/descendant-or-self::mets:mets[@TYPE='cr-xq project']
+   return substring-before(request:get-uri(),$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/"
+};
 
 (:~
  : Helper function which programmatically defines prefix-namespace-bindings 

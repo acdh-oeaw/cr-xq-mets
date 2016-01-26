@@ -32,8 +32,7 @@ function fcs:query-input($node as node()*, $model as map(*), $query as xs:string
               			            <param name="x-context" value="{$x-context}"/>              			            
               			            <param name="x-dataview" value="{$x-dataview}"/>
                   </parameters>
-                  (:<param name="base_url" value="{$base-path}"/>
-                  <param name="base_url" value="{repo-utils:base-url($model("config"))}"/>:)
+                  (:<param name="base_url" value="{$base-path}"/>:)
                   
      return  repo-utils:serialise-as($template, $x-format, 'static', $model("config"), $params)
      
@@ -72,7 +71,6 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
               			            <param name="x-context" value="{$x-context-x}"/>              			            
               			            <param name="x-dataview" value="{$x-dataview-x}"/>
                   </parameters>
-                  (:<param name="base_url" value="{repo-utils:base-url($config)}"/>:)
                   
      return repo-utils:serialise-as($result, $x-format, 'searchRetrieve', $model("config"), $params)
      

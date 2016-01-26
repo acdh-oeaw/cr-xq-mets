@@ -122,7 +122,6 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
 
                   </parameters>
 :)(:                  		modules/shared/scripts:)
-(:<param name="base_url" value="{repo-utils:base-url($config)}"/>:)
 
      return if ($format='xml') then
                 let $xsl := doc($viewer:path-to-export-xsl)
