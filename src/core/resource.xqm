@@ -166,7 +166,7 @@ declare function resource:generate-pid($project-pid as xs:string) as xs:string{
 
 declare function resource:generate-pid($project-pid as xs:string, $random-seed as xs:string?) as xs:string {
     let $project:=  project:get($project-pid),
-        $r-pids:=   $project//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]/@ID,
+        $r-pids:=   $project//mets:structMap[@TYPE eq $config:PROJECT_STRUCTMAP_TYPE]//mets:div[@TYPE eq $config:PROJECT_RESOURCE_DIV_TYPE]/@ID,
         $try-newpid := count($r-pids) + 1.,
         $this:pid := $project-pid||"."||$try-newpid||$random-seed    
     return 
