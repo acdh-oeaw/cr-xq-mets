@@ -242,10 +242,11 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                                     return wc:get-data($resource-pid,$project-pid),
         $index-name :=          $config:INDEX_RESOURCEFRAGMENT_DELIMITER,
         $rf:xpathexpr :=        index:index-as-xpath($index-name, $project-pid),        
-        $rf:xpathexpr-label :=        index:index-as-xpath($index-name, $project-pid,'label-only')
+        $rf:xpathexpr-label :=        index:index-as-xpath($index-name, $project-pid,'label-only'),
+        $log := util:log-app("DEBUG",$config:app-name, "rf:generate $working-copy := "||substring(serialize($working-copy),1,240))
     return
         if ($rf:xpathexpr = $index-name)
-        then util:log-app("INFO",$config:app-name, "Could not resolve index name "||$index-name||" in mappings for project "||$project-pid)
+        then util:log-app("INFO",$config:app-name, "rf:generate Could not resolve index name "||$index-name||" in mappings for project "||$project-pid)
         else 
             let $define-ns:=
                 let $mappings:=     config:mappings($config),
@@ -254,12 +255,13 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     for $ns in $namespaces/ns
                     let $prefix:=   $ns/@prefix,
                         $namespace-uri:=$ns/@uri
-                    let $log:=util:log-app("INFO",$config:app-name, "declaring namespace "||$prefix||"='"||$namespace-uri||"'")
+                    let $log:=util:log-app("DEBUG",$config:app-name, "rf:generate declaring namespace "||$prefix||"='"||$namespace-uri||"'")
                     return util:declare-namespace(xs:string($prefix), xs:anyURI($namespace-uri))
            
             (: extract fragments and create wrapper elements for each :)
             (:let $all-fragments:=util:eval("$working-copy//"||$rf:xpathexpr):)
-            let $all-fragments := index:apply-index($working-copy,'rf',$project-pid)
+            let $all-fragments := index:apply-index($working-copy,'rf',$project-pid),
+                $log := util:log-app("DEBUG",$config:app-name, "rf:generate found "||count($all-fragments)||" fragments")
             
             (:let $fragment-element-has-content:=some $x in $all-fragments satisfies exists($x/node()):)
             let $fragments-extracted:=
@@ -271,9 +273,9 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     let $fragment:=
                         if (exists($pb1/node()))
                         then 
-                            ($pb1, util:log-app("INFO",$config:app-name,"copying resourcefragment w/ pid="||xs:string($id)))
+                            ($pb1, util:log-app("DEBUG",$config:app-name,"rf:generate copying resourcefragment w/ pid="||xs:string($id)))
                         else
-                        let $log:=util:log-app("INFO",$config:app-name,"processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
+                        let $log:=util:log-app("DEBUG",$config:app-name,"rf:generate processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
                             let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
                         (: if no subsequent element, dont trying to generate fragment will fail :)
                         return
@@ -312,7 +314,8 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                         attribute masterFileLastmodified {xmldb:last-modified($master_collection,$master_filename)},
                         attribute masterFilePath {$path-to-master},
                         $fragments-extracted
-                    }
+                    },
+                $log := util:log-app("DEBUG",$config:app-name,"rf:generate $rf:container := "||substring(serialize($rf:container),1,240))
                     
             (: store the fragments container in the database :)
 (:          first returns full path down to file, second one only the collection - complicated to handle in case, the file already exists  
