@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<div xmlns="http://www.w3.org/1999/xhtml" class="templates:init">
+    <div class="templates:surround?with=inner.html&amp;at=inner-content">
+        <!--id="sidebar" used in main.js-->
+        <div id="sidebar-handle">Content</div>
+        <div id="sidebar">
+            <h1 class="heading">Content</h1>
+            <div class="app:list-resources"/>
+        </div>
+        <div class="static-text templates:include-detail?path-detail=content/index.xml">
+            <p>This paragraph will be replaced by content/index.xml</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3">
+                <form action="fcs" class="form-inline" id="queryForm">
+                    <input type="hidden" name="operation" value="searchRetrieve"/>
+                    <input type="hidden" name="x-format" value="html"/>
+                    <input type="hidden" name="x-dataview" value="kwic,title"/>
+                    <input type="hidden" name="maximumRecords" value="10"/>
+                    <input type="search" name="query" class="form-control" id="searchInput" placeholder="Search ..." autocomplete="on" size="50"/>
+                    <button type="submit" class="btn btn-default">
+                        <span class="glyphicon glyphicon-search"/>
+                    </button>
+                </form>  
+            </div>
+        </div>
+        <!-- id="detailContainer" used in main.js -->
+        <!-- detail (i.e. page view) -->
+        <div class="row">
+            <div class="panel panel-default" style="display:none;">
+                <div class="panel-body" id="detailContainer">
+                    <div class="col-lg-6 dataview" id="detail-title" data-dataview="title"/>
+                    <div class="col-lg-6 dataview" id="detail-navigation" data-dataview="navigation"/>
+                    <div class="col-lg-6 dataview" id="detail-full" data-dataview="full"/>
+                    <div class="col-lg-6 dataview" id="detail-facs" data-dataview="facs"/>
+                    <!--<div class="col-lg-6 dataview" id="detail-xml" data-dataview="xml" style="display:none;"/>-->
+                </div>
+            </div>
+        </div>
+        <!-- id="resultsContainer" used in main.js -->
+        <div class="row">
+            <div class="panel panel-default" style="display:none;">
+                <div class="panel-heading" id="resultsNavigation">Results
+                    <nav>
+                        <ul class="pagination">
+                            <!-- to be populated by main.js -->
+                        </ul>
+                    </nav>
+                </div>
+                <div class="panel-body" id="resultsContainer"/>
+                <div class="panel-footer">
+                </div>
+            </div>
+        </div>
+            <!-- one for each dictionary -->
+            <!--<div class="col-xs-6 col-lg-4">
+         <h2>Heading</h2>
+         <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus
+            commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam
+            porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+         <p>
+            <a role="button" href="#" class="btn btn-default">View details »</a>
+         </p>
+      </div>-->
+    </div>
+</div>
