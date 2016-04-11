@@ -56,7 +56,7 @@ $(document).ready(function(){
         populateResultsContainer(url);
     });
     
-    m.resultsContainer.on("click", ".result-body .value-caller, .result-body .internal", function(e){
+    m.resultsContainer.on("click", ".searchresults a.value-caller, .searchresults a.internal", function(e){
         e.preventDefault();
         m.detailContainer.parents(".panel").fadeIn();
         var hrefParamsObject = js_url('?', this.href);
