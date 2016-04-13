@@ -1198,7 +1198,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     (:   let $debug :=   <fcs:DataView type="debug" count="{count($record-data-highlighted)}">{transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,())}</fcs:DataView>:)
          let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
         
-        let $kwic := if (contains($data-view,'kwic')) then
+        let $want-kwic := contains($data-view,'kwic'), 
+            $kwic := if ($want-kwic) then
                      let $kwic-config := <config width="{$fcs:kwicWidth}"/>
                        (: tentatively kwic-ing from original input - to get the closest match
                         however this fails when matching on attributes, where the exist:match is only added in the highlighting function,
@@ -1289,9 +1290,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
         				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
         				    else ()
                          
-        let $dv-title := let $title_ := if (exists($title) and not($title='')) then $title else $res-entry/data(@LABEL)||", "||$rf-entry/data(@LABEL) 
-        
-                        return <fcs:DataView type="title">{$title_[1]}</fcs:DataView>
+        let $dv-title := let $title_ := if (exists($title) and not($title='')) then $title else $res-entry/data(@LABEL)||", "||$rf-entry/data(@LABEL)
+                         return <fcs:DataView type="title">{$title_[1]}</fcs:DataView>
     
         let $dv-cite := if (contains($data-view,'cite')) then
                             if ($rf-entry) then rf:cite($resourcefragment-pid, $resource-pid, $project-id, $config)
@@ -1313,8 +1313,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                            </fcs:Resource>:)
                            (:                                        case "full"         return util:expand($record-data):)
         return
-            if ($data-view = "raw") 
-            then $record-data-highlighted
+            if ($data-view = "raw") then $record-data-highlighted
+            else if ($want-kwic and normalize-space(string-join($kwic, '')) = "") then ()
             else <fcs:Resource pid="{$resource-pid}" ref="{$resource-ref}">                
                     { (: if not resource-fragment couldn't be identified, don't put it in the result, just DataViews directly into Resource :)
                     if ($rf-entry) then 
