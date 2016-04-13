@@ -1395,21 +1395,21 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
     return $ret
 }; 
 
-declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids as xs:string+, $rfs as node()+) as xs:string+ {
-   let $log := util:log-app("DEBUG",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
-       $ret := if (count($rfs) = 1) then $match-ids
+declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids as xs:string*, $rfs as node()*) as xs:string* {
+   let $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
+       $ret := if ((count($rfs) <= 1) or (count($match-ids) = 0)) then $match-ids
                else
       for $m in $match-ids
          let $match-id-without-offset := fcs:remove-offset-from-match-id-if-exists($m),
              $matching-rfs-parts := $rfs//*[@cr:id = $match-id-without-offset],
              $match-id-splitted := count($matching-rfs-parts) = 2,
              $throw-error-on-more := if (count($rfs//*[@cr:id = $match-id-without-offset]) > 2) then error("CR_XQ_M_SPLIT_OVER_MORE_THAN_2_RF", "Not implementerd yet!") else (), 
-             $log := util:log-app("DEBUG",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
+             $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
          return if (not($match-id-splitted)) then $m||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid else
             let $text-lengths := for $p in $matching-rfs-parts return string-length(xs:string($p)),
                 $rfpids := for $p in $matching-rfs-parts return $p/ancestor::fcs:resourceFragment/@resourcefragment-pid,
                 $offsets := fcs:calculate-offsets($text-lengths), 
-                $log := util:log-app("DEBUG",$config:app-name,"fcs:split-offset-match-ids-on-page-split current $match-id = "||$m||
+                $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split current $match-id = "||$m||
                 " $text-lengths = "||string-join($text-lengths, '; ')||
                 " $offsets = "||string-join($offsets, '; ')),
                 $new-matches := for $o at $i in $offsets
@@ -1418,9 +1418,9 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
                               ($new-offset > $offsets[$i] + $text-lengths[$i])) then () else 
                       fcs:remove-offset-from-match-id-if-exists($m)||":"||$new-offset||
                       ":"||fcs:get-match-length-from-mactch-id($m)||":"||$rfpids[$i],
-                $log2 := util:log-app("DEBUG",$config:app-name,"fcs:split-offset-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
+                $log2 := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
             return $new-matches    
-   let $logRet := util:log-app("DEBUG",$config:app-name,"fcs:split-offset-match-ids-on-page-split return "||string-join($ret, '; '))
+   let $logRet := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split return "||string-join($ret, '; '))
    return $ret
 };
 
