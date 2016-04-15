@@ -30,11 +30,18 @@ $(document).ready(function(){
     
     m.queryForm.submit(function(e){
         e.preventDefault();
+        m.queryForm.find("input[name=startRecord]").val(1);
         var form = $(this),
             action = form[0].action,
-            params = $(form).serialize();
-        var url = action + "?" + params;
-        m.queryForm.find("input[name=startRecord]").val(1);
+            query = m.queryForm.find("input[name=query]").val();
+        if ((query.indexOf(' ') > -1) && 
+            (query.indexOf('.') > -1) &&
+            (query.indexOf('"') == -1)) {
+            m.queryForm.find("input[name=query]").val('"'+query+'"');
+        }
+        var params = $(form).serialize(),
+            url = action + "?" + params;
+        m.queryForm.find("input[name=query]").val(query);
         return populateResultsContainer(url)
     });
     
