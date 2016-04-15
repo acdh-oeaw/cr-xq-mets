@@ -10,7 +10,7 @@
             <id-parsed>
                 <xsl:analyze-string regex=":(\d+):(\d+):?(.*)$" select=".">
                     <xsl:matching-substring>
-                    	<offset>
+                        <offset>
                             <xsl:value-of select="regex-group(1)"/>
                         </offset>
                         <length>
@@ -40,32 +40,33 @@
     </xsl:template>
     
     <xsl:template match="*[@cr:id = $all-ids]" priority="1">
-    	<xsl:variable name="elt" as="element()" select="."/>
-    	<xsl:variable name="cr:id" select="@cr:id"/>
-    	<xsl:variable name="id-parsed" select="$all-ids[.=$cr:id]/ancestor::id-parsed"/>
-    	<xsl:variable name="offset" select="$id-parsed/offset"/>
-    	<xsl:variable name="length" select="$id-parsed/length"/>
+        <xsl:variable name="elt" as="element()" select="."/>
+        <xsl:variable name="cr:id" select="data(@cr:id)"/>
+        <xsl:variable name="id-parsed" select="$ids-parsed[id = $cr:id]"/>
+        <xsl:variable name="offsets" select="for $o in $id-parsed/offset return xs:integer($o) " as="xs:integer*"/>
+        <xsl:variable name="lengths" select="for $l in $id-parsed/length return xs:integer($l)" as="xs:integer*"/>
         <xsl:copy copy-namespaces="no">
             <xsl:copy-of select="@*"/>
             <xsl:choose>
                 <!-- we want to be sure that we do not highlight whole resourcefragments -->
                 <xsl:when test="exists(parent::element())">
                     <xsl:choose>
-                        <xsl:when test="$offset!='' and $length!=''">
-                        	<xsl:message select="count($id-parsed)"/>
+                        <xsl:when test="exists($offsets) and exists($lengths)">
                             <xsl:copy>
                                 <xsl:copy-of select="@*"/>
-                            	<xsl:for-each select="$id-parsed">
-                            		<xsl:if test="offset &gt; 0">
-                            		    <xsl:value-of select="substring($elt,0,xs:integer(offset))"/>
-                            		</xsl:if>
-                            	    <exist:match>
-                            	        <xsl:value-of select="substring($elt,offset,length)"/>
-                            	    </exist:match>
-                            	    <xsl:if test="string-length($elt) &gt; (xs:integer(length)+xs:integer(offset))">
-                            	        <xsl:value-of select="substring($elt,xs:integer(length)+xs:integer(offset))"/>
-                            	    </xsl:if>
-                            	</xsl:for-each>
+                                <xsl:call-template name="injectMatchTags">
+                                    <xsl:with-param name="listOfOffsets" select="$offsets"/>
+                                    <xsl:with-param name="listOflengths" select="$lengths"/>
+                                    <xsl:with-param name="previousMatches">
+                                        <!-- TODO change me I'm a hack
+                                             If lucene search is implemented/set up like it is now
+                                             the structure beneath the ft matched entries is destroyed
+                                             That means: we have to destroy it here as well or recalculate
+                                             the offsets. How do we go about that?
+                                        -->
+                                        <xsl:value-of select="string-join($elt//text(), '')"/>
+                                    </xsl:with-param>
+                                </xsl:call-template>
                             </xsl:copy>
                         </xsl:when>
                         <xsl:otherwise>
@@ -80,5 +81,34 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:copy>
+    </xsl:template>
+    
+    <xsl:template name="injectMatchTags">
+        <xsl:param name="listOfOffsets" as="xs:integer*"/>
+        <xsl:param name="listOflengths" as="xs:integer*"/>
+        <xsl:param name="previousMatches" as="node()*" select="()"/>
+        <xsl:choose>
+            <xsl:when test="count($listOflengths) = 0">
+                <xsl:sequence select="$previousMatches"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:call-template name="injectMatchTags">
+                    <xsl:with-param name="previousMatches">
+                        <xsl:if test="$listOfOffsets[last()] &gt; 0">
+                            <xsl:value-of select="substring($previousMatches/text()[1],0,$listOfOffsets[last()])"/>
+                        </xsl:if>
+                        <exist:match>
+                            <xsl:value-of select="substring($previousMatches/text()[1],$listOfOffsets[last()],$listOflengths[last()])"/>
+                        </exist:match>
+                        <xsl:if test="string-length($previousMatches/text()[1]) &gt; ($listOflengths[last()]+$listOfOffsets[last()])">
+                            <xsl:value-of select="substring($previousMatches/text()[1],$listOflengths[last()]+$listOfOffsets[last()])"/>
+                        </xsl:if>
+                        <xsl:sequence select="$previousMatches/*|$previousMatches/text() except $previousMatches/text()[1]"/>
+                    </xsl:with-param>
+                    <xsl:with-param name="listOflengths" select="subsequence($listOflengths, 1, count($listOflengths) - 1)"/>
+                    <xsl:with-param name="listOfOffsets" select="subsequence($listOfOffsets, 1, count($listOfOffsets) - 1)"/>
+                </xsl:call-template>             
+            </xsl:otherwise>
+        </xsl:choose>             
     </xsl:template>
 </xsl:stylesheet>
