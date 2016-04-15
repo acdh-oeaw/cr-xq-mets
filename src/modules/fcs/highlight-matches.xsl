@@ -29,7 +29,7 @@
             </id-parsed>
         </xsl:for-each>
     </xsl:variable>
-    <xsl:variable name="all-ids" select="$ids-parsed//id[(../rfpid = '') or (../rfpid=$rfpid)]/text()" as="text()*"/>
+    <xsl:variable name="all-ids" select="$ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text()" as="text()*"/>
     
     <xsl:template match="node() | @*">
         <xsl:if test="not(empty($all-ids))">
