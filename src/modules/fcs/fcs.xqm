@@ -16,7 +16,6 @@ xquery version "3.0";
 :)
 module namespace fcs = "http://clarin.eu/fcs/1.0";
  
-declare namespace err = "http://www.w3.org/2005/xqt-errors";
 declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace zr = "http://explain.z3950.org/dtd/2.0/";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
@@ -1074,7 +1073,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 (:	let $resource-pid:= util:eval("$record-data-input/ancestor-or-self::*[1]/data(@cr:"||$config:RESOURCE_PID_NAME||")"):)
 	let $project-id := cr:resolve-id-to-project-pid($x-context)
     let $match-elem := 'w'
-    let $match-ids := if (exists(util:expand($record-data-input)//exist:match/ancestor::*[@cr:id]))
+    let $match-ids := distinct-values(
+                      if (exists(util:expand($record-data-input)//exist:match/ancestor::*[@cr:id]))
                       then
                           let $exist-matches := util:expand($record-data-input)//exist:match
                           let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data match parents: "||string-join($exist-matches/ancestor::*[@cr:id][1]/data(@cr:id),'; '))
@@ -1096,6 +1096,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                         (: if no exist:match, take the root of the matching snippet,:)   
                         let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-input contains no exist:match, falling back to its own @cr:id")
                         return $record-data-input/data(@cr:id)
+                      )
     (: if the match is a whole resourcefragment we dont need a lookup, its ID is in the attribute :)
     let $match-ids-without-offsets := for $m in $match-ids return fcs:remove-offset-from-match-id-if-exists($m)
     let $resourcefragment-pids :=   if ($record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
@@ -1384,7 +1385,7 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
            <param name="cr-ids" value="{string-join($ids,',')}"/>
            <param name="rfpid" value="{$rfpid}"/>
         </parameters>,
-        $log := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy $copy := "||substring(serialize($copy),1,24000)||" $stylesheet := "||substring(serialize($stylesheet),1,240)||", $params := "||substring(serialize($params),1,240)),
+        $log := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy $copy := "||substring(serialize($copy),1,240)||" $stylesheet := "||substring(serialize($stylesheet),1,240)||", $params := "||substring(serialize($params),1,240)),
         $ret := 
             if (exists($stylesheet)) 
             then 
