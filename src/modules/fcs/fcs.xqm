@@ -1076,7 +1076,9 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     let $match-ids := distinct-values(
                       if (exists(util:expand($record-data-input)//exist:match/ancestor::*[@cr:id]))
                       then
-                          let $exist-matches := util:expand($record-data-input)//exist:match
+                          let $expanded-record-data-input := util:expand($record-data-input),
+                              $exist-matches := $expanded-record-data-input//exist:match,
+                              $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data $expanded-record-data-input := "||substring(serialize($expanded-record-data-input), 1, 24000))
                           let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data match parents: "||string-join($exist-matches/ancestor::*[@cr:id][1]/data(@cr:id),'; '))
                           return (:$exist-matches/parent::*/data(@cr:id):)
                                 for $exist-match in $exist-matches
@@ -1084,13 +1086,13 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     if ($exist-match/ancestor::* = $exist-match) 
                                     then 
                                        let $ret :=$exist-match/ancestor::*[@cr:id][1]/data(@cr:id),
-                                           $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-input match parents whole tags "||string-join($ret, '; '))
+                                           $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data $record-data-input match parents whole tags "||string-join($ret, '; '))
                                        return $ret
                                     else
                                        let $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data match parent: "||substring(string-join($exist-match/parent::*//text(), '<>'),1,1000)),
                                            $ret := for $substrPos in functx:index-of-string(xs:string($exist-match/parent::*),$exist-match)
                                                    return $exist-match/parent::*/data(@cr:id)||":"||$substrPos||":"||string-length($exist-match),
-                                           $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-input match parents with offsets "||string-join($ret, '; '))
+                                           $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data $record-data-input match parents with offsets "||string-join($ret, '; '))
                                        return $ret
                       else 
                         (: if no exist:match, take the root of the matching snippet,:)   
@@ -1142,7 +1144,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 (:  the predicate makes the function by SLOWER by factor 10 !!! [rf:lookup-id(.,$resource-pid, $project-id) = $resourcefragment-pid]:)
     let $matches-to-highlight:= 
       let $highlight-requests := (tokenize(request:get-parameter("x-highlight",""),","),$match-ids-page-splitted),
-          $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $highlight-requests := "||substring(serialize($highlight-requests),1,240))
+          $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data $highlight-requests := "||substring(serialize($highlight-requests),1,240))
       return $highlight-requests[fcs:remove-offset-from-match-id-if-exists(.) = $rf//@cr:id]
     
     let $dumy4 := util:log-app("INFO",$config:app-name,"$resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
@@ -1406,7 +1408,11 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
              $match-id-splitted := count($matching-rfs-parts) = 2,
              $throw-error-on-more := if (count($rfs//*[@cr:id = $match-id-without-offset]) > 2) then error("CR_XQ_M_SPLIT_OVER_MORE_THAN_2_RF", "Not implementerd yet!") else (), 
              $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
-         return if (not($match-id-splitted)) then $m||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid else
+         return
+            if (not($match-id-splitted)) then (: add rfpids only to offset+length matches :)
+               if (matches($m, '^[^:]+:(\d+):(\d+).*$')) then $m||':'||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid
+               else $m
+            else
             let $text-lengths := for $p in $matching-rfs-parts return string-length(xs:string($p)),
                 $rfpids := for $p in $matching-rfs-parts return $p/ancestor::fcs:resourceFragment/@resourcefragment-pid,
                 $offsets := fcs:calculate-offsets($text-lengths), 
