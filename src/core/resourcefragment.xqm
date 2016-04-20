@@ -273,18 +273,28 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     let $fragment:=
                         if (exists($pb1/node()))
                         then 
-                            ($pb1, util:log-app("DEBUG",$config:app-name,"rf:generate copying resourcefragment w/ pid="||xs:string($id)))
+                            ($pb1, util:log-app("TRACE",$config:app-name,"rf:generate copying resourcefragment w/ pid="||xs:string($id)))
                         else
-                        let $log:=util:log-app("DEBUG",$config:app-name,"rf:generate processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
-                            let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
+                        let $log:=util:log-app("TRACE",$config:app-name,"rf:generate processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
+                        let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]"),
+                            $log:=util:log-app("TRACE",$config:app-name,"rf:generate $pb2 := "||substring(serialize($pb2), 1, 240))
                         (: if no subsequent element, dont trying to generate fragment will fail :)
                         return
-(:                            return if (empty($pb2)) then $pb1 :)
-(:                                     else:)
-                                        let $frag :=util:get-fragment-between($pb1, $pb2, true(), true())
-                                        let $analyzed :=  analyze-string($frag,'&amp;(amp;)?')
-                                        let $replaced := string-join((for $i in $analyzed/* return if($i/self::fn:non-match) then $i else '&amp;amp;'),'')
-                                        return util:parse(($replaced,$frag)[1])                    
+                                            (: Note the following replace() are workaround hacks for exist-db pecularities that might not be needed in
+                                               future versions :)
+                                        let $frag := replace(
+                                                      replace(
+                                                        util:get-fragment-between($pb1, $pb2, true(), true()),
+                                                      '(&lt;/.*)"\]&gt;', '$1&gt;'
+                                                      ),
+                                                    '&amp;#039;', "'"),
+                                            $analyzed :=  analyze-string($frag,'&amp;(amp;)?'),
+                                            $replaced := string-join((for $i in $analyzed/* return if($i/self::fn:non-match) then $i else '&amp;amp;'),''),
+                                            $log := util:log-app("TRACE",$config:app-name,"rf:generate $frag := "||substring(serialize($frag), 1, 240)||
+                                            " $analyzed := "||substring(serialize($analyzed), 1, 240)||" $replaced := "||substring(serialize($replaced), 1, 240)),
+                                            $ret := util:parse(($replaced,$frag)[1]),
+                                            $logFrag := util:log-app("TRACE",$config:app-name,"rf:generate fragment "||substring(serialize($ret),1,240))
+                                        return  $ret                   
 (:                                       else util:parse-html(util:get-fragment-between($pb1, $pb2, true(), true()))/HTML/BODY/*:)
                     return
                         element {
