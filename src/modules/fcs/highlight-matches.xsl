@@ -63,8 +63,9 @@
                                              the structure beneath the ft matched entries is destroyed
                                              That means: we have to destroy it here as well or recalculate
                                              the offsets. How do we go about that?
+                                             This needs to be kept in sync with fcs.xqm: fcs:get-string-for-offset-length-search!
                                         -->
-                                        <xsl:value-of select="string-join($elt//text(), '')"/>
+                                        <xsl:value-of select="string-join((for $n in $elt/(*|text()) return if ($n[@orig]) then concat(' ', data($n/@orig)) else data($n)), '')"/>
                                     </xsl:with-param>
                                 </xsl:call-template>
                             </xsl:copy>
@@ -111,4 +112,9 @@
             </xsl:otherwise>
         </xsl:choose>             
     </xsl:template>
+    
+    <xsl:template match="*[@orig]">
+        <xsl:value-of select="data(@orig)"/>
+    </xsl:template>
+    
 </xsl:stylesheet>

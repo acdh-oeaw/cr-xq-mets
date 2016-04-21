@@ -1074,12 +1074,12 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 	let $project-id := cr:resolve-id-to-project-pid($x-context)
     let $match-elem := 'w'
     let $match-ids := distinct-values(
-                      let $expanded-record-data-input := util:expand($record-data-input)
+                      let $expanded-record-data-input := util:expand($record-data-input),
+                          $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input := "||substring(serialize($expanded-record-data-input), 1, 240))
                       return
                       if (exists($expanded-record-data-input//exist:match/ancestor::*[@cr:id]))
                       then 
-                          let $exist-matches := $expanded-record-data-input//exist:match,
-                              $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input := "||substring(serialize($expanded-record-data-input), 1, 24000))
+                          let $exist-matches := $expanded-record-data-input//exist:match
                           let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data match parents: "||string-join($exist-matches/ancestor::*[@cr:id][1]/data(@cr:id),'; '))
                           return (:$exist-matches/parent::*/data(@cr:id):)
                                 for $exist-match in $exist-matches
@@ -1144,7 +1144,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 (:  the predicate makes the function by SLOWER by factor 10 !!! [rf:lookup-id(.,$resource-pid, $project-id) = $resourcefragment-pid]:)
     let $matches-to-highlight:= 
       let $highlight-requests := (tokenize(request:get-parameter("x-highlight",""),","),$match-ids-page-splitted),
-          $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data $highlight-requests := "||substring(serialize($highlight-requests),1,240))
+          $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $highlight-requests := "||substring(serialize($highlight-requests),1,240))
       return $highlight-requests[fcs:remove-offset-from-match-id-if-exists(.) = $rf//@cr:id]
     
     let $dumy4 := util:log-app("INFO",$config:app-name,"$resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
@@ -1274,9 +1274,9 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                               :)
                               let $rf-prev := $rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE][1]
                               let $rf-next := $rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE][1]
-                              let $log:= util:log-app("INFO",$config:app-name,("$rf-entry",$rf-entry))
-                              let $log:= util:log-app("INFO",$config:app-name,("$rf-prev",$rf-prev))
-                              let $log:= util:log-app("INFO",$config:app-name,("$rf-next",$rf-next))
+                              let $log:= util:log-app("TRACE",$config:app-name,("$rf-entry := ",$rf-entry))
+                              let $log:= util:log-app("TRACE",$config:app-name,("$rf-prev := ",$rf-prev))
+                              let $log:= util:log-app("TRACE",$config:app-name,("$rf-next := ",$rf-next))
         
                               
                               let $rf-prev-ref := if (exists($rf-prev)) then concat('?operation=searchRetrieve&amp;query=', $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="', xmldb:encode-uri($rf-prev/data(@ID)), '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context) else ""                                                 
@@ -1375,7 +1375,7 @@ let $log := util:log-app("TRACE",$config:app-name,"fcs:get-complete-match-id-and
     $logForOldMatchLogic :=  util:log-app("TRACE", $config:app-name, "fcs:format-record-data $exist-match := "||substring(serialize($exist-match),1,24000)||
      " $exist-match/ancestor::* := "||string-join(for $anc in $exist-match/ancestor::* return substring(serialize($anc),1,24000), ' <> ')),
     $ret := (data($exist-match/ancestor::*[@cr:id][1]/@cr:id),
-       for $anc in $exist-match/ancestor::*[@cr:id] return fcs:recalculate-length-of-exist-match-if-cut-by-tag($anc, $exist-match)
+       for $anc in $exist-match/ancestor::*[@cr:id and exist:match] return fcs:recalculate-length-of-exist-match-if-cut-by-tag($anc, $exist-match)
        ),
     $logRest := util:log-app("TRACE",$config:app-name,"fcs:get-complete-match-id-and-offsets-in-ancestors return "||string-join($ret, '; '))
 return $ret
@@ -1384,17 +1384,25 @@ return $ret
 (: Hack that works around exist:match highlighter not considering (empty) inline elements and stoping the match completely before that. :) 
 declare %private function fcs:recalculate-length-of-exist-match-if-cut-by-tag($parent as node(), $exist-match as node()) {
 let $exist-match-follwing-context := ($exist-match/following-sibling::*|$exist-match/following-sibling::text()),
-    $log := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag $parent := "||substring(serialize($parent), 1, 240)||
+    $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag $parent := "||substring(serialize($parent), 1, 240)||
                                                   " $exist-match := "||substring(serialize($exist-match), 1, 240)||
                                                   " $exist-match-follwing-context[1] instance of text() "||$exist-match-follwing-context[1] instance of text()||
                                                   " $exist-match-follwing-context[2] "||substring(serialize($exist-match-follwing-context[2]),1,240)),
     $ret := 
-       for $substrPos in functx:index-of-string(xs:string($parent),$exist-match)
+       for $substrPos in functx:index-of-string(fcs:get-string-for-offset-length-search($parent),$exist-match)
        let $additional-length := string-length(
           if (exists($exist-match-follwing-context[1]) and not($exist-match-follwing-context[1] instance of text())) then
           functx:substring-before-match($exist-match-follwing-context[2], '[ .,;:?!]') else ())
        return data($parent/@cr:id)||":"||$substrPos||":"||(string-length($exist-match) + $additional-length),
-    $logRet := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||string-join($ret, '; '))
+    $logRet := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||string-join($ret, '; '))
+return $ret
+};
+
+declare %private function fcs:get-string-for-offset-length-search($elt as node()+) as xs:string {
+let $log := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search $elt := "||string-join(for $n in $elt return substring(serialize($n), 1, 240), ' <> ')),
+    (: needs to be kept in sync with highlight-matches.xsl: match="*[@cr:id = $all-ids]"! :)
+    $ret := string-join((for $n in $elt/(*|text()) return if ($n[@orig]) then concat(' ', data($n/@orig)) else data($n)), ''),
+    $logRet := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search return "||$ret)
 return $ret
 };
 
