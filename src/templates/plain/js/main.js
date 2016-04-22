@@ -185,7 +185,7 @@ $(document).ready(function(){
         var startRecordField = m.queryForm.find('input[name=startRecord]');
         startRecordField.length === 0 ? m.queryForm.append("<input name='startRecord' type='hidden' value='1'/>") : undefined ;
         var pagination =  '';
-        var numberOfPages = Math.round(numberOfRecords / maxRecords);
+        var numberOfPages = Math.round(numberOfRecords / maxRecords) + (numberOfRecords % maxRecords == 0 ? 0 : 1); //Math.round(numberOfRecords / maxRecords);
         console.log(numberOfPages);
         for (i = 0; i < numberOfPages; i++){
             var pageNum = i + 1
