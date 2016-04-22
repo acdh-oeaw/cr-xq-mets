@@ -8,6 +8,8 @@ import module namespace facs="http://aac.ac.at/content_repository/facs" at "core
 import module namespace wc="http://aac.ac.at/content_repository/workingcopy" at "core/wc.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "core/config.xqm";
 import module namespace cr="http://aac.ac.at/content_repository" at "core/cr.xqm";
+import module namespace lt="http://aac.ac.at/content_repository/lookuptable" at "core/lt.xqm";
+import module namespace toc="http://aac.ac.at/content_repository/toc" at "core/toc.xqm";
 
 declare namespace cmd="http://www.clarin.eu/cmd/";
 
@@ -45,6 +47,7 @@ let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
     
 (:~ alternatively you can do it one by one:  :)
 (: let $wc-gen :=  wc:generate($resource-pid, $project-pid) return $wc-gen:)
+(: let $rf-gen := rf:generate($resource-pid as xs:string, $project-pid as xs:string) return $rf-gen :)
 (: let $lt-gen :=  lt:generate($resource-pid, $project-pid) return $lt-gen:)
 (: let $toc-gen :=  toc:generate(('front','chapter'),  $resource-pid, $project-pid) return ($resource-pid, $toc-gen) :)
 
