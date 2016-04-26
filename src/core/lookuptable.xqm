@@ -35,8 +35,8 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                 then $rf:dump
                 else 
                     let $rf:path:= rf:generate($resource-pid,$project-pid)
-                    return doc($rf:path),
-        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $rf:data := "||substring(serialize($rf:data),1,480))
+                    return doc($rf:path)
+(:        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $rf:data := "||substring(serialize($rf:data),1,480)):)
     let $base-uri := base-uri($rf:data)
     let $rf:filename :=     tokenize($base-uri,'/')[last()],
         $rf:collection :=   substring-before($base-uri,'/'||$rf:filename)
@@ -49,8 +49,8 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                 then substring-before($ltb:current-filepath,"/"||$ltb:filename)
                 else project:path($project-pid,"lookuptables")
                 
-    let $wc := wc:get-data($resource-pid,$project-pid),
-        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $wc := "||substring(serialize($wc),1,480))
+    let $wc := wc:get-data($resource-pid,$project-pid)
+(:        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $wc := "||substring(serialize($wc),1,480)):)
     let $ltb:container :=
         element {QName($config:RESOURCE_LOOKUPTABLE_ELEMENT_NSURI,$config:RESOURCE_LOOKUPTABLE_ELEMENT_NAME)} {
             attribute project-pid {$project-pid},
@@ -72,8 +72,8 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                     for $part-id in $fragment//@cr:id return <cr:id>{xs:string($part-id)}</cr:id>
                 }
         }
-    let $ltb:store := repo-utils:store($ltb:path,$ltb:filename,$ltb:container,true(),config:config($project-pid)),
-        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $ltb:store := "||substring(serialize($ltb:store),1,480))
+    let $ltb:store := repo-utils:store($ltb:path,$ltb:filename,$ltb:container,true(),config:config($project-pid))
+(:        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $ltb:store := "||substring(serialize($ltb:store),1,480)):)
     
   let $ltb-fileid:=$resource-pid||$config:RESOURCE_LOOKUPTABLE_FILEID_SUFFIX,
       $ltb-file:=resource:make-file($ltb-fileid,$ltb:path||'/'||$ltb:filename,"lookuptable"),
