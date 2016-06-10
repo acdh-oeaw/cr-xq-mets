@@ -5,8 +5,6 @@
 #top-menu {position: absolute; top: 50px; display:inline-block; padding-left: 20px; left:30%; }
 #navigation {display:inline-block;}
 #left-menu {float: left; width:250px; height:500px; overflow:auto;}
-/*#main {margin-left:260px; /\* max-width: .. *\/}*/
-#query-input { padding: 6px;  /* max-width: 600px; */ }
 #repositories {margin: 6px 0px; }
 #notify {display:none; /* max-width: 400px; position: relative; overflow: auto; height: 40px; */}
 #user {text-align: right;}
@@ -86,9 +84,8 @@ table.show-lines, table.show-lines td {	border-top: 1px solid #A6C9E2; border-co
 .cmds-xmlelem .attributes .label {}
 .cmds-xmlelem .attributes .value {}
 
-input, h.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button
+input, button, h.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button
 	{ border: 1px solid #A6C9E2; margin: 1px; }
-	input {height: auto}
 /*********************************** */
 /* input ui-elements - positioning */
 .cmds-ui-elem-stretch {width: 100%;}
@@ -96,8 +93,7 @@ input, h.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget are
 /* form#searchretrieve { margin-top: 12px;}  */
 /* hack for IE */
 .wwFormTable {width: 100%; }
-#input-simplequery { width: 85%; margin: 12px 0px 6px 0px; font-size: 1.2em;}
-#submit-query { font-size: 1.2em; font-weight: bold;}
+#input-simple-query, .scan-filter-text { width: 68%; margin: 12px 0px 6px 0px; font-size: 1.2em;}
 #searchclauselist {margin: 0px; display:none;}
 .searchclause {  }
 .and_level {border-top: 1px solid #9999cc; margin: 2px 0px;}
@@ -156,7 +152,15 @@ dd { padding-left: 2.5em; display:block; -moz-margin-start: 0px;}
 }
 a.cmd { width: auto; height:auto; top: 0px; }
 .cmd:hover { border: 1px solid #A6C9E2;	}
-#submit-query { background: url("imgs/cdb-icon-load.png") no-repeat 2px center #D0E5F5; padding-left: 14px; color:#014172; }
+#submit-query, .scan-filter-submit {
+    background: url("imgs/cdb-icon-load.png") no-repeat 2px center #D0E5F5;
+    padding-left: 14px;
+    color:#014172;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+#submit-query{width: 29%;}
+.scan-filter-submit{width: 25%;}
 .cmd_add { background-image: url("imgs/cdb-icon-add.png");}
 .cmd_add_and { background-image: url("imgs/icon_add_and.png");}
 .cmd_add_or { background-image: url("imgs/icon_add_or.png");}

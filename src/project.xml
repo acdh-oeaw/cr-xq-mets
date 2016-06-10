@@ -34,7 +34,7 @@
     </dmdSec>
     <amdSec ID="projectAMD">
         <techMD ID="projectMappings">
-            <mdRef MDTYPE="OTHER" xlnk:href=""/>
+            <mdRef MDTYPE="OTHER" xlink:href=""/>
         </techMD>
         <techMD ID="projectParameters" GROUPID="config.xml">
             <mdWrap MDTYPE="OTHER">
@@ -52,8 +52,8 @@
                         <param key="cache.path">/db/cr-data/_indexes</param>
                         <param key="index.prefix">/db/cr-data/_indexes/index_</param>
                         <param key="scripts.path">/db/cr-projects/abacus/</param>
-                        <param key="scan.xsl">scan2view_custom.xsl</param>
-                        <param key="searchRetrieve.xsl">result2view_v1_custom.xsl</param>
+                        <param key="scan-html.xsl">scan2view_custom.xsl</param>
+                        <param key="searchRetrieve-html.xsl">result2view_v1_custom.xsl</param>
                     </module>
                 </xmlData>
             </mdWrap>

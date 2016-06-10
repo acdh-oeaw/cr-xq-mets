@@ -7,11 +7,11 @@ dt {margin-top: 1em;}
 
 .title, h1, h2, h3 { color: #014172;}
 
-h1 {font-size: 1.6em; margin: 30px 0 10px 30px;}
-h2 {font-size: 1.4em; margin: 1em 0 0.4em 0;}
-h3 {font-size: 1.2em; margin: 0.8em 0 0.4em 0;}
-h4 {font-size: 1em; margin: 0.4em 0 0.2em 0;}
-.title {font-size: 1.2em; font-weight: bold; margin: 0.4em 0 0 0.2em;}
+h1 {font-size: 160%; margin: 30px 0 10px 30px;}
+h2 {font-size: 140%; margin: 1em 0 0.4em 0;}
+h3 {font-size: 120%; margin: 0.8em 0 0.4em 0;}
+h4 {font-size: 100%; margin: 0.4em 0 0.2em 0;}
+.title {font-size: 120%; font-weight: bold; margin: 0.4em 0 0 0.2em;}
 
 img {border:0;}
 
@@ -25,6 +25,6 @@ table {border-collapse: collapse;}
 td {padding: 1px 2px;}
 
 input, select, button {
-    font-size: 1.3em;
+    font-size: 130%;
     margin: 2px;
 }

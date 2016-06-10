@@ -1,5 +1,29 @@
 xquery version "3.0";
 
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+
 module namespace rf="http://aac.ac.at/content_repository/resourcefragment";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
@@ -166,8 +190,8 @@ declare function rf:get($resourcefragment-pid as xs:string, $resource-pid as xs:
     let $rf:location:=  rf:path($resource-pid, $project-pid),
         $rf:doc := if (doc-available($rf:location)) then doc($rf:location) else util:log-app("INFO",$config:app-name,"Could not locate resourcefragments from "||$rf:location),
         $xpath := '$rf:doc//*[@'||$config:RESOURCEFRAGMENT_PID_NAME||'="'||$resourcefragment-pid||'"]',
-        $return := util:eval($xpath),
-        $logRet := util:log-app("TRACE", $config:app-name, "rf:get return "||$xpath||" "||substring(serialize($return),1,240)||"... "||string-join(for $x in $return return base-uri($x), ","))
+        $return := util:eval($xpath)
+(:        $logRet := util:log-app("TRACE", $config:app-name, "rf:get return "||$xpath||" "||substring(serialize($return),1,240)||"... "||string-join(for $x in $return return base-uri($x), ",")):)
     return $return
 };
 
@@ -243,9 +267,10 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
         $index-name :=          $config:INDEX_RESOURCEFRAGMENT_DELIMITER,
         $rf:xpathexpr :=        index:index-as-xpath($index-name, $project-pid),        
         $rf:xpathexpr-label :=        index:index-as-xpath($index-name, $project-pid,'label-only')
+(:        $log := util:log-app("DEBUG",$config:app-name, "rf:generate $working-copy := "||substring(serialize($working-copy),1,240)):)
     return
         if ($rf:xpathexpr = $index-name)
-        then util:log-app("INFO",$config:app-name, "Could not resolve index name "||$index-name||" in mappings for project "||$project-pid)
+        then util:log-app("INFO",$config:app-name, "rf:generate Could not resolve index name "||$index-name||" in mappings for project "||$project-pid)
         else 
             let $define-ns:=
                 let $mappings:=     config:mappings($config),
@@ -254,12 +279,13 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     for $ns in $namespaces/ns
                     let $prefix:=   $ns/@prefix,
                         $namespace-uri:=$ns/@uri
-                    let $log:=util:log-app("INFO",$config:app-name, "declaring namespace "||$prefix||"='"||$namespace-uri||"'")
+                    let $log:=util:log-app("DEBUG",$config:app-name, "rf:generate declaring namespace "||$prefix||"='"||$namespace-uri||"'")
                     return util:declare-namespace(xs:string($prefix), xs:anyURI($namespace-uri))
            
             (: extract fragments and create wrapper elements for each :)
             (:let $all-fragments:=util:eval("$working-copy//"||$rf:xpathexpr):)
-            let $all-fragments := index:apply-index($working-copy,'rf',$project-pid)
+            let $all-fragments := index:apply-index($working-copy,'rf',$project-pid),
+                $log := util:log-app("DEBUG",$config:app-name, "rf:generate found "||count($all-fragments)||" fragments")
             
             (:let $fragment-element-has-content:=some $x in $all-fragments satisfies exists($x/node()):)
             let $fragments-extracted:=
@@ -271,18 +297,28 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     let $fragment:=
                         if (exists($pb1/node()))
                         then 
-                            ($pb1, util:log-app("INFO",$config:app-name,"copying resourcefragment w/ pid="||xs:string($id)))
+                            ($pb1, util:log-app("TRACE",$config:app-name,"rf:generate copying resourcefragment w/ pid="||xs:string($id)))
                         else
-                        let $log:=util:log-app("INFO",$config:app-name,"processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
-                            let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
+                        let $log:=util:log-app("TRACE",$config:app-name,"rf:generate processing resourcefragment w/ pid="||xs:string($id)||" "||$pb1/@cr:id)
+                        let $pb2:=util:eval("(for $x in $all-fragments where $x >> $pb1 return $x)[1]")
+(:                            $log:=util:log-app("TRACE",$config:app-name,"rf:generate $pb2 := "||substring(serialize($pb2), 1, 240)):)
                         (: if no subsequent element, dont trying to generate fragment will fail :)
                         return
-(:                            return if (empty($pb2)) then $pb1 :)
-(:                                     else:)
-                                        let $frag :=util:get-fragment-between($pb1, $pb2, true(), true())
-                                        let $analyzed :=  analyze-string($frag,'&amp;(amp;)?')
-                                        let $replaced := string-join((for $i in $analyzed/* return if($i/self::fn:non-match) then $i else '&amp;amp;'),'')
-                                        return util:parse(($replaced,$frag)[1])                    
+                                            (: Note the following replace() are workaround hacks for exist-db pecularities that might not be needed in
+                                               future versions :)
+                                        let $frag := replace(
+                                                      replace(
+                                                        util:get-fragment-between($pb1, $pb2, true(), true()),
+                                                      '(&lt;/.*)"\]&gt;', '$1&gt;'
+                                                      ),
+                                                    '&amp;#039;', "'"),
+                                            $analyzed :=  analyze-string($frag,'&amp;(amp;)?'),
+                                            $replaced := string-join((for $i in $analyzed/* return if($i/self::fn:non-match) then $i else '&amp;amp;'),''),
+(:                                            $log := util:log-app("TRACE",$config:app-name,"rf:generate $frag := "||substring(serialize($frag), 1, 240)||:)
+(:                                            " $analyzed := "||substring(serialize($analyzed), 1, 240)||" $replaced := "||substring(serialize($replaced), 1, 240)),:)
+                                            $ret := util:parse(($replaced,$frag)[1])
+(:                                            $logFrag := util:log-app("TRACE",$config:app-name,"rf:generate fragment "||substring(serialize($ret),1,240)):)
+                                        return  $ret                   
 (:                                       else util:parse-html(util:get-fragment-between($pb1, $pb2, true(), true()))/HTML/BODY/*:)
                     return
                         element {
@@ -313,6 +349,7 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                         attribute masterFilePath {$path-to-master},
                         $fragments-extracted
                     }
+(:                $log := util:log-app("DEBUG",$config:app-name,"rf:generate $rf:container := "||substring(serialize($rf:container),1,240)):)
                     
             (: store the fragments container in the database :)
 (:          first returns full path down to file, second one only the collection - complicated to handle in case, the file already exists  

@@ -26,11 +26,12 @@ a, a:link, a:hover {
 }
 
 .logo.right {
-    width: 100%;
+    height: 80%;
+    height: calc(100% - 10px - 10px);
 }
 
 #logo {
-    width: 10%;
+    min-width: 10%;
 }
 
 input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button {

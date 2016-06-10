@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div id="welcome">
+<div xmlns="http://www.w3.org/1999/xhtml" id="welcome">
     <h2>Welcome to cr-xq-mets</h2>
     <h3>What is cr-xq-mets?</h3>
-    <p>cr-xq-mets is a fork of SADE developed with basically the same goals, but certain changes in the system design:
-        <ul>
+    <p>cr-xq-mets is a fork of SADE developed with basically the same goals, but certain changes in the system design:</p>
+    <ul>
         <li>It adopts METS format for maintaining the structure of the projects.</li>
         <li>It supports multiple projects on one application instance</li>
         <li>It strictly separates between the logic, the layout, the data and the configuration</li>
         <li>The layout templates are maintained separately and can be reused (and customized) by the projects</li>
         <li>It supports project-specific overriding of any part of the template (html-snippets, js, css)</li>
-        </ul>
-    </p>
+    </ul>  
     <h3>How do I customize this page?</h3>
     <ul>
         <li>Create a static/content collection in your project folder.</li>
-        <li>Copy the welcome.xml /db/apps/cr-xq-mets/templates/minimal/content/ there.</li>
+        <li>Copy the welcome.xml from /db/apps/cr-xq-mets/templates/minimal/content/ there.</li>
         <li>Change the content of welcome.xml.</li>
+    </ul>
+    <h3>Don't forget to add an <a href="impressum.html">impressum</a> for your project!</h3>
+    <ul>
+        <li>Copy the impressum.xml from /db/apps/cr-xq-mets/templates/minimal/content/ to static/content.</li>
+        <li>Change the content of impressum.xml.</li>
     </ul>
 </div>

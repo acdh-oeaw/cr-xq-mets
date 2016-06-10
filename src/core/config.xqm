@@ -1,4 +1,29 @@
 xquery version "3.0";
+
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+
 (:~
  : A set of helper functions to access the application context from
  : within a module. 
@@ -10,6 +35,7 @@ module namespace config="http://exist-db.org/xquery/apps/config";
 
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
+import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
@@ -441,7 +467,8 @@ declare %templates:wrap function config:app-description($node as node(), $model 
 
 (:~
  : For debugging: generates a table showing all properties defined
- : in the application descriptors.
+ : in the application descriptors. Also output all headers attributes
+ : and the environment if it's accessible.
  :)
 declare function config:app-info($node as node(), $model as map(*)) {
     <table class="table table-bordered table-striped">{
@@ -451,6 +478,34 @@ declare function config:app-info($node as node(), $model as map(*)) {
             <tr>
                 <td>{$key}</td>
                 <td>{config:param-value($node, $model,'','',$key)}</td>
+            </tr>,
+        for $key in request:get-header-names()
+        order by $key
+        return 
+            <tr>
+                <td>{$key}</td>
+                <td>{request:get-header($key)}</td>
+            </tr>,
+        for $key in request:attribute-names()
+        order by $key
+        return 
+            <tr>
+                <td>{$key}</td>
+                <td>{request:get-attribute($key)}</td>
+            </tr>,
+        for $key in session:get-attribute-names()
+        order by $key
+        return 
+            <tr>
+                <td>{$key}</td>
+                <td>{session:get-attribute($key)}</td>
+            </tr>,
+        for $key in available-environment-variables()
+        order by $key
+        return 
+            <tr>
+                <td>{$key}</td>
+                <td>{environment-variable($key)}</td>
             </tr>
     }</table>
 };
@@ -527,10 +582,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "projects-baseuri"         return $config-params:projects-baseuri            
             case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
-(:            case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/':)
-(:            case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection
-            trying to add project-part to the "base-url": :)
-              case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/" 
+            case "base-url"                 return repo-utils:base-url($config)
             case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 

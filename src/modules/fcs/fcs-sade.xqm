@@ -1,5 +1,29 @@
 xquery version "3.0";
 
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+
 module namespace fcs="http://sade/fcs";
 
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
@@ -32,8 +56,7 @@ function fcs:query-input($node as node()*, $model as map(*), $query as xs:string
               			            <param name="x-context" value="{$x-context}"/>              			            
               			            <param name="x-dataview" value="{$x-dataview}"/>
                   </parameters>
-                  (:<param name="base_url" value="{$base-path}"/>
-                  <param name="base_url" value="{repo-utils:base-url($model("config"))}"/>:)
+                  (:<param name="base_url" value="{$base-path}"/>:)
                   
      return  repo-utils:serialise-as($template, $x-format, 'static', $model("config"), $params)
      
@@ -72,7 +95,6 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
               			            <param name="x-context" value="{$x-context-x}"/>              			            
               			            <param name="x-dataview" value="{$x-dataview-x}"/>
                   </parameters>
-                  (:<param name="base_url" value="{repo-utils:base-url($config)}"/>:)
                   
      return repo-utils:serialise-as($result, $x-format, 'searchRetrieve', $model("config"), $params)
      
@@ -93,25 +115,43 @@ declare
     %templates:default("start-term",1)
     %templates:default("max-terms",50)
 function fcs:scan($node as node()*, $model as map(*), $scanClause as xs:string, $start-term as xs:integer, $max-terms as xs:integer,  $sort as xs:string?, 
-$x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
-    
-    let $x-context-x := if ($x-context='') then config:param-value($node, $model,'fcs','','x-context') else $x-context
-    let $base-path-x := if ($base-path='') then config:param-value($model,'base-url') else $base-path
-    
-    let $result :=
-            fcsm:scan($scanClause, $x-context-x, $start-term, $max-terms, 1, 1, $sort, '', $model("config"))
-    
-    let $params := <parameters>
+$x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {   
+    let $x-context-x := if ($x-context='') then config:param-value($node, $model,'fcs','','x-context') else $x-context,
+        $base-path-x := if ($base-path='') then config:param-value($model,'base-url') else $base-path,
+        $scan := fcsm:scan($scanClause, $x-context-x, $start-term, $max-terms, 1, 1, $sort, '', $model("config")),
+        $log := util:log-app("TRACE", $config:app-name, "SADE fcs:scan $x-context-x := "||$x-context-x||", $scan := "||substring(serialize($scan),1,240)||"..."),
+        $params := <parameters>
                         <param name="format" value="{$x-format}"/>
                   		<param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>
                   		{if ($sort != '') then <param name="sort" value="{$sort}"/> else ()}	         
               			<param name="x-context" value="{$x-context-x}"/>             			            
-                  </parameters>
-     return  repo-utils:serialise-as($result, $x-format, 'scan', $model("config"), $params)
-     
+                  </parameters>,
+        $ret := repo-utils:serialise-as($scan, $x-format, 'scan', $model("config"), $params),
+        $logRet := util:log-app("TRACE", $config:app-name, "SADE fcs:scan return "||substring(serialize($ret),1,240)||"...")
+    return $ret 
 };
 
-
+(:~ invokes the explain-function of the fcs-module
+tries to use x-context parameter from the configuration, if no explicit x-context was given
+:)
+declare 
+    %templates:wrap
+    %templates:default("x-context","")
+    %templates:default("x-format","html")
+function fcs:explain($node as node()*, $model as map(*), $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
+    let $x-context-x := if ($x-context='') then config:param-value($node, $model,'fcs','','x-context') else $x-context,
+        $base-path-x := if ($base-path='') then config:param-value($model,'base-url') else $base-path,
+        $explain := fcsm:explain($x-context-x, $model("config")),
+        $log := util:log-app("TRACE", $config:app-name, "SADE fcs:explain $x-context-x := "||$x-context-x||", $explain := "||substring(serialize($explain),1,240)||"..."),
+        $transformParams := <parameters>
+                               <param name="format" value="{$x-format}"/>
+                  		       <param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>	         
+              			       <param name="x-context" value="{$x-context-x}"/>             			            
+                            </parameters>,
+        $ret := repo-utils:serialise-as($explain, $x-format, 'explain', $model("config"), $transformParams),
+        $logRet := util:log-app("TRACE", $config:app-name, "SADE fcs:explain return "||substring(serialize($ret),1,240)||"...")
+    return $ret
+};
 
 (:~ return number of documents in the data.path collection
 :)

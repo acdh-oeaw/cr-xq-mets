@@ -1,5 +1,29 @@
 xquery version "3.0";
 
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+
 module namespace templates="http://exist-db.org/xquery/templates";
 
 (:~ 
@@ -9,6 +33,9 @@ module namespace templates="http://exist-db.org/xquery/templates";
  : @author Wolfgang Meier
 :)
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
+
+declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
 declare variable $templates:CONFIG_STOP_ON_ERROR := "stop-on-error";
 
@@ -86,9 +113,10 @@ declare %private function templates:get-instructions($class as xs:string?) as xs
 };
 
 declare %private function templates:call($class as xs:string, $node as element(), $model as map(*)) {
-    let $paramStr := substring-after($class, "?")
-    let $parameters := templates:parse-parameters($paramStr)
-    let $func := if ($paramStr) then substring-before($class, "?") else $class
+    let $paramStr := substring-after($class, "?"),
+        $parameters := templates:parse-parameters($paramStr),
+        $func := if ($paramStr) then substring-before($class, "?") else $class,
+        $log := util:log-app('TRACE', $config:app-name, "templates:call $class := "||$class||', $paramStr := '||$paramStr||', $func := '||$func)
     let $call := templates:resolve(10, $func, $model($templates:CONFIGURATION)("resolve"))
     return
         if (exists($call)) then
@@ -222,7 +250,7 @@ declare %private function templates:resolve($arity as xs:int, $func as xs:string
 };
 
 declare %private function templates:parse-parameters($paramStr as xs:string?) as element(parameters) {
-    <parameters>
+    <parameters xmlns="">
     {
         for $param in tokenize($paramStr, "&amp;")
         let $key := substring-before($param, "=")
@@ -282,8 +310,8 @@ declare %private function templates:cast($values as item()*, $targetType as xs:s
  : @param $project project-identifier
  :)
 declare function templates:init($node as node(), $model as map(*), $project as xs:string?) {
-       map { 
-       "config" := config:config($project)      
+       map {
+       "config": config:config($project)
        }
 };
  
@@ -312,14 +340,18 @@ declare
 %templates:wrap
 %templates:default("filter", "")
 function templates:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string) {
-    let $content := config:resolve($model, $path-detail)
-        let $log := util:log-app("DEBUG",$config:app-name,"templates:include-detail.path-detail: "||$path-detail)
-    let $restricted-content := if ($filter != '' and exists($content)) then 
+    let $content := config:resolve($model, $path-detail),
+        $log := util:log-app("DEBUG",$config:app-name,"templates:include-detail path-detail := "||$path-detail||', $filter := '||$filter)
+    let $restricted-content := 
+        if ($filter != '' and exists($content)) then 
             (: try to handle namespaces dynamically 
                 by switching  to source namespace :)
-            let $ns-uri := namespace-uri($content[1]/*)        	       
-            let $ns := util:declare-namespace("",xs:anyURI($ns-uri))
-           return util:eval(concat("$content//", $filter)) else $content 
+            let $ns-uri := namespace-uri($content[1]/*),        	       
+                $ns := util:declare-namespace("",xs:anyURI($ns-uri)),
+                $ret := util:eval(concat("$content//", $filter)),
+                $logRet := util:log-app("DEBUG",$config:app-name,"templates:include-detail return restricted-content "||serialize($ret))
+            return $ret
+        else $content 
     return templates:process($restricted-content , $model)
 };
 
@@ -408,20 +440,31 @@ declare function templates:load-source($node as node(), $model as map(*)) as nod
     values found in the request - if present.
  :)
 declare function templates:form-control($node as node(), $model as map(*)) as node()* {
-    typeswitch ($node)
-        case element(input) return
-            let $name := $node/@name
-            let $value := request:get-parameter($name, ())
-            return
+    let $log := util:log-app("TRACE",$config:app-name,"templates:form-control $node := "||serialize($node))
+    return typeswitch ($node)
+        case element(xhtml:input) return
+            let $name := $node/@name,
+                $value := request:get-parameter($name, ()),
+                $retValueSet := 
                 if ($value) then
                     element { node-name($node) } {
                         $node/@* except $node/@value,
                         attribute value { $value },
                         $node/node()
                     }
-                else
-                    $node
-        case element(select) return
+                else $node,
+                $ret :=
+                if ($retValueSet/@type eq 'text') then
+                    let $value := $model('config')//@OBJID
+                    return element { node-name($retValueSet) } {
+                        $node/@* except $node/@value,
+                        attribute data-context { $value },
+                        $retValueSet/node()
+                    }
+                 else $retValueSet,
+                 $logRet := util:log-app("TRACE",$config:app-name,"templates:form-control return element(input) "||serialize($ret))
+             return $ret
+        case element(xhtml:select) return
             let $value := request:get-parameter($node/@name/string(), ())
             return
                 element { node-name($node) } {

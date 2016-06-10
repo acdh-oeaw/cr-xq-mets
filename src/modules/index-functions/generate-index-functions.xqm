@@ -1,4 +1,29 @@
 xquery version "3.0";
+
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+
 module namespace gen = "http://aac.ac.at/content_repository/generate-index";
 import module namespace project = "http://aac.ac.at/content_repository/project" at "../../core/project.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
@@ -106,15 +131,19 @@ declare function gen:store-index-functions($code as xs:string, $project-pid) {
                     else repo-utils:mkcol("/", $module-dir-path)
                     
     let $module-path := project:path($project-pid,'home')||'/modules/'||$gen:project-index-functions-module-filename
-    let $regenerate-top-level-module := not(util:binary-doc-available($module-path))
+    let $generate-top-level-module-first-time := not(util:binary-doc-available($module-path))
     
                     
     let $store:=    xmldb:store($module-dir-path, $gen:project-index-functions-module-filename, $code, 'application/xquery')
     let $exec:=     xmldb:set-resource-permissions($module-dir-path, $gen:project-index-functions-module-filename, 'guest', 'guest', 755)
     (: top-level module generation only after storing the project-specific module, because the generating function checks for existence of the file :)
-    let $top-level-module :=  if ($regenerate-top-level-module) then gen:register-project-index-functions() else ()
-    
-(:    return $exec!='':)
+    let $top-level-module :=
+        if ($generate-top-level-module-first-time) then 
+            let $log := util:log-app("INFO",$config:app-name,"gen:store-index-functions first time generating, registering module using gen:register-project-index-functions()")
+            return gen:register-project-index-functions()
+        else 
+            let $log := util:log-app("INFO",$config:app-name,"gen:store-index-functions regenerating, NOT registering module!")
+            return ()
     return $store 
 };
 

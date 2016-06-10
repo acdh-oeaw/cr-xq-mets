@@ -1,5 +1,29 @@
 xquery version "3.0";
 
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+
 module namespace toc="http://aac.ac.at/content_repository/toc";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
@@ -131,10 +155,10 @@ declare function toc:generate($mapping-keys as xs:string+, $resource-pid as xs:s
 
     
     let $resource := wc:get-data($resource-pid,$project-pid),
-        $log := util:log-app("TRACE",$config:app-name, "toc:generate $xsl := "||substring(serialize($xsl),1,240)),
+        $log := util:log-app("TRACE",$config:app-name, "toc:generate $xsl := "||substring(serialize($xsl),1,24000)),
         (:$store := xmldb:store(project:path($project-pid,"home"),$resource-pid||".xsl",$xsl),:)
         $toc := if ($resource) then transform:transform($resource,$xsl,()) else (),
-        $logToc := util:log-app("DEBUG",$config:app-name, "toc:generate $resource := "||substring(serialize($resource),1,240)||"... $toc := "||substring(serialize($toc),1,2400)||"...")
+        $logToc := util:log-app("TRACE",$config:app-name, "toc:generate $resource := "||substring(serialize($resource),1,240)||"..., URI:"||base-uri($resource)||", $toc := "||substring(serialize($toc),1,240)||"...")
             
         
    let $mets:record := project:get($project-pid),

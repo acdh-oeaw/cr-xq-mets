@@ -1,5 +1,29 @@
 xquery version "3.0";
 
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+
 module namespace ltb = "http://aac.ac.at/content_repository/lookuptable";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm"; 
@@ -36,6 +60,7 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                 else 
                     let $rf:path:= rf:generate($resource-pid,$project-pid)
                     return doc($rf:path)
+(:        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $rf:data := "||substring(serialize($rf:data),1,480)):)
     let $base-uri := base-uri($rf:data)
     let $rf:filename :=     tokenize($base-uri,'/')[last()],
         $rf:collection :=   substring-before($base-uri,'/'||$rf:filename)
@@ -49,6 +74,7 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                 else project:path($project-pid,"lookuptables")
                 
     let $wc := wc:get-data($resource-pid,$project-pid)
+(:        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $wc := "||substring(serialize($wc),1,480)):)
     let $ltb:container :=
         element {QName($config:RESOURCE_LOOKUPTABLE_ELEMENT_NSURI,$config:RESOURCE_LOOKUPTABLE_ELEMENT_NAME)} {
             attribute project-pid {$project-pid},
@@ -71,6 +97,7 @@ declare function ltb:generate($resource-pid as xs:string,$project-pid as xs:stri
                 }
         }
     let $ltb:store := repo-utils:store($ltb:path,$ltb:filename,$ltb:container,true(),config:config($project-pid))
+(:        $log := util:log-app("DEBUG", $config:app-name, "ltb:generate $ltb:store := "||substring(serialize($ltb:store),1,480)):)
     
   let $ltb-fileid:=$resource-pid||$config:RESOURCE_LOOKUPTABLE_FILEID_SUFFIX,
       $ltb-file:=resource:make-file($ltb-fileid,$ltb:path||'/'||$ltb:filename,"lookuptable"),
