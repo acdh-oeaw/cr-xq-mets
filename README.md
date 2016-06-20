@@ -63,8 +63,13 @@ Edit `build.properties`
 
 4. Install the generated package via package manager 
 
-Upon installation `setup.xql` is executed which generates the `$projects.dir` and `$data.dir`
-and sets up a default project.
+   Upon installation `setup.xql` is executed which generates the `$projects.dir` and `$data.dir`
+   and sets up a default project.
+   
+_Note_: You can download all the packages into the `autodeploy` directory and clean the `webapp/WEB-INF/data` directory.
+The xars ar then installed automatically for you. We recommend that you add `000` in front of the name of the shared
+resources package and `zzz` to the name of the cr-xq-mets package you build. This will help to install the packages in the
+right order.
 
 Set up a project
 ----------------
