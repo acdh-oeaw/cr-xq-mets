@@ -38,7 +38,7 @@ Edit `build.properties`
 
   ```
 	app.name=cr-xq-mets
-        app.uri=http://vronk.net/ns/cr-xq-mets
+	app.uri=http://vronk.net/ns/cr-xq-mets
 	projects.dir=cr-projects
 	data.dir=cr-data
   ```
@@ -69,7 +69,8 @@ Edit `build.properties`
 _Note_: You can download all the packages into the `autodeploy` directory and clean the `webapp/WEB-INF/data` directory.
 The xars ar then installed automatically for you. We recommend that you add `000` in front of the name of the shared
 resources package and `zzz` to the name of the cr-xq-mets package you build. This will help to install the packages in the
-right order.
+right order. Please be aware that this install method leaves the admin user with an _empty_ password and of course destroys
+your prvious data. Make sure you have a backup if needed!
 
 Set up a project
 ----------------
