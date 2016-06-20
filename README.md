@@ -56,15 +56,15 @@ Edit `build.properties`
 
 3. Verify that you have installed the following prerequisites
 
-* [shared-resources (>= 0.4.0)](http://exist-db.org/exist/apps/public-repo/packages/shared.html)
-* [betterFORM Demo and Reference XForms (>=1.4)](http://exist-db.org/exist/apps/public-repo/packages/bf-XForms.html)
-* [FunctX library (>=1.0)](http://exist-db.org/exist/apps/public-repo/packages/functx.html)
-* [JSON Parser and Serializer for XQuery (>=0.2.0)](http://exist-db.org/exist/apps/public-repo/packages/xqjson.html)
+   * [shared-resources (>= 0.4.0)](http://exist-db.org/exist/apps/public-repo/packages/shared.html)
+   * [betterFORM Demo and Reference XForms (>=1.4)](http://exist-db.org/exist/apps/public-repo/packages/bf-XForms.html)
+   * [FunctX library (>=1.0)](http://exist-db.org/exist/apps/public-repo/packages/functx.html)
+   * [JSON Parser and Serializer for XQuery (>=0.2.0)](http://exist-db.org/exist/apps/public-repo/packages/xqjson.html)
 
 4. Install the generated package via package manager 
 
-	Upon installation `setup.xql` is executed which generates the `$projects.dir` and `$data.dir`
-	and sets up a default project.
+Upon installation `setup.xql` is executed which generates the `$projects.dir` and `$data.dir`
+and sets up a default project.
 
 Set up a project
 ----------------
