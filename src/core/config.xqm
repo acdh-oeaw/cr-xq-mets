@@ -35,7 +35,6 @@ module namespace config="http://exist-db.org/xquery/apps/config";
 
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
-import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
@@ -582,7 +581,10 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "projects-baseuri"         return $config-params:projects-baseuri            
             case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
-            case "base-url"                 return repo-utils:base-url($config)
+(:            case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/':)
+(:            case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection
+            trying to add project-part to the "base-url": :)
+              case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/" 
             case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
@@ -623,21 +625,29 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                     then 'protected'
                                                     else 'unprotected'
             case 'users'                    return
-                                                (: sm:get-group-members-function need to be executed as a logged in user :)
-(:                                                let $login:=        xmldb:login($config:app-root,"cr-xq","cr=xq!"):)
                                                 let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
                                                     $users:=        $ace[@target='USER']/@who,
                                                     $groups:=       $ace[@target='GROUP']/@who,
-                                                    $group-members:=()
-                                                    (:for $g in $groups
+                                                    $logAce :=      util:log-app("DEBUG",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
+                                                    $id :=          sm:id(),
+                                                    $logId :=       util:log-app("DEBUG",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 800)),
+                                                    $group-members:=
+                                                       for $g in $groups
                                                                     return
-                                                                        system:as-user("cr-xq","cr=xq!",
-                                                                            if (sm:group-exists($g))
-                                                                            then sm:get-group-members($g)
-                                                                            else ()
-                                                                        ):),
-                                                    $allowed-users:=    ($group-members,$users)
-                                                return string-join($allowed-users,',')
+                                                                          try {
+                                                                              if (sm:group-exists($g)) then
+                                                                                 sm:get-group-members($g)
+                                                                              else ()
+                                                                          } catch * {
+                                                                               let $log := util:log-app("DEBUG",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
+                                                                                   $ret := if ($g = $id//sm:group) then $id//sm:username else (),
+                                                                                   $logRet := util:log-app("DEBUG",$config:app-name,"config:param-value users $group-members exception return "||$ret)
+                                                                               return $ret
+                                                                          },
+                                                    $allowed-users:=    ($group-members,$users),
+                                                    $ret := string-join($allowed-users,','),
+                                                    $logRet := util:log-app("DEBUG",$config:app-name,"config:param-value users return "||$ret)
+                                                return $ret
             
             case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))/cmd:CMD
             case 'project-title'            return ($mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))//cmd:CollectionInfo/cmd:Title[text()],$mets/@LABEL)[1]

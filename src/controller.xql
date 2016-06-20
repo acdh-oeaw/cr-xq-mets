@@ -560,12 +560,13 @@ declare function local:exist-resource-index($project) as xs:string {
 declare function local:user-may($project as xs:string) as xs:boolean {
     let $project-config-map := map{"config" := config:project-config($project)},
         $full-config-map := map{"config" := config:config($project)},
-        $log := util:log-app("TRACE",$config:app-name,"controller user-may "||$project)
+        $log := util:log-app("TRACE",$config:app-name,"controller user-may $project := "||$project||" $full-config-map('config') := "||substring(serialize($full-config-map("config")), 1, 24000))
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
         else if (config:param-value($project-config-map,'visibility')!='protected') then true()
         else
-        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
+        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*'),
+            $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
         
         let $project-dir := config:param-value($project-config-map,'project-dir')
         (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
@@ -574,14 +575,17 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         (: login:set-user() must go before checking the user :) 
         let $login:=login:set-user($domain, (), false())
         
-        let $db-user := request:get-attribute($domain||".user")
+        let $db-user := request:get-attribute($domain||".user"),
         (:let $db-current-user := xmldb:get-current-user():)
-        let $shib-user := config:shib-user()
-        let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+            $shib-user := config:shib-user(),
+            $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
                             let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
                             return 'shib'
-                            else $db-user
-        return ($user=$allowed-users)
+                            else $db-user,
+            $log := util:log-app("TRACE",$config:app-name,"controller user-may $db-user := "||$db-user||" $user := "||$user),
+            $ret := ($user=$allowed-users), 
+            $logRest := util:log-app("TRACE",$config:app-name,"controller user-may return "||$ret)               
+        return $ret
 };
 
 (:~
