@@ -35,6 +35,7 @@ module namespace config="http://exist-db.org/xquery/apps/config";
 
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
+import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
@@ -581,10 +582,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "projects-baseuri"         return $config-params:projects-baseuri            
             case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
-(:            case "base-url"                 return string-join(tokenize(request:get-url(),'/')[position() != last()],'/')||'/':)
-(:            case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection
-            trying to add project-part to the "base-url": :)
-              case "base-url"                 return substring-before(request:get-url(),$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/" 
+            case "base-url"                 return repo-utils:base-url($config)
             case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
@@ -637,7 +635,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                                           try {
                                                                               if (sm:group-exists($g)) then
                                                                                  sm:get-group-members($g)
-                                                                              else ()
+                                                                            else ()
                                                                           } catch * {
                                                                                let $log := util:log-app("DEBUG",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
                                                                                    $ret := if ($g = $id//sm:group) then $id//sm:username else (),
