@@ -926,7 +926,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
             $seq-count := fn:count($result-seq),        
             $end-time := util:system-dateTime()
         (: when displaying certain indexes (e.g. toc) we only want to show the first resource fragment :) 
-        let $config-param :=    if (contains($query,'fcs.toc')) 
+        let $config-param :=    if (contains($query,'fcs.toc') or ($query = "*")) 
                                 then 
                                     map{
                                         "config" := $config,
@@ -934,14 +934,14 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                                         "no-of-rf" := 1 
                                     }
                                 else 
-                                    $config
-       
-             let $result-seq-expanded := if ($config-param("x-highlight") ne "off") then
-                let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = on")
-                return util:expand($result-seq)
-             else
-                let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = off")
-                return $result-seq
+                                    $config,
+            $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve $config instance of map() "||($config instance of map())), 
+            $result-seq-expanded := if (not($config-param instance of map()) or $config-param("x-highlight") != "off") then
+               let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = on")
+               return util:expand($result-seq)
+            else
+               let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = off")
+               return $result-seq
              
              let $records :=
                <sru:records>{
@@ -1062,15 +1062,15 @@ return <sru:facetedResults>
 
 };
 
-(:declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {:)
-declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
+declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config-param as item()*) as item()*  {
     let $result-seq-expanded := if ($config-param("x-highlight") ne "off") then
          let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = on")
          return util:expand($result-seq)
      else
          let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = off")
          return $result-seq
-    fcs:format-record-data($record-data, $result-seq-expanded, $data-view, $x-context, $config)
+    return 
+    fcs:format-record-data($record-data, $result-seq-expanded, $data-view, $x-context, $config-param)
 };
 
 
@@ -1180,7 +1180,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
           $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $highlight-requests := "||substring(serialize($highlight-requests),1,240))
       return $highlight-requests[fcs:remove-offset-from-match-id-if-exists(.) = $rf//@cr:id]
     
-    let $dumy4 := util:log-app("INFO",$config:app-name,"$resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
+    let $dumy4 := util:log-app("TRACE",$config:app-name,"$resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
 
     let $parent-elem := 'p' (: TODO: read from configuration cql.serverChoice  :) 
     let $record-data-toprocess := <rec> { if (not($expanded-record-data-input/local-name() = $parent-elem)) then $rf else $orig-sequence-record-data } </rec>,
@@ -1417,7 +1417,7 @@ return $ret
 (: Hack that works around exist:match highlighter not considering (empty) inline elements and stoping the match completely before that. :) 
 declare %private function fcs:recalculate-length-of-exist-match-if-cut-by-tag($parent as node(), $exist-match as node()) {
 let $exist-match-follwing-context := ($exist-match/following-sibling::*|$exist-match/following-sibling::text()),
-    $log := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag $parent := "||substring(serialize($parent), 1, 240)||
+    $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag $parent := "||substring(serialize($parent), 1, 240)||
                                                   " $exist-match := "||substring(serialize($exist-match), 1, 240)||
                                                   " $exist-match-follwing-context[1] instance of text() "||$exist-match-follwing-context[1] instance of text()||
                                                   " $exist-match-follwing-context[2] "||substring(serialize($exist-match-follwing-context[2]),1,240)),
@@ -1427,7 +1427,7 @@ let $exist-match-follwing-context := ($exist-match/following-sibling::*|$exist-m
           if (exists($exist-match-follwing-context[1]) and not($exist-match-follwing-context[1] instance of text())) then
           functx:substring-before-match($exist-match-follwing-context[2], '[ .,;:?!]') else ())
        return data($parent/@cr:id)||":"||$substrPos||":"||(string-length($exist-match) + $additional-length),
-    $logRet := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||string-join($ret, '; '))
+    $logRet := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||string-join($ret, '; '))
 return $ret
 };
 
@@ -1435,7 +1435,7 @@ declare %private function fcs:get-string-for-offset-length-search($elt as node()
 let $log := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search $elt := "||string-join(for $n in $elt return substring(serialize($n), 1, 240), ' <> ')),
     (: needs to be kept in sync with highlight-matches.xsl: match="*[@cr:id = $all-ids]"! :)
     $ret := string-join((for $n in $elt/(*|text()) return if ($n[@orig]) then concat(' ', data($n/@orig)) else data($n)), ''),
-    $logRet := util:log-app("DEBUG",$config:app-name,"fcs:get-string-for-offset-length-search return "||$ret)
+    $logRet := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search return "||substring($ret, 1, 240)||"...")
 return $ret
 };
 
