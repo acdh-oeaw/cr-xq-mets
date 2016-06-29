@@ -339,16 +339,16 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
 	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
     let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index-name, $sort, $max-depth)),
-        $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:scan: is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
-        $log := (util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
-                util:log-app("DEBUG", $config:app-name, "scan-clause="||$scan-clause),
-                util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
-                util:log-app("DEBUG", $config:app-name, "x-filter="||$x-filter),
-                util:log-app("DEBUG", $config:app-name, "max-terms="||$max-terms),
-                util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
-                util:log-app("DEBUG", $config:app-name, "p-sort="||($p-sort,'no user input (falling back to @sort on <index> map definition)')[1]),
-                util:log-app("DEBUG", $config:app-name, "$index-name="||$index-name),
-                util:log-app("DEBUG", $config:app-name, "$start-term="||($start-term, "no start term given")[1])
+        $dummy2 := util:log-app("TRACE", $config:app-name, "fcs:scan: is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
+        $log := (util:log-app("TRACE", $config:app-name, "cache-mode: "||$mode),
+                util:log-app("TRACE", $config:app-name, "scan-clause="||$scan-clause),
+                util:log-app("TRACE", $config:app-name, "x-context="||$x-context),
+                util:log-app("TRACE", $config:app-name, "x-filter="||$x-filter),
+                util:log-app("TRACE", $config:app-name, "max-terms="||$max-terms),
+                util:log-app("TRACE", $config:app-name, "max-depth="||$max-depth),
+                util:log-app("TRACE", $config:app-name, "p-sort="||($p-sort,'no user input (falling back to @sort on <index> map definition)')[1]),
+                util:log-app("TRACE", $config:app-name, "$index-name="||$index-name),
+                util:log-app("TRACE", $config:app-name, "$start-term="||($start-term, "no start term given")[1])
         ),
   (: get the base-index from cache, or create and cache :)
   $index-scan :=
@@ -358,13 +358,13 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     fcs:scan-all($x-context, ($start-term, $x-filter)[1], $config)
         else
         if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
-          let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:scan: reading index "||$index-doc-name||" from cache"),
+          let $dummy := util:log-app("TRACE", $config:app-name, "fcs:scan: reading index "||$index-doc-name||" from cache"),
               $ret := repo-utils:get-from-cache($index-doc-name, $config),
-              $logIndexScan := util:log-app("DEBUG", $config:app-name, "fcs:scan: $index-scan := "||substring(serialize($ret),1,80)||"...")
+              $logIndexScan := util:log-app("TRACE", $config:app-name, "fcs:scan: $index-scan := "||substring(serialize($ret),1,80)||"...")
           return $ret          
         else
         (: TODO: cmd-specific stuff has to be integrated in a more dynamic way! :)
-            let $dummy := util:log-app("DEBUG", $config:app-name, "generating index "||$index-doc-name)
+            let $dummy := util:log-app("TRACE", $config:app-name, "generating index "||$index-doc-name)
             let $data :=
                 (:
                 if ($index-name eq $cmdcoll:scan-collection) then
@@ -434,13 +434,13 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
           (: if empty result, return the empty result, but don't store
             to not fill cache with garbage:)
         return  if (exists($data)) then 
-                        let $log := util:log-app("DEBUG", $config:app-name, "generating index "||$index-doc-name||" with data "||substring(serialize($data),1,240)),
+                        let $log := util:log-app("TRACE", $config:app-name, "generating index "||$index-doc-name||" with data "||substring(serialize($data),1,240)),
                             $ret := repo-utils:store-in-cache($index-doc-name , $data, $config,'indexes') 
 (:                        let $logNotStroring := util:log-app("ERROR", $config:app-name, "caching disabled!"),
                             $ret := $data:)
                         return $ret
                     else 
-                        let $dummy := util:log-app("DEBUG", $config:app-name, "no data for index "||$index-doc-name)
+                        let $dummy := util:log-app("TRACE", $config:app-name, "no data for index "||$index-doc-name)
                         return ()
 
         (:if (number($data//sru:scanResponse/sru:extraResponseData/fcs:countTerms) > 0) then
@@ -468,7 +468,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 	
 	(: extra handling if fcs.resource=root, and for cql.serverChoice (there we did the filtering already in scan-all() :)
     let $start-term-subseq := if (($index-name= 'fcs.resource' and $start-term='root') or $index-name='cql.serverChoice') then '' else $start-term,
-        $logSTS := util:log-app("DEBUG", $config:app-name, "fcs:scan: $start-term-subseq := "||$start-term-subseq||", $start-term := "||$start-term)
+        $logSTS := util:log-app("TRACE", $config:app-name, "fcs:scan: $start-term-subseq := "||$start-term-subseq||", $start-term := "||$start-term)
     
 	let $terms-subsequence := fcs:scan-subsequence($index-scan/descendant-or-self::sru:scanResponse/sru:terms/sru:term, $start-term-subseq, $max-terms, $response-position, $x-filter)
     (:  return $res-nodeset   :)
@@ -498,7 +498,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 @param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
 :)
 declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
-let $log := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $start-term := "||$start-term||", $terms := "||substring(serialize($terms),1,80)||"...")
+let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $start-term := "||$start-term||", $terms := "||substring(serialize($terms),1,80)||"...")
 (:$max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {:)
 let $x-filter-lc := lower-case($x-filter)
 
@@ -531,13 +531,13 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                         let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence") 
                                         return subsequence($terms,1,$maximum-terms-resolved)
                                       else
-                                        let $log := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: start-term and no x-filter, return the following siblings of the startTerm; regard response-position"),
-                                            $logTerms := util:log-app("DEBUG", $config:app-name, "fcs:scan-subsequence: $terms := "||substring(serialize($terms),1,80)||"...")
+                                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: start-term and no x-filter, return the following siblings of the startTerm; regard response-position"),
+                                            $logTerms := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $terms := "||substring(serialize($terms),1,80)||"...")
 (:                                        let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1:)
 (:                                        let $start-search-term-position := $terms[starts-with(sru:value,$start-term)][1]/sru:extraTermData/fcs:position:)
                                             let $start-search-term-position := index-of ($terms, $terms[starts-with(sru:value,$start-term)][1])
                                         let $start-list-term-position := $start-search-term-position - $response-position + 1
-                                        let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
+                                        let $dummy := util:log-app("TRACE", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
         (:                                $terms[$start-search-term-node/position() - $response-position]:)
                                         return subsequence($terms,$start-list-term-position,$maximum-terms-resolved)
                                   else       
@@ -552,7 +552,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                         (: thought would need to reapply the filter :)
 (:                                        let $start-search-term-position := count($filtered-terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]) + 1:)
                                         let $start-list-term-position := $start-search-term-position - $response-position + 1
-                                        let $dummy := util:log-app("DEBUG", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
+                                        let $dummy := util:log-app("TRACE", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
                                         return subsequence($filtered-terms,$start-list-term-position,$maximum-terms-resolved)
         (:                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]:)
 let $logRet := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $recurse-subsequence := "||serialize(subsequence($recurse-subsequence,1,3))||"...")
@@ -584,7 +584,7 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
                                        <sru:extraTermData>{($t/sru:extraTermData/*[not(local-name()='terms')], $type)}</sru:extraTermData>                                 
                                return
                                 <sru:term>{($t/@*, $t/*[not(local-name()='extraTermData')], $extraTermData) }</sru:term>
-    let $dummy-log := util:log-app("DEBUG", $config:app-name, "terms/pruned:"||count($terms)||"/"||count($terms-pruned))
+    let $dummy-log := util:log-app("TRACE", $config:app-name, "terms/pruned:"||count($terms)||"/"||count($terms-pruned))
     
   return 
         <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
@@ -605,7 +605,7 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
 };
 
 declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string?, $config) as item()* {
-    let $log := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $index := "||$index||", $x-context := "||$x-context||", $sort := "||$sort)
+    let $log := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: $index := "||$index||", $x-context := "||$x-context||", $sort := "||$sort)
     let $logConfig := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: $config := "||substring(serialize($config),1,80)||"...")
     let $ts0 := util:system-dateTime()
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
@@ -621,7 +621,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
         $nodes := index:apply-index($data, $index,$project-pid,())
 
     let $index-label := ($index-elem/xs:string(@label), $index-elem/xs:string(@key) )[1],
-    $logSettings := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $project-pid :="||$project-pid||", $facets := "||serialize($facets)||", $index-elem := "||serialize($index-elem)||", $index-label := "||$index-label)
+    $logSettings := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: $project-pid :="||$project-pid||", $facets := "||serialize($facets)||", $index-elem := "||serialize($index-elem)||", $index-label := "||$index-label)
     let $terms :=
         if ($nodes) then 
             if ($facets/index)
@@ -629,7 +629,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
                 else fcs:term-from-nodes($nodes, $sort, $index, $project-pid)
            else ()
     let $ts1 := util:system-dateTime()
-    let $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: index: "||$index||", duration:"||($ts1 - $ts0))        
+    let $dummy2 := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: index: "||$index||", duration:"||($ts1 - $ts0))        
     return 
         <sru:scanResponse xmlns:fcs="http://clarin.eu/fcs/1.0">
             <sru:version>1.2</sru:version>
@@ -649,7 +649,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
 (:%private :)
 declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:string?, $index-key as xs:string, $project-pid as xs:string) {
     let $ts0 := util:system-dateTime()
-    let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: "||$index-key)
+    let $dummy := util:log-app("TRACE", $config:app-name, "fcs:term-from-nodes: "||$index-key)
     let $termlabels := project:get-termlabels($project-pid,$index-key)
     (:let $data :=  for $n in $node
                     let $term-value := index:apply-index($n,$index-key,$project-pid,'match-only')                                                    
@@ -669,7 +669,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                     return map:new(($value-map,$label-map)):)
     let $index-elem := index:index($index-key,$project-pid)
     let $sort := ($order-param,$index-elem/@sort[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1],
-        $logSettings := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: $sort :="||$sort||", $index-elem := "||substring(serialize($index-elem),1,240))
+        $logSettings := util:log-app("TRACE", $config:app-name, "fcs:term-from-nodes: $sort :="||$sort||", $index-elem := "||substring(serialize($index-elem),1,240))
     let $ts1 := util:system-dateTime()
     (: since an expression like  
         group by $x 
@@ -731,7 +731,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
 
 declare %private function fcs:group-by-facet($data as node()*, $order-param as xs:string?, $index as element(index), $project-pid) as item()* {
     let $index-key := $index/xs:string(@key)
-    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet($data, "||$order-param||", "||$index/@key||", "||$project-pid||")")
+    let $log := util:log-app("TRACE", $config:app-name, "fcs:group-by-facet($data, "||$order-param||", "||$index/@key||", "||$project-pid||")")
     let $termlabels := project:get-termlabels($project-pid,$index-key)
     let $index-sorting-key := $index/@sort
     let $facet_sort := ($order-param,$index-sorting-key[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1]
@@ -746,9 +746,9 @@ declare %private function fcs:group-by-facet($data as node()*, $order-param as x
         let $map := map:new($maps)
         return $map
     let $group-keys := map:keys($groups)
-    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $group-keys: "||string-join($group-keys,', '))
-    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $order-param="||$order-param||", $index-sorting-key="||$index-sorting-key||", $fcs:scanSortDefault="||$fcs:scanSortDefault)
-    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: sorting facet "||$index-key||" by "||$facet_sort)
+    let $log := util:log-app("TRACE", $config:app-name, "fcs:group-by-facet: $group-keys: "||string-join($group-keys,', '))
+    let $log := util:log-app("TRACE", $config:app-name, "fcs:group-by-facet: $order-param="||$order-param||", $index-sorting-key="||$index-sorting-key||", $fcs:scanSortDefault="||$fcs:scanSortDefault)
+    let $log := util:log-app("TRACE", $config:app-name, "fcs:group-by-facet: sorting facet "||$index-key||" by "||$facet_sort)
     let $terms := 
         for $group-key in $group-keys
         let $entries := map:get($groups, $group-key)        
@@ -936,7 +936,12 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                                 else 
                                     $config
        
-             let $result-seq-expanded := util:expand($result-seq)
+             let $result-seq-expanded := if ($config-param("x-highlight") ne "off") then
+                let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = on")
+                return util:expand($result-seq)
+             else
+                let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = off")
+                return $result-seq
              
              let $records :=
                <sru:records>{
@@ -1059,7 +1064,13 @@ return <sru:facetedResults>
 
 (:declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {:)
 declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
-    fcs:format-record-data($record-data, $record-data, $data-view, $x-context, $config)
+    let $result-seq-expanded := if ($config-param("x-highlight") ne "off") then
+         let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = on")
+         return util:expand($result-seq)
+     else
+         let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = off")
+         return $result-seq
+    fcs:format-record-data($record-data, $result-seq-expanded, $data-view, $x-context, $config)
 };
 
 
@@ -1072,11 +1083,11 @@ all based on mappings and parameters (data-view)
                     if not providable, setting the same data as in $record-data-input works mostly (expect, when you want to move out of the base_elem)
 @param $record-data-input the base-element with the match hits inside (marked with exist:match) 
 :)
-declare function fcs:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
+declare function fcs:format-record-data($orig-sequence-record-data as node(), $expanded-record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
     
     let $title := index:apply-index($orig-sequence-record-data, "title", $x-context)
     (: this is (hopefully) temporary FIX: the resource-pid attribute is in fcs-namespace (or no namespace?) on resourceFragment element!  	:)
-	let $resource-pid:= ($record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),
+	let $resource-pid:= ($expanded-record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),
 (:	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$config,'match-only'))[1]:)
 	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$x-context,'match-only'))[1]
 	
@@ -1094,12 +1105,10 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 	                                         )
 	                               else ""
 	
-(:	let $resource-pid:= util:eval("$record-data-input/ancestor-or-self::*[1]/data(@cr:"||$config:RESOURCE_PID_NAME||")"):)
 	let $project-id := cr:resolve-id-to-project-pid($x-context)
     let $match-elem := 'w'
     let $match-ids := distinct-values(
-                      let $expanded-record-data-input := util:expand($record-data-input),
-                          $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input := "||substring(serialize($expanded-record-data-input), 1, 240))
+                      let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input := "||substring(serialize($expanded-record-data-input), 1, 240))
                       return
                       if (exists($expanded-record-data-input//exist:match/ancestor::*[@cr:id]))
                       then 
@@ -1111,28 +1120,28 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                     if (normalize-space(string-join($exist-match/ancestor::*[@cr:id][1]//text(), '')) eq normalize-space($exist-match//text())) 
                                     then 
                                        let $ret := fcs:get-complete-match-id-and-offsets-in-ancestors($exist-match),
-                                           $log2 := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-input match parents whole tags "||string-join($ret, '; '))
+                                           $log2 := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input match parents whole tags "||string-join($ret, '; '))
                                        return $ret
                                     else
                                        let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data match parent: "||substring(string-join($exist-match/parent::*//text(), '<>'),1,1000)),
                                            $ret := fcs:recalculate-length-of-exist-match-if-cut-by-tag($exist-match/parent::*,$exist-match),
-                                           $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-input match parents with offsets "||string-join($ret, '; '))
+                                           $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input match parents with offsets "||string-join($ret, '; '))
                                        return $ret
                       else 
                         (: if no exist:match, take the root of the matching snippet,:)   
-                        let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-input contains no exist:match, falling back to its own @cr:id")
-                        return $record-data-input/data(@cr:id)
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input contains no exist:match, falling back to its own @cr:id")
+                        return $expanded-record-data-input/data(@cr:id)
                       )
     (: if the match is a whole resourcefragment we dont need a lookup, its ID is in the attribute :)
     let $match-ids-without-offsets := for $m in $match-ids return fcs:remove-offset-from-match-id-if-exists($m)
-    let $resourcefragment-pids :=   if ($record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
-                                    then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
+    let $resourcefragment-pids :=   if ($expanded-record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
+                                    then $expanded-record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
                                     else 
                                         if (exists($match-ids)) 
                                         then distinct-values((for $m in $match-ids-without-offsets return rf:lookup-id($m,$resource-pid,$project-id)))
                                         else util:log-app("ERROR", $config:app-name, "fcs:format-record-data $match-ids is empty")
-    let $rfs :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
-                    then $record-data-input 
+    let $rfs :=      if ($expanded-record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
+                    then $expanded-record-data-input 
                     else
                         (: for some indexes we might only want to return a certain number of 
                            resource fragments, e.g. fcs.toc only the first one - this is defined in the
@@ -1149,7 +1158,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                         else 
                             for $rpid in $resourcefragment-pids 
                             return rf:get($rpid,$resource-pid, $project-id),
-         $log := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1,240), '; ')),
+         $log := util:log-app("TRACE",$config:app-name,"fcs:format-record-data rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1,240), '; ')),
          $match-ids-page-splitted := fcs:recalculate-offset-for-match-ids-on-page-split($match-ids, $rfs)
                     
     (: iterate over all resourcefragments:)
@@ -1174,14 +1183,14 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     let $dumy4 := util:log-app("INFO",$config:app-name,"$resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
 
     let $parent-elem := 'p' (: TODO: read from configuration cql.serverChoice  :) 
-    let $record-data-toprocess := <rec> { if (not($record-data-input/local-name() = $parent-elem)) then $rf else $orig-sequence-record-data } </rec>,
+    let $record-data-toprocess := <rec> { if (not($expanded-record-data-input/local-name() = $parent-elem)) then $rf else $orig-sequence-record-data } </rec>,
         $log :=  util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-toprocess := "||substring(serialize($record-data-toprocess),1,240))
-         let $log := util:log-app("TRACE", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*)||" record-data-input/name():"||local-name($record-data-input))
+         let $log := util:log-app("TRACE", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*)||" $expanded-record-data-input/local-name():"||local-name($expanded-record-data-input))
          let $log := util:log-app("TRACE", $config:app-name, "$matches-to-highlight: "||string-join($matches-to-highlight,';'))
          
                                                 
         let $record-data-highlighted := 
-        (: not sure if to work with $record-data-input or $rf :)
+        (: not sure if to work with $expanded-record-data-input or $rf :)
             if (exists($matches-to-highlight) and (request:get-parameter("x-highlight","") != 'off'))
                                 then
                                     if ($config instance of map())
@@ -1191,7 +1200,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                         else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight, $resourcefragment-pid)
                                      else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight, $resourcefragment-pid)
                                 else $record-data-toprocess,
-            $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-highlighted: "||substring(serialize($record-data-highlighted),1,24000))
+            $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-highlighted: "||substring(serialize($record-data-highlighted),1,240))
     (: to repeat current $x-format param-value in the constructed requested :)
     	let $x-format := request:get-parameter("x-format", $repo-utils:responseFormatXml)
     	let $resourcefragment-ref :=   if (exists($resourcefragment-pid)) 
@@ -1220,7 +1229,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                 return rf:get($rfp/@ID,$resource-pid,$project-id)/*
         
     (:    let $rf2 := <ref>{($record-data-highlighted)}</ref>:)
-    let $rf2 := fcs:highlight-matches-in-copy($record-data-input, $matches-to-highlight, $resourcefragment-pid)
+    let $rf2 := fcs:highlight-matches-in-copy($expanded-record-data-input, $matches-to-highlight, $resourcefragment-pid)
     (:    ,$rf-window-next:)
     (:   let $debug :=   <fcs:DataView type="debug" count="{count($record-data-highlighted)}">{transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,())}</fcs:DataView>:)
          let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
@@ -1231,7 +1240,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                        (: tentatively kwic-ing from original input - to get the closest match
                         however this fails when matching on attributes, where the exist:match is only added in the highlighting function,
                         thus we need the processed record-data :)
-    (:                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config):)
+    (:                   let $kwic-html := kwic:summarize($expanded-record-data-input, $kwic-config):)
                     (: we create the kwic from the working copy, thus we look up the resourcefragment :)
                      (:let $wc-fragment :=  (for $m in $matches-to-highlight return wc:lookup($m,$resource-pid,$project-id))/ancestor-or-self::*[string-length(.) > $fcs:kwicWidth][1]
                      let $wc-fragment-highlighted := fcs:highlight-matches-in-copy($wc-fragment,$matches-to-highlight) 
@@ -1240,7 +1249,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
      (:(\:DEBUG             :\)  let $kwicInput := ($record-data[1],$orig-sequence-record-data/ancestor-or-self::*[string-length(.) ge $fcs:kwicWidth][1])[1]
                      let $kwicInput-highlighted := $kwicInput
     (\:                 let $kwicInput-highlighted := fcs:highlight-matches-in-copy($kwicInput,$matches-to-highlight):\):)
-                     (:let $log := util:log-app("DEBUG", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs:kwicWidth][1]):)
+                     (:let $log := util:log-app("TRACE", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs:kwicWidth][1]):)
                      let $flattened-record := transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,()),
                          $logfr := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $flattened-record := "||substring(serialize($flattened-record),1,240))
     (:                 let $flattened-record := repo-utils:serialise-as($record-data[1], 'html', $fcs:searchRetrieve, $config):)
@@ -1312,7 +1321,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                             
         let $dv-facs :=     if (contains($data-view,'facs')) 
                             then 
-    (:                            let $facs-uri:=fcs:apply-index ($record-data-input, "facs-uri",$x-context, $config):)
+    (:                            let $facs-uri:=fcs:apply-index ($expanded-record-data-input, "facs-uri",$x-context, $config):)
                                 let $facs-uri := facs:get-url($resourcefragment-pid, $resource-pid, $project-id)
         				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
         				    else ()
@@ -1387,7 +1396,7 @@ declare %private function fcs:remove-offset-from-match-id-if-exists($match-id as
 };
 
 declare %private function fcs:get-offset-from-mactch-id($match-id as xs:string) as xs:integer {
-    replace($match-id,'^[^:]+:(\d+):(\d+).*$','$1') 
+    replace($match-id,'^[^:]+:(\d+):(\d+).*$','$1')
 };
 
 declare %private function fcs:get-match-length-from-mactch-id($match-id as xs:string) as xs:integer {
@@ -1396,8 +1405,8 @@ declare %private function fcs:get-match-length-from-mactch-id($match-id as xs:st
 
 declare %private function fcs:get-complete-match-id-and-offsets-in-ancestors($exist-match as node()) {
 let $log := util:log-app("TRACE",$config:app-name,"fcs:get-complete-match-id-and-offsets-in-ancestors $exist-match := "||substring(serialize($exist-match), 1, 240)),
-    $logForOldMatchLogic :=  util:log-app("TRACE", $config:app-name, "fcs:format-record-data $exist-match := "||substring(serialize($exist-match),1,24000)||
-     " $exist-match/ancestor::* := "||string-join(for $anc in $exist-match/ancestor::* return substring(serialize($anc),1,24000), ' <> ')),
+(:    $logForOldMatchLogic :=  util:log-app("TRACE", $config:app-name, "fcs:format-record-data $exist-match := "||substring(serialize($exist-match),1,240)||
+     " $exist-match/ancestor::* := "||string-join(for $anc in $exist-match/ancestor::* return substring(serialize($anc),1,240), ' <> ')),:)
     $ret := (data($exist-match/ancestor::*[@cr:id][1]/@cr:id),
        for $anc in $exist-match/ancestor::*[@cr:id and exist:match] return fcs:recalculate-length-of-exist-match-if-cut-by-tag($anc, $exist-match)
        ),
@@ -1408,7 +1417,7 @@ return $ret
 (: Hack that works around exist:match highlighter not considering (empty) inline elements and stoping the match completely before that. :) 
 declare %private function fcs:recalculate-length-of-exist-match-if-cut-by-tag($parent as node(), $exist-match as node()) {
 let $exist-match-follwing-context := ($exist-match/following-sibling::*|$exist-match/following-sibling::text()),
-    $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag $parent := "||substring(serialize($parent), 1, 240)||
+    $log := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag $parent := "||substring(serialize($parent), 1, 240)||
                                                   " $exist-match := "||substring(serialize($exist-match), 1, 240)||
                                                   " $exist-match-follwing-context[1] instance of text() "||$exist-match-follwing-context[1] instance of text()||
                                                   " $exist-match-follwing-context[2] "||substring(serialize($exist-match-follwing-context[2]),1,240)),
@@ -1418,7 +1427,7 @@ let $exist-match-follwing-context := ($exist-match/following-sibling::*|$exist-m
           if (exists($exist-match-follwing-context[1]) and not($exist-match-follwing-context[1] instance of text())) then
           functx:substring-before-match($exist-match-follwing-context[2], '[ .,;:?!]') else ())
        return data($parent/@cr:id)||":"||$substrPos||":"||(string-length($exist-match) + $additional-length),
-    $logRet := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||string-join($ret, '; '))
+    $logRet := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||string-join($ret, '; '))
 return $ret
 };
 
@@ -1426,7 +1435,7 @@ declare %private function fcs:get-string-for-offset-length-search($elt as node()
 let $log := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search $elt := "||string-join(for $n in $elt return substring(serialize($n), 1, 240), ' <> ')),
     (: needs to be kept in sync with highlight-matches.xsl: match="*[@cr:id = $all-ids]"! :)
     $ret := string-join((for $n in $elt/(*|text()) return if ($n[@orig]) then concat(' ', data($n/@orig)) else data($n)), ''),
-    $logRet := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search return "||$ret)
+    $logRet := util:log-app("DEBUG",$config:app-name,"fcs:get-string-for-offset-length-search return "||$ret)
 return $ret
 };
 
