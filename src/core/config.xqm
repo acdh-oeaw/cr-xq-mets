@@ -172,7 +172,10 @@ declare variable $config:RESOURCEFRAGMENT_PID_NAME:="resourcefragment-pid";
 declare variable $config:RESOURCEFRAGMENT_LABEL_NAME:="rf-label";
 
 declare variable $config:INDEX_RESOURCEFRAGMENT_DELIMITER:="rf";
+declare variable $config:INDEX_INTERNAL_PREFIX:="fcs.";
 declare variable $config:INDEX_INTERNAL_RESOURCEFRAGMENT:="fcs.rf";
+declare variable $config:INDEX_INTERNAL_RESOURCE:="fcs.resource";
+declare variable $config:INDEX_INTERNAL_TOC:="fcs.toc";
 
 (:~
  : Prefixes to prepend to the filename of a resource, when storing working copies, 
@@ -626,9 +629,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                 let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
                                                     $users:=        $ace[@target='USER']/@who,
                                                     $groups:=       $ace[@target='GROUP']/@who,
-                                                    $logAce :=      util:log-app("DEBUG",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
+                                                    $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
                                                     $id :=          sm:id(),
-                                                    $logId :=       util:log-app("DEBUG",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 800)),
+                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 800)),
                                                     $group-members:=
                                                        for $g in $groups
                                                                     return
@@ -637,14 +640,14 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                                                  sm:get-group-members($g)
                                                                             else ()
                                                                           } catch * {
-                                                                               let $log := util:log-app("DEBUG",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
+                                                                               let $log := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
                                                                                    $ret := if ($g = $id//sm:group) then $id//sm:username else (),
-                                                                                   $logRet := util:log-app("DEBUG",$config:app-name,"config:param-value users $group-members exception return "||$ret)
+                                                                                   $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception return "||$ret)
                                                                                return $ret
                                                                           },
                                                     $allowed-users:=    ($group-members,$users),
                                                     $ret := string-join($allowed-users,','),
-                                                    $logRet := util:log-app("DEBUG",$config:app-name,"config:param-value users return "||$ret)
+                                                    $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users return "||$ret)
                                                 return $ret
             
             case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))/cmd:CMD

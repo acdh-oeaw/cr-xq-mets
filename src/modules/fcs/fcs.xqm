@@ -172,7 +172,7 @@ declare function fcs:main($config) as item()* {
         if ($query eq "") then <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("param-missing", "query")}</sru:searchRetrieveResponse>
         else 
-      	 let 
+      	 let $log := util:log-app("TRACE", $config:app-name, "fcs:main -> searchRetrieve"),
 (:      	 $cql-query := $query,:)
 			$start-record:= request:get-parameter("startRecord", 1),
 			$maximum-records  := request:get-parameter("maximumRecords", $fcs:defaultMaxRecords),
@@ -188,6 +188,8 @@ declare function fcs:main($config) as item()* {
                 else if (not(number($start-record)=number($start-record)) or number($start-record) <= 0 ) then
                         <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("unsupported-param-value", "startRecord")}</sru:searchRetrieveResponse>
+                else if (contains($query, $config:INDEX_INTERNAL_RESOURCE)) then
+                       project:list-resources-resolved(config:param-value($config,$config:PROJECT_PID_NAME))
                 else
             fcs:search-retrieve($query, $x-context, xs:integer($start-record), xs:integer($maximum-records), $x-dataview, $config)
     else 
@@ -377,15 +379,15 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
                     cmdcheck:scan-profiles($x-context, $config)
                     
                 else 
-                if (starts-with($index-name, 'fcs.')) then
+                if (starts-with($index-name, $config:INDEX_INTERNAL_PREFIX)) then
                     let $log := util:log-app("TRACE", $config:app-name, "fcs:scan: fcs.* handling"),
                         $metsdivs := 
                            switch ($index-name)
                                 (: resources only :)
-                                case 'fcs.resource' return fcs:get-resource-mets($x-context, $config)
-                                case 'fcs.rf' return if ($project-id eq $x-context) then project:list-resources($x-context)
+                                case $config:INDEX_INTERNAL_RESOURCE return fcs:get-resource-mets($x-context, $config)
+                                case $config:INDEX_INTERNAL_RESOURCEFRAGMENT return if ($project-id eq $x-context) then project:list-resources($x-context)
                                                         else resource:get($x-context,$project-id)
-                                case 'fcs.toc' return if ($project-id eq $x-context) then
+                                case $config:INDEX_INTERNAL_TOC return if ($project-id eq $x-context) then
                                     (: this delivers the whole structure of all resources - it may be too much in one shot 
                                         resource:get-toc($project-id) would deliver only up until chapter level 
                                         alternatively just take fcs.resource to get only resource-listing :)
