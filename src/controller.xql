@@ -426,7 +426,7 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
        then
 (:            let $user := request:get-attribute($domain||".user"):)
             let $path := config:resolve-template-to-uri(map{"config" := config:project-config($project)}, if (local:exist-resource-index($project)='index.html') then local:exist-resource-index($project)
-                                                                                                          else local:get-rel-path($project)),
+                                                                                                          else local:get-rel-path($project), false()),
                 $logPath := util:log-app("TRACE",$config:app-name,'return-requested-html-view forward $path := '||$path||' '||$exist:path)
 (:              <add-parameter name="user" value="{$user}"/>:)
             return  
@@ -462,8 +462,9 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
  : with a "/facs" url-step, and are resolved by the facswiewer module. 
 ~:)
  declare function local:return-requested-web-resource($project as xs:string) {
-        let $project-config-map := map{"config" := config:project-config($project)},
-            $log := util:log-app("TRACE",$config:app-name,"controller return-requested-web-resource")
+(:Note: logging here is extremly costly. :)
+        let $project-config-map := map{"config" := config:project-config($project)}(:,
+            $log := util:log-app("TRACE",$config:app-name,"controller return-requested-web-resource"):)
             (: If the request is made from a module (with separate path-step (currently only /get) :)
         let $corr-rel-path := 
             if (starts-with(local:get-rel-path($project), "/get")) 
@@ -479,8 +480,8 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
                        )
             else local:get-rel-path($project)
             
-        let $log := util:log-app("TRACE", $config:app-name, "$corr-rel-path = "||$corr-rel-path)
-        let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path)
+(:        let $log := util:log-app("TRACE", $config:app-name, "$corr-rel-path = "||$corr-rel-path):)
+        let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path, false())
         let $facs-requested:=starts-with($path,'/facs')
         return
             if ($facs-requested)
@@ -560,7 +561,7 @@ declare function local:exist-resource-index($project) as xs:string {
 declare function local:user-may($project as xs:string) as xs:boolean {
     let $project-config-map := map{"config" := config:project-config($project)},
         $full-config-map := map{"config" := config:config($project)},
-        $log := util:log-app("TRACE",$config:app-name,"controller user-may $project := "||$project||" $full-config-map('config') := "||substring(serialize($full-config-map("config")), 1, 24000))
+        $log := util:log-app("TRACE",$config:app-name,"controller user-may $project := "||$project||" $full-config-map('config') := "||substring(serialize($full-config-map("config")), 1, 240))
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
         else if (config:param-value($project-config-map,'visibility')!='protected') then true()

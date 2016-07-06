@@ -383,12 +383,16 @@ declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:strin
  : </ol> 
 ~:)
 declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string) as xs:anyURI {
+    config:resolve-template-to-uri($model, $relPath, true())
+};
+
+declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string, $look-in-project-data-dir as xs:boolean) as xs:anyURI {
     let $project-template-dir := config:param-value($model, 'project-template-dir'),
         $project-template-baseuri:= config:param-value($model, 'project-template-baseuri'),
         $project-static-dir := config:param-value($model, 'project-static-dir'),
         $project-static-baseuri:= config:param-value($model, 'project-static-baseuri'),
-        $project-data-dir := config:param-value($model, 'project-data-dir'),
-        $project-data-baseuri:= config:param-value($model, 'project-data-baseuri'),
+        $project-data-dir := if ($look-in-project-data-dir) then config:param-value($model, 'project-data-dir') else (),
+        $project-data-baseuri:= if ($look-in-project-data-dir) then config:param-value($model, 'project-data-baseuri') else (),
         $template-dir := config:param-value($model, 'template-dir'),
         $template-baseuri := config:param-value($model, 'template-baseuri')
     let $dirs:=(    $project-template-dir||$relPath,
@@ -631,7 +635,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                     $groups:=       $ace[@target='GROUP']/@who,
                                                     $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
                                                     $id :=          sm:id(),
-                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 800)),
+                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
                                                     $group-members:=
                                                        for $g in $groups
                                                                     return
@@ -766,19 +770,24 @@ declare function config:config-map($project as xs:string) as item()* {
  : @return config element with relevant parameters.
  :)
 declare function config:project-config($project as xs:string) as element()* {
-    if ($project instance of element(mets:mets)) then $project
+(:Note: logging here is extremly costly. :)
+let (:$log := util:log-app("TRACE", $config:app-name, 'config:project-config $project := '||$project),:)
+    $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project],    
+    $try1 := if (count($project_) gt 1) then 
+               let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+                   return $project_[1]
+            else $project_,
+    $ret := if (exists($try1)) then $try1
     else
-        if ($project instance of map()) then $project("config")[self::mets:mets]
-        else
-        (: also try to get it out of the mixed config-sequence: :)
-           if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
-           else 
-               let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
-               return
-               if (count($project_) gt 1) then 
+      let $resourceProjectMap := repo-utils:context-to-resource-pid($project),
+      $objid := ($project, if (exists($resourceProjectMap)) then $resourceProjectMap("project-pid") else ()),      
+      $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $objid]
+      return if (count($project_) gt 1) then 
                    let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
                    return $project_[1]
                else $project_
+    (:$logRet := util:log-app("TRACE", $config:app-name, 'config:project-config return '||substring(serialize($ret), 1, 100)):)
+return $ret
 };
 
 
@@ -794,7 +803,8 @@ declare function config:project-config($project as xs:string) as element()* {
  : @result: one or more <map> elements 
  ~:)
 declare function config:mappings($config as item()*) as element(map)* {
-    let $log := util:log-app("TRACE", $config:app-name, 'config:mappings $config := '||string-join(for $c in $config return substring(serialize($c),1,80), '... ,&#xa;')),
+(:Note: logging here is extremly costly. :)
+    let (:$log := util:log-app("TRACE", $config:app-name, 'config:mappings $config := '||string-join(for $c in $config return substring(serialize($c),1,40), '... ,&#xa;')),:)
         $ret := for $item in $config return 
         let $mappings := typeswitch ($item)
             case map()          return 
@@ -805,8 +815,8 @@ declare function config:mappings($config as item()*) as element(map)* {
             case text()         return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             case element()      return $item//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             default             return ()              
-         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1],
-        $logRet := util:log-app("TRACE", $config:app-name, 'config:mappings return '||string-join(for $r in $ret return substring(serialize($r),1,80), '... ,&#xa;'))
+         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1]
+        (:$logRet := util:log-app("TRACE", $config:app-name, 'config:mappings return '||string-join(for $r in $ret return substring(serialize($r),1,40), '... ,&#xa;')):)
     return $ret
 };
 
