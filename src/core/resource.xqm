@@ -531,9 +531,7 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
         $project-pid := repo-utils:get-record-pid($project),
         $project := repo-utils:get-record($project)
     let $dmdID :=   $resource/tokenize(@DMDID,'\s+'),
-      (: workaround via attribute, as the id()-function did not work - ?
-        $dmdSec :=  doc(project:filepath($project-pid))//id($dmdID) :)
-        $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],        
+        $dmdSecs :=  $project//*[@ID = $dmdID],      
         $dmdSec :=  if (exists($type) and $type!='') 
                     then $dmdSecs[*/@MDTYPE = $type and */@MDTYPE != 'OTHER' or */@MDTYPE='OTHER' and */@OTHERMDTYPE = $type] 
                     else ($dmdSecs[@STATUS='default'],$dmdSecs[1])[1]
