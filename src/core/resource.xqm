@@ -564,7 +564,7 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
                         else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
                 
                 default return util:log-app("INFO",$config:app-name,"Invalid content in Metadata Section for resource "||$resource-pid||".")
-        else util:log-app("INFO",$config:app-name,"No Metadata is registered for resource "||$resource-pid||".")
+        else util:log-app("TRACE",$config:app-name,"No Metadata is registered for resource "||$resource-pid||".")
 };
 
 (:~ create an empty record for a resource
