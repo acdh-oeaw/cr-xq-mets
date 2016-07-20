@@ -34,7 +34,7 @@ import module namespace rf="http://aac.ac.at/content_repository/resourcefragment
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at  "repo-utils.xqm";
 import module namespace f="http://aac.ac.at/content_repository/file" at "file.xqm";
-
+import module namespace functx = "http://www.functx.com";
 
 declare namespace xhtml= "http://www.w3.org/1999/xhtml";
 
@@ -92,7 +92,9 @@ declare
     %templates:default("x-format", "html")
 function app:info ($node as node(), $model as map(*), $key, $x-format) {
 
-    let $val := config:param-value($model, $key)
+    let $val := config:param-value($model, $key),
+        $log := (util:log-app("DEBUG",$config:app-name,"app:info $key = "||$key),
+                 util:log-app("TRACE",$config:app-name,"app:info $val = "||substring(serialize($val),1,240)))
     
     let $ret := 
         if (contains($x-format,'html')) then
@@ -117,9 +119,9 @@ function app:list-resources($node as node(), $model as map(*), $x-format as xs:s
 (:    let $structMap := project:list-resources($model("config")):)
     (: project/resource:* couldn't correctly handle the config sequence chaos as is in $model("config") 
     so rather give them just the project-pid :) 
-    let $project-pid := config:param-value($model("config"),$config:PROJECT_PID_NAME)    
-    let $ress := project:list-resources-resolved($project-pid)
-    let $log := util:log-app("DEBUG",$config:app-name,"app:list-resources-END")
+    let $project-pid := config:param-value($model("config"),$config:PROJECT_PID_NAME),    
+        $ress := project:list-resources-resolved($project-pid)
+(:        , $log := util:log-app("DEBUG",$config:app-name,"app:list-resources: $project-pid = "||$project-pid||" $ress = "||$ress):)
     (:for $res in $ress
         let $dmd := resource:dmd($res, $model("config") ):)            
         return repo-utils:serialise-as($ress, $x-format, 'resource-list', $model("config"), <parameters><param name="maximumTerms" value="{$maximumTerms}"/></parameters>)
@@ -227,4 +229,24 @@ function app:include-detail($node as node(), $model as map(*), $path-detail as x
            return util:eval(concat("$content//", $filter)) else $content 
     return if ($x-format='') then templates:process($restricted-content , $model)
              else repo-utils:serialise-as($content, $x-format, $res-type, $model("config"))
+};
+declare
+%templates:wrap
+%templates:default("lang", "en")
+function app:language-switch($node as node(), $model as map(*), $lang as xs:string) as node() {
+    let $log := util:log-app("DEBUG",$config:app-name,"app:language-switch $lang := "||$lang),
+        $langCodeToNames := map {
+            "en" := "English",
+            "de" := "Deutsch"
+        },
+        $lang-ext := if ($lang != 'en') then "-"||$lang else "",
+        $filename-with-code := functx:substring-after-last(request:get-attribute("$exist:path"), '/'),
+        $fileext := functx:substring-after-last($filename-with-code, '.'),
+        $filename-without-code := functx:substring-before-last($filename-with-code, '-'),
+        $filename := if ($filename-without-code != "") then $filename-without-code else functx:substring-before-last($filename-with-code, '.'),
+        $path-after-controller := functx:substring-before-last(request:get-attribute("$exist:path"), '/'),
+        $target := request:get-attribute("$exist:context")||request:get-attribute("$exist:prefix")||request:get-attribute("$exist:controller")||$path-after-controller||"/"||$filename||$lang-ext||"."||$fileext,
+        $ret := <a href="{$target}">{$langCodeToNames($lang)}</a>,
+        $logRet := util:log-app("DEBUG",$config:app-name,"app:language-switch return "||serialize($ret))
+    return $ret    
 };
