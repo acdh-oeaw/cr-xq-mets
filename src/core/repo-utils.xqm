@@ -30,7 +30,7 @@ declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace xi="http://www.w3.org/2001/XInclude";
-
+declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../modules/diagnostics/diagnostics.xqm";
@@ -673,9 +673,10 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="x-context" value="{$x-context}"/>
 	                               <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
 	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
-	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
+	                               {let $base-url-public := config:param-value($config,'base-url-public')
+	                                return if ($base-url-public) then <param name="base_url_public" value="{$base-url-public}"/> else ()}
 	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
-	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
+	                               <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
 	                               <param name="site_logo" value="{config:param-value($config, 'site.logo')}"/>
@@ -698,10 +699,11 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
               			           <param name="x-context" value="{$x-context}"/>
               			           <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
 	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
-	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
+	                               {let $base-url-public := config:param-value($config,'base-url-public')
+	                                return if ($base-url-public) then <param name="base_url_public" value="{$base-url-public}"/> else ()}
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
                                     <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
-                                    <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
+                                    <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>
                                     <param name="dict_file" value="{config:param-value($config, 'dict_file')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site-name')}"/>
