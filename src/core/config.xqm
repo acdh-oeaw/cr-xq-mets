@@ -478,6 +478,9 @@ declare %templates:wrap function config:app-description($node as node(), $model 
  :)
 declare function config:app-info($node as node(), $model as map(*)) {
     <table class="table table-bordered table-striped">{
+        <tr>
+            <th class="h4">Project Configuration</th>
+        </tr>,
         for $key in config:param-keys($model)
         order by $key
         return 
@@ -485,6 +488,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{config:param-value($node, $model,'','',$key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">HTTP Headers</th>
+        </tr>,
         for $key in request:get-header-names()
         order by $key
         return 
@@ -492,6 +498,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{request:get-header($key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">Request Attributes</th>
+        </tr>,
         for $key in request:attribute-names()
         order by $key
         return 
@@ -499,6 +508,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{request:get-attribute($key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">Session Attributes</th>
+        </tr>,
         for $key in session:get-attribute-names()
         order by $key
         return 
@@ -506,6 +518,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{session:get-attribute($key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">Environment Variables</th>
+        </tr>,
         for $key in available-environment-variables()
         order by $key
         return 
