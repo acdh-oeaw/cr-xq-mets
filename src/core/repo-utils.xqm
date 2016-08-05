@@ -716,11 +716,20 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 <param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
 :)
 	       let $res := if (exists($xslDoc)) 
-	                   then transform:transform($item,$xslDoc, $xslParams)
-	                   else 
+	                   then
+	                       let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||base-uri($xslDoc)||" $xslParams := "||serialize($xslParams))
+	                       return
+	                          try {
+	                             transform:transform($item,$xslDoc, $xslParams)
+	                          } catch * {
+	                             let $log := util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as transform:transform failed! $item := "||substring(serialize($item), 1, 500000))
+	                             return diag:diagnostics("general-error", "transform:transform failed! "||$err:code||": "||$err:description||" "||$err:additional)
+	                          }
+	                       else 
 	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
-	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html")
+	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html"),
+	           $logRet := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as return "||substring(serialize($res), 1, 240))
 	       return $res
 	   default return
 	       let $option := util:declare-option("exist:serialize", "method=xml media-type=application/xml")
