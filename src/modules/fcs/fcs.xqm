@@ -875,7 +875,7 @@ declare function fcs:term-to-label-from-xml-id($term as xs:string, $index as xs:
     return $ret
 };
 
-declare %private function fcs:get-referenced-node($node as node()) as node() {
+declare %private function fcs:get-referenced-node($node as node()) as node()? {
     root($node)//*[@xml:id eq replace(data($node/@ref), '^#', '')]
 };
 
@@ -1476,9 +1476,13 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
                else
       for $m in $match-ids
          let $match-id-without-offset := fcs:remove-offset-from-match-id-if-exists($m),
-             $matching-rfs-parts := $rfs//*[@cr:id = $match-id-without-offset],
+             $matching-rfs-parts-first-look := $rfs//*[@cr:id = $match-id-without-offset],
+             $matching-rfs-parts := 
+                if (count($matching-rfs-parts-first-look) > 1 and count(distinct-values($matching-rfs-parts-first-look/@cr:id)) = 1) then 
+                (util:log-app("ERROR",$config:app-name,"fcs:split-offset-match-ids-on-page-split strange set of resource fragments! cr:id repeated "||count($matching-rfs-parts-first-look)||" times: "||$matching-rfs-parts-first-look[1]/@cr:id), $matching-rfs-parts-first-look[1])
+                else $matching-rfs-parts-first-look,
              $match-id-splitted := count($matching-rfs-parts) = 2,
-             $throw-error-on-more := if (count($rfs//*[@cr:id = $match-id-without-offset]) > 2) then error("CR_XQ_M_SPLIT_OVER_MORE_THAN_2_RF", "Not implementerd yet!") else (), 
+             $throw-error-on-more := if (count($matching-rfs-parts/@cr:id) > 2) then error(xs:QName("CR_XQ_M_SPLIT_OVER_MORE_THAN_2_RF"), "Not implementerd yet! Result spans these resourcefragments: "||string-join($matching-rfs-parts/@cr:id, ', ')||" match IDs: "||string-join($match-ids, '; ')) else (), 
              $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
          return
             if (not($match-id-splitted)) then (: add rfpids only to offset+length matches :)
