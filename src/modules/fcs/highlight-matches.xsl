@@ -77,7 +77,7 @@
     <xsl:template match="*[@cr:id = $all-ids]" priority="1">
         <xsl:variable name="elt" as="element()" select="."/>
         <xsl:variable name="cr:id" select="data(@cr:id)"/>
-        <xsl:variable name="id-parsed" select="$ids-parsed[id = $cr:id]"/>
+        <xsl:variable name="id-parsed" select="$ids-parsed[id = $cr:id and (not(exists(length)) or length != string-length($elt))]"/>
         <xsl:variable name="offsets" select="for $o in $id-parsed[(rfpid = '') or (rfpid=$rfpid)]/offset return xs:integer($o) " as="xs:integer*"/>
         <xsl:variable name="lengths" select="for $l in $id-parsed[(rfpid = '') or (rfpid=$rfpid)]/length return xs:integer($l)" as="xs:integer*"/>
         <xsl:copy copy-namespaces="no">
