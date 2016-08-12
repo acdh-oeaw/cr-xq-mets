@@ -1146,20 +1146,20 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
         $initial-rfs := fcs:get-rfs-xml($expanded-record-data-input, $project-id, $resource-pid, $initial-resourcefragment-pids, $match-ids, $config),
         $match-ids-page-splitted := fcs:recalculate-offset-for-match-ids-on-page-split($match-ids, $initial-rfs),
         $splitted-resourcefragment-pids := fcs:get-match-rfpid($match-ids-page-splitted),
-        $log := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $match-ids-page-splitted := "||string-join($match-ids-page-splitted, "; ")||
-                                                                           ", $splitted-resourcefragment-pids := "||string-join($splitted-resourcefragment-pids, "; ")),
+(:        $log := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $match-ids-page-splitted := "||string-join($match-ids-page-splitted, "; ")||
+                                                                           ", $splitted-resourcefragment-pids := "||string-join($splitted-resourcefragment-pids, "; ")),:)
         $resourcefragment-pids := if (exists($splitted-resourcefragment-pids)) then distinct-values($splitted-resourcefragment-pids) else $initial-resourcefragment-pids,
-        $log2 := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $initial-resourcefragment-pids := "||string-join($initial-resourcefragment-pids, '; ')||
-                                                                            " $resourcefragment-pids := "||string-join($resourcefragment-pids, '; ')),
-        $rfs := fcs:get-rfs-xml($expanded-record-data-input, $project-id, $resource-pid, $resourcefragment-pids, $match-ids, $config),
-        $log3 := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $initial-rfs = "||string-join(for $rf in $initial-rfs return substring(serialize($rf),1,240), '; ')||
-                                                                            " $rfs := "||string-join(for $rf in $rfs return substring(serialize($rf),1,240)))
+(:        $log2 := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $initial-resourcefragment-pids := "||string-join($initial-resourcefragment-pids, '; ')||
+                                                                            " $resourcefragment-pids := "||string-join($resourcefragment-pids, '; ')),:)
+        $rfs := fcs:get-rfs-xml($expanded-record-data-input, $project-id, $resource-pid, $resourcefragment-pids, $match-ids, $config)
+(:        , $log3 := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $initial-rfs = "||string-join(for $rf in $initial-rfs return substring(serialize($rf),1,240), '; ')||
+                                                                            " $rfs := "||string-join(for $rf in $rfs return substring(serialize($rf),1,240))):)
     (: iterate over all resourcefragments:)
     return
     for $rf in $rfs
     return
         let $resourcefragment-pid := $rf/@resourcefragment-pid,
-            $log := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $match-ids-page-splitted := "||string-join($match-ids-page-splitted,' ')||
+            $log := util:log-app("TRACE",$config:app-name,"fcs:format-record-data $match-ids-page-splitted := "||string-join($match-ids-page-splitted,' ')||
                                                                                ", $resourcefragment-pid := "||$resourcefragment-pid)                    
         let $rf-entry :=  if (exists($resourcefragment-pid)) then rf:record($resourcefragment-pid,$resource-pid, $project-id)
         else ()
@@ -1173,7 +1173,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
         $highlight-requests-splitted := (tokenize(request:get-parameter("x-highlight",""),","),$match-ids-page-splitted),
         $matches-to-highlight := $highlight-requests[fcs:remove-offset-from-match-id-if-exists(.) = $rf//@cr:id],
         $matches-to-highlight-splitted := $highlight-requests-splitted[fcs:remove-offset-from-match-id-if-exists(.) = $rf//@cr:id],
-        $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data $highlight-requests := "||string-join($highlight-requests, '; ')||
+        $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $highlight-requests := "||string-join($highlight-requests, '; ')||
                                                                              ", $highlight-requests-splitted := "||string-join($highlight-requests-splitted, '; '))
     
     let $dumy4 := util:log-app("TRACE",$config:app-name,"$resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
@@ -1455,7 +1455,9 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
            <param name="cr-ids" value="{string-join($ids,',')}"/>
            <param name="rfpid" value="{$rfpid}"/>
         </parameters>,
-        $log := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy $copy := "||substring(serialize($copy),1,240)||" $stylesheet := "||substring(serialize($stylesheet),1,240)||", $params := "||serialize($params)),
+        $log := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy $copy := "||substring(serialize($copy),1,240)||
+                                                                               "..., $stylesheet := "||substring(serialize($stylesheet),1,240)||
+                                                                               "..., $params := "||serialize($params)),
         $ret := 
             if (exists($stylesheet)) 
             then 
@@ -1468,7 +1470,8 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
 
 declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids as xs:string*, $rfs as node()*) as xs:string* {
    let $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
-       $ret := if (count($match-ids) = 0) then $match-ids
+       $ret := distinct-values(
+               if (count($match-ids) = 0) then $match-ids
                else
       for $m in $match-ids
          let $match-id-without-offset := fcs:remove-offset-from-match-id-if-exists($m),
@@ -1494,15 +1497,18 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
                       fcs:remove-offset-from-match-id-if-exists($m)||":"||$new-offset||
                       ":"||fcs:get-match-length-from-mactch-id($m)||":"||$rfpids[$i],
                 $log2 := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
-            return $new-matches    
+            return $new-matches
+        )
    let $logRet := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split return "||string-join($ret, '; '))
    return $ret
 };
 
 declare function fcs:calculate-offsets($text-lengths as xs:integer*) as xs:integer* {
-    if (empty($text-lengths)) then ()
+    let $ret := if (empty($text-lengths)) then ()
     else (fcs:calculate-offsets(subsequence($text-lengths, 1, count($text-lengths) -1)),
-    sum(subsequence($text-lengths, 1, count($text-lengths) - 1)) - count(subsequence($text-lengths, 1, count($text-lengths) -1)))
+    sum(subsequence($text-lengths, 1, count($text-lengths) - 1)))
+(:    , $logRet := util:log-app("DEBUG",$config:app-name,"fcs:calculate-offsets return ("||string-join($ret, ', ')||")"):)
+    return $ret
 };
 
 declare function fcs:filter-kwic($node as node(), $mode as xs:string) as xs:string? {
