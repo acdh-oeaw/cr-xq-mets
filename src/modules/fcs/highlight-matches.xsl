@@ -61,13 +61,45 @@
         </xsl:for-each>
     </xsl:variable>
     <xsl:variable name="all-ids" select="$ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text()" as="text()*"/>
+    <xsl:variable name="highlighted-nodes" select="$ids-parsed[not(exists(offset))]/id"/>
+    <xsl:variable name="parent-highlighted-text-nodes" select="for $t in //*[parent::*/@cr:id = $ids-parsed/id]/text() return generate-id($t)"/>
     
-    <xsl:template match="node() | @*" mode="#all">
+    <xsl:template match="node() | @*">
         <xsl:if test="not(empty($all-ids))">
             <xsl:copy copy-namespaces="no">
-                <xsl:apply-templates select="node() | @*" mode="#current"/>                
+                <xsl:apply-templates select="node() | @*"/>                
             </xsl:copy>
         </xsl:if>
+    </xsl:template>
+
+    <xsl:template match="node() | @*" mode="injectMatches">
+        <xsl:if test="not(empty($all-ids))">
+            <xsl:choose>
+                <xsl:when test="@cr:id = $all-ids">
+                    <xsl:copy copy-namespaces="no">
+                        <xsl:apply-templates select="node() | @*" mode="injectMatches"/>                
+                    </xsl:copy>                    
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:copy copy-namespaces="no">
+                        <xsl:apply-templates select="node() | @*" mode="#default"/>                
+                    </xsl:copy>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:if>
+    </xsl:template>
+
+    <xd:doc>
+        <xd:desc>If we have exsit:match in the input we remove it. We redo exist:match using our own rules.</xd:desc>
+    </xd:doc>
+    <xsl:template match="exist:match" mode="#all">
+        <xsl:value-of select="."/>
+    </xsl:template>
+    
+    <xsl:template match="*[@cr:id = $highlighted-nodes]" priority="10" mode="injectMatches">
+        <exist:match>
+            <xsl:copy-of select="."/>
+        </exist:match>
     </xsl:template>
     
     <xsl:variable name="genfuns">
@@ -95,22 +127,20 @@
                             <xsl:variable name="texts-offsets-before-match-end" select="for $e in $highlight-ends return $texts-offsets[some $o2 in . satisfies $o2 &lt; $e][last()]"/>
                             <xsl:variable name="splitted-offsets" select="cr:calculate-splitted($offsets, $lengths, $texts-offsets,  $texts-offsets-before-match, $texts-offsets-before-match-end, $genfuns/*[. = 'offsets'])"/>
                             <xsl:variable name="splitted-lengths" select="cr:calculate-splitted($offsets, $lengths, $texts-offsets, $texts-offsets-before-match, $texts-offsets-before-match-end, $genfuns/*[. = 'lengths'])"/>
-                            <xsl:copy>
-                                <xsl:copy-of select="@*"/>
-                                <xsl:apply-templates select="*|$texts" mode="injectMatches">
-                                    <xsl:with-param name="offsets" select="$splitted-offsets" tunnel="yes"/>
-                                    <xsl:with-param name="lengths" select="$splitted-lengths" tunnel="yes"/>
-                                    <xsl:with-param name="texts" select="$texts" tunnel="yes"/>
-                                    <xsl:with-param name="texts-lengths" select="$texts-lengths" tunnel="yes"/>
-                                    <xsl:with-param name="texts-offsets" select="$texts-offsets" tunnel="yes"/>
-                                    <xsl:with-param name="texts-offsets-before-match" select="$texts-offsets-before-match" tunnel="yes"/>
-                                    <xsl:with-param name="texts-offsets-before-match-end" select="$texts-offsets-before-match-end" tunnel="yes"/>
-                                </xsl:apply-templates>
-                            </xsl:copy>
+                            <xsl:copy-of select="@*"/>
+                            <xsl:apply-templates select="*|$texts" mode="injectMatches">
+                                <xsl:with-param name="offsets" select="$splitted-offsets" tunnel="yes"/>
+                                <xsl:with-param name="lengths" select="$splitted-lengths" tunnel="yes"/>
+                                <xsl:with-param name="texts" select="$texts" tunnel="yes"/>
+                                <xsl:with-param name="texts-lengths" select="$texts-lengths" tunnel="yes"/>
+                                <xsl:with-param name="texts-offsets" select="$texts-offsets" tunnel="yes"/>
+                                <xsl:with-param name="texts-offsets-before-match" select="$texts-offsets-before-match" tunnel="yes"/>
+                                <xsl:with-param name="texts-offsets-before-match-end" select="$texts-offsets-before-match-end" tunnel="yes"/>
+                            </xsl:apply-templates>                            
                         </xsl:when>
                         <xsl:otherwise>
                             <exist:match>
-                                <xsl:apply-templates/>
+                                <xsl:apply-templates mode="#default"/>
                             </exist:match>
                         </xsl:otherwise>
                     </xsl:choose>
@@ -174,6 +204,8 @@
         <xsl:variable name="relative-offsets" select="for $o in $offsets return $o - $texts-offsets[$current-text-sequence-position]"/>
         <xsl:variable name="should-inject" select="$texts-offsets[$current-text-sequence-position] = ($texts-offsets-before-match, $texts-offsets-before-match-end) and count($relative-offsets) ne 0"/>
         <xsl:choose>
+            <!-- Filter all these nodes, they would else be duplicated -->
+            <xsl:when test="generate-id(.) = $parent-highlighted-text-nodes"/>            
             <xsl:when test="$should-inject">
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="listOfOffsets" select="$relative-offsets"/>
@@ -189,7 +221,7 @@
         </xsl:choose>
     </xsl:template>
     
-    <xd:doc xml:space="">
+    <xd:doc xml:space="preserve">
         <xd:desc>Cuts up the text and inserts the exst:match where appropriate
         </xd:desc>
         <xd:param name="previousMatches"><xd:i>Note:</xd:i>This needs to be a XML structure containing text() not a text node.</xd:param>
