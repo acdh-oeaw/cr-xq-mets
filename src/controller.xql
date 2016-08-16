@@ -426,7 +426,7 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
        then
 (:            let $user := request:get-attribute($domain||".user"):)
             let $path := config:resolve-template-to-uri(map{"config" := config:project-config($project)}, if (local:exist-resource-index($project)='index.html') then local:exist-resource-index($project)
-                                                                                                          else local:get-rel-path($project)),
+                                                                                                          else local:get-rel-path($project), false()),
                 $logPath := util:log-app("TRACE",$config:app-name,'return-requested-html-view forward $path := '||$path||' '||$exist:path)
 (:              <add-parameter name="user" value="{$user}"/>:)
             return  
@@ -462,8 +462,9 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
  : with a "/facs" url-step, and are resolved by the facswiewer module. 
 ~:)
  declare function local:return-requested-web-resource($project as xs:string) {
-        let $project-config-map := map{"config" := config:project-config($project)},
-            $log := util:log-app("TRACE",$config:app-name,"controller return-requested-web-resource")
+(:Note: logging here is extremly costly. :)
+        let $project-config-map := map{"config" := config:project-config($project)}(:,
+            $log := util:log-app("TRACE",$config:app-name,"controller return-requested-web-resource"):)
             (: If the request is made from a module (with separate path-step (currently only /get) :)
         let $corr-rel-path := 
             if (starts-with(local:get-rel-path($project), "/get")) 
@@ -479,8 +480,8 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
                        )
             else local:get-rel-path($project)
             
-        let $log := util:log-app("TRACE", $config:app-name, "$corr-rel-path = "||$corr-rel-path)
-        let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path)
+(:        let $log := util:log-app("TRACE", $config:app-name, "$corr-rel-path = "||$corr-rel-path):)
+        let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path, false())
         let $facs-requested:=starts-with($path,'/facs')
         return
             if ($facs-requested)
@@ -560,12 +561,13 @@ declare function local:exist-resource-index($project) as xs:string {
 declare function local:user-may($project as xs:string) as xs:boolean {
     let $project-config-map := map{"config" := config:project-config($project)},
         $full-config-map := map{"config" := config:config($project)},
-        $log := util:log-app("TRACE",$config:app-name,"controller user-may "||$project)
+        $log := util:log-app("TRACE",$config:app-name,"controller user-may $project := "||$project||" $full-config-map('config') := "||substring(serialize($full-config-map("config")), 1, 240))
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
         else if (config:param-value($project-config-map,'visibility')!='protected') then true()
         else
-        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*')
+        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*'),
+            $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
         
         let $project-dir := config:param-value($project-config-map,'project-dir')
         (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
@@ -574,14 +576,17 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         (: login:set-user() must go before checking the user :) 
         let $login:=login:set-user($domain, (), false())
         
-        let $db-user := request:get-attribute($domain||".user")
+        let $db-user := request:get-attribute($domain||".user"),
         (:let $db-current-user := xmldb:get-current-user():)
-        let $shib-user := config:shib-user()
-        let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+            $shib-user := config:shib-user(),
+            $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
                             let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
                             return 'shib'
-                            else $db-user
-        return ($user=$allowed-users)
+                            else $db-user,
+            $log := util:log-app("TRACE",$config:app-name,"controller user-may $db-user := "||$db-user||" $user := "||$user),
+            $ret := ($user=$allowed-users), 
+            $logRest := util:log-app("TRACE",$config:app-name,"controller user-may return "||$ret)               
+        return $ret
 };
 
 (:~

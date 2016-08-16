@@ -172,7 +172,10 @@ declare variable $config:RESOURCEFRAGMENT_PID_NAME:="resourcefragment-pid";
 declare variable $config:RESOURCEFRAGMENT_LABEL_NAME:="rf-label";
 
 declare variable $config:INDEX_RESOURCEFRAGMENT_DELIMITER:="rf";
+declare variable $config:INDEX_INTERNAL_PREFIX:="fcs.";
 declare variable $config:INDEX_INTERNAL_RESOURCEFRAGMENT:="fcs.rf";
+declare variable $config:INDEX_INTERNAL_RESOURCE:="fcs.resource";
+declare variable $config:INDEX_INTERNAL_TOC:="fcs.toc";
 
 (:~
  : Prefixes to prepend to the filename of a resource, when storing working copies, 
@@ -380,12 +383,16 @@ declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:strin
  : </ol> 
 ~:)
 declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string) as xs:anyURI {
+    config:resolve-template-to-uri($model, $relPath, true())
+};
+
+declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string, $look-in-project-data-dir as xs:boolean) as xs:anyURI {
     let $project-template-dir := config:param-value($model, 'project-template-dir'),
         $project-template-baseuri:= config:param-value($model, 'project-template-baseuri'),
         $project-static-dir := config:param-value($model, 'project-static-dir'),
         $project-static-baseuri:= config:param-value($model, 'project-static-baseuri'),
-        $project-data-dir := config:param-value($model, 'project-data-dir'),
-        $project-data-baseuri:= config:param-value($model, 'project-data-baseuri'),
+        $project-data-dir := if ($look-in-project-data-dir) then config:param-value($model, 'project-data-dir') else (),
+        $project-data-baseuri:= if ($look-in-project-data-dir) then config:param-value($model, 'project-data-baseuri') else (),
         $template-dir := config:param-value($model, 'template-dir'),
         $template-baseuri := config:param-value($model, 'template-baseuri')
     let $dirs:=(    $project-template-dir||$relPath,
@@ -623,21 +630,29 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                     then 'protected'
                                                     else 'unprotected'
             case 'users'                    return
-                                                (: sm:get-group-members-function need to be executed as a logged in user :)
-(:                                                let $login:=        xmldb:login($config:app-root,"cr-xq","cr=xq!"):)
                                                 let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
                                                     $users:=        $ace[@target='USER']/@who,
                                                     $groups:=       $ace[@target='GROUP']/@who,
-                                                    $group-members:=()
-                                                    (:for $g in $groups
+                                                    $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
+                                                    $id :=          sm:id(),
+                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
+                                                    $group-members:=
+                                                       for $g in $groups
                                                                     return
-                                                                        system:as-user("cr-xq","cr=xq!",
-                                                                            if (sm:group-exists($g))
-                                                                            then sm:get-group-members($g)
+                                                                          try {
+                                                                              if (sm:group-exists($g)) then
+                                                                                 sm:get-group-members($g)
                                                                             else ()
-                                                                        ):),
-                                                    $allowed-users:=    ($group-members,$users)
-                                                return string-join($allowed-users,',')
+                                                                          } catch * {
+                                                                               let $log := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
+                                                                                   $ret := if ($g = $id//sm:group) then $id//sm:username else (),
+                                                                                   $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception return "||$ret)
+                                                                               return $ret
+                                                                          },
+                                                    $allowed-users:=    ($group-members,$users),
+                                                    $ret := string-join($allowed-users,','),
+                                                    $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users return "||$ret)
+                                                return $ret
             
             case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))/cmd:CMD
             case 'project-title'            return ($mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))//cmd:CollectionInfo/cmd:Title[text()],$mets/@LABEL)[1]
@@ -700,7 +715,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
  : @result returns a path common to all project data files or the empty sequence if there's no common path. 
 ~:)
 declare function config:common-path-from-FLocat($model as map(*), $fileGrpID as xs:string) as xs:string? {
-    let $config:=   $model("config"),
+    let $log := util:log-app("ERROR", $config:app-name, "config:common-path-from-FLocat: This function needs to be refactored! It does not scale with more registered resources!"),
+        $fail-for-debugging := if (false()) then error(xs:QName('config:die-FLocat')) else (),
+        $config:=   $model("config"),
         $data:=     $config//mets:fileGrp[@ID=$fileGrpID]//mets:FLocat/xs:string(@xlink:href)
     
     let $tokenized:=for $d in $data return tokenize($d,'/'),
@@ -755,19 +772,24 @@ declare function config:config-map($project as xs:string) as item()* {
  : @return config element with relevant parameters.
  :)
 declare function config:project-config($project as xs:string) as element()* {
-    if ($project instance of element(mets:mets)) then $project
+(:Note: logging here is extremly costly. :)
+let (:$log := util:log-app("TRACE", $config:app-name, 'config:project-config $project := '||$project),:)
+    $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project],    
+    $try1 := if (count($project_) gt 1) then 
+               let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+                   return $project_[1]
+            else $project_,
+    $ret := if (exists($try1)) then $try1
     else
-        if ($project instance of map()) then $project("config")[self::mets:mets]
-        else
-        (: also try to get it out of the mixed config-sequence: :)
-           if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
-           else 
-               let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
-               return
-               if (count($project_) gt 1) then 
+      let $resourceProjectMap := repo-utils:context-to-resource-pid($project),
+      $objid := ($project, if (exists($resourceProjectMap)) then $resourceProjectMap("project-pid") else ()),      
+      $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $objid]
+      return if (count($project_) gt 1) then 
                    let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
                    return $project_[1]
                else $project_
+    (:$logRet := util:log-app("TRACE", $config:app-name, 'config:project-config return '||substring(serialize($ret), 1, 100)):)
+return $ret
 };
 
 
@@ -783,7 +805,8 @@ declare function config:project-config($project as xs:string) as element()* {
  : @result: one or more <map> elements 
  ~:)
 declare function config:mappings($config as item()*) as element(map)* {
-    let $log := util:log-app("TRACE", $config:app-name, 'config:mappings $config := '||string-join(for $c in $config return substring(serialize($c),1,80), '... ,&#xa;')),
+(:Note: logging here is extremly costly. :)
+    let (:$log := util:log-app("TRACE", $config:app-name, 'config:mappings $config := '||string-join(for $c in $config return substring(serialize($c),1,40), '... ,&#xa;')),:)
         $ret := for $item in $config return 
         let $mappings := typeswitch ($item)
             case map()          return 
@@ -794,8 +817,8 @@ declare function config:mappings($config as item()*) as element(map)* {
             case text()         return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             case element()      return $item//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             default             return ()              
-         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1],
-        $logRet := util:log-app("TRACE", $config:app-name, 'config:mappings return '||string-join(for $r in $ret return substring(serialize($r),1,80), '... ,&#xa;'))
+         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1]
+        (:$logRet := util:log-app("TRACE", $config:app-name, 'config:mappings return '||string-join(for $r in $ret return substring(serialize($r),1,40), '... ,&#xa;')):)
     return $ret
 };
 

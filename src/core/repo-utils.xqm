@@ -261,7 +261,7 @@ declare function repo-utils:parse-x-context($x-context as xs:string, $config) as
             return 
                 if ($type)
                 then
-                    let $log := util:log-app("DEBUG",$config:app-name,"parsing x-context '"||$x-context||"' part #"||$pos||" - id: '"||$c-id||"', "||"type: '"||$type||"', operand: '"||$operand||"'")
+                    let $log := util:log-app("TRACE",$config:app-name,"parsing x-context '"||$x-context||"' part #"||$pos||" - id: '"||$c-id||"', "||"type: '"||$type||"', operand: '"||$operand||"'")
                     return 
                     map:new((
                         map:entry("operand",$operand),
@@ -289,7 +289,7 @@ declare function repo-utils:context-map-to-data($x-context as map()*, $config) a
         for $p at $pos in $x-context  
         let $type := map:get($p,'type'),
             $operand := if ($pos=1) then () else " "||map:get($p,'operand')||" "
-        let $log := util:log-app("DEBUG",$config:app-name,"$type: '"||$type||"' $operand: '"||$operand||"'")
+        let $log := util:log-app("TRACE",$config:app-name,"$type: '"||$type||"' $operand: '"||$operand||"'")
         let $path := 
             switch ($type)
                     case "project" return $operand||"collection('"||project:path($p("project-pid"),"workingcopy")||"')"
@@ -297,7 +297,7 @@ declare function repo-utils:context-map-to-data($x-context as map()*, $config) a
                     case "resourcefragment" return " union doc('"||resource:path($p("resource-pid"),$p("project-pid"),'workingcopy')||"')"
                     default return ()
         return $path
-    let $log := util:log-app("DEBUG",$config:app-name,"constructed data path: "||string-join($path-expressions,''))        
+    let $log := util:log-app("TRACE",$config:app-name,"constructed data path: "||string-join($path-expressions,''))        
     let $data := util:eval(string-join($path-expressions,''))
     return $data 
 };
@@ -845,31 +845,31 @@ declare function repo-utils:get-record-pid($reference-param) as xs:string? {
     for $reference in $reference-param return 
     typeswitch($reference)
         case xs:string return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'.")
             return $reference
         
         case text() return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is text() '"||$reference||"'.")
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'.")
             return $reference
         
         case attribute(OBJID) return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
             return $reference/parent::mets:mets/xs:string(@OBJID)
         
         case attribute(ID) return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is @ID '"||$reference||"'.")
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'.")
             return $reference/parent::mets:div/xs:string(@ID)
         
         case element(mets:mets) return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
                 return $reference/xs:string(@OBJID)
                 
         case element(mets:div) return
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
             return $reference/xs:string(@ID)
             
         case document-node() return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
             return ($reference/mets:mets/xs:string(@OBJID),$reference/mets:div/xs:string(@ID))[1]
         
         default return ()
@@ -887,31 +887,31 @@ declare function repo-utils:get-record($reference-param) as element()? {
         for $reference in $reference-param return  
         typeswitch($reference)
             case xs:string return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'.")
                 return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
                 
             case text() return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is text() '"||$reference||"'.")
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'.")
                 return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
                 
             case attribute(OBJID) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
                 return project:get($reference)
                 
             case attribute(ID) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is @ID '"||$reference||"'.")
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'.")
                 return collection(config:path("projects"))//mets:div[@ID = $reference]
                 
             case element(mets:mets) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
                 return $reference
                 
             case element(mets:div) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
                 return $reference
             
             case document-node() return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
                 return ($reference/mets:mets,$reference/mets:div)[1]
             
             default return ()

@@ -341,7 +341,7 @@ declare
 %templates:default("filter", "")
 function templates:include-detail($node as node(), $model as map(*), $path-detail as xs:string, $filter as xs:string) {
     let $content := config:resolve($model, $path-detail),
-        $log := util:log-app("DEBUG",$config:app-name,"templates:include-detail path-detail := "||$path-detail||', $filter := '||$filter)
+        $log := util:log-app("TRACE",$config:app-name,"templates:include-detail path-detail := "||$path-detail||', $filter := '||$filter)
     let $restricted-content := 
         if ($filter != '' and exists($content)) then 
             (: try to handle namespaces dynamically 
@@ -349,7 +349,7 @@ function templates:include-detail($node as node(), $model as map(*), $path-detai
             let $ns-uri := namespace-uri($content[1]/*),        	       
                 $ns := util:declare-namespace("",xs:anyURI($ns-uri)),
                 $ret := util:eval(concat("$content//", $filter)),
-                $logRet := util:log-app("DEBUG",$config:app-name,"templates:include-detail return restricted-content "||serialize($ret))
+                $logRet := util:log-app("TRACE",$config:app-name,"templates:include-detail return restricted-content "||serialize($ret))
             return $ret
         else $content 
     return templates:process($restricted-content , $model)

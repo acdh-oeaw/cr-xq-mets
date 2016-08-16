@@ -1,12 +1,5 @@
-SADE/cr-xq-mets
-===============
-
-About SADE
-----------
-
-The Scalable Architecture for Digital Editions (SADE) tries to meet the requirement for an easy to use publication system for electronic resources and Digital Editions. It is an attempt to provide a modular concept for publishing scholarly editions in a digital medium, based on open standards. Furthermore it is a distribution of open source software tools for the easy publication of Digital Editions and digitized texts in general out of the box. SADE is a scalable system that can be adapted by different projects which follow the TEI guidelines or other XML based formats.
-
-It is written completely in XQuery (and XSLT).
+cr-xq-mets
+==========
 
 About cr-xq-mets
 ----------------
@@ -26,6 +19,13 @@ Further documentation **_[mostly outdated!]_**:
 * [Configuration](docs/config.md) -  
 * [Templating](docs/templating.md)
 
+About SADE
+----------
+
+The Scalable Architecture for Digital Editions (SADE) tries to meet the requirement for an easy to use publication system for electronic resources and Digital Editions. It is an attempt to provide a modular concept for publishing scholarly editions in a digital medium, based on open standards. Furthermore it is a distribution of open source software tools for the easy publication of Digital Editions and digitized texts in general out of the box. SADE is a scalable system that can be adapted by different projects which follow the TEI guidelines or other XML based formats.
+
+It is written completely in XQuery (and XSLT).
+
 
 Build and install
 ----------------
@@ -38,7 +38,7 @@ Edit `build.properties`
 
   ```
 	app.name=cr-xq-mets
-  app.uri=http://vronk.net/ns/cr-xq-mets
+	app.uri=http://vronk.net/ns/cr-xq-mets
 	projects.dir=cr-projects
 	data.dir=cr-data
   ```
@@ -52,12 +52,25 @@ Edit `build.properties`
 	$projects.dir + core/config.template.xql -> config.xql
   ```
 	
-2. Call `ant` (with default `xar` target). This generates an `.xar` package in the `build` directory 
+2. Call `ant` (with default `xar` target). This generates an `.xar` package in the `build` directory
 
-1. Install the generated package via package manager 
+3. Verify that you have installed the following prerequisites
 
-	Upon installation `setup.xql` is executed which generates the `$projects.dir`
-	and sets up the default project.
+   * [shared-resources (>= 0.4.0)](http://exist-db.org/exist/apps/public-repo/packages/shared.html)
+   * [betterFORM Demo and Reference XForms (>=1.4)](http://exist-db.org/exist/apps/public-repo/packages/bf-XForms.html)
+   * [FunctX library (>=1.0)](http://exist-db.org/exist/apps/public-repo/packages/functx.html)
+   * [JSON Parser and Serializer for XQuery (>=0.2.0)](http://exist-db.org/exist/apps/public-repo/packages/xqjson.html)
+
+4. Install the generated package via package manager 
+
+   Upon installation `setup.xql` is executed which generates the `$projects.dir` and `$data.dir`
+   and sets up a default project.
+   
+_Note_: You can download all the packages into the `autodeploy` directory and clean the `webapp/WEB-INF/data` directory.
+The xars ar then installed automatically for you. We recommend that you add `000` in front of the name of the shared
+resources package and `zzz` to the name of the cr-xq-mets package you build. This will help to install the packages in the
+right order. Please be aware that this install method leaves the admin user with an _empty_ password and of course destroys
+your prvious data. Make sure you have a backup if needed!
 
 Set up a project
 ----------------
@@ -67,8 +80,8 @@ There are basically two ways to set up a new project. Either you configure and e
 admin interface
 ---------------
 1. Browse to apps/cr-xq-mets/admin/createProject.xhtml, enter the name of the project you would like to create, and hit “Create”.
-    1.   Make sure you are logged in eXist and that have the necessary rights to execute the xql-document admin/createProject.xql. You can do this by browsing to www.mysite/path/to/exist/apps/cr-xq-mets/admin/createProject.xql. If you are not logged in, a log-in window should pop up.) 
-    2.   If nothing went wrong, you should see the status message: Created project: NewProject in /db/cr-projects/NewProject (“NewProject” will be of course replaced with the name you entered before.)
+    1.   Make sure you are logged in eXist and that have the necessary rights to create projects (e. g. as `admin`). You can do this by browsing to `http://localhost:8080/exist/apps/cr-xq-mets/admin/createProject.xhtml`. Replace `http://localhost:8080` with your site name (https is recommended)  If you are not logged in project creation will fail. 
+    2.   If nothing went wrong, you should see the follwoung message below `Status`: Created project: {your-project-name} in /db/cr-projects/{your-project-name}
 2. To upload a new resource - probably an TEI/XML document -  follow the link “Upload a resource”) which leads you to, after you confirmed that you really want to leave the page, to /apps/cr-xq-mets/admin/uploadResource.xhtml. 
     1. Enter the name of the project to which your document belongs, upload the file, confirm that you want to upload the file. Now you should see in the Status bar the project name and some strange combination of letters and numbers.
     2. Finally press “Upload”. You should receive the message that your “Resource was successfully saved”, the name of the file and the files media type.
