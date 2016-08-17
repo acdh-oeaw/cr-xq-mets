@@ -61,7 +61,7 @@
         </xsl:for-each>
     </xsl:variable>
     <xsl:variable name="all-ids" select="$ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text()" as="text()*"/>
-    <xsl:variable name="highlighted-nodes" select="$ids-parsed[not(exists(offset))]/id"/>
+    <xsl:variable name="highlighted-nodes" as="xs:string*" select="($ids-parsed[not(exists(offset))]/id, cr:fully-highlighted-nodes($ids-parsed, .))"/>
     <xsl:variable name="parent-highlighted-text-nodes" select="for $t in //*[parent::*/@cr:id = $ids-parsed/id]/text() return generate-id($t)"/>
     
     <xsl:template match="node() | @*">
@@ -246,9 +246,7 @@
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="previousMatches">
                         <xsl:value-of select="substring($previousMatches/text()[1],0,$listOfOffsets[last()])"/>
-                        <exist:match>
-                            <xsl:value-of select="substring($previousMatches/text()[1],$listOfOffsets[last()],$listOflengths[last()])"/>
-                        </exist:match>
+                        <exist:match xml:space="preserve"><xsl:value-of select="substring($previousMatches/text()[1],$listOfOffsets[last()],$listOflengths[last()])"/></exist:match>
                         <xsl:if test="string-length($previousMatches/text()[1]) &gt; ($listOflengths[last()]+$listOfOffsets[last()])">
                             <xsl:value-of select="substring($previousMatches/text()[1],$listOflengths[last()]+$listOfOffsets[last()])"/>
                         </xsl:if>
@@ -302,6 +300,14 @@
                 </xsl:if>              
             </xsl:for-each>   
         </xsl:for-each>   
+    </xsl:function>
+    
+    <xsl:function name="cr:fully-highlighted-nodes" as="xs:string*">
+        <xsl:param name="ids-parsed" as="node()*"/>
+        <xsl:param name="xml-fragment" as="node()"/>
+        <xsl:variable name="relevant-ids" as="node()*" select="$ids-parsed[rfpid = $xml-fragment//fcs:resourceFragment/@resourcefragment-pid and offset = 1]"/>
+        <xsl:variable name="relevant-text-nodes" as="text()*" select="$xml-fragment//*[@cr:id = $relevant-ids/id]/text()"/>
+        <xsl:sequence select="for $t in $relevant-text-nodes return if (string-length($t) = $relevant-ids[id = $t/parent::*/@cr:id]/length) then $t/parent::*/@cr:id else ()"/>
     </xsl:function>
     
 </xsl:stylesheet>
