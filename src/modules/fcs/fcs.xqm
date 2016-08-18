@@ -341,7 +341,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
     (:$sort := if ($p-sort eq $fcs:scanSortParamValues) then $p-sort else ():)
     
     (: fcs:parse-sort-parameter() can either return a string or a map :)
-    $sort := fcs:parse-sort-parameter($p-sort)
+    $sort := if ($p-sort) then fcs:parse-sort-parameter($p-sort) else ()
 	 
 	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
 	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
