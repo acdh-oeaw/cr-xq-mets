@@ -473,7 +473,16 @@ declare function repo-utils:is-in-cache($doc-name as xs:string,$config) as xs:bo
 declare function repo-utils:is-in-cache($doc-name as xs:string,$config, $type as xs:string) as xs:boolean {
     let   $project-pid := config:param-value($config,'project-pid'),
         $cache-path := project:path($project-pid, $type)  
-    return fn:doc-available($cache-path||"/"||$doc-name)
+    return 
+        try {
+            fn:doc-available($cache-path||"/"||$doc-name)
+        }
+        catch * {(
+            false(),
+            util:log-app("ERROR",$config:app-name,"repo-utils:is-in-cache('"||$doc-name||"', $config, '"||$type||"') raised an exception:"),
+            for $m in ($err:code, $err:description, $err:value)
+            return util:log-app("ERROR",$config:app-name, $m)
+        )}
 };
 
 
@@ -622,7 +631,7 @@ declare function repo-utils:gen-cache-id($type-name as xs:string, $keys as xs:st
 (:~ wipes out problematic characters from names
 :)
 declare function repo-utils:sanitize-name($name as xs:string) as xs:string {
-    translate($name, ":/",'_')
+    translate($name, ":/,[]",'_')
 };
 
 declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config) as item()? {
