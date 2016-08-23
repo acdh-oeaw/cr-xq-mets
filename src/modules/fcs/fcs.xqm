@@ -1179,6 +1179,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                         let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input contains no exist:match, falling back to its own @cr:id")
                         return $expanded-record-data-input/data(@cr:id)
                       )
+(:                      , $log := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $match-ids := "||string-join($match-ids, "; ")):)
     (: if the match is a whole resourcefragment we dont need a lookup, its ID is in the attribute :)
     let $match-ids-without-offsets := for $m in $match-ids return fcs:remove-offset-from-match-id-if-exists($m)
     let $initial-resourcefragment-pids :=   if ($expanded-record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
@@ -1268,10 +1269,6 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
         let $rf-window-next := for $rfp in subsequence($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],1,$rf-window) 
                                 return rf:get($rfp/@ID,$resource-pid,$project-id)/*
         
-    (:    let $rf2 := <ref>{($record-data-highlighted)}</ref>:)
-    let $rf2 := fcs:highlight-matches-in-copy($expanded-record-data-input, $matches-to-highlight, $resourcefragment-pid)
-    (:    ,$rf-window-next:)
-    (:   let $debug :=   <fcs:DataView type="debug" count="{count($record-data-highlighted)}">{transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,())}</fcs:DataView>:)
         let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
         
         let $want-kwic := contains($data-view,'kwic'), 
@@ -1458,27 +1455,31 @@ return $ret
 };
 
 (: Hack that works around exist:match highlighter not considering (empty) inline elements and stoping the match completely before that. :) 
-declare %private function fcs:recalculate-length-of-exist-match-if-cut-by-tag($parent as node(), $exist-match as node()) {
+declare %private function fcs:recalculate-length-of-exist-match-if-cut-by-tag($parent as node(), $exist-match as node()) as xs:string {
 let $exist-match-follwing-context := ($exist-match/following-sibling::*|$exist-match/following-sibling::text()),
     $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag $parent := "||substring(serialize($parent), 1, 240)||
                                                   " $exist-match := "||substring(serialize($exist-match), 1, 240)||
                                                   " $exist-match-follwing-context[1] instance of text() "||$exist-match-follwing-context[1] instance of text()||
-                                                  " $exist-match-follwing-context[2] "||substring(serialize($exist-match-follwing-context[2]),1,240)),
+                                                  " $exist-match-follwing-context[2] instance of text() "||$exist-match-follwing-context[2] instance of text()||
+                                                  " $exist-match-follwing-context[first instance of text()] "||substring(serialize(($exist-match-follwing-context[. instance of text()])[1]),1,240)),
     $ret := 
-       for $substrPos in functx:index-of-string(fcs:get-string-for-offset-length-search($parent),$exist-match)
-       let $additional-length := string-length(
+       let $substrPos := fcs:get-string-for-offset-length-search($parent, $exist-match),
+           $additional-length := string-length(
           if (exists($exist-match-follwing-context[1]) and not($exist-match-follwing-context[1] instance of text())) then
-          functx:substring-before-match($exist-match-follwing-context[2], '[ .,;:?!]') else ())
-       return data($parent/@cr:id)||":"||$substrPos||":"||(string-length($exist-match) + $additional-length),
-    $logRet := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||string-join($ret, '; '))
+          functx:substring-before-match(($exist-match-follwing-context[. instance of text()])[1], '[\s.,;:?!]') else ()),
+          $ret := data($parent/@cr:id)||":"||$substrPos||":"||(string-length($exist-match) + $additional-length)
+       return $ret,
+    $logRet := util:log-app("TRACE",$config:app-name,"fcs:recalculate-length-of-exist-match-if-cut-by-tag return "||$ret)
 return $ret
 };
 
-declare %private function fcs:get-string-for-offset-length-search($elt as node()+) as xs:string {
-let $log := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search $elt := "||string-join(for $n in $elt return substring(serialize($n), 1, 240), ' <> ')),
-    (: needs to be kept in sync with highlight-matches.xsl: match="*[@cr:id = $all-ids]"! :)
-    $ret := string-join((for $n in $elt/(*|text()) return if ($n[@orig]) then concat(' ', data($n/@orig)) else data($n)), ''),
-    $logRet := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search return "||substring($ret, 1, 240)||"...")
+declare %private function fcs:get-string-for-offset-length-search($elt as node()+, $exist-match as node()) as xs:integer* {
+let $log := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search $elt := "||string-join($elt//text(), '<>')),
+    $ids := for $t in $elt//text() return generate-id($t),
+    $text-lengths := for $t in $elt//text() return string-length(xs:string($t)),
+    $offsets := fcs:calculate-offsets($text-lengths),
+    $ret := for $id at $x in $ids return if ($id = generate-id($exist-match/text())) then $offsets[$x] + 1 else (),
+    $logRet := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search return "||$ret)
 return $ret
 };
 
@@ -1513,7 +1514,7 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
 }; 
 
 declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids as xs:string*, $rfs as node()*) as xs:string* {
-   let $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
+   let $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
        $ret := distinct-values(
                if (count($match-ids) = 0) then $match-ids
                else
@@ -1521,8 +1522,8 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
          let $match-id-without-offset := fcs:remove-offset-from-match-id-if-exists($m),
              $matching-rfs-parts := $rfs//*[@cr:id = $match-id-without-offset],
              $match-id-splitted := count($matching-rfs-parts) > 1,
-             $warn := if (count($matching-rfs-parts) > 2) then util:log-app('DEBUG',$config:app-name,"fcs:split-offset-match-ids-on-page-split warning: more than 2 matching rfs: "||$match-id-without-offset) else (),
-             $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
+             $warn := if (count($matching-rfs-parts) > 2) then util:log-app('TRACE',$config:app-name,"fcs:split-offset-match-ids-on-page-split warning: more than 2 matching rfs: "||$match-id-without-offset) else (),
+             $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
          return
             if (not($match-id-splitted)) then (: add rfpids only to offset+length matches :)
                if (matches($m, '^[^:]+:(\d+):(\d+).*$')) then $m||':'||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid
@@ -1540,10 +1541,10 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
                               ($new-offset > $offsets[$i] + $text-lengths[$i])) then () else 
                       fcs:remove-offset-from-match-id-if-exists($m)||":"||$new-offset||
                       ":"||fcs:get-match-length-from-mactch-id($m)||":"||$rfpids[$i],
-                $log2 := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
+                $log2 := util:log-app("TRACE",$config:app-name,"recalculate-offset-for-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
             return $new-matches
         )
-   let $logRet := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split return "||string-join($ret, '; '))
+   let $logRet := util:log-app("TRACE",$config:app-name,"recalculate-offset-for-match-ids-on-page-split return "||string-join($ret, '; '))
    return $ret
 };
 
