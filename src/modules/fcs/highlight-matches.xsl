@@ -1,4 +1,4 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:fcs="http://clarin.eu/fcs/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" xmlns:cr="http://aac.ac.at/content_repository" xmlns:tei="http://www.tei-c.org/ns/1.0" version="2.0" exclude-result-prefixes="#all"><!--
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:fcs="http://clarin.eu/fcs/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" xmlns:cr="http://aac.ac.at/content_repository" version="2.0" exclude-result-prefixes="#all"><!--
     The MIT License (MIT)
     
     Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
@@ -55,7 +55,7 @@
             </id-parsed>
         </xsl:for-each>
     </xsl:variable>
-    <xsl:variable name="all-ids" select="$ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text()" as="text()*"/>
+    <xsl:variable name="all-ids" select="distinct-values($ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text())" as="xs:string*"/>
     <xsl:variable name="highlighted-nodes" as="xs:string*" select="($ids-parsed[not(exists(offset))]/id, cr:fully-highlighted-nodes($ids-parsed, .))"/>
     <xsl:variable name="parent-highlighted-text-nodes" select="for $t in //*[parent::*/@cr:id = $ids-parsed/id]/text() return generate-id($t)"/>
     <xsl:template match="node() | @*">
@@ -88,9 +88,7 @@
         <xsl:value-of select="."/>
     </xsl:template>
     <xsl:template match="*[@cr:id = $highlighted-nodes]" priority="10" mode="injectMatches">
-        <exist:match>
-            <xsl:copy-of select="."/>
-        </exist:match>
+        <exist:match xml:space="preserve"><xsl:text xml:space="preserve"> </xsl:text><xsl:copy-of select="."/></exist:match>
     </xsl:template>
     <xsl:variable name="genfuns">
         ({<cr:gen-fun>offsets</cr:gen-fun>},{<cr:gen-fun>lengths</cr:gen-fun>})
@@ -218,10 +216,10 @@
         <xsl:param name="texts" as="text()*"/>
         <xsl:param name="previousMatches" as="node()*" select="()"/>
         <xsl:choose>
-            <xsl:when test="count($listOflengths) = 0 or 0 >= $listOfOffsets[last()]">
+            <xsl:when test="count($listOflengths) = 0 or 0 &gt;= $listOfOffsets[last()]">
                 <xsl:sequence select="$previousMatches"/>
             </xsl:when>
-            <xsl:when test="$listOfOffsets[last()] > string-length($previousMatches)">
+            <xsl:when test="$listOfOffsets[last()] &gt; string-length($previousMatches)">
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="previousMatches" select="$previousMatches"/>
                     <xsl:with-param name="listOflengths" select="subsequence($listOflengths, 1, count($listOflengths) - 1)"/>
@@ -272,13 +270,13 @@
                 <xsl:variable name="text-offset" select="."/>
                 <xsl:variable name="text-length" select="$texts-offsets[$text-index + 1] - $texts-offsets[$text-index]"/>
                 <xsl:variable name="rel-offset" select="$offset - $text-offset"/>
-                <xsl:if test="($offset >= $text-offset or $offset + $length >= $text-offset) and ($text-offset + $text-length > $offset or $text-offset + $text-length > $offset + $length)">
+                <xsl:if test="($offset &gt;= $text-offset or $offset + $length &gt;= $text-offset) and ($text-offset + $text-length &gt; $offset or $text-offset + $text-length &gt; $offset + $length)">
                     <xsl:choose>
                         <xsl:when test="$gen-fun[.='offsets']">
-                            <xsl:sequence select="if ($offset >= $text-offset) then $offset else ($text-offset + 1)"></xsl:sequence>
+                            <xsl:sequence select="if ($offset &gt;= $text-offset) then $offset else ($text-offset + 1)"/>
                         </xsl:when>
                         <xsl:when test="$gen-fun[.='lengths']">
-                            <xsl:sequence select="if ($offset >= $text-offset) then $length else $length + $rel-offset"></xsl:sequence>
+                            <xsl:sequence select="if ($offset &gt;= $text-offset) then $length else $length + $rel-offset"/>
                         </xsl:when>
                     </xsl:choose>
                 </xsl:if>
