@@ -1,6 +1,4 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:fcs="http://clarin.eu/fcs/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" xmlns:cr="http://aac.ac.at/content_repository" xmlns:tei="http://www.tei-c.org/ns/1.0" version="2.0" exclude-result-prefixes="#all">
-    
-    <!--
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:fcs="http://clarin.eu/fcs/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" xmlns:cr="http://aac.ac.at/content_repository" xmlns:tei="http://www.tei-c.org/ns/1.0" version="2.0" exclude-result-prefixes="#all"><!--
     The MIT License (MIT)
     
     Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
@@ -23,15 +21,12 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE
     -->
-    
     <xd:doc scope="component">a list of comma seperated ids, either full @cr:id values or @cr:id + offsets of a substring:
-        
     </xd:doc>
     <xsl:output method="xml" indent="yes"/>
     <xsl:preserve-space elements="*"/>
     <xd:doc>
-        <xd:desc>A list of cr:ids with possibly a start and a length and a resource fragment id
-        <xd:p></xd:p>
+        <xd:desc>A comma separated list of cr:ids with possibly a start and a length and a resource fragment id
         </xd:desc>
     </xd:doc>
     <xsl:param as="xs:string*" name="cr-ids"/>
@@ -48,7 +43,7 @@
                             <xsl:value-of select="regex-group(2)"/>
                         </length>
                         <rfpid>
-                            <xsl:value-of select="regex-group(3)"/> 
+                            <xsl:value-of select="regex-group(3)"/>
                         </rfpid>
                     </xsl:matching-substring>
                     <xsl:non-matching-substring>
@@ -63,49 +58,43 @@
     <xsl:variable name="all-ids" select="$ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text()" as="text()*"/>
     <xsl:variable name="highlighted-nodes" as="xs:string*" select="($ids-parsed[not(exists(offset))]/id, cr:fully-highlighted-nodes($ids-parsed, .))"/>
     <xsl:variable name="parent-highlighted-text-nodes" select="for $t in //*[parent::*/@cr:id = $ids-parsed/id]/text() return generate-id($t)"/>
-    
     <xsl:template match="node() | @*">
         <xsl:if test="not(empty($all-ids))">
             <xsl:copy copy-namespaces="no">
-                <xsl:apply-templates select="node() | @*"/>                
+                <xsl:apply-templates select="node() | @*"/>
             </xsl:copy>
         </xsl:if>
     </xsl:template>
-
     <xsl:template match="node() | @*" mode="injectMatches">
         <xsl:if test="not(empty($all-ids))">
             <xsl:choose>
                 <xsl:when test="@cr:id = $all-ids">
                     <xsl:copy copy-namespaces="no">
-                        <xsl:apply-templates select="node() | @*" mode="injectMatches"/>                
-                    </xsl:copy>                    
+                        <xsl:apply-templates select="node() | @*" mode="injectMatches"/>
+                    </xsl:copy>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:copy copy-namespaces="no">
-                        <xsl:apply-templates select="node() | @*" mode="#default"/>                
+                        <xsl:apply-templates select="node() | @*" mode="#default"/>
                     </xsl:copy>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:if>
     </xsl:template>
-
     <xd:doc>
         <xd:desc>If we have exsit:match in the input we remove it. We redo exist:match using our own rules.</xd:desc>
     </xd:doc>
     <xsl:template match="exist:match" mode="#all">
         <xsl:value-of select="."/>
     </xsl:template>
-    
     <xsl:template match="*[@cr:id = $highlighted-nodes]" priority="10" mode="injectMatches">
         <exist:match>
             <xsl:copy-of select="."/>
         </exist:match>
     </xsl:template>
-    
     <xsl:variable name="genfuns">
         ({<cr:gen-fun>offsets</cr:gen-fun>},{<cr:gen-fun>lengths</cr:gen-fun>})
     </xsl:variable>
-    
     <xsl:template match="*[@cr:id = $all-ids]" priority="1">
         <xsl:variable name="elt" as="element()" select="."/>
         <xsl:variable name="cr:id" select="data(@cr:id)"/>
@@ -114,8 +103,8 @@
         <xsl:variable name="lengths" select="for $l in $id-parsed[(rfpid = '') or (rfpid=$rfpid)]/length return xs:integer($l)" as="xs:integer*"/>
         <xsl:copy copy-namespaces="no">
             <xsl:copy-of select="@*"/>
-            <xsl:choose>
-                <!-- we want to be sure that we do not highlight whole resourcefragments -->
+            <xsl:choose><!--
+                 we want to be sure that we do not highlight whole resourcefragments -->
                 <xsl:when test="exists(parent::element())">
                     <xsl:choose>
                         <xsl:when test="exists($offsets) and exists($lengths)">
@@ -136,7 +125,7 @@
                                 <xsl:with-param name="texts-offsets" select="$texts-offsets" tunnel="yes"/>
                                 <xsl:with-param name="texts-offsets-before-match" select="$texts-offsets-before-match" tunnel="yes"/>
                                 <xsl:with-param name="texts-offsets-before-match-end" select="$texts-offsets-before-match-end" tunnel="yes"/>
-                            </xsl:apply-templates>                            
+                            </xsl:apply-templates>
                         </xsl:when>
                         <xsl:otherwise>
                             <exist:match>
@@ -150,8 +139,7 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:copy>
-    </xsl:template> 
-    
+    </xsl:template>
     <xd:doc>
         <xd:desc>In viDicts some lexical information is obvoius only to humans
             reading the text so was replaced by markup and the original text retained in the orig attribute.
@@ -180,12 +168,11 @@
                     </xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:otherwise>                
+            <xsl:otherwise>
                 <xsl:value-of select="data(@orig)"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    
     <xd:doc>
         <xd:desc>If the text() node contains a match us the named template to inject the match
             tags at the position given as the parameter to this script.
@@ -203,9 +190,9 @@
         <xsl:variable name="current-text-sequence-position" select="index-of($texts-ids, generate-id(.))"/>
         <xsl:variable name="relative-offsets" select="for $o in $offsets return $o - $texts-offsets[$current-text-sequence-position]"/>
         <xsl:variable name="should-inject" select="$texts-offsets[$current-text-sequence-position] = ($texts-offsets-before-match, $texts-offsets-before-match-end) and count($relative-offsets) ne 0"/>
-        <xsl:choose>
-            <!-- Filter all these nodes, they would else be duplicated -->
-            <xsl:when test="generate-id(.) = $parent-highlighted-text-nodes"/>            
+        <xsl:choose><!--
+            Filter all these nodes, they would else be duplicated -->
+            <xsl:when test="generate-id(.) = $parent-highlighted-text-nodes"/>
             <xsl:when test="$should-inject">
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="listOfOffsets" select="$relative-offsets"/>
@@ -215,12 +202,11 @@
                     </xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:otherwise>                
+            <xsl:otherwise>
                 <xsl:value-of select="."/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    
     <xd:doc xml:space="preserve">
         <xd:desc>Cuts up the text and inserts the exst:match where appropriate
         </xd:desc>
@@ -240,7 +226,7 @@
                     <xsl:with-param name="previousMatches" select="$previousMatches"/>
                     <xsl:with-param name="listOflengths" select="subsequence($listOflengths, 1, count($listOflengths) - 1)"/>
                     <xsl:with-param name="listOfOffsets" select="subsequence($listOfOffsets, 1, count($listOfOffsets) - 1)"/>
-                </xsl:call-template>                  
+                </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:call-template name="injectMatchTags">
@@ -254,11 +240,10 @@
                     </xsl:with-param>
                     <xsl:with-param name="listOflengths" select="subsequence($listOflengths, 1, count($listOflengths) - 1)"/>
                     <xsl:with-param name="listOfOffsets" select="subsequence($listOfOffsets, 1, count($listOfOffsets) - 1)"/>
-                </xsl:call-template>             
+                </xsl:call-template>
             </xsl:otherwise>
-        </xsl:choose>             
+        </xsl:choose>
     </xsl:template>
-    
     <xsl:function name="cr:calculate-offsets">
         <xsl:param name="text-lengths" as="xs:integer*"/>
         <xsl:sequence select="
@@ -266,12 +251,11 @@
             else (cr:calculate-offsets(subsequence($text-lengths, 1, count($text-lengths) -1)),
             sum(subsequence($text-lengths, 1, count($text-lengths) - 1)))"></xsl:sequence>
     </xsl:function>
-    
     <xsl:function name="cr:calculate-splitted" as="xs:integer*">
         <xsl:param name="offsets" as="xs:integer*"/>
         <xsl:param name="lengths" as="xs:integer*"/>
         <xsl:param name="texts-offsets" as="xs:integer*"/>
-        <xsl:param name="texts-offsets-before-match" as="xs:integer*"/>        
+        <xsl:param name="texts-offsets-before-match" as="xs:integer*"/>
         <xsl:param name="texts-offsets-before-match-end" as="xs:integer*"/>
         <xsl:param name="gen-fun" as="element(cr:gen-fun)"/>
         <xsl:variable name="texts-offsets-with-match-parts" select="distinct-values(
@@ -287,29 +271,27 @@
                 <xsl:variable name="text-index" select="index-of($texts-offsets, .)"/>
                 <xsl:variable name="text-offset" select="."/>
                 <xsl:variable name="text-length" select="$texts-offsets[$text-index + 1] - $texts-offsets[$text-index]"/>
-                <xsl:variable name="rel-offset" select="$offset - $text-offset"/>                
+                <xsl:variable name="rel-offset" select="$offset - $text-offset"/>
                 <xsl:if test="($offset >= $text-offset or $offset + $length >= $text-offset) and ($text-offset + $text-length > $offset or $text-offset + $text-length > $offset + $length)">
                     <xsl:choose>
-                        <xsl:when test="$gen-fun[.='offsets']">                           
-                            <xsl:sequence select="if ($offset >= $text-offset) then $offset else ($text-offset + 1)"></xsl:sequence> 
+                        <xsl:when test="$gen-fun[.='offsets']">
+                            <xsl:sequence select="if ($offset >= $text-offset) then $offset else ($text-offset + 1)"></xsl:sequence>
                         </xsl:when>
                         <xsl:when test="$gen-fun[.='lengths']">
                             <xsl:sequence select="if ($offset >= $text-offset) then $length else $length + $rel-offset"></xsl:sequence>
                         </xsl:when>
                     </xsl:choose>
-                </xsl:if>              
-            </xsl:for-each>   
-        </xsl:for-each>   
+                </xsl:if>
+            </xsl:for-each>
+        </xsl:for-each>
     </xsl:function>
-    
     <xsl:function name="cr:fully-highlighted-nodes" as="xs:string*">
         <xsl:param name="ids-parsed" as="node()*"/>
         <xsl:param name="xml-fragment" as="node()"/>
         <xsl:variable name="relevant-ids" as="node()*" select="$ids-parsed[rfpid = '' or rfpid = $xml-fragment//fcs:resourceFragment/@resourcefragment-pid and offset = 1]"/>
-        <xsl:variable name="relevant-text-nodes" as="text()*" select="$xml-fragment//*[@cr:id = $relevant-ids/id]//text()"/>
-        <!-- lucene ignores space and ,.!? and more -->
+        <xsl:variable name="relevant-text-nodes" as="text()*" select="$xml-fragment//*[@cr:id = $relevant-ids/id]//text()"/><!--
+        lucene ignores space and ,.!? and more -->
         <xsl:variable name="ret" select="for $t in $relevant-text-nodes return if (string-length(replace($t, '[^\w]', '')) = $relevant-ids[id = $t/parent::*/@cr:id]/length) then $t/parent::*/@cr:id else ()"/>
         <xsl:sequence select="$ret"/>
     </xsl:function>
-    
 </xsl:stylesheet>
