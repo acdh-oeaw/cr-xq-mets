@@ -23,7 +23,7 @@
     -->
     <xd:doc scope="component">a list of comma seperated ids, either full @cr:id values or @cr:id + offsets of a substring:
     </xd:doc>
-    <xsl:output method="xml" indent="yes"/>
+    <xsl:output method="xml" indent="no"/>
     <xsl:preserve-space elements="*"/>
     <xd:doc>
         <xd:desc>A comma separated list of cr:ids with possibly a start and a length and a resource fragment id
@@ -141,7 +141,8 @@
     <xd:doc>
         <xd:desc>In viDicts some lexical information is obvoius only to humans
             reading the text so was replaced by markup and the original text retained in the orig attribute.
-            <xd:p><xd:i>Note:</xd:i>This is most probably the wrong place for this type of transformation.</xd:p>
+            <xd:p>
+                <xd:i>Note:</xd:i>This is most probably the wrong place for this type of transformation.</xd:p>
         </xd:desc>
     </xd:doc>
     <xsl:template match="*[@orig]" mode="injectMatches">
@@ -208,7 +209,8 @@
     <xd:doc xml:space="preserve">
         <xd:desc>Cuts up the text and inserts the exst:match where appropriate
         </xd:desc>
-        <xd:param name="previousMatches"><xd:i>Note:</xd:i>This needs to be a XML structure containing text() not a text node.</xd:param>
+        <xd:param name="previousMatches">
+            <xd:i>Note:</xd:i>This needs to be a XML structure containing text() not a text node.</xd:param>
     </xd:doc>
     <xsl:template name="injectMatchTags">
         <xsl:param name="listOfOffsets" as="xs:integer*"/>
@@ -219,7 +221,7 @@
             <xsl:when test="count($listOflengths) = 0 or 0 &gt;= $listOfOffsets[last()]">
                 <xsl:sequence select="$previousMatches"/>
             </xsl:when>
-            <xsl:when test="$listOfOffsets[last()] &gt; string-length($previousMatches)">
+            <xsl:when test="$listOfOffsets[last()] &gt; string-length($previousMatches) or 0 &gt;= $listOflengths[last()]">
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="previousMatches" select="$previousMatches"/>
                     <xsl:with-param name="listOflengths" select="subsequence($listOflengths, 1, count($listOflengths) - 1)"/>
@@ -227,12 +229,16 @@
                 </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
+                <xsl:variable name="before-length" as="xs:integer" select="$listOfOffsets[last()] - 1"/>
+                <xsl:variable name="match-start-offset" as="xs:integer" select="$listOfOffsets[last()]"/>
+                <xsl:variable name="match-length" as="xs:integer" select="$listOflengths[last()]"/>
+                <xsl:variable name="after-start-offset" as="xs:integer" select="$listOflengths[last()]+$listOfOffsets[last()]"/>
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="previousMatches">
-                        <xsl:value-of select="substring($previousMatches/text()[1],0,$listOfOffsets[last()])"/>
-                        <exist:match xml:space="preserve"><xsl:value-of select="substring($previousMatches/text()[1],$listOfOffsets[last()],$listOflengths[last()])"/></exist:match>
-                        <xsl:if test="string-length($previousMatches/text()[1]) &gt; ($listOflengths[last()]+$listOfOffsets[last()])">
-                            <xsl:value-of select="substring($previousMatches/text()[1],$listOflengths[last()]+$listOfOffsets[last()])"/>
+                        <xsl:value-of select="substring($previousMatches/text()[1],1,$before-length)"/>
+                        <exist:match xml:space="preserve"><xsl:value-of select="substring($previousMatches/text()[1],$match-start-offset,$match-length)"/></exist:match>
+                        <xsl:if test="string-length($previousMatches/text()[1]) &gt; $after-start-offset">
+                            <xsl:value-of select="substring($previousMatches/text()[1],$after-start-offset)"/>
                         </xsl:if>
                         <xsl:sequence select="$previousMatches/*|$previousMatches/text() except $previousMatches/text()[1]"/>
                     </xsl:with-param>
