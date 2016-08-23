@@ -305,9 +305,11 @@
     <xsl:function name="cr:fully-highlighted-nodes" as="xs:string*">
         <xsl:param name="ids-parsed" as="node()*"/>
         <xsl:param name="xml-fragment" as="node()"/>
-        <xsl:variable name="relevant-ids" as="node()*" select="$ids-parsed[rfpid = $xml-fragment//fcs:resourceFragment/@resourcefragment-pid and offset = 1]"/>
-        <xsl:variable name="relevant-text-nodes" as="text()*" select="$xml-fragment//*[@cr:id = $relevant-ids/id]/text()"/>
-        <xsl:sequence select="for $t in $relevant-text-nodes return if (string-length($t) = $relevant-ids[id = $t/parent::*/@cr:id]/length) then $t/parent::*/@cr:id else ()"/>
+        <xsl:variable name="relevant-ids" as="node()*" select="$ids-parsed[rfpid = '' or rfpid = $xml-fragment//fcs:resourceFragment/@resourcefragment-pid and offset = 1]"/>
+        <xsl:variable name="relevant-text-nodes" as="text()*" select="$xml-fragment//*[@cr:id = $relevant-ids/id]//text()"/>
+        <!-- lucene ignores space and ,.!? and more -->
+        <xsl:variable name="ret" select="for $t in $relevant-text-nodes return if (string-length(replace($t, '[^\w]', '')) = $relevant-ids[id = $t/parent::*/@cr:id]/length) then $t/parent::*/@cr:id else ()"/>
+        <xsl:sequence select="$ret"/>
     </xsl:function>
     
 </xsl:stylesheet>
