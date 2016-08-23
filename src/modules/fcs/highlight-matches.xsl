@@ -251,9 +251,9 @@
     <xsl:function name="cr:calculate-offsets">
         <xsl:param name="text-lengths" as="xs:integer*"/>
         <xsl:sequence select="
-            if (empty($text-lengths)) then ()
+            if (empty($text-lengths)) then (0)
             else (cr:calculate-offsets(subsequence($text-lengths, 1, count($text-lengths) -1)),
-            sum(subsequence($text-lengths, 1, count($text-lengths) - 1)))"></xsl:sequence>
+            sum(subsequence($text-lengths, 1, count($text-lengths))))"></xsl:sequence>
     </xsl:function>
     <xsl:function name="cr:calculate-splitted" as="xs:integer*">
         <xsl:param name="offsets" as="xs:integer*"/>
