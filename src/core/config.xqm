@@ -635,7 +635,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                     $groups:=       $ace[@target='GROUP']/@who,
                                                     $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
                                                     $id :=          (sm:id()/sm:effective, sm:id())[1],
-                                                    $logId :=       util:log-app("DEBUG",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
+                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
                                                     $group-members:=
                                                        for $g in $groups
                                                                     return
