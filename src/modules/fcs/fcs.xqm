@@ -901,10 +901,14 @@ to prevent repeated lookup of this map, which has serious performance impact
 ~:)
 declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string, $termlabels, $firstOccurence as node()?) as xs:string?{
     let $log := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label $term := '||$term||', $index := '||$index||', $termlabels := '||substring(serialize($termlabels),1,240)),
-        $ret := if ($term and $termlabels) then 
+        $possibleTerms := if ($term and $termlabels) then 
             $termlabels//term[data(@key) eq $term][ancestor::*/data(@key) eq $index]
          else if ($term and $firstOccurence[@ref]) then fcs:term-to-label-from-xml-id($term, $index, $project-pid, $firstOccurence)
          else (),
+        $warn-if-more-than-one-term := if (count($possibleTerms) > 1) then
+           util:log-app('INFO' , $config:app-name, 'fcs:term-to-label more than one possible term: '||string-join($possibleTerms, '; ')||'!')
+           else (),
+        $ret := $possibleTerms[1],
         $logRet := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label return '||$ret)
     return $ret
 };
@@ -1478,7 +1482,7 @@ let $log := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-len
     $ids := for $t in $elt//text() return generate-id($t),
     $text-lengths := for $t in $elt//text() return string-length(xs:string($t)),
     $offsets := fcs:calculate-offsets($text-lengths),
-    $ret := for $id at $x in $ids return if ($id = generate-id($exist-match/text())) then $offsets[$x] + 1 else (),
+    $ret := for $id at $x in $ids return if ($id = generate-id($exist-match/text())) then $offsets[$x] else (),
     $logRet := util:log-app("TRACE",$config:app-name,"fcs:get-string-for-offset-length-search return "||$ret)
 return $ret
 };
@@ -1536,7 +1540,7 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
                 " $text-lengths = "||string-join($text-lengths, '; ')||
                 " $offsets = "||string-join($offsets, '; ')),
                 $new-matches := for $o at $i in $offsets
-                   let $new-offset := fcs:get-offset-from-mactch-id($m) - $offsets[$i]
+                   let $new-offset := fcs:get-offset-from-mactch-id($m) - $offsets[$i] + 1
                    return if (($new-offset < 0) or 
                               ($new-offset > $offsets[$i] + $text-lengths[$i])) then () else 
                       fcs:remove-offset-from-match-id-if-exists($m)||":"||$new-offset||
@@ -1551,7 +1555,7 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
 declare function fcs:calculate-offsets($text-lengths as xs:integer*) as xs:integer* {
     let $ret := if (empty($text-lengths)) then ()
     else (fcs:calculate-offsets(subsequence($text-lengths, 1, count($text-lengths) -1)),
-    sum(subsequence($text-lengths, 1, count($text-lengths) - 1)))
+    sum(subsequence($text-lengths, 1, count($text-lengths) - 1)) + 1)
 (:    , $logRet := util:log-app("DEBUG",$config:app-name,"fcs:calculate-offsets return ("||string-join($ret, ', ')||")"):)
     return $ret
 };
