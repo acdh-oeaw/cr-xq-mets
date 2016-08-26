@@ -399,7 +399,7 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
             (:if (not(request:get-attribute($domain||".user")=$allowed-users)):) 
             if (not($user-may))             
             then
-               let $log:=util:log-app("DEBUG",$config:app-name,'return-requested-html-view protected, user-may not, project-exists '||$project)
+               let $log:=util:log-app("TRACE",$config:app-name,'return-requested-html-view protected, user-may not, project-exists '||$project)
                return
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$exist:controller}/modules/access-control/login.html"/>
@@ -562,7 +562,7 @@ declare function local:user-may($project as xs:string) as xs:boolean {
     let $project-config-map := map{"config" := config:project-config($project)},
         $full-config-map := map{"config" := config:config($project)},
         $log := util:log-app("TRACE",$config:app-name,"controller user-may $project := "||$project||" $full-config-map('config') := "||substring(serialize($full-config-map("config")), 1, 240)),
-        $logId := util:log-app("DEBUG",$config:app-name,"controller user-may sm:id() "||substring(serialize(sm:id()), 1, 240000))
+        $logId := util:log-app("TRACE",$config:app-name,"controller user-may sm:id() "||substring(serialize(sm:id()), 1, 240))
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
         else if (config:param-value($project-config-map,'visibility')!='protected') then true()
@@ -573,10 +573,10 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         
         (: login:set-user() must go before checking the user :) 
         let $login:=login:set-user($domain, (), false()),
-            $logId := util:log-app("DEBUG",$config:app-name,"controller user-may sm:id() "||substring(serialize(sm:id()), 1, 240000))
+            $logId := util:log-app("TRACE",$config:app-name,"controller user-may sm:id() "||substring(serialize(sm:id()), 1, 240000))
         
         let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*'),
-            $log := util:log-app("DEBUG",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
+            $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
         
         let $db-user := request:get-attribute($domain||".user"),
         (:let $db-current-user := xmldb:get-current-user():)
@@ -600,16 +600,16 @@ declare function local:user-may-module($project as xs:string, $module-users as x
         $log := util:log-app("TRACE",$config:app-name,"controller user-may-module "||$project)
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
-        else 
-        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*'),
-            $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
-        
+        else        
         let $project-dir := config:param-value($project-config-map,'project-dir')
         (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
         let $domain:= "org.exist.login"
         
         (: login:set-user() must go before checking the user :) 
-        let $login:=login:set-user($domain, (), false())
+        let $login:=login:set-user($domain, (), false()) 
+        
+        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*'),
+            $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
         
         let $db-user := request:get-attribute($domain||".user")
         (:let $db-current-user := xmldb:get-current-user():)
