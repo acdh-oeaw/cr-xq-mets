@@ -69,7 +69,10 @@ let $debug := request:get-parameter("debug", '')
  : $params[3] = optionally: name of a core module to operate in the current project's scope, 
                 for example the 'resource' module, which summarizes the structure of a project's resources.   
 ~:)
-let $params := tokenize($exist:path, '/')
+let $params := tokenize($exist:path, '/'),
+    $paramsDebug := serialize(for $item in $params return $item||", "),
+    $log := util:log-app("TRACE",$config:app-name,"controller.xql $params("||$paramsDebug)
+    
 
 (:~
  : The variable <code>$cr-instance</code> holds the base path of the current content repository instance.
@@ -566,7 +569,7 @@ declare function local:user-may($project as xs:string) as xs:boolean {
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
         else if (config:param-value($project-config-map,'visibility')!='protected') then true()
-        else        
+        else
         let $project-dir := config:param-value($project-config-map,'project-dir')
         (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
         let $domain:= "org.exist.login"
@@ -600,7 +603,7 @@ declare function local:user-may-module($project as xs:string, $module-users as x
         $log := util:log-app("TRACE",$config:app-name,"controller user-may-module "||$project)
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
-        else        
+        else 
         let $project-dir := config:param-value($project-config-map,'project-dir')
         (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
         let $domain:= "org.exist.login"

@@ -714,8 +714,9 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as item()?,
      is not possible in eXist (although a xquery 3.0 use case cf. http://www.w3.org/TR/xquery-30-use-cases/#groupby_q6) we have to separated 
      the group operation from the sort operation here     
     :)
-    let $terms-unordered :=           
-        for $g at $pos in $nodes
+    let $terms-unordered :=
+        (: If you need at $pos here then check if https://github.com/eXist-db/exist/issues/967 is solved. :)
+        for $g in $nodes
         let $term-value-g := string-join(index:apply-index($g,$index-key,$project-pid,'match-only'),' ')
         group by $term-value-g 
         return
@@ -736,7 +737,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as item()?,
                         if ($term-label) 
                         then $term-label[1]
                         else string-join(index:apply-index($firstOccurence,$index-key,$project-pid,'label-only'),''),
-                $log := util:log-app("TRACE", $config:app-name, 'fcs:term-from-nodes: $terms label => '||$label)
+                $log := util:log-app("DEBUG", $config:app-name, 'fcs:term-from-nodes: $terms label => '||$label)
             
             let $sort := 
                 if (not($sort instance of map())) 
@@ -792,9 +793,9 @@ declare %private function fcs:group-by-facet($data as node()*, $order-param as i
         let $map := map:new($maps)
         return $map
     let $group-keys := map:keys($groups)
-    let $log := util:log-app("TRACE", $config:app-name, "fcs:group-by-facet: $group-keys: "||string-join($group-keys,', '))
-    let $log := util:log-app("TRACE", $config:app-name, concat("fcs:group-by-facet: $order-param=",if ($order-param instance of map()) then string-join(map:keys($order-param)!concat(.,':',map:get($order-param,.)),',') else $order-param,", $index-sorting-key=",$index-sorting-key,", $fcs:scanSortDefault=",$fcs:scanSortDefault))
-    let $log := util:log-app("TRACE", $config:app-name, "fcs:group-by-facet: sorting facet "||$index-key||" by "||$facet_sort)
+    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $group-keys: "||string-join($group-keys,', '))
+    let $log := util:log-app("DEBUG", $config:app-name, concat("fcs:group-by-facet: $order-param=",if ($order-param instance of map()) then string-join(map:keys($order-param)!concat(.,':',map:get($order-param,.)),',') else $order-param,", $index-sorting-key=",$index-sorting-key,", $fcs:scanSortDefault=",$fcs:scanSortDefault))
+    let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: sorting facet "||$index-key||" by "||$facet_sort)
     let $terms := 
         for $group-key in $group-keys
         let $entries := map:get($groups, $group-key)        
@@ -1164,7 +1165,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                       if (exists($expanded-record-data-input//exist:match/ancestor::*[@cr:id]))
                       then 
                           let $exist-matches := $expanded-record-data-input//exist:match
-                          let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data match parents: "||string-join($exist-matches/ancestor::*[@cr:id][1]/data(@cr:id),'; '))
+(:                          let $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data $exist-matches[] := "||string-join(for $e in $exist-matches return substring(serialize($e), 1, 240), '; ')||" match parents: "||string-join($exist-matches/ancestor::*[@cr:id][1]/data(@cr:id),'; ')):)
                           return (:$exist-matches/parent::*/data(@cr:id):)
                                 for $exist-match in $exist-matches
                                 return
@@ -1245,7 +1246,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                         else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight, $resourcefragment-pid)
                                      else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight, $resourcefragment-pid)
                                 else $record-data-toprocess,
-            $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-highlighted: "||substring(serialize($record-data-highlighted),1,240))
+            $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-highlighted: "||substring(serialize($record-data-highlighted),1,2400000))
     (: to repeat current $x-format param-value in the constructed requested :)
     	let $x-format := request:get-parameter("x-format", $repo-utils:responseFormatXml)
     	let $resourcefragment-ref :=   if (exists($resourcefragment-pid)) 
@@ -1512,13 +1513,13 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
             then 
                 for $c in $copy
                 return transform:transform($copy,$stylesheet,$params) 
-            else util:log-app("ERROR",$config:app-name,"stylesheet "||$stylesheet-file||" not available."),
+            else util:log-app("TRACE",$config:app-name,"stylesheet "||$stylesheet-file||" not available."),
         $logRet := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy return "||substring(serialize($ret),1,240))
     return $ret
 }; 
 
 declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids as xs:string*, $rfs as node()*) as xs:string* {
-   let $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
+   let $log := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
        $ret := distinct-values(
                if (count($match-ids) = 0) then $match-ids
                else
@@ -1527,7 +1528,7 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
              $matching-rfs-parts := $rfs//*[@cr:id = $match-id-without-offset],
              $match-id-splitted := count($matching-rfs-parts) > 1,
              $warn := if (count($matching-rfs-parts) > 2) then util:log-app('TRACE',$config:app-name,"fcs:split-offset-match-ids-on-page-split warning: more than 2 matching rfs: "||$match-id-without-offset) else (),
-             $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
+             $log := util:log-app("DEBUG",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
          return
             if (not($match-id-splitted)) then (: add rfpids only to offset+length matches :)
                if (matches($m, '^[^:]+:(\d+):(\d+).*$')) then $m||':'||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid
@@ -1536,7 +1537,7 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
             let $text-lengths := for $p in $matching-rfs-parts return string-length(xs:string($p)),
                 $rfpids := for $p in $matching-rfs-parts return $p/ancestor::fcs:resourceFragment/@resourcefragment-pid,
                 $offsets := fcs:calculate-offsets($text-lengths), 
-                $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split current $match-id = "||$m||
+                $log := util:log-app("DEBUG",$config:app-name,"fcs:split-offset-match-ids-on-page-split current $match-id = "||$m||
                 " $text-lengths = "||string-join($text-lengths, '; ')||
                 " $offsets = "||string-join($offsets, '; ')),
                 $new-matches := for $o at $i in $offsets
@@ -1545,10 +1546,10 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
                               ($new-offset > $offsets[$i] + $text-lengths[$i])) then () else 
                       fcs:remove-offset-from-match-id-if-exists($m)||":"||$new-offset||
                       ":"||fcs:get-match-length-from-mactch-id($m)||":"||$rfpids[$i],
-                $log2 := util:log-app("TRACE",$config:app-name,"recalculate-offset-for-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
+                $log2 := util:log-app("DEBUG",$config:app-name,"recalculate-offset-for-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
             return $new-matches
         )
-   let $logRet := util:log-app("TRACE",$config:app-name,"recalculate-offset-for-match-ids-on-page-split return "||string-join($ret, '; '))
+   let $logRet := util:log-app("DEBUG",$config:app-name,"recalculate-offset-for-match-ids-on-page-split return "||string-join($ret, '; '))
    return $ret
 };
 
