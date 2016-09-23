@@ -46,7 +46,6 @@ declare namespace cmd="http://www.clarin.eu/cmd/";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
 
-
 (:~
  : Contains the uri of the application root collection, determined from the current module load path.
  ~:)
@@ -634,7 +633,8 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                     $users:=        $ace[@target='USER']/@who,
                                                     $groups:=       $ace[@target='GROUP']/@who,
                                                     $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
-                                                    $id :=          (sm:id()/sm:effective, sm:id())[1],
+                                             (:     $id :=          (sm:id()/sm:effective, sm:id())[1],:)  (: Crashes for unknown reasons in exist db 2.2 public :)
+                                                    $id := if ($model instance of map(*)) then ($model('userId')/sm:effective, $model('userId'))[1] else (),
                                                     $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
                                                     $group-members:=
                                                        for $g in $groups

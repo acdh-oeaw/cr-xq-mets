@@ -576,9 +576,10 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         
         (: login:set-user() must go before checking the user :) 
         let $login:=login:set-user($domain, (), false()),
-            $logId := util:log-app("TRACE",$config:app-name,"controller user-may sm:id() "||substring(serialize(sm:id()), 1, 240000))
+            $full-config-map-with-uid := map:new(($full-config-map, map{'userId' := sm:id()})),
+            $logId := util:log-app("DEBUG",$config:app-name,"controller user-may sm:id() "||substring(serialize($full-config-map-with-uid('userId')), 1, 240000))
         
-        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*'),
+        let $allowed-users :=  tokenize(config:param-value($full-config-map-with-uid,'users'),'\s*,\s*'),
             $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
         
         let $db-user := request:get-attribute($domain||".user"),
@@ -603,15 +604,16 @@ declare function local:user-may-module($project as xs:string, $module-users as x
         $log := util:log-app("TRACE",$config:app-name,"controller user-may-module "||$project)
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
-        else 
+        else        
         let $project-dir := config:param-value($project-config-map,'project-dir')
         (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
         let $domain:= "org.exist.login"
         
         (: login:set-user() must go before checking the user :) 
-        let $login:=login:set-user($domain, (), false()) 
+        let $login:=login:set-user($domain, (), false()),
+            $full-config-map-with-uid := map:new(($full-config-map, map{'userId' := sm:id()})) 
         
-        let $allowed-users :=  tokenize(config:param-value($full-config-map,'users'),'\s*,\s*'),
+        let $allowed-users :=  tokenize(config:param-value($full-config-map-with-uid,'users'),'\s*,\s*'),
             $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
         
         let $db-user := request:get-attribute($domain||".user")
