@@ -56,7 +56,10 @@
         </xsl:for-each>
     </xsl:variable>
     <xsl:variable name="all-ids" select="distinct-values($ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text())" as="xs:string*"/>
-    <xsl:variable name="highlighted-nodes" as="xs:string*" select="($ids-parsed[not(exists(offset))]/id, cr:fully-highlighted-nodes($ids-parsed, .))"/>
+    <xsl:variable name="fully-highlighted-node-ids" select="cr:fully-highlighted-nodes($ids-parsed, .)"/>
+    <xsl:variable name="fully-highlighted-nodes" select="//*[@cr:id = $fully-highlighted-node-ids]"/>
+    <xsl:variable name="fhn-following-whitespace-nodes" select="$fully-highlighted-nodes/following-sibling::*[1][matches(., '\s+')]"/>
+    <xsl:variable name="highlighted-nodes" as="xs:string*" select="distinct-values(($ids-parsed[not(exists(offset))]/id, ($fully-highlighted-nodes|$fhn-following-whitespace-nodes)/@cr:id))"/>
     <xsl:variable name="parent-highlighted-text-nodes" select="for $t in //*[parent::*/@cr:id = $ids-parsed/id]/text() return generate-id($t)"/>
     <xsl:template match="node() | @*">
         <xsl:if test="not(empty($all-ids))">
@@ -88,7 +91,10 @@
         <xsl:value-of select="."/>
     </xsl:template>
     <xsl:template match="*[@cr:id = $highlighted-nodes]" priority="10" mode="injectMatches">
-        <exist:match xml:space="preserve"><xsl:text xml:space="preserve"> </xsl:text><xsl:copy-of select="."/></exist:match>
+        <exist:match xml:space="preserve">
+            <xsl:text xml:space="preserve"> </xsl:text>
+            <xsl:copy-of select="."/>
+        </exist:match>
     </xsl:template>
     <xsl:variable name="genfuns">
         ({<cr:gen-fun>offsets</cr:gen-fun>},{<cr:gen-fun>lengths</cr:gen-fun>})
@@ -99,21 +105,20 @@
         <xsl:variable name="id-parsed" select="$ids-parsed[id = $cr:id and (not(exists(length)) or length != string-length($elt))]"/>
         <xsl:variable name="offsets" select="for $o in $id-parsed[(rfpid = '') or (rfpid=$rfpid)]/offset return xs:integer($o) " as="xs:integer*"/>
         <xsl:variable name="lengths" select="for $l in $id-parsed[(rfpid = '') or (rfpid=$rfpid)]/length return xs:integer($l)" as="xs:integer*"/>
-        <xsl:copy copy-namespaces="no">
-            <xsl:copy-of select="@*"/>
-            <xsl:choose><!--
-                 we want to be sure that we do not highlight whole resourcefragments -->
-                <xsl:when test="exists(parent::element())">
-                    <xsl:choose>
-                        <xsl:when test="exists($offsets) and exists($lengths)">
-                            <xsl:variable name="highlight-ends" select="for $i in (1 to count($offsets)) return $offsets[$i] + $lengths[$i]"/>
-                            <xsl:variable name="texts" select="$elt//text()"/>
-                            <xsl:variable name="texts-lengths" select="for $str in $texts return string-length($str)"/>
-                            <xsl:variable name="texts-offsets" select="cr:calculate-offsets($texts-lengths)"/>
-                            <xsl:variable name="texts-offsets-before-match" select="for $o in $offsets return $texts-offsets[some $o2 in . satisfies $o2 &lt; $o][last()]"/>
-                            <xsl:variable name="texts-offsets-before-match-end" select="for $e in $highlight-ends return $texts-offsets[some $o2 in . satisfies $o2 &lt; $e][last()]"/>
-                            <xsl:variable name="splitted-offsets" select="cr:calculate-splitted($offsets, $lengths, $texts-offsets,  $texts-offsets-before-match, $texts-offsets-before-match-end, $genfuns/*[. = 'offsets'])"/>
-                            <xsl:variable name="splitted-lengths" select="cr:calculate-splitted($offsets, $lengths, $texts-offsets, $texts-offsets-before-match, $texts-offsets-before-match-end, $genfuns/*[. = 'lengths'])"/>
+        <xsl:choose><!--
+            we want to be sure that we do not highlight whole resourcefragments -->
+            <xsl:when test="exists(parent::element())">
+                <xsl:choose>
+                    <xsl:when test="exists($offsets) and exists($lengths)">
+                        <xsl:variable name="highlight-ends" select="for $i in (1 to count($offsets)) return $offsets[$i] + $lengths[$i]"/>
+                        <xsl:variable name="texts" select="$elt//text()"/>
+                        <xsl:variable name="texts-lengths" select="for $str in $texts return string-length($str)"/>
+                        <xsl:variable name="texts-offsets" select="cr:calculate-offsets($texts-lengths)"/>
+                        <xsl:variable name="texts-offsets-before-match" select="for $o in $offsets return $texts-offsets[some $o2 in . satisfies $o2 &lt; $o][last()]"/>
+                        <xsl:variable name="texts-offsets-before-match-end" select="for $e in $highlight-ends return $texts-offsets[some $o2 in . satisfies $o2 &lt; $e][last()]"/>
+                        <xsl:variable name="splitted-offsets" select="cr:calculate-splitted($offsets, $lengths, $texts-offsets,  $texts-offsets-before-match, $texts-offsets-before-match-end, $genfuns/*[. = 'offsets'])"/>
+                        <xsl:variable name="splitted-lengths" select="cr:calculate-splitted($offsets, $lengths, $texts-offsets, $texts-offsets-before-match, $texts-offsets-before-match-end, $genfuns/*[. = 'lengths'])"/>
+                        <xsl:copy copy-namespaces="no">
                             <xsl:copy-of select="@*"/>
                             <xsl:apply-templates select="*|$texts" mode="injectMatches">
                                 <xsl:with-param name="offsets" select="$splitted-offsets" tunnel="yes"/>
@@ -124,19 +129,30 @@
                                 <xsl:with-param name="texts-offsets-before-match" select="$texts-offsets-before-match" tunnel="yes"/>
                                 <xsl:with-param name="texts-offsets-before-match-end" select="$texts-offsets-before-match-end" tunnel="yes"/>
                             </xsl:apply-templates>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <exist:match>
+                        </xsl:copy>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <exist:match>
+                            <xsl:copy copy-namespaces="no">
+                                <xsl:copy-of select="@*"/>
                                 <xsl:apply-templates mode="#default"/>
-                            </exist:match>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:apply-templates/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:copy>
+                            </xsl:copy>
+                        </exist:match>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates/>
+            </xsl:otherwise>
+        </xsl:choose>      
+    </xsl:template>    
+    <xsl:template match="*[@cr:id = $fhn-following-whitespace-nodes/@cr:id]" priority="1">
+        <exist:match>
+            <xsl:copy copy-namespaces="no">
+                <xsl:copy-of select="@*"/>
+                <xsl:apply-templates mode="#default"/>
+            </xsl:copy>
+        </exist:match>
     </xsl:template>
     <xd:doc>
         <xd:desc>In viDicts some lexical information is obvoius only to humans
@@ -236,7 +252,9 @@
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="previousMatches">
                         <xsl:value-of select="substring($previousMatches/text()[1],1,$before-length)"/>
-                        <exist:match xml:space="preserve"><xsl:value-of select="substring($previousMatches/text()[1],$match-start-offset,$match-length)"/></exist:match>
+                        <exist:match xml:space="preserve">
+                            <xsl:value-of select="substring($previousMatches/text()[1],$match-start-offset,$match-length)"/>
+                        </exist:match>
                         <xsl:if test="string-length($previousMatches/text()[1]) &gt; $after-start-offset">
                             <xsl:value-of select="substring($previousMatches/text()[1],$after-start-offset)"/>
                         </xsl:if>
@@ -250,10 +268,7 @@
     </xsl:template>
     <xsl:function name="cr:calculate-offsets">
         <xsl:param name="text-lengths" as="xs:integer*"/>
-        <xsl:sequence select="
-            if (empty($text-lengths)) then (0)
-            else (cr:calculate-offsets(subsequence($text-lengths, 1, count($text-lengths) -1)),
-            sum(subsequence($text-lengths, 1, count($text-lengths))))"></xsl:sequence>
+        <xsl:sequence select="             if (empty($text-lengths)) then (0)             else (cr:calculate-offsets(subsequence($text-lengths, 1, count($text-lengths) -1)),             sum(subsequence($text-lengths, 1, count($text-lengths))))"/>
     </xsl:function>
     <xsl:function name="cr:calculate-splitted" as="xs:integer*">
         <xsl:param name="offsets" as="xs:integer*"/>
@@ -262,11 +277,7 @@
         <xsl:param name="texts-offsets-before-match" as="xs:integer*"/>
         <xsl:param name="texts-offsets-before-match-end" as="xs:integer*"/>
         <xsl:param name="gen-fun" as="element(cr:gen-fun)"/>
-        <xsl:variable name="texts-offsets-with-match-parts" select="distinct-values(
-            for $i in (1 to count($texts-offsets-before-match)) 
-            return 
-              for $j in (index-of($texts-offsets, $texts-offsets-before-match[$i]) to index-of($texts-offsets, $texts-offsets-before-match-end[$i]))
-                return $texts-offsets[$j])"/>
+        <xsl:variable name="texts-offsets-with-match-parts" select="distinct-values(             for $i in (1 to count($texts-offsets-before-match))              return                for $j in (index-of($texts-offsets, $texts-offsets-before-match[$i]) to index-of($texts-offsets, $texts-offsets-before-match-end[$i]))                 return $texts-offsets[$j])"/>
         <xsl:for-each select="$offsets">
             <xsl:variable name="index" select="index-of($offsets, .)"/>
             <xsl:variable name="offset" select="." as="xs:integer"/>
@@ -295,7 +306,7 @@
         <xsl:variable name="relevant-ids" as="node()*" select="$ids-parsed[rfpid = '' or rfpid = $xml-fragment//fcs:resourceFragment/@resourcefragment-pid and offset = 1]"/>
         <xsl:variable name="relevant-text-nodes" as="text()*" select="$xml-fragment//*[@cr:id = $relevant-ids/id]//text()"/><!--
         lucene ignores space and ,.!? and more -->
-        <xsl:variable name="ret" select="for $t in $relevant-text-nodes return if (string-length(replace($t, '[^\w]', '')) = $relevant-ids[id = $t/parent::*/@cr:id]/length) then $t/parent::*/@cr:id else ()"/>
+        <xsl:variable name="ret" select="for $t in $relevant-text-nodes return if (string-length(replace($t, '[^\w]', '')) = $relevant-ids[id = $t/parent::*/@cr:id]/length) then $t/parent::*/@cr:id else ()" as="xs:string*"/>
         <xsl:sequence select="$ret"/>
     </xsl:function>
 </xsl:stylesheet>
