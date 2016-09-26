@@ -285,7 +285,7 @@ declare %private function facs:id-by-resourcefragment($resourcefragment-pid as x
     (: ... then apply the "facs" index to the fragment-element in the working copy :)
     let $log := util:log-app("TRACE",$config:app-name,"$fragment-in-wc := "||serialize($fragment-in-wc))
     let $facs:= index:apply-index($fragment-in-wc,"facs",$project-pid)
-    let $return := $facs/xs:string(.)
+    let $return := xs:string($facs)
     let $log := util:log-app("TRACE",$config:app-name,"facs:id-by-resourcefragment return "||$return)
     return $return
 };
