@@ -195,9 +195,12 @@ declare function fcs:main($config) as item()* {
                 else
             fcs:search-retrieve($query, $x-context, xs:integer($start-record), xs:integer($maximum-records), $x-dataview, $config)
     else 
-      diag:diagnostics('unsupported-operation',$operation)
-    
-   return  repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, ())
+      diag:diagnostics('unsupported-operation',$operation),
+      $xslParams := if ($operation eq $fcs:scan) then 
+        <parameters>
+          <param name="sort" value="{request:get-parameter("sort", ())}"/>
+        </parameters> else () 
+   return  repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, $xslParams)
    
 };
 
