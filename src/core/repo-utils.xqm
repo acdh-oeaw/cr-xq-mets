@@ -494,7 +494,7 @@ declare function repo-utils:get-from-cache($doc-name as xs:string,$config, $type
    let   $project-pid := config:param-value($config,'project-pid'),
         $cache-path := project:path($project-pid, $type)
     let $path := fn:concat($cache-path, "/", $doc-name)
-    let $log := util:log-app("DEBUG",$config:app-name,"retrieving from path "||$path)
+    let $log := util:log-app("TRACE",$config:app-name,"retrieving from path "||$path)
     return if (util:is-binary-doc($path))
             then util:binary-doc($path)
             else fn:doc($path)
@@ -540,8 +540,8 @@ declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node
         $writer := fn:doc(config:path('writer.file')),
         $writer-name :=  $writer//write-user/text(),
         $writer-pw := $writer//write-user-cred/text()
-    let $log := util:log-app("DEBUG",$config:app-name,"storing to file "||$cache-path||"/"||$doc-name)
-    let $log := util:log-app("DEBUG",$config:app-name,"reading credentials from "||config:path('writer.file'))
+    let $log := util:log-app("TRACE",$config:app-name,"storing to file "||$cache-path||"/"||$doc-name)
+    let $log := util:log-app("TRACE",$config:app-name,"reading credentials from "||config:path('writer.file'))
   return system:as-user($writer-name, $writer-pw,
         let $mkcol :=   if (xmldb:collection-available($cache-path))
                     then ()
@@ -557,6 +557,7 @@ declare function repo-utils:store-in-cache($doc-name as xs:string, $data as node
                         } catch * {
                             let $msg := "problem storing "||$doc-name||" to "||$cache-path
                             let $dummy-log := util:log-app("ERROR", $config:app-name, $msg)
+                            let $dummy-log := util:log-app("ERROR", $config:app-name, $err:code||" "||$err:description||" "||$err:value)
                             return diag:diagnostics("general-error", $msg )
                             }, 
             $stored-doc := 
@@ -708,6 +709,9 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="site_url" value="{config:param-value($config, 'public-baseurl')}"/>
               			           {$parameters/param}
               			       </parameters>
+(:	           , $log:=util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||document-uri($xslDoc)||
+	                                                        " $item := "||substring(serialize($item), 1, 240)||
+	                                                        " $xslParams := "||serialize($xslParams)):)
 (:                <param name="base_url" value="{config:param-value($config,'base-url')}"/>
 <param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
 :)
@@ -746,7 +750,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 ~:)
 declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node()? {        
     let $scripts-paths := (config:param-value($config,'scripts.path'),config:path('scripts'))
-    let $log := util:log-app("DEBUG",$config:app-name,"looking for xsl-doc in "||string-join($scripts-paths,' '))
+    let $log := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc looking for xsl-doc in "||string-join($scripts-paths,' '))
     let $xsldoc :=  for $p in $scripts-paths
                     let $path := replace($p,'/$','')
                     return 
@@ -757,13 +761,15 @@ declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:strin
                         switch(true())
                             case (doc-available($operation-format-xsl)) 
                                 return (
-                                    util:log-app("DEBUG",$config:app-name,"found xsl-doc "||$operation-format-xsl||" for operation "||$operation||", format "||$format),
+                                    util:log-app("TRACE",$config:app-name,"found xsl-doc "||$operation-format-xsl||" for operation "||$operation||", format "||$format),
                                     doc($operation-format-xsl)
                                     )
                             case (doc-available($operation-xsl)) return 
-                                (util:log-app("DEBUG",$config:app-name,"found xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),doc($operation-xsl))
-                            default return util:log-app("DEBUG",$config:app-name,"Could not find xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format)
-    return ($xsldoc)[1]
+                                (util:log-app("TRACE",$config:app-name,"found xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),doc($operation-xsl))
+                            default return util:log-app("TRACE",$config:app-name,"Could not find xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),
+        $ret := ($xsldoc)[1],
+        $logRet := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc return "||base-uri($ret))
+    return $ret
 };
 
 (:~ helper function. Performs multiple replacements, using pairs of replace parameters. based on standard xpath2 function replace() 
@@ -953,7 +959,7 @@ declare function repo-utils:xinclude-to-fragment($include as element(xi:include)
                                     case (not($uri castable as xs:anyURI)) return util:log-app("ERROR",$config:app-name, $uri||" could not be cast to xs:anyURI; ignoring")
                                     case ($p='') return util:log-app("ERROR",$config:app-name, " empty prefix for uri "||$uri)
                                     default return (
-                                        util:log-app("DEBUG",$config:app-name, "repo-utils:xinclude-to-fragment(): Declaring namespace "||$p||"="||$uri),
+                                        util:log-app("TRACE",$config:app-name, "repo-utils:xinclude-to-fragment(): Declaring namespace "||$p||"="||$uri),
                                         util:declare-namespace($p,xs:anyURI($uri))
                                     ) 
                 return 
