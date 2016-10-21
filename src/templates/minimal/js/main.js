@@ -16,39 +16,57 @@
 
 !function($, URI){
 
-var currentUrl = new URI();
-
-
+var m = {},
+    currentUrl = new URI(),
 /** 
  * configuration object
  * currently only parameter: dataview
 */
-var cr_config = { main: {dataview: "title,facets,kwic"}, detail: { dataview: 'title,cite,navigation,full,facs'},
+    cr_config = { main: {dataview: "title,facets,kwic"}, detail: { dataview: 'title,cite,navigation,full,facs'},
                    params: {"x-format":"html"}
-                };
+                },
 
 
 //var detail_tabs;
 
 /**
- * Global var for XML Viewer componenet
+ * XML Viewer componenet
  */
-var xmlViewer;
+    xmlViewer,
 
 /**
  * Id of the search container
  */
-var search_container_selector = '#search-result';
+    search_container_selector = '#search-result',
 
 /**
  * Base URL for the AJAX calls, replaces index.html
  * (or whatever the original URL ends in)
  */
-//var baseurl = currentUrl.clone();
-var cUrl_ = currentUrl.clone();
-cUrl_.query("");
-cUrl_.filename("fcs");
-var baseurl = cUrl_.toString();
+//var cUrl_ = currentUrl.clone();
+//cUrl_.query("");
+//cUrl_.filename("fcs");
+    baseurl = currentUrl
+              .query("")
+              .filename("fcs")
+              .toString();
+              
+//export
+this.MinimalTemplateMain = m;
+
+m.getCurrentURL = function() { return currentUrl;};
+m.getBaseURL = function() { return baseurl;};
+m.getSearchContainerSelector = function() { return search_container_selector;};
+m.getXMLViewer = function() { return xmlViewer;};
+m.getCrConfig = function () { return cr_config;};
+m.setCrConfig = function (a_cr_config) {
+    // TODO: sanity checks
+    cr_config = a_cr_config;
+    return m;
+};
+
+m.doLoadDetail = function() {};
+m.doLoadDetailData = function() {};
 
 /**
  * Initialization for the ui.
@@ -75,7 +93,7 @@ function minimal_template_ui_setup() {
     // tab-view currently deactivated
     /* detail_tabs = $('#tabs').tabs({
         show : function(event, ui) {
-            load_detail_data(ui.index);
+            m.doLoadDetailData(ui.index);
         }
     }); */
     
@@ -122,9 +140,6 @@ function minimal_template_ui_setup() {
     $("#navigation .scan-index-fcs-toc a").live('click', handle_toc);
     
     $("#navigation a.index").live('click', load_scan);
-        
-    $("#navigation .load-detail a").live('click', load_detail);
-
 
     // register filter
     $("#navigation form").live('submit', filter_default_nav_results);
@@ -139,10 +154,6 @@ function minimal_template_ui_setup() {
 
     $('.result-header a').live("click", load_main);
     $("#navigation .indexes .scan a").live('click', load_main);
-    $('.result-body a').live("click", load_detail);
-    // navigation links target:#detail itself
-    $('#detail .navigation a').live("click", load_detail);
-
     // links inside the detail-view (person-links) target:#context-detail
     $('#detail .data-view.full a').live("click", load_context_details);
 
@@ -172,7 +183,7 @@ function processParams () {
             detail_params["x-dataview"] = 'title,full'; //,xmlescaped
            var detail_request = baseurl + '?' + $.param(detail_params);
            console.log("post-loading DETAIL: " + detail_request);
-            load_detail_data(detail_request);
+            m.doLoadDetailData(detail_request);
          }
          
          if (cr_config.params["debug"]) {
@@ -247,7 +258,8 @@ function load_explain(event) {
 function load_scan(event) {
     event.preventDefault();
     //var target = $(this).parents('.record').find(".scan");
-    var target = $(this).parents('div').find(".scan");
+  var target = $(this).parents('div').find(".scan");
+
     
     if (target.length == 0) { 
         $(this).parents('div').append("<div class='scan load-main' />")
@@ -386,7 +398,7 @@ function handle_toc(event) {
     } else {
         var target = $('#main');
         var targetRequest = $(this).attr('href');
-        load_detail_data(targetRequest)
+        m.doLoadDetailData(targetRequest)
     }
 }
 
@@ -438,75 +450,6 @@ var targetRequest;
  * Parsed parameters from URL
  */
 var params;
-
-/**
- * On an a-elemet click load details. Use the href attribute but request navigation statements
- * to be generated
- */
-function load_detail(event) {
-    event.preventDefault();
-    targetRequest = baseurl + $(this).attr('href');
-    //load_detail_data(detail_tabs.tabs('option', 'selected'));
-    load_detail_data(targetRequest);
-}
-
-/**
- * Fetches data from fcs but only uses the specified parts (classes)
- * See {@link http://api.jquery.com/load/#loading-page-fragments}
- 
- * reverted back the per tab-loading functionality (as introduced in mecmua_template, 
- * because it leads to additional requests (every time a tab is called)
- * moreover, tabs are optional (or completely disabled) 
- */
-function load_detail_data(targetRequest) {
-    var detail = $('#detail');
-
-    if (targetRequest == undefined) return;
-    var parsedUrl = new URI(targetRequest);
-    params = parsedUrl.query(true);
-    // Recreate the x-dataview param from scratch
-    
-    params["x-dataview"] = cr_config.detail.dataview; //,xmlescaped
-    targetRequest = baseurl + '?' + $.param(params);
-    cr_config.params["detail.query"]=params["query"];
-    // persistentLink();
-    // The detail view is hidden at first
-    detail.show();
-    var classes_interested_in = " .title, .data-view";
-    var detailFragment = targetRequest + classes_interested_in;
-    
-    loading(detail.find('.detail-header'),"start");
-    // clear the current-detail:
-//    detail.find(".detail-content").html('');
-  //  detail.find('.detail-header').html('').toggleClass("cmd_get cmd");
-    
-    //console.log("load_detail:" + detailFragment);
-    //console.log("load_detail:" + baseurl);
-    detail.find(".detail-content").load(detailFragment, function () {
-                        loading(detail.find('.detail-header'), "stop");
-    //                    detail.find('.detail-header').toggleClass("cmd_get cmd");
-                        
-                        // activate zoom functionality on the images, expects: jquery.elevateZoom-3.0.8.min.js
-                        // deactivated for now
-                        //detail.find(".data-view.facs img").each( function() {$(this).attr("data-zoom-image",$(this).attr("src")); });
-                        //detail.find(".data-view.facs img").elevateZoom({ zoomType : "lens", lensShape : "round", lensSize : 200 });
-                         
-                        // move Title and navigation above the content
-                        $('.detail-header').html($(this).find(".data-view.navigation")).append($(this).find(".title"));
-                        // move cite below the detail content
-                        detail.find('.context-detail').html($(this).find(".data-view.cite"));
-                        customizeIcons(); 
-                        /*
-                        var detail_anno = $(this).html();
-                        $('#tabs-1').html(detail_anno);
-                        // get rid-off the highlighted stuff                        
-                        $('#tabs-1').find("span").removeClass("persName bibl placeName");
-                        // get rid-off the links
-                        $('#tabs-1').find('a').replaceWith(function(){  return $(this).contents();});
-                        */
-                        
-                      });
-}
 
 /**
  * Extracts the header of the AJAX request and puts it on top of the detail tabs
@@ -565,6 +508,8 @@ function customizeIcons () {
     $('.cmd_next, .navigation .next').addClass("fa fa-chevron-right").removeClass("cmd next cmd_next");;
 }
 
+m.customizeIcons = customizeIcons; 
+
 function loading(targetContainer, startstop) {
 
 if (startstop=='start') {
@@ -576,4 +521,6 @@ if (startstop=='start') {
       loading.remove();
  }  
 }
+
+m.loading = loading;
 }(jQuery, URI)

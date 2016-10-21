@@ -419,15 +419,27 @@ body {
     height: 100%;
 }
 
-#detail .data-view.full, #detail .data-view.facs {
+#detail .data-view.full,
+#detail .data-view.facs,
+#detail .data-view.xmlescaped{
     height: 100%;
     width: 48%;
     float:left;
 }
 
-#detail .data-view.full {
+#detail .data-view.full,
+#detail .data-view.xmlescaped {
     padding-right:0.25em;
 }
+
+#detailXMLSwitch:checked ~ * .data-view.xmlescaped {
+    display:none;    
+}
+
+#detailXMLSwitch:not(:checked) ~ * .data-view.full {
+    display:none;    
+}
+
 #detail .data-view.facs {
     padding-left:0.25em;
 }

@@ -122,7 +122,7 @@ $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
         $log := util:log-app("TRACE", $config:app-name, "SADE fcs:scan $x-context-x := "||$x-context-x||", $scan := "||substring(serialize($scan),1,240)||"..."),
         $params := <parameters>
                         <param name="format" value="{$x-format}"/>
-                  		<param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>
+                  		<param name="base_url" value="{config:param-value($model,'base-url')}"/>
                   		{if ($sort != '') then <param name="sort" value="{$sort}"/> else ()}	         
               			<param name="x-context" value="{$x-context-x}"/>             			            
                   </parameters>,
@@ -145,7 +145,7 @@ function fcs:explain($node as node()*, $model as map(*), $x-context as xs:string
         $log := util:log-app("TRACE", $config:app-name, "SADE fcs:explain $x-context-x := "||$x-context-x||", $explain := "||substring(serialize($explain),1,240)||"..."),
         $transformParams := <parameters>
                                <param name="format" value="{$x-format}"/>
-                  		       <param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>	         
+                  		       <param name="base_url" value="{config:param-value($model,'base-url')}"/>	         
               			       <param name="x-context" value="{$x-context-x}"/>             			            
                             </parameters>,
         $ret := repo-utils:serialise-as($explain, $x-format, 'explain', $model("config"), $transformParams),
