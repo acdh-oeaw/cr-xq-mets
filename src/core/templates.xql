@@ -440,29 +440,32 @@ declare function templates:load-source($node as node(), $model as map(*)) as nod
     values found in the request - if present.
  :)
 declare function templates:form-control($node as node(), $model as map(*)) as node()* {
-    let $log := util:log-app("TRACE",$config:app-name,"templates:form-control $node := "||serialize($node))
-    return typeswitch ($node)
+    let $log := util:log-app("DEBUG",$config:app-name,"templates:form-control $node := "||serialize($node)),
+        $ret :=
+    typeswitch ($node)
         case element(xhtml:input) return
             let $name := $node/@name,
                 $value := request:get-parameter($name, ()),
+(:                $log := util:log-app("TRACE",$config:app-name,"templates:form-control $value := "||string-join($value, '; ')),:)
                 $retValueSet := 
-                if ($value) then
+                if ($value[1]) then
                     element { node-name($node) } {
                         $node/@* except $node/@value,
-                        attribute value { $value },
+                        attribute value { $value[1] },
                         $node/node()
                     }
                 else $node,
-                $ret :=
+(:                $log := util:log-app("TRACE",$config:app-name,"templates:form-control $retValueSet "||serialize($retValueSet)),:)
+                $ret := 
                 if ($retValueSet/@type eq 'text') then
                     let $value := $model('config')//@OBJID
                     return element { node-name($retValueSet) } {
-                        $node/@* except $node/@value,
+                        $retValueSet/@* except $retValueSet/@data-context,
                         attribute data-context { $value },
                         $retValueSet/node()
                     }
-                 else $retValueSet,
-                 $logRet := util:log-app("TRACE",$config:app-name,"templates:form-control return element(input) "||serialize($ret))
+                 else $retValueSet(:,
+                 $logRet := util:log-app("TRACE",$config:app-name,"templates:form-control return element(input) "||serialize($ret)):)
              return $ret
         case element(xhtml:select) return
             let $value := request:get-parameter($node/@name/string(), ())
@@ -483,7 +486,9 @@ declare function templates:form-control($node as node(), $model as map(*)) as no
                         </option>
                 }
         default return
-            $node
+            $node,
+     $logRet :=  util:log-app("DEBUG",$config:app-name,"templates:form-control return "||substring(serialize($ret), 1, 240))
+return $ret
 };
 
 declare function templates:error-description($node as node(), $model as map(*)) {
