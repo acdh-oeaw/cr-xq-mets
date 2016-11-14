@@ -521,7 +521,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                             fcs:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
                                             else ()
                                             (: only return term if it has any child terms (after filtering) :)
-                                return if (exists($children-subsequence)) or exists($term/sru:extraTermData/*[not(local-name()='terms')]))  then 
+                                return if (exists($children-subsequence) or exists($term/sru:extraTermData/*[not(local-name()='terms')]))  then 
                                           <sru:term>{($term/*[not(local-name()='extraTermData')],
                                          if ($term/sru:extraTermData) then (: if given term has extraTermData :)
                                                 <sru:extraTermData>
@@ -1445,11 +1445,12 @@ declare %private function fcs:remove-offset-from-match-id-if-exists($match-id as
 
 (: do not call this if you have no offset or be prepared to catch the exception err:FORG0001 :)
 declare %private function fcs:get-offset-from-mactch-id($match-id as xs:string) as xs:integer {
-    replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$1')
+    xs:integer(replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$1'))
 };
 
+(: do not call this if you have no length or be prepared to catch the exception err:FORG0001 :)
 declare %private function fcs:get-match-length-from-mactch-id($match-id as xs:string) as xs:integer {
-    replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$2') 
+    xs:integer(replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$2')) 
 };
 
 declare %private function fcs:get-match-rfpid($match-ids as xs:string*) as xs:string* {
