@@ -521,7 +521,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                             fcs:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
                                             else ()
                                             (: only return term if it has any child terms (after filtering) :)
-                                return if (exists($children-subsequence)) then 
+                                return if (exists($children-subsequence)) or exists($term/sru:extraTermData/*[not(local-name()='terms')]))  then 
                                           <sru:term>{($term/*[not(local-name()='extraTermData')],
                                          if ($term/sru:extraTermData) then (: if given term has extraTermData :)
                                                 <sru:extraTermData>
