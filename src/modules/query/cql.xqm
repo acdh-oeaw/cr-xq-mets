@@ -49,7 +49,8 @@ or a diagnostic, on parsing error
 : @return XCQL - a XML version of the parse-tree (or diagnostics) 
 :)
 declare function cql:cql-to-xcql($cql-expression as xs:string) {
-    try {
+    let $log := util:log-app("TRACE", $config:app-name, 'cql:cql-to-xcql $cql-expression = '||$cql-expression),
+        $ret := try {
          (: util:parse(cqlparser:parse-cql($cql-expression, "XCQL")) :)
          cqlparser:parse-cql($cql-expression, "XCQL")
     }
@@ -60,7 +61,9 @@ declare function cql:cql-to-xcql($cql-expression as xs:string) {
     catch *
     { 
       diag:diagnostics("query-syntax-error", $cql-expression)
-    }
+    },
+         $logRet := util:log-app("TRACE", $config:app-name, 'cql:cql-to-xcql return '||substring(serialize($ret),1,240000))
+    return $ret
 };
 
 
@@ -75,8 +78,8 @@ This happens in two steps:
 : @returns xpath-string, or if not a string, whatever came from the parsing (if not a string, it must be a diagnostic) 
 :)
 declare function cql:cql-to-xpath($cql-expression as xs:string, $context)  as item()* {
-    let $xcql := cql:cql-to-xcql($cql-expression),
-        $log := util:log-app("TRACE", $config:app-name, 'cql:cql-to-xpath $cql-expression := '||$cql-expression||', $context := '||substring(serialize($context),1,240)||', $xcql := '||substring(serialize($xcql),1,240)),        
+    let $log := util:log-app("TRACE", $config:app-name, 'cql:cql-to-xpath $cql-expression := '||$cql-expression||', $context := '||substring(serialize($context),1,240)),
+        $xcql := cql:cql-to-xcql($cql-expression),   
         $ret :=
         if (not($xcql instance of element(diagnostics))) 
             then cql:xcql-to-xpath($xcql, $context)            
@@ -169,6 +172,7 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
         (: exact, starts-with, contains, ends-with :)
         $term := if ($index-case='yes') then $clause/term else lower-case($clause/term), 
         $sanitized-term := cql:sanitize-term($term),
+        $log := util:log-app('TRACE', $config:app-name, "cql:searchClause $sanitized-term := "||$sanitized-term||" $relation := "||$relation),
 (:$predicate := ''        :)
         $predicate := switch (true())
                         case ($sanitized-term eq 'false') return 'not('||$match-on||')'
@@ -192,9 +196,10 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
                                                         else 'starts-with'
                                                     else if (starts-with($term,'*')) then 'ends-with'
                                                     else if (contains($term,'*')) then 'starts-ends-with'
-                                                        else 'exact'
+                                                        else 'exact',
+                                    $log := util:log-app('TRACE', $config:app-name, "cql:searchClause $match-mode := "||$match-mode)
                                return switch ($match-mode) 
-                                    case ('exact') return $match-on||"='"||$sanitized-term||"'"
+                                    case ('exact') return $match-on||$relation||"'"||$sanitized-term||"'"
                                     case ('starts-with') return 'starts-with('||$match-on||",'"||$sanitized-term||"')"
                                     case ('ends-with') return 'ends-with('||$match-on||",'"||$sanitized-term||"')"
                                     case ('contains') return 'contains('||$match-on||",'"||$sanitized-term||"')"
@@ -202,7 +207,7 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
                                             let $starts-with := substring-before($sanitized-term,'*')
                                             let $ends-with := substring-after($sanitized-term,'*')
                                             return 'starts-with('||$match-on||",'"||$starts-with||"') and ends-with("||$match-on||",'"||$ends-with||"')"
-                                    default return $match-on||"='"||$sanitized-term||"'"                        
+                                    default return $match-on||$relation||"'"||$sanitized-term||"'"                        
                         
     return $index-xpath||'['||$predicate||']'
 
@@ -311,9 +316,11 @@ declare function cql:cql2xpath($cql-expression as xs:string, $x-context as xs:st
             let $input:=        <wrapper>
                                     <query>{$xcql}</query>
                                     <mappings>{$mappings}</mappings>
-                                </wrapper> 
-            let $parameters:=   <parameters>
+                                </wrapper>, 
+                $parameters:=   <parameters>
                                     <param name="x-context" value="{$x-context}"/>
-                                </parameters> 
-            return transform:transform($input, $cql:transform-doc,$parameters)
+                                </parameters>,
+                $ret := transform:transform($input, $cql:transform-doc,$parameters),
+                $logRet := util:log-app('TRACE', $config:app-name, "cql:cql2xpath return "||serialize($ret))
+            return $ret
 };
