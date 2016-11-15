@@ -26,9 +26,7 @@ SOFTWARE
 
 module namespace diag  = "http://www.loc.gov/zing/srw/diagnostic/";
 
-
 declare namespace sru = "http://www.loc.gov/zing/srw/";
-
 
 declare variable $diag:msgs := doc('diagnostics.xml');
 
@@ -39,7 +37,7 @@ declare function diag:diagnostics($key as xs:string, $param as xs:string*) as it
 	               $diag:msgs//diag:diagnostic[@key=$key]
 	           else $diag:msgs//diag:diagnostic[@key='general-error']
 	   return
-	       <diagnostics>
+	       <sru:diagnostics>
 	           { if (exists($diag)) then util:eval(util:serialize($diag,())) else () }
-	       </diagnostics>	   
+	       </sru:diagnostics>	   
 };
