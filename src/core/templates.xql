@@ -206,11 +206,22 @@ declare %private function templates:map-argument($arg as element(argument), $par
     as function() as item()* {
     let $var := $arg/@var
     let $type := $arg/@type/string()
-    let $param := 
+    let $passed-parameter := $parameters/param[@name = $var]/@value,
+        $is-passed-parameter-important := substring-after($passed-parameter, "!important:"),
+        $important-passed-parameter := if ($is-passed-parameter-important eq '') then () else $is-passed-parameter-important,
+        $get-parameter := request:get-parameter($var, ()),
+        $default-parameter := templates:arg-from-annotation($var, $arg),
+(:        $log := util:log-app("DEBUG", $config:app-name, "templates:map-argument $var := "||xs:string($var)||
+                                                                              " $important-passed-parameter := "||xs:string($important-passed-parameter)||
+                                                                              " $get-parameter := "||xs:string($get-parameter)||
+                                                                              " $passed-parameter := "||xs:string($passed-parameter)||
+                                                                              " $default-parameter := "||xs:string($default-parameter)),:)
+        $param := 
         (
-            request:get-parameter($var, ()), 
-            $parameters/param[@name = $var]/@value,
-            templates:arg-from-annotation($var, $arg)
+            $important-passed-parameter,
+            $get-parameter, 
+            $passed-parameter,
+            $default-parameter
         )[1]
     let $data :=
         try {
@@ -440,7 +451,7 @@ declare function templates:load-source($node as node(), $model as map(*)) as nod
     values found in the request - if present.
  :)
 declare function templates:form-control($node as node(), $model as map(*)) as node()* {
-    let $log := util:log-app("DEBUG",$config:app-name,"templates:form-control $node := "||serialize($node)),
+    let $log := util:log-app("TRACE",$config:app-name,"templates:form-control $node := "||serialize($node)),
         $ret :=
     typeswitch ($node)
         case element(xhtml:input) return
@@ -487,7 +498,7 @@ declare function templates:form-control($node as node(), $model as map(*)) as no
                 }
         default return
             $node,
-     $logRet :=  util:log-app("DEBUG",$config:app-name,"templates:form-control return "||substring(serialize($ret), 1, 240))
+     $logRet :=  util:log-app("TRACE",$config:app-name,"templates:form-control return "||substring(serialize($ret), 1, 240))
 return $ret
 };
 
