@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<diagnostics xmlns="http://www.loc.gov/zing/srw/diagnostic/">
-    <!-- TODO: might be updated cf. http://www.loc.gov/standards/sru/diagnostics/diagnosticsList.html-->
+<diagnostics xmlns="http://www.loc.gov/zing/srw/diagnostic/"><!-- TODO: might be updated cf. http://www.loc.gov/standards/sru/diagnostics/diagnosticsList.html-->
     <diagnostic key="general-error">
         <uri>info:srw/diagnostic/1/1</uri>
-        <detail>{$param}</detail>
+        <details>{$param}</details>
         <message>General system error</message>
     </diagnostic>
     <diagnostic key="unsupported-operation">
