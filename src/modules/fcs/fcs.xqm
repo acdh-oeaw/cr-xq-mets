@@ -199,8 +199,17 @@ declare function fcs:main($config) as item()* {
       $xslParams := if ($operation eq $fcs:scan) then 
         <parameters>
           <param name="sort" value="{request:get-parameter("sort", ())}"/>
-        </parameters> else () 
-   return  repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, $xslParams)
+        </parameters> else (),
+    $ret := 
+       try {
+           repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, $xslParams)
+       } catch * {
+           let $rendered-result := for $r in $result return substring(serialize($r), 1, 240),
+               $log := util:log-app('ERROR', $config:app-name, 'fcs:main serialize error '||$err:code||': '||$err:description||
+                                                    ' input: '||string-join($rendered-result, ';'))
+           return diag:diagnostics('', 'Caught error '||$err:code||': '||$err:description)
+       }
+   return $ret
    
 };
 
