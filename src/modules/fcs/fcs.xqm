@@ -546,7 +546,8 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                             $logTerms := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $terms := "||substring(serialize($terms),1,80)||"...")
 (:                                        let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1:)
 (:                                        let $start-search-term-position := $terms[starts-with(sru:value,$start-term)][1]/sru:extraTermData/fcs:position:)
-                                            let $start-search-term-position := index-of ($terms, $terms[starts-with(sru:displayTerm,$start-term)][1])
+                                            let $startterm := $terms[starts-with(sru:displayTerm,$start-term)][1]
+                                            let $start-search-term-position := if (exists($startterm)) then index-of ($terms, $startterm) else 0
                                         let $start-list-term-position := $start-search-term-position - $response-position + 1
                                         let $dummy := util:log-app("TRACE", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
         (:                                $terms[$start-search-term-node/position() - $response-position]:)
@@ -559,7 +560,8 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                       else 
                                       (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
                                         let $filtered-terms := $terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]
-                                        let $start-search-term-position := index-of ($filtered-terms, $filtered-terms[starts-with(sru:displayTerm,$start-term)][1])
+                                        let $startterm := $filtered-terms[starts-with(sru:displayTerm,$start-term)][1]
+                                        let $start-search-term-position := if (exists($startterm)) then index-of ($filtered-terms, $startterm) else 0
                                         (: thought would need to reapply the filter :)
 (:                                        let $start-search-term-position := count($filtered-terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]) + 1:)
                                         let $start-list-term-position := $start-search-term-position - $response-position + 1
