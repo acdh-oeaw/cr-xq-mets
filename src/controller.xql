@@ -164,7 +164,11 @@ switch (true())
     case ($debug='controller') return local:controller-debug($project, $module, $module-protected)
     case ((local:get-rel-path($project) eq "")) return local:redirect-missing-slash($project)            
    (: if logout parameter we need to remove it before trying to login - otherwise the login fails b:)        
-    case (not(request:get-parameter("logout","")="")) return        
+    case (not(request:get-parameter("logout","")="")) return
+        let $domain:= "org.exist.login"        
+        (: login:set-user() with the request parameter logout=true handles the logout procedure :) 
+        let $login:=login:set-user($domain, (), false())
+        return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <redirect url="index.html"/>    
         </dispatch>
