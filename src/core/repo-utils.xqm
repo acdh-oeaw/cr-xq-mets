@@ -709,6 +709,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="site_name" value="{config:param-value($config, 'site-name')}"/>
 	                               <param name="site_logo" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'site-logo'))}"/>
 	                               <param name="site_url" value="{config:param-value($config, 'public-baseurl')}"/>
+	                               {let $x_filter := request:get-parameter('x-filter', '')
+	                                return if ($x_filter ne '') then <param name="x-filter" value="{$x_filter}"/> else ()}
               			           {$parameters/param}
               			       </parameters>
 (:	           , $log:=util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||document-uri($xslDoc)||
