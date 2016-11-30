@@ -555,7 +555,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                             $logTerms := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $terms := "||substring(serialize($terms),1,80)||"...")
 (:                                        let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1:)
 (:                                        let $start-search-term-position := $terms[starts-with(sru:value,$start-term)][1]/sru:extraTermData/fcs:position:)
-                                            let $startterm := $terms[starts-with(sru:displayTerm,$start-term)][1]
+                                            let $startterm := $terms[starts-with(sru:value,$start-term)][1]
                                             let $start-search-term-position := if (exists($startterm)) then index-of ($terms, $startterm) else 0
                                         let $start-list-term-position := $start-search-term-position - $response-position + 1
                                         let $dummy := util:log-app("TRACE", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
@@ -565,11 +565,11 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                     if ($start-term='' or not(exists($start-term))) then
                                     (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
         (:  TODO: regard other types of matches :)
-                                        subsequence($terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)],1,$maximum-terms-resolved)
+                                        subsequence($terms[starts-with(lower-case(sru:value),$x-filter-lc)],1,$maximum-terms-resolved)
                                       else 
                                       (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
                                         let $filtered-terms := $terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]
-                                        let $startterm := $filtered-terms[starts-with(sru:displayTerm,$start-term)][1]
+                                        let $startterm := $filtered-terms[starts-with(sru:value,$start-term)][1]
                                         let $start-search-term-position := if (exists($startterm)) then index-of ($filtered-terms, $startterm) else 0
                                         (: thought would need to reapply the filter :)
 (:                                        let $start-search-term-position := count($filtered-terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]) + 1:)
@@ -1528,7 +1528,7 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
            <param name="rfpid" value="{$rfpid}"/>
         </parameters>,
         $log := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy $copy := "||substring(serialize($copy),1,240)||
-                                                                               "..., $stylesheet := "||substring(serialize($stylesheet),1,240)||
+                                                                               "..., $stylesheet := "||base-uri($stylesheet)||
                                                                                "..., $params := "||serialize($params)),
         $ret := 
             if (exists($stylesheet)) 
