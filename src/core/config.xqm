@@ -121,6 +121,7 @@ declare variable $config:PROJECT_PARAMETERS_ID := "projectParameters";
 declare variable $config:PROJECT_MODULECONFIG_ID := "moduleConfig";
 declare variable $config:PROJECT_RIGHTSMD_ID := "projectLicense";
 declare variable $config:PROJECT_ACL_ID := "projectACL";
+declare variable $config:PROJECT_METS_TYPE := "cr-xq project";
 
 declare variable $config:PROJECT_FACS_FILEGRP_ID := "imgResources";
 declare variable $config:PROJECT_FACS_FILEGRP_USE := "Image Resources";
@@ -478,9 +479,6 @@ declare %templates:wrap function config:app-description($node as node(), $model 
  :)
 declare function config:app-info($node as node(), $model as map(*)) {
     <table class="table table-bordered table-striped">{
-        <tr>
-            <th class="h4">Project Configuration</th>
-        </tr>,
         for $key in config:param-keys($model)
         order by $key
         return 
@@ -488,9 +486,6 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{config:param-value($node, $model,'','',$key)}</td>
             </tr>,
-        <tr>
-            <th class="h4">HTTP Headers</th>
-        </tr>,
         for $key in request:get-header-names()
         order by $key
         return 
@@ -498,9 +493,6 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{request:get-header($key)}</td>
             </tr>,
-        <tr>
-            <th class="h4">Request Attributes</th>
-        </tr>,
         for $key in request:attribute-names()
         order by $key
         return 
@@ -508,9 +500,6 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{request:get-attribute($key)}</td>
             </tr>,
-        <tr>
-            <th class="h4">Session Attributes</th>
-        </tr>,
         for $key in session:get-attribute-names()
         order by $key
         return 
@@ -518,9 +507,6 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{session:get-attribute($key)}</td>
             </tr>,
-        <tr>
-            <th class="h4">Environment Variables</th>
-        </tr>,
         for $key in available-environment-variables()
         order by $key
         return 
@@ -592,7 +578,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
 
     let $node-id := $node/xs:string(@id)
     let $config :=  if ($model instance of map(*)) then $model("config") else $model,
-        $mets :=    $config/descendant-or-self::mets:mets[@TYPE='cr-xq project'],
+        $mets :=    $config/descendant-or-self::mets:mets[@TYPE=$config:PROJECT_METS_TYPE],
         $crProjectParameters:= $mets//mets:techMD[@ID=$config:PROJECT_PARAMETERS_ID]/mets:mdWrap/mets:xmlData
     
     let $param-special:=
@@ -679,8 +665,8 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             
             default                         return ()
             
-    
     let $param-request := try { request:get-parameter($param-key,'') } catch * { () }
+    let $param-project := $mets//param[@key = $param-key]
     let $param-cr := $config:cr-config//param[@key=$param-key]
     let $param-container := $config//container[@key=$node-id]/function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
     let $param-function := $config//function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
@@ -697,6 +683,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             else ""
         else
             switch(true())
+                case (exists($param-project))   return $param-project[1]
                 case (exists($param-cr))        return $param-cr[1]
                 case ($param-special != '')     return $param-special
                 case ($param-request != '')     return $param-request[1]
