@@ -535,7 +535,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                          if ($term/sru:extraTermData) then (: if given term has extraTermData :)
                                                 <sru:extraTermData>
                                                 { if ($term/sru:extraTermData/sru:terms) then (: term could have extraTermData but no children terms :) 
-                                                        ($term/sru:extraTermData/*[not(local-name()='terms')],
+                                                        ($term/sru:extraTermData/*[not(self::sru:*) and not(self::cr:*) and not(self::fcs:*)],
                                                         <sru:terms>{$children-subsequence}</sru:terms>)
                                                    else $term/sru:extraTermData/*                                                  
                                                 } </sru:extraTermData>
