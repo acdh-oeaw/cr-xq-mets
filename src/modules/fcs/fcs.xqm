@@ -565,7 +565,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                     if ($start-term='' or not(exists($start-term))) then
                                     (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
         (:  TODO: regard other types of matches :)
-                                        subsequence($terms[starts-with(lower-case(sru:value),$x-filter-lc)],1,$maximum-terms-resolved)
+                                        subsequence($terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)],1,$maximum-terms-resolved)
                                       else 
                                       (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
                                         let $filtered-terms := $terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]
