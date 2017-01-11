@@ -115,7 +115,7 @@ declare
     %templates:default("maximumTerms", "800")
 function app:list-resources($node as node(), $model as map(*), $x-format as xs:string, $maximumTerms as xs:integer) {
    
-   let $log := util:log-app("DEBUG",$config:app-name,"app:list-resources") 
+   let $log := util:log-app("TRACE",$config:app-name,"app:list-resources") 
 (:    let $structMap := project:list-resources($model("config")):)
     (: project/resource:* couldn't correctly handle the config sequence chaos as is in $model("config") 
     so rather give them just the project-pid :) 
