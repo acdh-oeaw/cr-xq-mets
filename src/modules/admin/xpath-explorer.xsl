@@ -7,7 +7,7 @@
         <xsl:if test="not(*)">
             <xsl:apply-templates select="ancestor-or-self::*" mode="path"/>
             <xsl:value-of select="concat('=',$vApos,.,$vApos)"/>
-            <xsl:text>
+            <xsl:text xml:space="preserve">
 </xsl:text>
         </xsl:if>
         <xsl:apply-templates select="@*|*"/>
@@ -22,7 +22,7 @@
     <xsl:template match="@*">
         <xsl:apply-templates select="../ancestor-or-self::*" mode="path"/>
         <xsl:value-of select="concat('[@',name(), '=',$vApos,.,$vApos,']')"/>
-        <xsl:text>
+        <xsl:text xml:space="preserve">
 </xsl:text>
     </xsl:template>
 </xsl:stylesheet>
