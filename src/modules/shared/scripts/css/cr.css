@@ -1,28 +1,182 @@
-
+html {
+    /*if set to white #FFF oXygen shows blue!?*/
+	background-color: #FFFEFE;
+}
 
 span.bibl { font-style: italic; color: #000099;}
 span.persName ,span.person { font-weight: bold;  color: #009900; }
 span.placeName { font-weight: bold;  color: #990000; }
 span.rs { font-weight: bold;  color: #333366; }
 
-.inline-wrap {position: relative;}
-.inline-wrap .attributes { background-color: #CCCCFF; position: absolute; top: 1.5em; z-index:4; }
-
 /* generic XML-structure rendering */
-label, .label, .cmds-elem-prop .label { font-size: 0.9em; color: #014172; font-style: italic; }
-.value-text { }
+label, .label, .cmds-elem-prop .label {
+font-size: 0.9em;
+color: #014172;
+font-style: italic;
+padding-right: 0.3em;
+}
+.value-text {}
 .value-unspecified {}
 .value-empty {}
-.number { text-align: right;}
-.cmds-xmlelem {padding:2px; border-top: 1px dashed #A6C9E2; max-width:600px; }
-.cmds-xmlelem.has-children { border: 1px solid #A6C9E2; margin: 2px;}
-.value-text .value { margin-left: 20%; display:block; }
-.value-text .inline.label { float:left; }
-.value-text .block.label { float:none; }
-.cmds-xmlelem .attributes .label {}
+.number {
+text-align: right;
+}
+.cmds-xmlelem.wrapper {
+position: relative;
+border-top: 0px;
+}
+.cmds-xmlelem.wrapper:before {
+content: "\26ab";
+color: darkgreen;
+}
+.cmds-xmlelem.wrapper > div {
+display: none;
+z-index: 1000;
+position:absolute;
+background: #fff;
+left: 100%; bottom: 0;
+box-shadow: 10px 5px 5px black;
+}
+.cmds-xmlelem.wrapper:hover > div,
+.cmds-xmlelem.wrapper > div:hover {
+    display: block;
+}
+.cmds-xmlelem {
+padding:2px;
+border-top: 1px dashed #A6C9E2;
+}
+.cmds-xmlelem.has-children {
+border: 1px solid #A6C9E2;
+margin: 2px;
+}
+.cmds-xmlelem.value-text .value {}
+.cmds-xmlelem.value-text .value:before { content: ": "; }
+.cmds-xmlelem.value-text .inline.label {}
+.cmds-xmlelem.value-text .inline.label:after {}
+.cmds-xmlelem.value-text .block.label {}
+.cmds-xmlelem .attributes .inline.label {}
+.cmds-xmlelem .attributes .inline.label:before {content: "\00a0";}
 .cmds-xmlelem .attributes .value {}
+.cmds-xmlelem .attributes .value:before {content: "=";}
 
-/* needed especially in html view of fcs */
-#site-name { font-family: Helvetica, Tahoma, Verdana, sans-serif; font-size: 24px; color: #014172; /* #040288 #666699; */ display:inline; padding-left: 20px; position:absolute; top:24px}
+body { font: 13px/1.5 'AndikaW', arial, serif; }
 
-/*h1 { margin: 0.5em 0;}*/
+input.virtual-keyboard-input {
+    font-family: 'AndikaW', arial, serif;
+}
+
+.content {
+    position: relative;
+}
+
+.zr-description,
+.zr-indexInfo {
+    position: relative;
+    z-index: 2;
+}
+
+.zr-description.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    opacity: 0.3;
+    /*Old IEs < 8*/
+    filter: alpha(opacity=30);
+}
+
+.hilight.match {
+    color: red;
+}
+
+.result-header .note:before {
+    content: "Query details ... ";
+    font-size: 0.9em;
+    color: #014172;
+    font-style: italic;
+}
+
+.result-header .note:hover span {
+    display: inline;
+}
+
+.result-header .note span {
+    display: none;
+}
+
+.result-navigation.prev-next {
+    display: block;
+}
+
+.cmd_prev, .cmd_next {    
+    position: absolute;
+}
+
+.cmd_next:after,
+.cmd_prev:before {
+    content: "\a0";
+    position: relative;
+    background-image: url(base/images/ui-icons_2e83ff_256x240.png)/*{iconsContent}*/;
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+.cmd_prev:before {
+    background-position: -80px -192px;
+}
+
+.cmd_next:after {
+    background-position: -48px -192px;
+}
+.internal.next,
+.internal.prev {
+    display: inline-block;
+    width: 49%;
+    height: 16px;
+    position: relative;
+}
+
+.internal.prev.disabled,
+.internal.next.disabled {
+    display: none;
+}
+
+#header > a {
+    display: block;
+    float: right;
+    clear: right;
+    margin-left: 1em;
+}
+
+#header > div {
+    float: left;
+    clear: left;
+    margin-right: 1em;
+}
+
+.error {
+  position: relative;
+  width: 100%;
+}
+
+.diag-details {
+  display: none;
+  position: relative;
+  width: 60%;
+}
+
+.xsl-diag-details-label ~ .xsl-separator {
+ display: none;
+}
+
+.xsl-diag-details-label:hover ~ .xsl-separator {
+  display: inline;
+}
+  
+.xsl-diag-details-label:hover ~ .diag-details,
+.diag-details:hover {
+  display: block;
+}
