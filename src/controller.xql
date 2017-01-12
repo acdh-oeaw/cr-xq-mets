@@ -581,7 +581,7 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         (: login:set-user() must go before checking the user :) 
         let $login:=login:set-user($domain, (), false()),
             $full-config-map-with-uid := map:new(($full-config-map, map{'userId' := sm:id()})),
-            $logId := util:log-app("DEBUG",$config:app-name,"controller user-may sm:id() "||substring(serialize($full-config-map-with-uid('userId')), 1, 240000))
+            $logId := util:log-app("TRACE",$config:app-name,"controller user-may sm:id() "||substring(serialize($full-config-map-with-uid('userId')), 1, 240000))
         
         let $allowed-users :=  tokenize(config:param-value($full-config-map-with-uid,'users'),'\s*,\s*'),
             $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))
