@@ -49,7 +49,8 @@ declare function gen:generate-index-functions($project) as item()* {
 let $project-pid := project:get-id($project)
 let $log := util:log-app("DEBUG",$config:app-name, "gen:generate-index-functions("||$project-pid||")")
 let $config := config:config($project-pid)
-let $map := index:map($project-pid)
+let $map := index:map($project-pid),
+    $log := util:log-app('TRACE',$config:app-name, "gen:generate-index-functions $map := "||substring(serialize($map), 1, 240))
 (:    <map><index name="person">:)
 (:                    <path>tei:person</path>:)
 (:                    </index>:)
@@ -58,7 +59,9 @@ let $map := index:map($project-pid)
 (:                </index>:)
 (:                </map>:)
 
-let $indexes := $map//index
+let $indexes := $map//index,
+    $logError := if (not($indexes)) then util:log-app('ERROR', $config:app-name, "gen:generate-index-functions no $indexes! (Re)Upload mappings.") else (),
+    $log := util:log-app('TRACE',$config:app-name, "gen:generate-index-functions $indexes := "||count($indexes)||': '||string-join($indexes!(substring(serialize(.), 1, 240))))
 
 let $generated-code :=
     <processor-code>xquery version '3.0';
@@ -108,7 +111,8 @@ declare {"function "||gen:ns-short($project-pid)||":apply-index" (: this is just
 </processor-code>
 (:"&#09;default return util:eval('$data//'||$index-name) ", $gen:cr:)
 
-let $store := gen:store-index-functions($generated-code, $project-pid)
+let $store := if ($indexes) then gen:store-index-functions($generated-code, $project-pid) else
+              util:log-app('ERROR', $config:app-name, "gen:generate-index-functions did not store anything!")
 
 (: regenerate the top-level index-functions module, so that the new index functions are available immediately :)
 (:return gen:register-project-index-functions():)
