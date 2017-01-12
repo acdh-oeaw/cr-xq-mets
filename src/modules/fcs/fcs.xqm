@@ -695,6 +695,12 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
         </sru:scanResponse>
 };
 
+declare function fcs:print-map-or-string($map-or-string as item()?) as xs:string {
+if ($map-or-string instance of map()) then 
+    string-join(map:keys($map-or-string)!(.||' := '||$map-or-string(.)), ', ')
+else if (exists($map-or-string)) then xs:string($map-or-string) else ""
+};
+
 (:~ @param $order-param can be either a map or a string. 
 ~:)
 declare function fcs:term-from-nodes($nodes as item()+, $order-param as item()?, $index-key as xs:string, $project-pid as xs:string) {
@@ -719,7 +725,8 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as item()?,
                     return map:new(($value-map,$label-map)):)
     let $index-elem := index:index($index-key,$project-pid)
     let $sort := ($order-param,$index-elem/@sort[.=$fcs:scanSortParamValues],$fcs:scanSortDefault)[1],
-        $logSettings := util:log-app("TRACE", $config:app-name, concat("fcs:term-from-nodes: $sort :=", if ($sort instance of map()) then concat("[",string-join(map:keys($sort)!concat(.,':',map:get($sort,.)),', '),"]") else $sort,", $index-elem := ", substring(serialize($index-elem),1,240)))
+        $logSettings := util:log-app("TRACE", $config:app-name, "fcs:term-from-nodes: $sort :="||fcs:print-map-or-string($sort)||
+		                                                                              ", $index-elem := "||substring(serialize($index-elem),1,240))
     let $ts1 := util:system-dateTime()
     (: since an expression like  
         group by $x 
@@ -932,13 +939,13 @@ This may not scale very well so cached indexes are used here to speed up further
 ~:)
 declare function fcs:term-to-label-from-xml-id($term as xs:string, $index as xs:string, $project-pid as xs:string, $firstOccurence as node()) as xs:string? {
     let $referencedNodes := fcs:get-referenced-node($firstOccurence),
-        $log := util:log-app('TRACE', $config:app-name, 'fcs-db:term-to-label-from-xml-id $term := '||$term||', $index := '||$index||', $firstOccurence := '||substring(serialize($firstOccurence),1,240)||'...,  $referencedNode := '||string-join($referencedNodes!substring(serialize(.),1,240), '; ')||'...'),
+        $log := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label-from-xml-id $term := '||$term||', $index := '||$index||', $firstOccurence := '||substring(serialize($firstOccurence),1,240)||'...,  $referencedNode := '||string-join($referencedNodes!substring(serialize(.),1,240), '; ')||'...'),
         $possibleTerms := if ($referencedNodes) then $referencedNodes!index:apply-index(., $index, $project-pid, 'label-only') else (),
         $warn-if-more-than-one-term := if (count($possibleTerms) > 1) then
-           util:log-app('INFO' , $config:app-name, 'fcs-db:term-to-label-from-xml-id more than one possible term: '||string-join($possibleTerms, '; ')||'!')
+           util:log-app('INFO' , $config:app-name, 'fcs:term-to-label-from-xml-id more than one possible term: '||string-join($possibleTerms, '; ')||'!')
            else (),
         $ret := $possibleTerms[1],
-        $logRet := util:log-app('TRACE', $config:app-name, 'fcs-db:term-to-label-from-xml-id return '||$ret) 
+        $logRet := util:log-app('TRACE', $config:app-name, 'fcs:term-to-label-from-xml-id return '||$ret) 
     return $ret
 };
 
@@ -1350,11 +1357,11 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                               let $log:= util:log-app("TRACE",$config:app-name,("$rf-next := ",$rf-next))
         
                               
-                              let $rf-prev-ref := if (exists($rf-prev)) then concat('?operation=searchRetrieve&amp;query=', $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="', xmldb:encode-uri($rf-prev/data(@ID)), '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context) else ""                                                 
-                              let $rf-next-ref:= if (exists($rf-next)) then concat('?operation=searchRetrieve&amp;query=', $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="', xmldb:encode-uri($rf-next/data(@ID)), '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context) else ""
+                              let $rf-prev-ref := fcs:generate-rf-ref($rf-prev, $x-context)                                                
+                              let $rf-next-ref := fcs:generate-rf-ref($rf-next, $x-context)
                                return
-                                 ( if ($rf-prev-ref ne "") then <fcs:ResourceFragment type="prev" pid="{$rf-prev/data(@ID)}" ref="{$rf-prev-ref}" label="{$rf-prev/data(@LABEL)}"  /> else (),
-                                   if ($rf-next-ref ne "") then <fcs:ResourceFragment type="next" pid="{$rf-next/data(@ID)}" ref="{$rf-next-ref}" label="{$rf-next/data(@LABEL)}"  /> else ())
+                                 (fcs:generate-prev-next-rf($rf-prev, 'prev', $rf-prev-ref),
+                                  fcs:generate-prev-next-rf($rf-next, 'next', $rf-next-ref))
                             else ()
                             
         let $dv-facs :=     if (contains($data-view,'facs')) 
@@ -1372,8 +1379,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                 else resource:cite($resource-pid, $project-id, $config)
                            else ()
         
-        let $dv-xmlescaped :=   if (contains($data-view,'xmlescaped')) 
-                                then <fcs:DataView type="xmlescaped">{util:serialize($record-data-highlighted,'method=xml, indent=yes')}</fcs:DataView>
+        let $dv-xmlescaped := if (contains($data-view,'xmlescaped')) 
+                              then <fcs:DataView type="xmlescaped">{util:serialize(fcs:remove-cr-attrs($record-data-highlighted)/*/tei:*,'method=xml, indent=yes')}</fcs:DataView>
                                 else ()
         
         (:return if ($data-view = 'raw') then $record-data 
@@ -1426,6 +1433,31 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                  return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
                      }
                 </fcs:Resource>
+};
+
+declare %private function fcs:generate-rf-ref($rf as element()?, $x-context as xs:string) as xs:string {
+    if (exists($rf)) then concat('?operation=searchRetrieve&amp;query=', 
+                                 $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="',
+                                 xmldb:encode-uri($rf/data(@ID)),
+                                 '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context)
+    else ""
+};
+
+declare %private function fcs:generate-prev-next-rf($rf as element()?, $type as xs:string, $ref as xs:string) as element(fcs:ResourceFragment)? {
+    if (exists($rf)) then 
+        <fcs:ResourceFragment type="{$type}" pid="{$rf/data(@ID)}" ref="{$ref}" label="{$rf/data(@LABEL)}"/> 
+    else ()
+};
+
+declare %private function fcs:remove-cr-attrs($element as element()) as element() {
+   element {node-name($element)}
+      {$element/@* except $element/@cr:*,
+          for $child in $element/node()
+              return
+               if ($child instance of element())
+                 then fcs:remove-cr-attrs($child)
+                 else $child
+      }
 };
 
 declare %private function fcs:get-rfs-xml($expanded-record-data-input as node(), $project-id as xs:string, $resource-pid as xs:string, $resourcefragment-pids as xs:string*, $match-ids as xs:string*, $config as item()*) as item()+ {
