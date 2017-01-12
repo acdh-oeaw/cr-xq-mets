@@ -530,12 +530,12 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                             fcs:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
                                             else ()
                                             (: only return term if it has any child terms (after filtering) :)
-                                return if (exists($children-subsequence) or exists($term/sru:extraTermData/*[not(local-name()='terms')]))  then 
+                                return if (exists($children-subsequence) or exists($term/sru:extraTermData/*[not(self::sru:*) and not(self::cr:*) and not(self::fcs:*)]))  then 
                                           <sru:term>{($term/*[not(local-name()='extraTermData')],
                                          if ($term/sru:extraTermData) then (: if given term has extraTermData :)
                                                 <sru:extraTermData>
                                                 { if ($term/sru:extraTermData/sru:terms) then (: term could have extraTermData but no children terms :) 
-                                                        ($term/sru:extraTermData/*[not(local-name()='terms')],
+                                                        ($term/sru:extraTermData/*[not(self::sru:*) and not(self::cr:*) and not(self::fcs:*)],
                                                         <sru:terms>{$children-subsequence}</sru:terms>)
                                                    else $term/sru:extraTermData/*                                                  
                                                 } </sru:extraTermData>
@@ -565,7 +565,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                     if ($start-term='' or not(exists($start-term))) then
                                     (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
         (:  TODO: regard other types of matches :)
-                                        subsequence($terms[starts-with(lower-case(sru:value),$x-filter-lc)],1,$maximum-terms-resolved)
+                                        subsequence($terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)],1,$maximum-terms-resolved)
                                       else 
                                       (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
                                         let $filtered-terms := $terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]
