@@ -73,7 +73,7 @@
         <xsl:choose>
             <xsl:when test="$mode='url'">%20</xsl:when>
             <xsl:otherwise>
-                <xsl:text> </xsl:text>
+                <xsl:text xml:space="preserve"> </xsl:text>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:variable>

@@ -32,9 +32,10 @@ module namespace qix-tests = "http://aac.ac.at/content_repository/qix/tests";
 import module namespace cql = "http://exist-db.org/xquery/cql" at "cql.xqm";
 import module namespace query = "http://aac.ac.at/content_repository/query" at "query.xqm";
 import module namespace index = "http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
+import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 
-(:import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";:)
-import module namespace test="http://exist-db.org/xquery/xqsuite" at "/db/apps/cr-xq-mets/modules/test/xqsuite.xql";
+(:declare namespace test="http://exist-db.org/xquery/xqsuite";:)
+import module namespace test="http://exist-db.org/xquery/xqsuite" at "/db/apps/cr-xq-mets/modules/test/xqsuite.xqm";
 
 
 declare namespace cr="http://aac.ac.at/content_repository";
@@ -141,14 +142,14 @@ declare variable $qix-tests:test-data := <p rend="indent">
  declare
     %test:name("transform query to xpath")
     %test:arg("q", "persName=ferdinandus")
-    %test:assertXPath("/searchClause/index[.='persName']")    
-    %test:assertXPath("/searchClause/term[.='ferdinandus']")
+    (: Note that the root element of the result is not part of the XPath!:) 
+       %test:assertXPath("/index[.='persName']")   
+       %test:assertXPath("/term[.='ferdinandus']")
  function qix-tests:query-to-xcql($q) as item()* {
 (:    query:query-to-xpath($q, '',$qix-tests:map) :)
-        let $xcql :=  cql:cql-to-xcql($q)
-        return cql:xcql-to-xpath($xcql, 'abacus')
-(:return $xcql:)
+        let $log := util:log-app("DEBUG", $config:app-name, "qix-tests:query-to-xcql $q := "||$q), 
+          $xcql :=  util:expand(cql:cql-to-xcql($q)),
+          $log := util:log-app("DEBUG", $config:app-name, "qix-tests:query-to-xcql return "||serialize($xcql))
+(:        return cql:xcql-to-xpath($xcql, 'abacus'):)
+return $xcql
  };
- 
- 
- 
