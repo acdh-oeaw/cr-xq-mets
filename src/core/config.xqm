@@ -405,7 +405,9 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
                         $project-static-baseuri||$relPath,
                         $project-data-baseuri||$relPath,
                         $template-baseuri||$relPath,
-                        $config:app-root-collection||$relPath)
+                        $config:app-root-collection||$relPath)(:,
+        $log2 := (util:log-app("TRACE",$config:app-name,"$dirs = "||string-join($dirs, '; ')),
+                 util:log-app("TRACE",$config:app-name,"$base-uris = "||string-join($base-uris, '; '))):)
     return
         let $available:=
             for $i at $pos in $dirs 
@@ -419,6 +421,19 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
             if (exists($available))
             then xs:anyURI($available[1])
             else xs:anyURI($relPath)
+};
+
+declare function config:model-to-debug($model as map(*)) as item()* {
+  <disabled/>
+(:  for $key in map:keys($model)
+  let $log := util:log-app("DEBUG",$config:app-name,"$model("||$key||"): "||count($model($key)))
+  return
+     if (count(map:get($model, $key)) > 1) then
+       for $item in map:get($model, $key)
+       return
+          util:log-app("DEBUG",$config:app-name,"["||position()||"] :"||$item)
+     else
+       util:log-app("DEBUG",$config:app-name, map:get($model, $key)):)
 };
 
 (:~
@@ -479,6 +494,9 @@ declare %templates:wrap function config:app-description($node as node(), $model 
  :)
 declare function config:app-info($node as node(), $model as map(*)) {
     <table class="table table-bordered table-striped">{
+        <tr>
+            <th class="h4">Project Configuration</th>
+        </tr>,
         for $key in config:param-keys($model)
         order by $key
         return 
@@ -486,6 +504,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{config:param-value($node, $model,'','',$key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">HTTP Headers</th>
+        </tr>,
         for $key in request:get-header-names()
         order by $key
         return 
@@ -493,6 +514,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{request:get-header($key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">Request Attributes</th>
+        </tr>,
         for $key in request:attribute-names()
         order by $key
         return 
@@ -500,6 +524,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{request:get-attribute($key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">Session Attributes</th>
+        </tr>,
         for $key in session:get-attribute-names()
         order by $key
         return 
@@ -507,6 +534,9 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{$key}</td>
                 <td>{session:get-attribute($key)}</td>
             </tr>,
+        <tr>
+            <th class="h4">Environment Variables</th>
+        </tr>,
         for $key in available-environment-variables()
         order by $key
         return 
@@ -589,7 +619,8 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "projects-baseuri"         return $config-params:projects-baseuri            
             case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
-            case "base-url"                 return repo-utils:base-url($config)
+            case "base-url-public"          return repo-utils:base-url($config)
+            case "base-url"                 return repo-utils:base-url($config)(:'http://localhost:8080'||repo-utils:base-uri($config):)
             case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
@@ -665,6 +696,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             
             default                         return ()
             
+    
     let $param-request := try { request:get-parameter($param-key,'') } catch * { () }
     let $param-project := $mets//param[@key = $param-key]
     let $param-cr := $config:cr-config//param[@key=$param-key]
@@ -717,7 +749,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
  : @result returns a path common to all project data files or the empty sequence if there's no common path. 
 ~:)
 declare function config:common-path-from-FLocat($model as map(*), $fileGrpID as xs:string) as xs:string? {
-    let $config:=   $model("config"),
+    let $log := util:log-app("ERROR", $config:app-name, "config:common-path-from-FLocat: This function needs to be refactored! It does not scale with more registered resources!"),
+        $fail-for-debugging := if (false()) then error(xs:QName('config:die-FLocat')) else (),
+        $config:=   $model("config"),
         $data:=     $config//mets:fileGrp[@ID=$fileGrpID]//mets:FLocat/xs:string(@xlink:href)
     
     let $tokenized:=for $d in $data return tokenize($d,'/'),
