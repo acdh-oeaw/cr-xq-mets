@@ -375,15 +375,20 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
 
 
 declare function rf:cite($resourcefragment-pid, $resource-pid, $project-pid, $config) {
-let $cite-template := config:param-value($config,'cite-template')
-let $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri))
-let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
-let $md := resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid)
-let $link := rf:link($resourcefragment-pid, $resource-pid, $project-pid, $config) 
-let $entity-label := rf:record($resourcefragment-pid,$resource-pid, $project-pid)/data(@LABEL)  
-
-(:return $md:)
-return util:eval ("<bibl>"||$cite-template||"</bibl>")
+let $cite-template := repo-utils:protect-space-for-eval(config:param-value($config,'cite-template')),
+    $templateString := "<tei:bibl xmlns='http://www.w3.org/1999/xhtml' xml:space='preserve'>"||$cite-template||"</tei:bibl>",
+    $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri)),
+    $today := format-date(current-dateTime(),'[D]. [M]. [Y]'),
+    $md := (resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid), resource:dmd-from-id($resource-pid, $project-pid))[1],
+    $link := config:param-value($config, 'base-url-public')||'get/'||$resourcefragment-pid,
+    $entity-label := rf:record($resourcefragment-pid,$resource-pid, $project-pid)/data(@LABEL),
+(:    $log := util:log-app("DEBUG", $config:app-name, "rf:cite $templateString := "||$templateString
+                                                  ||" $ns := "||serialize(config:param-value($config,'mappings')//namespaces/ns)
+                                                  ||" $md := "||substring(serialize($md),1,240)
+                                                  ||" $entity-label := "||$entity-label),:)
+    $ret := util:eval($templateString)
+(:    , $logRet := util:log-app("DEBUG", $config:app-name, "rf:cite return "||substring(serialize($ret),1,500)):)
+return $ret
 };
 
 declare function rf:link($rf-id, $resource-pid, $project-pid, $config) {

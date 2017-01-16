@@ -32,6 +32,7 @@ declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace xi="http://www.w3.org/2001/XInclude";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
+import module namespace functx = "http://www.functx.com";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../modules/diagnostics/diagnostics.xqm";
 import module namespace request="http://exist-db.org/xquery/request";
@@ -65,11 +66,30 @@ declare variable $repo-utils:sys-config-file := "conf/config-system.xml";
 
 declare function repo-utils:base-url($config as item()*) as xs:string* {
         (: On Jetty 9+ this is actually done by Jetty, exist-db usess Jetty 8 :)
+        (: Additionally: if we want to handle path mangling the original path hast
+           to be passed as non standard request header parameter X-Forwarded-Request-Uri :)
+        (: apache example config on the reverse proxy:
+           SetEnvIf Request_URI "^(.*)$" REQUEST_URI=$1
+           RequestHeader set X-Forwarded-Request-Uri "%{REQUEST_URI}e" :)
     let $mets :=    $config/descendant-or-self::mets:mets[@TYPE='cr-xq project'],
+        $forwarded-hostname := if (contains(request:get-header('X-Forwarded-Host'), ',')) 
+                                 then substring-before(request:get-header('X-Forwarded-Host'), ',')
+                                 else request:get-header('X-Forwarded-Host'),
         $urlScheme := if ((lower-case(request:get-header('X-Forwarded-Proto')) = 'https') or 
                           (lower-case(request:get-header('Front-End-Https')) = 'on')) then 'https:' else 'http:',
-        $realUrl := replace(request:get-url(), '^http:', $urlScheme)
-    return substring-before($realUrl,$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/"     
+        (: FIXME: this is to naive. Works for ProxyPass / to /exist/apps/cr-xq-mets/project
+           but probably not for /x/y/z/ to /exist/apps/cr-xq-mets/project. Especially check the get module. :)
+        $xForwardBasedUrl := $urlScheme||'//'||$forwarded-hostname||substring-before((request:get-header('X-Forwarded-Request-Uri'), request:get-uri())[1], '/')||'/',
+        $existBasedUrl := substring-before(replace(request:get-url(), '^http:', $urlScheme),$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/",        
+(:        $log := util:log-app("DEBUG", $config:app-name, "repo-utils:base-url X-Forwarded-Request-Uri := "||request:get-header('X-Forwarded-Request-Uri')||
+                                                                           " $urlScheme := "||$urlScheme||
+                                                                           " $xForwardBasedUrl := "||$xForwardBasedUrl||
+                                                                           " $existBasedUrl := "||$existBasedUrl),:)
+        $ret := if (request:get-header('X-Forwarded-Request-Uri')) 
+                    then $xForwardBasedUrl
+                    else $existBasedUrl
+(:        , $logRet := util:log-app("DEBUG", $config:app-name, "repo-utils:base-url return "||$ret):)
+    return $ret     
 };
 
 declare function repo-utils:base-uri($config as item()*) as xs:string* {
@@ -289,7 +309,7 @@ declare function repo-utils:context-map-to-data($x-context as map()*, $config) a
         for $p at $pos in $x-context  
         let $type := map:get($p,'type'),
             $operand := if ($pos=1) then () else " "||map:get($p,'operand')||" "
-        let $log := util:log-app("TRACE",$config:app-name,"$type: '"||$type||"' $operand: '"||$operand||"'")
+        let $log := util:log-app("TRACE",$config:app-name,"repo-utils:context-map-to-data: $type: '"||$type||"' $operand: '"||$operand||"'")
         let $path := 
             switch ($type)
                     case "project" return $operand||"collection('"||project:path($p("project-pid"),"workingcopy")||"')"
@@ -297,7 +317,7 @@ declare function repo-utils:context-map-to-data($x-context as map()*, $config) a
                     case "resourcefragment" return " union doc('"||resource:path($p("resource-pid"),$p("project-pid"),'workingcopy')||"')"
                     default return ()
         return $path
-    let $log := util:log-app("TRACE",$config:app-name,"constructed data path: "||string-join($path-expressions,''))        
+    let $log := util:log-app("TRACE",$config:app-name,"repo-utils:context-map-to-data: constructed data path: "||string-join($path-expressions,''))        
     let $data := util:eval(string-join($path-expressions,''))
     return $data 
 };
@@ -665,12 +685,14 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
         repo-utils:serialise-as($item, $format, $operation, $config, '', $parameters)
 };
 declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $x-context as xs:string, $parameters as node()* ) as item()? {
-    let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as: $format = "||$format||" $operation = "||$operation||" $x-context = "||$x-context)
-    return
+    let $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as: $format = "||$format||" $operation = "||$operation||" $x-context = "||$x-context),
+        $ret :=
     switch(true())
         case ($format eq $repo-utils:responseFormatJSon) return	       
 	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config),
 	           $xslParams:=    <parameters>
+	                               <param name="exist:stop-on-warn" value="no"/>
+	                               <param name="exist:stop-on-error" value="yes"/>
 	                               <param name="format" value="{$format}"/>
 	                               <param name="x-context" value="{$x-context}"/>
 	                               <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
@@ -682,6 +704,10 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
 	                               <param name="site_logo" value="{config:param-value($config, 'site.logo')}"/>
+	                               {let $x_filter := request:get-parameter('x-filter', '')
+	                                return if ($x_filter ne '') then <param name="x-filter" value="{$x_filter}"/> else ()}
+	                               {let $queryType := request:get-parameter('queryType', '')
+	                                return if ($queryType ne '') then <param name="queryType" value="{$queryType}"/> else ()}
 	                               {$parameters/param}
 	                           </parameters>
 	       let $res := if ($xslDoc) 
@@ -696,6 +722,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	    case (contains($format, $repo-utils:responseFormatHTML)) return
 	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config),
 	           $xslParams:=    <parameters>
+	                               <param name="exist:stop-on-warn" value="no"/>
+	                               <param name="exist:stop-on-error" value="yes"/>
 	                               <param name="format" value="{$format}"/>
               			           <param name="operation" value="{$operation}"/>
               			           <param name="x-context" value="{$x-context}"/>
@@ -713,6 +741,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="site_url" value="{config:param-value($config, 'public-baseurl')}"/>
 	                               {let $x_filter := request:get-parameter('x-filter', '')
 	                                return if ($x_filter ne '') then <param name="x-filter" value="{$x_filter}"/> else ()}
+	                               {let $queryType := request:get-parameter('queryType', '')
+	                                return if ($queryType ne '') then <param name="queryType" value="{$queryType}"/> else ()}
               			           {$parameters/param}
               			       </parameters>
 (:	           , $log:=util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||document-uri($xslDoc)||
@@ -723,23 +753,27 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 :)
 	       let $res := if (exists($xslDoc)) 
 	                   then
-	                       let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||base-uri($xslDoc)||" $xslParams := "||serialize($xslParams))
+	                       let $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as $xslDoc := "||base-uri($xslDoc)||" $xslParams := "||serialize($xslParams))
 	                       return
 	                          try {
 	                             transform:transform($item,$xslDoc, $xslParams)
 	                          } catch * {
-	                             let $log := util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as transform:transform failed! $item := "||substring(serialize($item), 1, 500000))
+	                             let $log := util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as transform:transform failed! $item := "||substring(serialize($item), 1, 500000)||
+	                                                                                                                                    " $xslDoc := "||base-uri($xslDoc)||
+	                                                                                                                                    " $xslParams := "||serialize($xslParams))
 	                             return diag:diagnostics("general-error", "transform:transform failed! "||$err:code||": "||$err:description||" "||$err:additional)
 	                          }
-	                       else 
+	                   else 
 	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
-	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html"),
+	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html indent=no"),
 	           $logRet := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as return "||substring(serialize($res), 1, 240))
 	       return $res
 	   default return
 	       let $option := util:declare-option("exist:serialize", "method=xml media-type=application/xml")
-	       return $item
+	       return $item(:, 
+	   $logRet := util:log-app('TRACE', $config:app-name, 'repo-utils:serialise-as return '||string-join((for $r in $ret return substring(serialize($r), 1, 240)), '; ')) :)
+	   return $ret
 };
 
 
@@ -771,17 +805,18 @@ declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:strin
                     return 
 (:                        let $path := replace($path,'/$',''):)
                         let $operation-format-xsl:= $path||'/'||config:param-value($config, $operation||'-'||$format||".xsl"),
-                            $operation-xsl:= $path||'/'||config:param-value($config, $operation||".xsl")
+                            $operation-xsl:= $path||'/'||config:param-value($config, $operation||".xsl"),
+                            $log := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc $operation-format-xsl := "||$operation-format-xsl||", $operation-xsl := "||$operation-xsl)
                         return 
                         switch(true())
                             case (doc-available($operation-format-xsl)) 
                                 return (
-                                    util:log-app("TRACE",$config:app-name,"found xsl-doc "||$operation-format-xsl||" for operation "||$operation||", format "||$format),
+                                    util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc found xsl-doc "||$operation-format-xsl||" for operation "||$operation||", format "||$format),
                                     doc($operation-format-xsl)
                                     )
                             case (doc-available($operation-xsl)) return 
-                                (util:log-app("TRACE",$config:app-name,"found xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),doc($operation-xsl))
-                            default return util:log-app("TRACE",$config:app-name,"Could not find xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),
+                                (util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc found xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),doc($operation-xsl))
+                            default return util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc: Could not find xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),
         $ret := ($xsldoc)[1],
         $logRet := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc return "||base-uri($ret))
     return $ret
@@ -872,34 +907,35 @@ declare function repo-utils:get-record($reference) as element()? {
 
 
 declare function repo-utils:get-record-pid($reference-param) as xs:string? {
+(:Note: logging here is extremly costly. :)
     for $reference in $reference-param return 
     typeswitch($reference)
-        case xs:string return 
-            let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+        case xs:string(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'."):)
             return $reference
         
-        case text() return 
-            let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'.")
+        case text()(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'."):)
             return $reference
         
-        case attribute(OBJID) return 
-            let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+        case attribute(OBJID)(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'."):)
             return $reference/parent::mets:mets/xs:string(@OBJID)
         
-        case attribute(ID) return 
-            let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'.")
+        case attribute(ID)(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'."):)
             return $reference/parent::mets:div/xs:string(@ID)
         
-        case element(mets:mets) return 
-            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+        case element(mets:mets)(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>."):)
                 return $reference/xs:string(@OBJID)
                 
-        case element(mets:div) return
-            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+        case element(mets:div)(: return
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>."):)
             return $reference/xs:string(@ID)
             
-        case document-node() return 
-            let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+        case document-node()(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||"."):)
             return ($reference/mets:mets/xs:string(@OBJID),$reference/mets:div/xs:string(@ID))[1]
         
         default return ()
@@ -913,35 +949,36 @@ declare function repo-utils:get-record-pid($reference-param) as xs:string? {
  : @param $reference any item with relation to a resource or a mets record (elements like mets:div, mets:mets, PIDs, document-nodes etc.)
 :)
 declare function repo-utils:get-record($reference-param) as element()? {
+(:Note: logging here is extremly costly. :)
     let $references-resolved := 
         for $reference in $reference-param return  
         typeswitch($reference)
-            case xs:string return 
-                let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+            case xs:string(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'."):)
                 return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
                 
-            case text() return 
-                let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'.")
+            case text()(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'."):)
                 return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
                 
-            case attribute(OBJID) return 
-                let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+            case attribute(OBJID)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'."):)
                 return project:get($reference)
                 
-            case attribute(ID) return 
-                let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'.")
+            case attribute(ID)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'."):)
                 return collection(config:path("projects"))//mets:div[@ID = $reference]
                 
-            case element(mets:mets) return 
-                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+            case element(mets:mets)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>."):)
                 return $reference
                 
-            case element(mets:div) return 
-                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+            case element(mets:div)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>."):)
                 return $reference
             
-            case document-node() return 
-                let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+            case document-node()(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||"."):)
                 return ($reference/mets:mets,$reference/mets:div)[1]
             
             default return ()
@@ -988,4 +1025,8 @@ declare function repo-utils:xinclude-to-fragment($include as element(xi:include)
                         util:log-app("ERROR",$config:app-name, util:serialize($xpAna,'method=xml')),
                         util:log-app("ERROR",$config:app-name, $nsDecls)
                     )}
+};
+
+declare function repo-utils:protect-space-for-eval ($s as xs:string?) as xs:string? {
+    replace($s, '(>|(&gt;))\s', '>&amp;#x20;')
 };

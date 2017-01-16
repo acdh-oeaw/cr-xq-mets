@@ -531,7 +531,7 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
         $project-pid := repo-utils:get-record-pid($project),
         $project := repo-utils:get-record($project)
     let $dmdID :=   $resource/tokenize(@DMDID,'\s+'),
-        $dmdSecs :=  $project//*[@ID = $dmdID],      
+        $dmdSecs :=  $project//*[@ID = $dmdID],
         $dmdSec :=  if (exists($type) and $type!='') 
                     then $dmdSecs[*/@MDTYPE = $type and */@MDTYPE != 'OTHER' or */@MDTYPE='OTHER' and */@OTHERMDTYPE = $type] 
                     else ($dmdSecs[@STATUS='default'],$dmdSecs[1])[1]
@@ -755,18 +755,25 @@ declare function resource:label($label, $resource-pid as xs:string, $project)  {
 
 (:~  :)
 declare function resource:cite($resource-pid, $project-pid, $config) {
-let $cite-template := config:param-value($config,'cite-template')
-let $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri))
-let $today := format-date(current-dateTime(),'[D]. [M]. [Y]')
-let $md := resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid)
-let $link := resource:link($resource-pid, $project-pid, $config)
-let $entity-label := ""
-(:return $md:)
-return util:eval ("<bibl>"||$cite-template||"</bibl>")
+let $cite-template := repo-utils:protect-space-for-eval(config:param-value($config,'cite-template')),
+    $templateString := "<tei:bibl xmlns='http://www.w3.org/1999/xhtml' xml:space='preserve'>"||$cite-template||"</tei:bibl>",
+    $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri)),
+    $today := format-date(current-dateTime(),'[D]. [M]. [Y]'),
+    $md := (resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid), resource:dmd-from-id($resource-pid, $project-pid))[1],
+    $link := resource:link($resource-pid, $project-pid, $config),
+    $entity-label := "",
+(:    $log := util:log-app("DEBUG", $config:app-name, "resource:cite $templateString := "||$templateString
+                                                  ||" $ns := "||serialize(config:param-value($config,'mappings')//namespaces/ns)
+                                                  ||" $md := "||substring(serialize($md),1,240)
+                                                  ||" $link := "||$link
+                                                  ||" $entity-label := "||$entity-label),:)
+    $ret := util:eval($templateString)
+(:    , $logRet := util:log-app("DEBUG", $config:app-name, "resource:cite return "||substring(serialize($ret),1,240)):)
+return $ret
 };
 
 declare function resource:link($resource-pid, $project-pid, $config) {
-    replace(config:param-value($config, 'base-url-public'),'/$','')||'/'||$project-pid||'/'||'get/'||$resource-pid
+    config:param-value($config, 'base-url-public')||'get/'||$resource-pid
 };
 
 (:~
@@ -784,11 +791,13 @@ declare function resource:get-toc($resource-pid as xs:string, $project) as eleme
         (:$frgs := resource:get($resource-pid, $project-pid)//mets:div[@TYPE='resourcefragment']:)
        
     let $toc-resource := $toc[@CONTENTIDS=$resource-ref]
-    return if (exists($toc-resource)) then resource:do-get-toc-resolved($toc-resource,$resource-pid,$mets:record) else ()
+    let $ret := if (exists($toc-resource)) then resource:do-get-toc-resolved($toc-resource,$resource-pid,$mets:record) else (),
+        $logRet := util:log-app("DEBUG", $config:app-name, "resource:get-toc retrun "||substring(serialize($ret),1,240)||"...")
+    return $ret
 };
 
 declare function resource:do-get-toc-resolved($node as node(), $resource-pid as xs:string?, $mets-record as element(mets:mets)) as node()* {
-    typeswitch ($node)
+    let $ret := typeswitch ($node)
         case attribute() return $node
         
         case text() return $node
@@ -846,7 +855,9 @@ declare function resource:do-get-toc-resolved($node as node(), $resource-pid as 
                             return resource:do-get-toc-resolved($n,$resource-pid,$mets-record)
                        }
 
-        default return $node
+        default return $node,
+      $logRet := util:log-app("TRACE", $config:app-name, "resource:do-get-toc-resolve return "||substring(serialize($ret),1,240))
+   return $ret
 };
 
 
