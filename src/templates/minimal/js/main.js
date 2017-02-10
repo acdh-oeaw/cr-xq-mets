@@ -135,6 +135,7 @@ function minimal_template_ui_setup() {
     
     // handle link to explain
     $(document).on('click', "#navigation a.link-explain", m.load_explain);
+    $(document).on('click', "#navigation .indexInfo a", m.load_scan);
     $(document).on('click', "#navigation .zr-indexInfo a.value-caller", m.load_scan);
     
     // handle loading to main (scan -> search) (.content - to distinguish from .header .prev-next) 
@@ -302,7 +303,7 @@ function load_scan(event) {
        m.load_(target, targetRequest, function() {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
-                close_button.click(m.onCloseButtonClicked(target));
+                close_button.click(function(event) { m.onCloseButtonClicked(event, target); });
                 m.customizeIcons();
 
                 target.find("ul").treeview({
@@ -317,7 +318,7 @@ function load_scan(event) {
 
 m.load_scan = load_scan;
 
-function onCloseButtonClicked(target) {
+function onCloseButtonClicked(event, target) {
     target.toggle();
 }
 
@@ -387,7 +388,9 @@ m.query = query;
 function load_main(event) {
     event.preventDefault();
     var target = $('#results');
-    var params = new URI($(this).attr('href')).query(true);
+    var params = new URI($(this).attr('href')).query(true);    
+    // Recreate the x-dataview param from scratch    
+    params["x-dataview"] = cr_config.main.dataview;
     var targetRequest = baseurl.clone().query(params).toString();
     //var detailFragment = targetRequest + ' ' + search_container_selector;
     
@@ -395,9 +398,6 @@ function load_main(event) {
     
     // set the query into the query input field
     $('#input-query').val(params["query"]);
-    
-    // Recreate the x-dataview param from scratch    
-    params["x-dataview"] = cr_config.main.dataview;
     
     m.load_(target,targetRequest + ' ' + m.resultSelectors, m.customizeIcons );
 }
