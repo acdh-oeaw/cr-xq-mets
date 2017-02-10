@@ -1617,10 +1617,14 @@ declare function fcs:calculate-offsets($text-lengths as xs:integer*) as xs:integ
     return $ret
 };
 
-declare function fcs:filter-kwic($node as node(), $mode as xs:string) as xs:string? {
+(: In exist-db 3.0 this has to be of type text()! :)
+declare function fcs:filter-kwic($node as node(), $mode as xs:string) as text()? {
+    let $ret := <kwic:text>{
     if ($mode eq 'before')
     then concat($node,' ')
     else concat(' ',$node)
+    }</kwic:text>
+    return $ret/text()
 };
 
 declare %private function fcs:get-resource-mets($x-context as xs:string, $config) as element(mets:div)* {
