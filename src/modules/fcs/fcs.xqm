@@ -1365,7 +1365,10 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                             else ()
                             
         let $dv-facs :=     if (contains($data-view,'facs')) 
-                            then fcs:dv-facs-param-to-dataview($data-view, $resourcefragment-pid, $resource-pid, $project-id)
+                            then 
+    (:                            let $facs-uri:=fcs:apply-index ($expanded-record-data-input, "facs-uri",$x-context, $config):)
+                                let $facs-uri := facs:get-url($resourcefragment-pid, $resource-pid, $project-id)
+        				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
         				    else ()
                          
         let $dv-title := let $title_ := if (exists($title) and not($title='')) then $title else $res-entry/data(@LABEL)||", "||$rf-entry/data(@LABEL)
@@ -1405,7 +1408,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                             case "full"         return (if ($rf-window gt 1) then $rf-window-prev else (),
                                                                        $record-data-highlighted[1]/*/*,
                                                                        if ($rf-window gt 1) then $rf-window-next else ())
-                                            case starts-with($d, "facs") return $dv-facs
+                                            case "facs"         return $dv-facs
                                             case "title"        return $dv-title
                                             case "cite"        return $dv-cite
                                             case "kwic"         return $kwic
@@ -1420,7 +1423,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                 let $data:= switch ($d)
         (:                                        case "full"         return $rf[1]/*:)
                                                 case "full"         return $record-data-highlighted[1]/*/*
-                                                case starts-with($d, "facs")         return $dv-facs
+                                                case "facs"         return $dv-facs
                                                 case "title"        return $dv-title
                                                 case "cite"        return $dv-cite
                                                 case "kwic"         return $kwic
@@ -1644,13 +1647,4 @@ let $resources := project:list-resources($x-context),
         else $resources ! <mets:div>{./@*}</mets:div>, (: Flattens the mets:div structure, that is removes the resourcefragment elements:)
     $logRet := util:log-app("TRACE", $config:app-name, "fcs:get-resource-mets: $metsdivs := "||substring(serialize($ret),1,240))
     return $ret
-};
-
-
-declare %private function fcs:dv-facs-param-to-dataview($data-view as xs:string, $resourcefragment-pid, $resource-pid, $project-id) {
-    for $d in tokenize($data-view,',\s*')[starts-with(., "facs")]
-    return
-        let $facs-version := (substring-after($d, 'facs:'),'default')[1]
-        let $facs-uri := facs:get-url($facs-version, $resourcefragment-pid, $resource-pid, $project-id)
-        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
 };
