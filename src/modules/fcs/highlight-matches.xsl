@@ -58,7 +58,7 @@
     <xsl:variable name="all-ids" select="distinct-values($ids-parsed//id[(not(exists(../offset))) or (../rfpid = '') or (../rfpid=$rfpid)]/text())" as="xs:string*"/>
     <xsl:variable name="fully-highlighted-node-ids" select="cr:fully-highlighted-nodes($ids-parsed, .)"/>
     <xsl:variable name="fully-highlighted-nodes" select="//*[@cr:id = $fully-highlighted-node-ids]"/>
-    <xsl:variable name="fhn-following-whitespace-nodes" select="$fully-highlighted-nodes/following-sibling::*[1][matches(., '\s+')]"/>
+    <xsl:variable name="fhn-following-whitespace-nodes" select="$fully-highlighted-nodes/(following-sibling::*|following-sibling::text())[1][matches(., '\s+')]"/>
     <xsl:variable name="highlighted-nodes" as="xs:string*" select="distinct-values(($ids-parsed[not(exists(offset))]/id, ($fully-highlighted-nodes|$fhn-following-whitespace-nodes)/@cr:id))"/>
     <xsl:variable name="parent-highlighted-text-nodes" select="for $t in //*[parent::*/@cr:id = $ids-parsed/id]/text() return generate-id($t)"/>
     <xsl:template match="node() | @*">
@@ -147,12 +147,39 @@
         </xsl:choose>      
     </xsl:template>    
     <xsl:template match="*[@cr:id = $fhn-following-whitespace-nodes/@cr:id]" priority="1">
-        <exist:match>
+        <xsl:variable name="adjacent-node-text-after-space">           
             <xsl:copy copy-namespaces="no">
                 <xsl:copy-of select="@*"/>
-                <xsl:apply-templates mode="#default"/>
-            </xsl:copy>
-        </exist:match>
+                <xsl:value-of select="replace(text()[1], '^([^\s]*)(\s.*$)', '$2')"/>
+                <xsl:apply-templates select="*|text() except (text()[1])|comment()|processing-instruction()" mode="#default"/>
+            </xsl:copy> 
+        </xsl:variable>
+        <xsl:variable name="adjacent-node-text-before-space">           
+            <xsl:copy copy-namespaces="no">
+                <xsl:copy-of select="@*"/>
+                <xsl:value-of select="replace(text()[1], '^([^\s]*)(\s.*$)', '$1')"/>
+            </xsl:copy>  
+        </xsl:variable>
+        <xsl:if test="xs:string($adjacent-node-text-before-space) ne ''">
+            <exist:match>
+                <xsl:sequence select="$adjacent-node-text-before-space"/>
+            </exist:match>
+        </xsl:if>
+        <xsl:sequence select="$adjacent-node-text-after-space"/> 
+    </xsl:template>
+    <xsl:template match="text()[(preceding-sibling::*|preceding-sibling::*)[1]/@cr:id = $fully-highlighted-node-ids]">
+        <xsl:variable name="adjacent-node-text-after-space">
+            <xsl:value-of select="replace(., '^([^\s]*)(\s.*$)', '$2')"/>
+        </xsl:variable>
+        <xsl:variable name="adjacent-node-text-before-space">
+            <xsl:value-of select="replace(., '^([^\s]*)(\s.*$)', '$1')"/>
+        </xsl:variable>
+        <xsl:if test="xs:string($adjacent-node-text-before-space) ne ''">
+            <exist:match>
+                <xsl:sequence select="$adjacent-node-text-before-space"/>
+            </exist:match>
+        </xsl:if>
+        <xsl:sequence select="$adjacent-node-text-after-space"/> 
     </xsl:template>
     <xd:doc>
         <xd:desc>In viDicts some lexical information is obvoius only to humans
