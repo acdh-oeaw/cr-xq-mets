@@ -410,13 +410,19 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
                  util:log-app("TRACE",$config:app-name,"$base-uris = "||string-join($base-uris, '; '))):)
     return
         let $available:=
-            for $i at $pos in $dirs 
+            for $i at $pos in $dirs
+            return
+            try {
             let $is-binary-doc:=util:is-binary-doc($i)
             return
                 switch (true())
                     case ($is-binary-doc and util:binary-doc-available(xs:anyURI($i))) return $base-uris[$pos]
                     case (doc-available($i)) return $base-uris[$pos]
                     default return ()
+            } catch * {
+                let $log := util:log-app("ERROR",$config:app-name,"Permission error: " || $err:description|| ' '||$i)
+                return ()
+            }
         return 
             if (exists($available))
             then xs:anyURI($available[1])
