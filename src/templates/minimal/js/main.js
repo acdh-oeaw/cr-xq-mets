@@ -355,7 +355,7 @@ m.load_toc = load_toc;
 function toc_loaded(target, event) {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
-    close_button.click(function(){m.onCloseButtonClicked(target)});                     
+    close_button.click(function(event){m.onCloseButtonClicked(event, target)});                     
                  // a hack to remove the top element (Work itself)    
                var ul_resource = target.find('ul.resource');
                 target.find('.scan-index-fcs-toc').html('').append(ul_resource);
