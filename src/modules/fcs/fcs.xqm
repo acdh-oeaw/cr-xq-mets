@@ -667,7 +667,13 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
     let $data := repo-utils:context-to-data($x-context,$config),
     (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)
 (:        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize):)
-        $nodes := index:apply-index($data, $index,$project-pid,())
+        $nodes := index:apply-index($data, $index,$project-pid,()),
+        $logNodes := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: base-uri($data) := "||string-join($data!base-uri(.),'; ')||
+                                                            " $index := "||$index||
+                                                            " §project-pid := "||$project-pid||
+                                                            " $nodes := "||substring(serialize($nodes),1,80)||"..."),
+        $logNoNodes := if (empty($nodes)) then util:log-app("TRACE", $config:app-name, 
+          "There are no nodes in the index! Check you created mappings and generated and/or registered index functions for this resource!") else ()
 
     let $index-label := ($index-elem/xs:string(@label), $index-elem/xs:string(@key) )[1],
     $logSettings := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: $project-pid :="||$project-pid||", $facets := "||serialize($facets)||", $index-elem := "||serialize($index-elem)||", $index-label := "||$index-label)
