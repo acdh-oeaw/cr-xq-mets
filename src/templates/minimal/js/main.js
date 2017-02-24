@@ -141,6 +141,7 @@ function minimal_template_ui_setup() {
     // handle loading to main (scan -> search) (.content - to distinguish from .header .prev-next) 
     $(document).on('click', "#navigation .load-main .content a", m.load_main);
     // paging in scan
+    $(document).on('click', "#navigation .scan a.internal", m.load_scan);
     $(document).on('click', "#navigation .projectDMD.record .result-navigation.prev-next a", m.load_scan);
     
     //
