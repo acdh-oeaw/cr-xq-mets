@@ -91,10 +91,7 @@
         <xsl:value-of select="."/>
     </xsl:template>
     <xsl:template match="*[@cr:id = $highlighted-nodes]" priority="10" mode="injectMatches">
-        <exist:match xml:space="preserve">
-            <xsl:text xml:space="preserve"> </xsl:text>
-            <xsl:copy-of select="."/>
-        </exist:match>
+        <exist:match xml:space="preserve"><xsl:text xml:space="preserve"> </xsl:text><xsl:copy-of select="."/></exist:match>
     </xsl:template>
     <xsl:variable name="genfuns">
         ({<cr:gen-fun>offsets</cr:gen-fun>},{<cr:gen-fun>lengths</cr:gen-fun>})
@@ -144,28 +141,28 @@
             <xsl:otherwise>
                 <xsl:apply-templates/>
             </xsl:otherwise>
-        </xsl:choose>      
-    </xsl:template>    
+        </xsl:choose>
+    </xsl:template>
     <xsl:template match="*[@cr:id = $fhn-following-whitespace-nodes/@cr:id]" priority="1">
-        <xsl:variable name="adjacent-node-text-after-space">           
+        <xsl:variable name="adjacent-node-text-after-space">
             <xsl:copy copy-namespaces="no">
                 <xsl:copy-of select="@*"/>
                 <xsl:value-of select="replace(text()[1], '^([^\s]*)(\s.*$)', '$2')"/>
                 <xsl:apply-templates select="*|text() except (text()[1])|comment()|processing-instruction()" mode="#default"/>
-            </xsl:copy> 
+            </xsl:copy>
         </xsl:variable>
-        <xsl:variable name="adjacent-node-text-before-space">           
+        <xsl:variable name="adjacent-node-text-before-space">
             <xsl:copy copy-namespaces="no">
                 <xsl:copy-of select="@*"/>
                 <xsl:value-of select="replace(text()[1], '^([^\s]*)(\s.*$)', '$1')"/>
-            </xsl:copy>  
+            </xsl:copy>
         </xsl:variable>
         <xsl:if test="xs:string($adjacent-node-text-before-space) ne ''">
             <exist:match>
                 <xsl:sequence select="$adjacent-node-text-before-space"/>
             </exist:match>
         </xsl:if>
-        <xsl:sequence select="$adjacent-node-text-after-space"/> 
+        <xsl:sequence select="$adjacent-node-text-after-space"/>
     </xsl:template>
     <xsl:template match="text()[(preceding-sibling::*|preceding-sibling::*)[1]/@cr:id = $fully-highlighted-node-ids]">
         <xsl:variable name="adjacent-node-text-after-space">
@@ -179,7 +176,7 @@
                 <xsl:sequence select="$adjacent-node-text-before-space"/>
             </exist:match>
         </xsl:if>
-        <xsl:sequence select="$adjacent-node-text-after-space"/> 
+        <xsl:sequence select="$adjacent-node-text-after-space"/>
     </xsl:template>
     <xd:doc>
         <xd:desc>In viDicts some lexical information is obvoius only to humans
@@ -279,9 +276,7 @@
                 <xsl:call-template name="injectMatchTags">
                     <xsl:with-param name="previousMatches">
                         <xsl:value-of select="substring($previousMatches/text()[1],1,$before-length)"/>
-                        <exist:match xml:space="preserve">
-                            <xsl:value-of select="substring($previousMatches/text()[1],$match-start-offset,$match-length)"/>
-                        </exist:match>
+                        <exist:match xml:space="preserve"><xsl:value-of select="substring($previousMatches/text()[1],$match-start-offset,$match-length)"/></exist:match>
                         <xsl:if test="string-length($previousMatches/text()[1]) &gt; $after-start-offset">
                             <xsl:value-of select="substring($previousMatches/text()[1],$after-start-offset)"/>
                         </xsl:if>
