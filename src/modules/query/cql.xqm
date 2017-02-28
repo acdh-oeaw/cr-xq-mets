@@ -153,12 +153,10 @@ declare function cql:boolean($value as element(value), $modifiers as element(mod
             case "NOT" return cql:except($leftOperand, $rightOperand, $map)
             case "prox" return cql:prox($leftOperand, $rightOperand, $modifiers, $map)
             (: default operator AND :)
-            default return cql:intersect($leftOperand, $rightOperand, $map) 
-                (:"("||string-join(
-                        for $i in $boolean/following-sibling::*/searchClause
-                        return cql:searchClause($i,$map),
-                        ' intersect '
-                    )||")":)    return concat('/',string-join($parts,""))
+            default return cql:intersect($leftOperand, $rightOperand, $map)
+    (: TODO make it right: this adding a / should only happen on the outermost boolean connection.
+       Now it is reversed for intersect to allow and chains. :)
+    return concat('/',string-join($parts,""))
  };
 
 declare function cql:searchClause($clause as element(searchClause), $map) {
@@ -227,8 +225,12 @@ declare function cql:predicate($clause,$map) as xs:string {
 };
 
 declare function cql:intersect($leftOperand as element(leftOperand), $rightOperand as element(rightOperand), $map) as xs:string {
-    let $operands := (cql:process-xcql($leftOperand, $map), cql:process-xcql($rightOperand, $map))
-    let $return := "("||string-join($operands,' intersect ')||")"
+    let $operandsInitial := (cql:process-xcql($leftOperand, $map), cql:process-xcql($rightOperand, $map)),
+        $removeLeadingSlash := starts-with($operandsInitial[1], '/'),
+        $operands := if ($removeLeadingSlash) then (substring($operandsInitial[1], 2, string-length($operandsInitial[1]) - 1), $operandsInitial[2]) else $operandsInitial
+(:        , $log := util:log-app('DEBUG', $config:app-name, "cql:intersect $operands[1] := "||$operands[1]||" $useParentheses := "||$useParentheses):)
+    let $return := "("||string-join($operands,' intersect ')||")",
+        $logRet := util:log-app('TRACE', $config:app-name, "cql:intersect return "||$return)
     return $return
 };
 
