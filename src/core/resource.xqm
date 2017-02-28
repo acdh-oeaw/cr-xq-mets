@@ -51,7 +51,7 @@ declare namespace this="current.object";
 
 declare variable $resource:mdtypes := ("MARC","MODS","EAD","DC","NISOIMG","LC-AV","VRA","TEIHDR","DDI","FGDC","LOM","PREMIS","PREMIS:OBJECT","PREMIS:AGENT","PREMIS:RIGHTS","PREMIS:EVENT","TEXTMD","METSRIGHTS","ISO 19115:2003 NAP","OTHER");
 
-declare variable $resource:othermdtypes := ("IIIF", "CMDI"); 
+declare variable $resource:othermdtypes := ("CMDI"); 
 
 (: default location when storing md with resource:dmd#5 :)
 declare variable $resource:defaultMDStoreLocation := "db";
@@ -370,12 +370,8 @@ declare function resource:remove-file($fileid as xs:string,$resource-pid as xs:s
  : @param $key: the key of the data to get
 ~:)
 declare function resource:path($resource-pid as xs:string, $project, $key as xs:string) as xs:string? {
-    let $file := resource:file($resource-pid, $project, $key),
-(:        $log := util:log-app("TRACE",$config:app-name,"resource:path $resource-pid := "||$resource-pid||" $project := "||$project||
-                                                                   " $file := "||serialize($file)),:)
-        $ret := data($file/mets:FLocat/@xlink:href)
-(:        , $logRet := util:log-app("TRACE",$config:app-name,"resource:path return "||$ret):)
-    return $ret
+    let $file := resource:file($resource-pid, $project, $key)
+    return $file/mets:FLocat/@xlink:href
 };
 
 declare function resource:file($resource-pid as xs:string, $project, $key as xs:string) as element(mets:file)? {
@@ -507,16 +503,16 @@ declare function resource:add-master($master-filepath as xs:string, $resource-pi
 };
 
 (:~ getter and setter for dmdSec, i.e. the resources's descriptive metadata :)
-declare function resource:dmd-from-id($resource-pid as xs:string,$project-pid as xs:string) as item()* {
+declare function resource:dmd-from-id($resource-pid as xs:string,$project-pid as xs:string) as element()* {
     resource:dmd((), resource:get($resource-pid, $project-pid), doc(project:filepath($project-pid)))
 };
 
-declare function resource:dmd-from-id($type as xs:string, $resource-pid as xs:string,$project-pid as xs:string) as item()? {
+declare function resource:dmd-from-id($type as xs:string, $resource-pid as xs:string,$project-pid as xs:string) as element()? {
     resource:dmd($type,resource:get($resource-pid, $project-pid), doc(project:filepath($project-pid)))
 };
  
  
-declare function resource:dmd($resource, $project) as item()? {
+declare function resource:dmd($resource, $project) as element()? {
     resource:dmd((),$resource,$project)
 };
 
@@ -525,7 +521,7 @@ declare function resource:dmd($resource, $project) as item()? {
  : @param $type the type of metadata to retrieve ("TEIHDR", "CMDI" etc)
  : @param $resource the 
  :)
-declare function resource:dmd($type as xs:string?, $resource, $project) as item()? {
+declare function resource:dmd($type as xs:string?, $resource, $project) as element()? {
     (:let $resource-pid :=   typeswitch($resource) case element(mets:div) return $resource/@ID case xs:string return $resource case text() return $resource default return (),
         $project-pid :=   typeswitch($project) case element(mets:mets) return $project/@OBJID case xs:string return $project case text() return $project case attribute(OBJID) return data($project) default return (),
         $project := if ($project instance of element(mets:mets)) then $project else project:get($project-pid),
@@ -560,9 +556,9 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as item(
                 case exists($dmdSec/mets:mdRef) return 
                     let $location := $dmdSec/mets:mdRef/@xlink:href
                     return 
-                        if (util:is-binary-doc($location) and util:binary-doc-available($location))
-                        then response:stream-binary(util:binary-doc($location), xmldb:get-mime-type($location), util:document-name($location))
-                        else 
+                        (:if (util:is-binary-doc($location))
+                        then ()
+                        else:) 
                             if (doc-available($location))
                             then doc($location)/*
                         else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
@@ -606,7 +602,7 @@ declare function resource:dmd($resource-pid as xs:string, $project, $data as ite
         $dmdSec :=      $doc//mets:dmdSec[@ID = $dmdid],
         $store-location := ($store-location_param,$resource:defaultMDStoreLocation)[1],
         $store-to-db := xs:boolean($store-location='db'),
-        $log := util:log-app("TRACE",$config:app-name,"resource:dmd: $doc := "||base-uri($doc)||", $data-location := "||$data-location||", $store-location := "||$store-location)
+        $log := util:log-app("DEBUG",$config:app-name,"resource:dmd: $doc := "||base-uri($doc)||", $data-location := "||$data-location||", $store-location := "||$store-location)
     return 
         switch (true())
             (: wrong declaration of Metadata Format :)
@@ -620,7 +616,7 @@ declare function resource:dmd($resource-pid as xs:string, $project, $data as ite
                 let $rm-data := switch($data-location)
                                     case ($data-location eq base-uri($doc)) return update delete $current
                                     (: in-memory fragment - get the dmdSec via its ID :)
-                                    case ($data-location = ('','/')) return util:log-app("TRACE",$config:app-name,"returning in-memory-fragments by resource:dmd() is not implemented yet.") 
+                                    case ($data-location = ('','/')) return util:log-app("DEBUG",$config:app-name,"returning in-memory-fragments by resource:dmd() is not implemented yet.") 
                                     default return xmldb:remove(util:collection-name($data),util:document-name($data)),
                     $rm-dmdSec:=update delete $doc//mets:dmdSec[@ID = $dmdid],
                     $rm-ref-attrs:= 
@@ -650,7 +646,7 @@ declare function resource:dmd($resource-pid as xs:string, $project, $data as ite
                     (: the content of the metdata is already in an external file, so we just set the mdRef (again) :)
                     if ($data instance of xs:string)
                     then  
-                        if (util:is-binary-doc(normalize-space($data)) and util:binary-doc-available(normalize-space($data)) or doc-available(normalize-space($data)))
+                        if (doc-available(normalize-space($data)))
                         then 
                             let $mdRef:= 
                                 if ($mdtype = $resource:mdtypes)
@@ -796,7 +792,7 @@ declare function resource:get-toc($resource-pid as xs:string, $project) as eleme
        
     let $toc-resource := $toc[@CONTENTIDS=$resource-ref]
     let $ret := if (exists($toc-resource)) then resource:do-get-toc-resolved($toc-resource,$resource-pid,$mets:record) else (),
-        $logRet := util:log-app("TRACE", $config:app-name, "resource:get-toc retrun "||substring(serialize($ret),1,240)||"...")
+        $logRet := util:log-app("DEBUG", $config:app-name, "resource:get-toc retrun "||substring(serialize($ret),1,240)||"...")
     return $ret
 };
 
