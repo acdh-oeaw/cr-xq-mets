@@ -493,7 +493,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 	let $terms-subsequence := fcs:scan-subsequence($index-scan/descendant-or-self::sru:scanResponse/sru:terms/sru:term, $start-term-subseq, $max-terms, $response-position, $x-filter)
     (:  return $res-nodeset   :)
 (:    return $index-scan  :)
-    (:TRACE
+    (:DEBUG
     
     :)
     
@@ -670,7 +670,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
         $nodes := index:apply-index($data, $index,$project-pid,()),
         $logNodes := util:log-app("TRACE", $config:app-name, "fcs:do-scan-default: base-uri($data) := "||string-join($data!base-uri(.),'; ')||
                                                             " $index := "||$index||
-                                                            " Â§project-pid := "||$project-pid||
+                                                            " §project-pid := "||$project-pid||
                                                             " $nodes := "||substring(serialize($nodes),1,80)||"..."),
         $logNoNodes := if (empty($nodes)) then util:log-app("TRACE", $config:app-name, 
           "There are no nodes in the index! Check you created mappings and generated and/or registered index functions for this resource!") else ()
@@ -1022,7 +1022,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                                     },
             $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve $config instance of map() "||($config instance of map())), 
             $result-seq-expanded := if (not($config-param instance of map()) or $config-param("x-highlight") != "off") then
-               let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = on: "||$config-param('x-highlight'))
+               let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = on")
                return util:expand($result-seq)
             else
                let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = off")
@@ -1227,15 +1227,15 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                         then distinct-values((for $m in $match-ids-without-offsets return rf:lookup-id($m,$resource-pid,$project-id)))
                                         else util:log-app("ERROR", $config:app-name, "fcs:format-record-data $match-ids is empty"),
         $initial-rfs := fcs:get-rfs-xml($expanded-record-data-input, $project-id, $resource-pid, $initial-resourcefragment-pids, $match-ids, $config),
-        $match-ids-page-splitted := fcs:recalculate-offset-for-match-ids-on-page-split($match-ids, $initial-rfs),
+        $match-ids-page-splitted := fcs:recalculate-offset-for-match-ids-on-page-split($match-ids, $initial-rfs, exists($expanded-record-data-input/fcs:resourceFragment)),
         $splitted-resourcefragment-pids := fcs:get-match-rfpid($match-ids-page-splitted),
-(:        $log := util:log-app("TRACE",$config:app-name,"fcs:format-record-data $match-ids-page-splitted := "||string-join($match-ids-page-splitted, "; ")||
+(:        $log := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $match-ids-page-splitted := "||string-join($match-ids-page-splitted, "; ")||
                                                                            ", $splitted-resourcefragment-pids := "||string-join($splitted-resourcefragment-pids, "; ")),:)
         $resourcefragment-pids := if (exists($splitted-resourcefragment-pids)) then distinct-values($splitted-resourcefragment-pids) else $initial-resourcefragment-pids,
-(:        $log2 := util:log-app("TRACE",$config:app-name,"fcs:format-record-data $initial-resourcefragment-pids := "||string-join($initial-resourcefragment-pids, '; ')||
+(:        $log2 := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $initial-resourcefragment-pids := "||string-join($initial-resourcefragment-pids, '; ')||
                                                                             " $resourcefragment-pids := "||string-join($resourcefragment-pids, '; ')),:)
         $rfs := fcs:get-rfs-xml($expanded-record-data-input, $project-id, $resource-pid, $resourcefragment-pids, $match-ids, $config)
-(:        , $log3 := util:log-app("TRACE",$config:app-name,"fcs:format-record-data $initial-rfs = "||string-join(for $rf in $initial-rfs return substring(serialize($rf),1,240), '; ')||
+(:        , $log3 := util:log-app("DEBUG",$config:app-name,"fcs:format-record-data $initial-rfs = "||string-join(for $rf in $initial-rfs return substring(serialize($rf),1,240), '; ')||
                                                                             " $rfs := "||string-join(for $rf in $rfs return substring(serialize($rf),1,240))):)
     (: iterate over all resourcefragments:)
     return
@@ -1266,6 +1266,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
         $log :=  util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-toprocess := "||substring(serialize($record-data-toprocess),1,240))
          let $log := util:log-app("TRACE", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*)||" $expanded-record-data-input/local-name():"||local-name($expanded-record-data-input))
          let $log := util:log-app("TRACE", $config:app-name, "$matches-to-highlight: "||string-join($matches-to-highlight,';'))
+         let $log := util:log-app("TRACE", $config:app-name, "$matches-to-highlight-splitted: "||string-join($matches-to-highlight-splitted,';'))
          
                                                 
         let $record-data-highlighted := 
@@ -1276,8 +1277,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                     then 
                                         if ($config("x-highlight") = "off") 
                                         then $record-data-toprocess
-                                        else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight, $resourcefragment-pid)
-                                     else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight, $resourcefragment-pid)
+                                        else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight-splitted, $resourcefragment-pid)
+                                     else fcs:highlight-matches-in-copy($record-data-toprocess, $matches-to-highlight-splitted, $resourcefragment-pid)
                                 else $record-data-toprocess,
             $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-highlighted: "||substring(serialize($record-data-highlighted),1,2400000))
     (: to repeat current $x-format param-value in the constructed requested :)
@@ -1310,30 +1311,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
         let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
         
         let $want-kwic := contains($data-view,'kwic'), 
-            $kwic := if ($want-kwic) then
-                     let $kwic-config := <config width="{$fcs:kwicWidth}"/>
-                     let $flattened-record := transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,()),
-                         $logfr := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $flattened-record := "||substring(serialize($flattened-record),1,240))                     
-                     let $kwic-html := kwic:summarize($flattened-record, $kwic-config,util:function(xs:QName("fcs:filter-kwic"),2))                           
-                        return 
-                           ( if (exists($kwic-html)) 
-                            then  
-                                for $match at $pos in $kwic-html
-                                (: when the exist:match is complex element kwic:summarize leaves the keyword (= span[2]) empty, 
-                                so we try to fall back to the exist:match :)
-                                let $kw := if (exists($match/span[2][text()])) then $match/span[2]/text() else $record-data-highlighted[1]//exist:match[$pos]//text(),
-                                    $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data match $kwic-html := "||substring(serialize($match), 1, 240))
-                                return (<fcs:c type="left">{$match/span[1]/text()}</fcs:c>,
-                                                          <fcs:kw>{$kw}</fcs:kw>,
-                                                          <fcs:c type="right">{$match/span[3]/text()}</fcs:c>)            	                       
-                                       
-                            else (: if no kwic-match let's take first 100 characters 
-                                            There c/should be some more sophisticated way to extract most significant info 
-                                            e.g. match on the query-field :)
-                            substring($record-data-highlighted[1],1,(2 * $fcs:kwicWidth)) ,
-                            () )
-                         else (),
-            $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $kwic := "||substring(serialize($kwic),1,240))                        
+            $kwic := if ($want-kwic) then fcs:create-kwic($record-data-highlighted) else ()                        
                         
         (: prev-next :)                     
         let $dv-navigation:= if (contains($data-view,'navigation')) then
@@ -1439,6 +1417,49 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                                  return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
                      }
                 </fcs:Resource>
+};
+
+declare %private function fcs:create-kwic($record-data-highlighted) {
+   let $log := util:log-app("TRACE", $config:app-name, "fcs:create-kwic $record-data-highlighted := "||substring(serialize($record-data-highlighted), 1, 240000)||                                                                       
+                                                                      " $fcs:flattenKwicXsl := "||$fcs:flattenKwicXsl),
+       $flattened-record := transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,()),
+       $logfr := util:log-app("TRACE", $config:app-name, "fcs:create-kwic $flattened-record := "||substring(serialize($flattened-record),1,240))                     
+   let $kwic-html := fcs:kwic-summary($flattened-record),
+       $log := util:log-app("TRACE", $config:app-name, "fcs:create-kwic $kwic-html := "||substring(serialize($kwic-html), 1, 240)),
+       $ret := if (exists($kwic-html)) then  
+               for $match at $pos in $kwic-html
+                                (: when the exist:match is complex element kwic:summarize leaves the keyword (= span[2]) empty, 
+                                so we try to fall back to the exist:match :)
+                                let $kw := if (exists($match/span[2][text()])) then $match/span[2]/text() else $record-data-highlighted[1]//exist:match[$pos]//text(),
+                                    $log := util:log-app("TRACE", $config:app-name, "fcs:create-kwic $match := "||substring(serialize($match), 1, 240))
+                                return (<fcs:c type="left">{$match/span[1]/text()}</fcs:c>,
+                                                          <fcs:kw>{$kw}</fcs:kw>,
+                                                          <fcs:c type="right">{$match/span[3]/text()}</fcs:c>)            	                       
+                                       
+               else (: if no kwic-match let's take first 100 characters 
+                                            There c/should be some more sophisticated way to extract most significant info 
+                                            e.g. match on the query-field :)
+               substring($record-data-highlighted[1],1,(2 * $fcs:kwicWidth)),
+       $logRet := util:log-app("TRACE", $config:app-name, "fcs:create-kwic return "||substring(serialize($ret),1,240))
+   return $ret
+};
+
+declare %private function fcs:kwic-summary($flattened-record) as element()* {
+    let $expanded-flattened-record := util:expand($flattened-record, "expand-xincludes=no"),
+        $kwic-config := <config width="{$fcs:kwicWidth}"/>
+	for $match in $expanded-flattened-record//exist:match
+	return
+		kwic:get-summary($expanded-flattened-record, $match, $kwic-config,util:function(xs:QName("fcs:filter-kwic"),2))
+};
+
+(: In exist-db 3.0 this has to be of type text()! :)
+declare function fcs:filter-kwic($node as node(), $mode as xs:string) as text()? {
+    let $ret := <kwic:text>{
+    if ($mode eq 'before')
+    then concat($node,' ')
+    else concat(' ',$node)
+    }</kwic:text>
+    return $ret/text()
 };
 
 declare %private function fcs:generate-rf-ref($rf as element()?, $x-context as xs:string) as xs:string {
@@ -1559,26 +1580,27 @@ declare function fcs:get-pid($mdRecord as element()) {
 
 
 declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:string*, $rfpid as xs:string) as element()? {
-    let $stylesheet-file := "highlight-matches.xsl",
+    let (: $error := error(QName((),'error'), 'get a stack trace'), :)
+        $stylesheet-file := "highlight-matches.xsl",
         $stylesheet:=   doc($stylesheet-file),
         $params := <parameters>
            <param name="cr-ids" value="{string-join($ids,',')}"/>
            <param name="rfpid" value="{$rfpid}"/>
         </parameters>,
         $log := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy $copy := "||substring(serialize($copy),1,240)||
-                                                                               "..., $stylesheet := "||base-uri($stylesheet)||
-                                                                               "..., $params := "||serialize($params)),
+                                                                               "..., base-uri($stylesheet) := "||base-uri($stylesheet)||
+                                                                               ", $params := "||serialize($params)),
         $ret := 
             if (exists($stylesheet)) 
             then 
                 for $c in $copy
                 return transform:transform($copy,$stylesheet,$params) 
             else util:log-app("TRACE",$config:app-name,"stylesheet "||$stylesheet-file||" not available."),
-        $logRet := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy return "||substring(serialize($ret),1,240))
+        $logRet := util:log-app("TRACE",$config:app-name,"fcs:highlight-matches-in-copy return "||substring(serialize($ret),1,240000))
     return $ret
 }; 
 
-declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids as xs:string*, $rfs as node()*) as xs:string* {
+declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids as xs:string*, $rfs as node()*, $result-is-rf as xs:boolean) as xs:string* {
    let $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-ids = "||string-join($match-ids, '; ')||" $rfs = "||string-join(for $rf in $rfs return substring(serialize($rf),1 ,200), '; ')),
        $ret := distinct-values(
                if (count($match-ids) = 0) then $match-ids
@@ -1590,7 +1612,7 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
              $warn := if (count($matching-rfs-parts) > 2) then util:log-app('TRACE',$config:app-name,"fcs:split-offset-match-ids-on-page-split warning: more than 2 matching rfs: "||$match-id-without-offset) else (),
              $log := util:log-app("TRACE",$config:app-name,"fcs:recalculate-offset-for-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
          return
-            try {
+         try {
             if (not($match-id-splitted)) then (: add rfpids only to offset+length matches :)
                if (matches($m, '^[^:]+:(\d+):(\d+).*$')) then $m||':'||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid
                else $m||":1:"||string-length($matching-rfs-parts)||":"||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid
@@ -1601,15 +1623,16 @@ declare function fcs:recalculate-offset-for-match-ids-on-page-split($match-ids a
                 $log := util:log-app("TRACE",$config:app-name,"fcs:split-offset-match-ids-on-page-split current $match-id = "||$m||
                 " $text-lengths = "||string-join($text-lengths, '; ')||
                 " $offsets = "||string-join($offsets, '; ')),
-                $new-matches := for $o at $i in $offsets
+                $new-matches := for $r at $i in $rfpids
                    let $new-offset := fcs:get-offset-from-mactch-id($m) - $offsets[$i] + 1
                    return if (($new-offset < 0) or 
-                              ($new-offset > $offsets[$i] + $text-lengths[$i])) then () else 
+                              ($new-offset > $offsets[$i] + $text-lengths[$i]) or
+                              (not($result-is-rf) and $r ne $rfpids[1])) then () else 
                       fcs:remove-offset-from-match-id-if-exists($m)||":"||$new-offset||
                       ":"||fcs:get-match-length-from-mactch-id($m)||":"||$rfpids[$i],
                 $log2 := util:log-app("TRACE",$config:app-name,"recalculate-offset-for-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
             return $new-matches
-            } catch err:FORG0001 { for $p in $matching-rfs-parts return $p/ancestor::fcs:resourceFragment/@resourcefragment-pid }
+             } catch err:FORG0001 { for $p in $matching-rfs-parts return $p/ancestor::fcs:resourceFragment/@resourcefragment-pid }
         )
    let $logRet := util:log-app("TRACE",$config:app-name,"recalculate-offset-for-match-ids-on-page-split return "||string-join($ret, '; '))
    return $ret
@@ -1619,18 +1642,8 @@ declare function fcs:calculate-offsets($text-lengths as xs:integer*) as xs:integ
     let $ret := if (empty($text-lengths)) then ()
     else (fcs:calculate-offsets(subsequence($text-lengths, 1, count($text-lengths) -1)),
     sum(subsequence($text-lengths, 1, count($text-lengths) - 1)) + 1)
-(:    , $logRet := util:log-app("TRACE",$config:app-name,"fcs:calculate-offsets return ("||string-join($ret, ', ')||")"):)
+(:    , $logRet := util:log-app("DEBUG",$config:app-name,"fcs:calculate-offsets return ("||string-join($ret, ', ')||")"):)
     return $ret
-};
-
-(: In exist-db 3.0 this has to be of type text()! :)
-declare function fcs:filter-kwic($node as node(), $mode as xs:string) as text()? {
-    let $ret := <kwic:text>{
-    if ($mode eq 'before')
-    then concat($node,' ')
-    else concat(' ',$node)
-    }</kwic:text>
-    return $ret/text()
 };
 
 declare %private function fcs:get-resource-mets($x-context as xs:string, $config) as element(mets:div)* {
