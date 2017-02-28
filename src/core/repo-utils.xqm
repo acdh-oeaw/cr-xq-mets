@@ -630,10 +630,13 @@ let $rem :=if (util:is-binary-doc(concat($collection, $doc-name)) and $overwrite
                         then xdb:remove($collection, $doc-name)  
                         else ()
   
-  let $store := (: util:catch("org.exist.xquery.XPathException", :) xdb:store($collection, $doc-name, $data),  
-  $stored-doc := if (util:is-binary-doc(concat($collection, "/", $doc-name))) then  util:binary-doc(concat($collection, "/", $doc-name)) else fn:doc(concat($collection, "/", $doc-name))
-  return $stored-doc
-  
+  let $store := xdb:store($collection, $doc-name, $data),
+      $log := util:log-app("TRACE",$config:app-name,"repo-util:store stored "||$store),
+      $stored-doc := if (util:is-binary-doc(concat($collection, "/", $doc-name))) then  util:binary-doc(concat($collection, "/", $doc-name)) else fn:doc(concat($collection, "/", $doc-name)),
+      $logRet := util:log-app("DEBUG",$config:app-name,"repo-util:store return "||substring(serialize($stored-doc), 1, 240))
+  return if (exists($stored-doc) and xs:string($stored-doc) ne "") 
+         then $stored-doc
+         else error(QName("http://aac.ac.at/content_repository/utils", "storeError"), "Storing file "||$collection||"/"||$doc-name||" failed") 
 };
 
 
