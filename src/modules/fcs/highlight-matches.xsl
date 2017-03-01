@@ -164,7 +164,7 @@
         </xsl:if>
         <xsl:sequence select="$adjacent-node-text-after-space"/>
     </xsl:template>
-    <xsl:template match="text()[(preceding-sibling::*|preceding-sibling::*)[1]/@cr:id = $fully-highlighted-node-ids]">
+    <xsl:template match="text()[(preceding-sibling::*|preceding-sibling::text())[1]/@cr:id = $fully-highlighted-node-ids]">
         <xsl:variable name="adjacent-node-text-after-space">
             <xsl:value-of select="replace(., '^([^\s]*)(\s.*$)', '$2')"/>
         </xsl:variable>
