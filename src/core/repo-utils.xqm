@@ -636,7 +636,7 @@ let $rem :=if (util:is-binary-doc(concat($collection, $doc-name)) and $overwrite
       $logRet := util:log-app("DEBUG",$config:app-name,"repo-util:store return "||substring(serialize($stored-doc), 1, 240))
   return if (exists($stored-doc) and xs:string($stored-doc) ne "") 
          then $stored-doc
-         else error(QName("http://aac.ac.at/content_repository/utils", "storeError"), "Storing file "||$collection||"/"||$doc-name||" failed") 
+         else error(QName("http://aac.ac.at/content_repository/utils", "storeError"), "Storing file "||$collection||"/"||$doc-name||" failed. Did you exceed the output-size-limit for nodes (conf.xml)?") 
 };
 
 
