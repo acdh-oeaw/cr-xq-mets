@@ -662,6 +662,15 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
     repo-utils:serialise-as($item, $format, $operation, $config, ())
 };
 
+declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $parameters as node()* ) as item()? {
+(: FIXME: empty x-context macht wenig sinn!! :) 
+        repo-utils:serialise-as($item, $format, $operation, $config, '', $parameters, ())
+};
+
+declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $x-context as xs:string, $parameters as node()*, $calling-module as xs:string?) as item()? {
+    repo-utils:serialise-as($item, $format, $operation, $config, $x-context, $parameters, ())
+};
+
 (:~ 
  : Generic formating function which transforms results into the following formats, according to the function's 2nd parameter.
  :
@@ -681,18 +690,17 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
  : 
  : @param $item the data to be output
  : @param $format the output format  
- : @param $parameters optional additional parameters to be passed to xsl  
+ : @param $operation operation (like the fcs operations explain, scan, searchRetrieve) used to select a particular XSL
+ : @param $x-context the context passed to the XSLs
+ : @param $parameters optional additional parameters to be passed to xsl
+ : @param $calling-module optionally a module name used to find XSLs within $config
 ~:)
-declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $parameters as node()* ) as item()? {
-(: FIXME: empty x-context macht wenig sinn!! :) 
-        repo-utils:serialise-as($item, $format, $operation, $config, '', $parameters)
-};
-declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $x-context as xs:string, $parameters as node()* ) as item()? {
-    let $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as: $format = "||$format||" $operation = "||$operation||" $x-context = "||$x-context),
+declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $x-context as xs:string, $parameters as node()*, $calling-module as xs:string?) as item()? {
+    let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as: $format = "||$format||" $operation = "||$operation||" $x-context = "||$x-context),
         $ret :=
     switch(true())
         case ($format eq $repo-utils:responseFormatJSon) return	       
-	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config),
+	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config, $calling-module),
 	           $xslParams:=    <parameters>
 	                               <param name="exist:stop-on-warn" value="no"/>
 	                               <param name="exist:stop-on-error" value="yes"/>
@@ -713,17 +721,26 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                                return if ($queryType ne '') then <param name="queryType" value="{$queryType}"/> else ()}
 	                               {$parameters/param}
 	                           </parameters>
-	       let $res := if ($xslDoc) 
+	       let $res := if (exists($xslDoc)) 
 	                   then
-	                       let $option := util:declare-option("exist:serialize", "method=text media-type=application/json")
-	                       return transform:transform($item,$xslDoc,$xslParams)
+	                       let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||base-uri($xslDoc)||" $xslParams := "||serialize($xslParams)),	                       
+	                           $option := util:declare-option("exist:serialize", "method=text media-type=application/json")
+	                       return
+	                          try {
+	                             transform:transform($item,$xslDoc, $xslParams)
+	                          } catch * {
+	                             let $log := util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as transform:transform failed! $item := "||substring(serialize($item), 1, 500000)||
+	                                                                                                                                    " $xslDoc := "||base-uri($xslDoc)||
+	                                                                                                                                    " $xslParams := "||serialize($xslParams))
+	                             return diag:diagnostics("general-error", "transform:transform failed! "||$err:code||": "||$err:description||" "||$err:additional)
+	                          }
                        else 
                            let $option := util:declare-option("exist:serialize", "method=json media-type=application/json")    
                            return $item
 	       return $res
 	       
 	    case (contains($format, $repo-utils:responseFormatHTML)) return
-	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config),
+	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config, $calling-module),
 	           $xslParams:=    <parameters>
 	                               <param name="exist:stop-on-warn" value="no"/>
 	                               <param name="exist:stop-on-error" value="yes"/>
@@ -800,16 +817,18 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
  : @param $config the global configuration map.
  : @return zero or one XSL documents 
 ~:)
-declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node()? {        
-    let $scripts-paths := (config:param-value($config,'scripts.path'),config:path('scripts'))
-    let $log := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc looking for xsl-doc in "||string-join($scripts-paths,' '))
+declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config, $calling-module as xs:string?) as document-node()? {        
+    let $scripts-paths := (config:param-value($config,'scripts.path'),config:path('scripts')),
+        $cm := if (not(empty($calling-module))) then $calling-module else '';
+    let $log := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc looking for xsl-doc in "||string-join($scripts-paths,' ')||" $calling-module := "||$calling-module)
     let $xsldoc :=  for $p in $scripts-paths
                     let $path := replace($p,'/$','')
                     return 
 (:                        let $path := replace($path,'/$',''):)
-                        let $operation-format-xsl:= $path||'/'||config:param-value($config, $operation||'-'||$format||".xsl"),
-                            $operation-xsl:= $path||'/'||config:param-value($config, $operation||".xsl"),
-                            $log := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc $operation-format-xsl := "||$operation-format-xsl||", $operation-xsl := "||$operation-xsl)
+                        let $config-format-key := $operation||'-'||$format||".xsl",
+                            $operation-format-xsl:= $path||'/'||config:param-value((), $config, $cm, '', $config-format-key),
+                            $operation-xsl:= $path||'/'||config:param-value((), $config, $cm, '', $operation||".xsl"),
+                            $log := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc $config-format-key := "||$config-format-key||" $operation-format-xsl := "||$operation-format-xsl||", $operation-xsl := "||$operation-xsl)
                         return 
                         switch(true())
                             case (doc-available($operation-format-xsl)) 
