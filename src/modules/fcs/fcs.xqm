@@ -84,6 +84,7 @@ declare variable $fcs:scanSortDefault := $fcs:scanSortText;
 declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
 declare variable $fcs:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
 declare variable $fcs:kwicWidth := 40;
+declare variable $fcs:kwicWidthParamKey := 'kwic_width';
 declare variable $fcs:filterScanMinLength := 2;
 declare variable $fcs:defaultMaxTerms := 50;
 declare variable $fcs:defaultMaxRecords := 10;
@@ -1308,7 +1309,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
         let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
         
         let $want-kwic := contains($data-view,'kwic'), 
-            $kwic := if ($want-kwic) then fcs:create-kwic($record-data-highlighted) else ()                        
+            $kwic := if ($want-kwic) then fcs:create-kwic($record-data-highlighted, $config) else ()                        
                         
         (: prev-next :)                     
         let $dv-navigation:= if (contains($data-view,'navigation')) then
@@ -1416,12 +1417,12 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
                 </fcs:Resource>
 };
 
-declare %private function fcs:create-kwic($record-data-highlighted) {
+declare %private function fcs:create-kwic($record-data-highlighted, $config) {
    let $log := util:log-app("TRACE", $config:app-name, "fcs:create-kwic $record-data-highlighted := "||substring(serialize($record-data-highlighted), 1, 240000)||                                                                       
                                                                       " $fcs:flattenKwicXsl := "||$fcs:flattenKwicXsl),
        $flattened-record := transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,()),
        $logfr := util:log-app("TRACE", $config:app-name, "fcs:create-kwic $flattened-record := "||substring(serialize($flattened-record),1,240))                     
-   let $kwic-html := fcs:kwic-summary($flattened-record),
+   let $kwic-html := fcs:kwic-summary($flattened-record, $config),
        $log := util:log-app("TRACE", $config:app-name, "fcs:create-kwic $kwic-html := "||substring(serialize($kwic-html), 1, 240)),
        $ret := if (exists($kwic-html)) then  
                for $match at $pos in $kwic-html
@@ -1436,14 +1437,23 @@ declare %private function fcs:create-kwic($record-data-highlighted) {
                else (: if no kwic-match let's take first 100 characters 
                                             There c/should be some more sophisticated way to extract most significant info 
                                             e.g. match on the query-field :)
-               substring($record-data-highlighted[1],1,(2 * $fcs:kwicWidth)),
+               substring($record-data-highlighted[1],1,(2 * fcs:get-kwic-width($config))),
        $logRet := util:log-app("TRACE", $config:app-name, "fcs:create-kwic return "||substring(serialize($ret),1,240))
    return $ret
 };
 
-declare %private function fcs:kwic-summary($flattened-record) as element()* {
+declare %private function fcs:get-kwic-width($config) as xs:integer {
+    let $ret := try {
+          xs:integer(config:param-value((), $config, 'fcs', '', $fcs:kwicWidthParamKey))
+       } catch err:FORG0001 {
+          $fcs:kwicWidth
+       }
+    return $ret
+};
+
+declare %private function fcs:kwic-summary($flattened-record, $config) as element()* {
     let $expanded-flattened-record := util:expand($flattened-record, "expand-xincludes=no"),
-        $kwic-config := <config width="{$fcs:kwicWidth}"/>
+        $kwic-config := <config width="{fcs:get-kwic-width($config)}"/>
 	for $match in $expanded-flattened-record//exist:match
 	return
 		kwic:get-summary($expanded-flattened-record, $match, $kwic-config,util:function(xs:QName("fcs:filter-kwic"),2))
