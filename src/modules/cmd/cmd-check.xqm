@@ -229,7 +229,7 @@ declare function cmdcheck:display-overview($config) as item()* {
                     let $map-key := $map/xs:string(@key),
                         $map-dbcoll-path := $map/xs:string(@path),
                         $scan-cmd-profile := fcs:scan('cmd.profile', $map-key, 1, 50, 1, 1, "text", '', $config),   
-                        $scan-formatted := repo-utils:serialise-as( $scan-cmd-profile, 'htmldetail', 'scan', $config, ())
+                        $scan-formatted := repo-utils:serialise-as( $scan-cmd-profile, 'htmldetail', 'scan', $config, (), '', 'cmd')
                     return <tr>
                         <td>{$map-key}</td>
                         <td>{ $scan-formatted }</td>
