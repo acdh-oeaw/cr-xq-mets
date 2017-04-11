@@ -202,7 +202,7 @@ declare function fcs:main($config) as item()* {
         </parameters> else (),
     $ret := 
        try {
-           repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, $xslParams)
+           repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, $xslParams, 'fcs')
        } catch * {
            let $rendered-result := for $r in $result return substring(serialize($r), 1, 240),
                $log := util:log-app('ERROR', $config:app-name, 'fcs:main serialize error '||$err:code||': '||$err:description||
