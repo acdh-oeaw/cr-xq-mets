@@ -1,0 +1,33 @@
+{
+  "name": "cr-xq-mets_shared",
+  "authors": [
+    "Omar Siam <Omar.Siam@oeaw.ac.at>"
+  ],
+  "description": "shared styles and js code for cr-xq-mets projects",
+  "main": "/exist/apps/cr-xq-mets/tunico/",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~1.12.4",
+    "jquery-migrate": "~1.4.0",
+    "normalize-css": "^6.0.0",
+    "lodash": "^4.17.4",
+    "cloud9carousel": "^2.0.4",
+    "openseadragon": "^2.2.1",
+    "urijs": "URIjs#^1.18.7"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0",
+    "chai": "^3.5.0",
+    "sinonjs": "^1.17.1",
+    "chai-jquery": "^2.0.1"
+  }
+}
