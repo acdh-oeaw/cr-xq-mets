@@ -26,7 +26,7 @@ SOFTWARE
 
 module namespace fcs="http://sade/fcs";
 
-import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
+import module namespace templates="http://exist-db.org/xquery/templates" at "../../core/templates.xql";
 import module namespace kwic="http://exist-db.org/xquery/kwic"
     at "resource:org/exist/xquery/lib/kwic.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
@@ -58,7 +58,7 @@ function fcs:query-input($node as node()*, $model as map(*), $query as xs:string
                   </parameters>
                   (:<param name="base_url" value="{$base-path}"/>:)
                   
-     return  repo-utils:serialise-as($template, $x-format, 'static', $model("config"), $params)
+     return  repo-utils:serialise-as($template, $x-format, 'static', $model("config"), $x-context, $params, 'fcs')
      
 };
 
@@ -96,7 +96,7 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
               			            <param name="x-dataview" value="{$x-dataview-x}"/>
                   </parameters>
                   
-     return repo-utils:serialise-as($result, $x-format, 'searchRetrieve', $model("config"), $params)
+     return repo-utils:serialise-as($result, $x-format, 'searchRetrieve', $model("config"), $x-context, $params, 'fcs')
      
 };
 

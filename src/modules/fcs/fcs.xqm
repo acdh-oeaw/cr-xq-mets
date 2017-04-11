@@ -49,7 +49,7 @@ declare namespace aac = "urn:general";
 declare namespace mets="http://www.loc.gov/METS/";
 
 declare namespace xlink="http://www.w3.org/1999/xlink";
-import module namespace console="http://exist-db.org/xquery/console";
+
 import module namespace functx = "http://www.functx.com";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
@@ -442,7 +442,7 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
 :)
 (:                    let $mappings := doc(repo-utils:config-value($config, 'mappings')):)
                     (: use only module-config here - otherwise scripts.path override causes problems :) 
-                    let $xsl := repo-utils:xsl-doc('metsdiv-scan', "xml", $config)
+                    let $xsl := repo-utils:xsl-doc('metsdiv-scan', "xml", $config, 'fcs')
                     
                     (: if no data was retrieved ($metsdivs empty) pass at least an empty element, so that the basic envelope gets rendered 
                     FIXME: actually this should return an empty envelope without any sru:term if there is no data (now it is one) :)
