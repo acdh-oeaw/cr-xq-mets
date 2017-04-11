@@ -36,6 +36,7 @@ module namespace config="http://exist-db.org/xquery/apps/config";
 import module namespace config-params="http://exist-db.org/xquery/apps/config-params" at "config.xql";
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
+import module namespace functx = "http://www.functx.com";
 
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
@@ -607,7 +608,11 @@ declare function config:db-to-relative-path($path as xs:string) as xs:string {
  : <li>global config param (config:param)</li>
  :  </ol>
  : 
- : @param strict only returns a value if it exists for given level of precedence (module) 
+ : @param $node Some nodes from which one @id is extracted ?!
+ : @param $model All layers of configuration
+ : @param $module-key A module identifier used to give configuration marked with this key precedence (e. g. //module[@key eq $module-key]/param)
+ : @param $param-key The parameter name to look for
+ : @param $strict optional Only returns a value if it exists for given level of precedence (module) 
  : @return either the string-value of the @value-attribute or the content of the param-node (in that order)
  :)
 declare function config:param-value($node as node()*, $model, $module-key as xs:string, $function-key as xs:string, $param-key as xs:string, $strict as xs:boolean) as item()* {
@@ -616,7 +621,38 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
     let $config :=  if ($model instance of map(*)) then $model("config") else $model,
         $mets :=    $config/descendant-or-self::mets:mets[@TYPE=$config:PROJECT_METS_TYPE],
         $crProjectParameters:= $mets//mets:techMD[@ID=$config:PROJECT_PARAMETERS_ID]/mets:mdWrap/mets:xmlData
-    
+    (: Protected parameters: These can only be changed by project configuration or are generated on the fly :)
+    let $param-protected := 
+        switch($param-key)
+            case 'users'                    return
+                                                let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
+                                                    $users:=        $ace[@target='USER']/@who,
+                                                    $groups:=       $ace[@target='GROUP']/@who,
+                                                    $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
+                                             (:     $id :=          (sm:id()/sm:effective, sm:id())[1],:)  (: Crashes for unknown reasons in exist db 2.2 public :)
+                                                    $id := if ($model instance of map(*)) then ($model('userId')/sm:effective, $model('userId'))[1] else (),
+                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
+                                                    $group-members:=
+                                                       for $g in $groups
+                                                                    return
+                                                                          try {
+                                                                              if (sm:group-exists($g)) then
+                                                                                 sm:get-group-members($g)
+                                                                            else ()
+                                                                          } catch * {
+                                                                               let $log := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
+                                                                                   $ret := if ($g = $id//sm:group) then $id//sm:username else (),
+                                                                                   $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception return "||$ret)
+                                                                               return $ret
+                                                                          },
+                                                    $allowed-users:=    ($group-members,$users),
+                                                    $ret := string-join($allowed-users,','),
+                                                    $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users return "||$ret)
+                                                return $ret
+            (: base-url: Direct access to localhost for internal requests to access fcs from inside XSL stylesheets (e.g. localhost:8080):)
+            (: TODO: Implement Cf. https://redmine.acdh.oeaw.ac.at/issues/7695 :)
+            case "base-url"                 return repo-utils:base-url($config)(:'http://localhost:8080'||repo-utils:base-uri($config):)
+            default return ()
     let $param-special:=
         switch($param-key)
             case "project-pid"              return $mets/xs:string(@OBJID)
@@ -626,7 +662,6 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
             case "base-url-public"          return repo-utils:base-url($config)
-            case "base-url"                 return repo-utils:base-url($config)(:'http://localhost:8080'||repo-utils:base-uri($config):)
             case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
@@ -666,31 +701,6 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                     if ($ace/(@access_type='DENIED' and starts-with(@mode,'r')))
                                                     then 'protected'
                                                     else 'unprotected'
-            case 'users'                    return
-                                                let $ace:=          $mets//sm:ace[@access_type='ALLOWED' and starts-with(@mode,'r')],
-                                                    $users:=        $ace[@target='USER']/@who,
-                                                    $groups:=       $ace[@target='GROUP']/@who,
-                                                    $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
-                                             (:     $id :=          (sm:id()/sm:effective, sm:id())[1],:)  (: Crashes for unknown reasons in exist db 2.2 public :)
-                                                    $id := if ($model instance of map(*)) then ($model('userId')/sm:effective, $model('userId'))[1] else (),
-                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
-                                                    $group-members:=
-                                                       for $g in $groups
-                                                                    return
-                                                                          try {
-                                                                              if (sm:group-exists($g)) then
-                                                                                 sm:get-group-members($g)
-                                                                            else ()
-                                                                          } catch * {
-                                                                               let $log := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
-                                                                                   $ret := if ($g = $id//sm:group) then $id//sm:username else (),
-                                                                                   $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception return "||$ret)
-                                                                               return $ret
-                                                                          },
-                                                    $allowed-users:=    ($group-members,$users),
-                                                    $ret := string-join($allowed-users,','),
-                                                    $logRet := util:log-app("TRACE",$config:app-name,"config:param-value users return "||$ret)
-                                                return $ret
             
             case $config:PROJECT_DMDSEC_ID  return $mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))/cmd:CMD
             case 'project-title'            return ($mets//mets:dmdSec[@ID=$config:PROJECT_DMDSEC_ID]/(mets:mdWrap/mets:xmlData|doc(mets:mdRef/@xlink:href))//cmd:CollectionInfo/cmd:Title[text()],$mets/@LABEL)[1]
@@ -703,14 +713,25 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             default                         return ()
             
     
-    let $param-request := try { request:get-parameter($param-key,'') } catch * { () }
-    let $param-project := $mets//param[@key = $param-key]
-    let $param-cr := $config:cr-config//param[@key=$param-key]
-    let $param-container := $config//container[@key=$node-id]/function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
-    let $param-function := $config//function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key]
-    let $param-module := $config//module[xs:string(@key)=$module-key]/param[xs:string(@key)=$param-key]
-    let $param-repo := $config:cr-config//param[xs:string(@key)=$param-key]
-    let $param-global:= $config//param[xs:string(@key)=$param-key]
+    let $param-key-filter := '__disabled__',
+        $param-request := try { request:get-parameter($param-key,'') } catch * { () },
+        $log := if ($param-key = $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-request:= "||$param-request||" $module-key := "||$module-key||" $param-key := "||$param-key||" $model: "||string-join($model!functx:sequence-type(.), '; ')) else ()
+    let $param-project := if (exists($module-key)) 
+                          then $mets//module[xs:string(@key)=$module-key]/param[@key = $param-key] 
+                          else $mets//mets:techMD[@ID = $config:PROJECT_PARAMETERS_ID]//param[@key = $param-key],
+        $log := if ($param-key= $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-project := "||$param-project) else ()
+    let $param-cr := $config:cr-config//param[@key=$param-key],
+        $log := if ($param-key= $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-cr := "||$param-cr) else ()
+    let $param-container := $config//container[@key=$node-id]/function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key],
+        $log := if ($param-key= $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-container := "||$param-container) else ()
+    let $param-function := $config//function[xs:string(@key)=concat($module-key, ':', $function-key)]/param[xs:string(@key)=$param-key],
+        $log := if ($param-key= $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-function := "||$param-function) else ()
+    let $param-module := $config//module[xs:string(@key)=$module-key]/param[xs:string(@key)=$param-key],
+        $log := if ($param-key= $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-module := "||$param-module) else ()
+    let $param-repo := $config:cr-config//param[xs:string(@key)=$param-key],
+        $log := if ($param-key= $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-repo := "||$param-repo) else ()
+    let $param-global:= $config//param[xs:string(@key)=$param-key],
+        $log := if ($param-key= $param-key-filter) then util:log-app('DEBUG', $config:app-name,"config:param-value $param-global := "||string-join($param-global, '; ')) else ()
     
     (: $strict currently only implemented for module :)
     let $param := 
@@ -721,6 +742,8 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             else ""
         else
             switch(true())
+                case (exists($param-protected)) return $param-protected[1]
+                (: Parameters set in project.xml take absolute precedence over other :)
                 case (exists($param-project))   return $param-project[1]
                 case (exists($param-cr))        return $param-cr[1]
                 case ($param-special != '')     return $param-special
