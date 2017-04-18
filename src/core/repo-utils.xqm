@@ -819,7 +819,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 ~:)
 declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config, $calling-module as xs:string?) as document-node()? {        
     let $scripts-paths := (config:param-value($config,'scripts.path'),config:path('scripts')),
-        $cm := if (not(empty($calling-module))) then $calling-module else '';
+        $cm := if (not(empty($calling-module))) then $calling-module else ''
     let $log := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc looking for xsl-doc in "||string-join($scripts-paths,' ')||" $calling-module := "||$calling-module)
     let $xsldoc :=  for $p in $scripts-paths
                     let $path := replace($p,'/$','')
