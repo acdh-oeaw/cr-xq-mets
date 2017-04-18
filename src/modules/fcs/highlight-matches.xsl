@@ -128,14 +128,11 @@
                             </xsl:apply-templates>
                         </xsl:copy>
                     </xsl:when>
-                    <xsl:otherwise>
-                        <exist:match>
+                    <xsl:otherwise><exist:match>
                             <xsl:copy copy-namespaces="no">
                                 <xsl:copy-of select="@*"/>
                                 <xsl:apply-templates mode="#default"/>
-                            </xsl:copy>
-                        </exist:match>
-                    </xsl:otherwise>
+                            </xsl:copy></exist:match></xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
             <xsl:otherwise>
@@ -147,21 +144,18 @@
         <xsl:variable name="adjacent-node-text-after-space">
             <xsl:copy copy-namespaces="no">
                 <xsl:copy-of select="@*"/>
-                <xsl:value-of select="replace(text()[1], '^([^\s]*)(\s.*$)', '$2')"/>
-                <xsl:apply-templates select="*|text() except (text()[1])|comment()|processing-instruction()" mode="#default"/>
+                <xsl:value-of select="replace((.//text())[1], '^([^\s]*)(\s.*$)', '$2')"/>
+                <xsl:apply-templates select="*|(text() except (.//text())[1])|comment()|processing-instruction()" mode="#default"/>
             </xsl:copy>
         </xsl:variable>
         <xsl:variable name="adjacent-node-text-before-space">
             <xsl:copy copy-namespaces="no">
                 <xsl:copy-of select="@*"/>
-                <xsl:value-of select="replace(text()[1], '^([^\s]*)(\s.*$)', '$1')"/>
+                <xsl:value-of select="replace((.//text())[1], '^([^\s]*)(\s.*$)', '$1')"/>
             </xsl:copy>
         </xsl:variable>
-        <xsl:if test="xs:string($adjacent-node-text-before-space) ne ''">
-            <exist:match>
-                <xsl:sequence select="$adjacent-node-text-before-space"/>
-            </exist:match>
-        </xsl:if>
+        <xsl:if test="xs:string($adjacent-node-text-before-space) ne ''"><exist:match>
+                <xsl:sequence select="$adjacent-node-text-before-space"/></exist:match></xsl:if>
         <xsl:sequence select="$adjacent-node-text-after-space"/>
     </xsl:template>
     <xsl:template match="text()[(preceding-sibling::*|preceding-sibling::text())[last()]/@cr:id = $fully-highlighted-node-ids]">
@@ -171,11 +165,8 @@
         <xsl:variable name="adjacent-node-text-before-space">
             <xsl:value-of select="replace(., '^([^\s]*)(\s.*$)', '$1')"/>
         </xsl:variable>
-        <xsl:if test="xs:string($adjacent-node-text-before-space) ne ''">
-            <exist:match>
-                <xsl:sequence select="$adjacent-node-text-before-space"/>
-            </exist:match>
-        </xsl:if>
+        <xsl:if test="xs:string($adjacent-node-text-before-space) ne ''"><exist:match>
+                <xsl:sequence select="$adjacent-node-text-before-space"/></exist:match></xsl:if>
         <xsl:sequence select="$adjacent-node-text-after-space"/>
     </xsl:template>
     <xd:doc>
