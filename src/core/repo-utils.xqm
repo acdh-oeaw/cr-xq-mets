@@ -1052,3 +1052,12 @@ declare function repo-utils:xinclude-to-fragment($include as element(xi:include)
 declare function repo-utils:protect-space-for-eval ($s as xs:string?) as xs:string? {
     replace($s, '(>|(&gt;))\s', '>&amp;#x20;')
 };
+
+declare function repo-utils:time-to-milliseconds($dateTime as xs:dateTime) {
+    let $diff := $dateTime - xs:dateTime("1970-01-01T00:00:00Z")
+    return
+        (days-from-duration($diff) * 60 * 60 * 24 +
+        hours-from-duration($diff) * 60 * 60 +
+        minutes-from-duration($diff) * 60 +
+        seconds-from-duration($diff)) * 1000
+};
