@@ -1092,13 +1092,15 @@ TODO: read the sortkeys from orig-query and order by those :)
 declare function fcs:sort-result ($result, $orig-query as xs:string, $config) as node()* {
 let $project-id := ($result/xs:string(@cr:project-id))[1]
 let $resources-in-result := distinct-values ( $result/data(@cr:resource-pid))
-let $resource-list := project:list-resources($project-id)[xs:string(@ID) = $resources-in-result]
+let $resource-list := project:list-resources($project-id)[@ID = $resources-in-result]
  
-for $res in $resource-list
-        let $res-id := $res/data(@ID)
-        let $resource-hits := $result[data(@cr:resource-pid) = $res-id ]
-          return $resource-hits
- 
+let $before := util:system-dateTime(),
+   (: sort in resource-list order :)
+    $ret := for $res in $resource-list return $result[@cr:resource-pid = $res/@ID], 
+    $after := util:system-dateTime(),
+    $log := util:log-app("TRACE", $config:app-name, "fcs:sort-result sorting took "||(repo-utils:time-to-milliseconds($after) - repo-utils:time-to-milliseconds($before)) div 1000||"s.")
+
+return $ret
 };
 
 (:~ facets are only available in SRU 2.0, but we need them now.
@@ -1116,22 +1118,23 @@ declare function fcs:generateFacets($result, $orig-query) {
                 return 
  :)
  (: using this to get a consistent / the correct order :)  
- let $resource-list := project:list-resources($project-id)[xs:string(@ID) = $resources-in-result]
+ let $resource-list := project:list-resources($project-id)[@ID = $resources-in-result]
  
 return <sru:facetedResults>
     <sru:facet>
-<sru:terms>{
-                for $res in $resource-list
-                let $res-id := $res/data(@ID)
-                let $count := count($result[data(@cr:resource-pid) = $res-id ])
-                let $label := $res/data(@LABEL)
-(:                resource:label($res-id,$project-id):)
-                return <sru:term>
-                <sru:actualTerm>{$label}</sru:actualTerm>
-                <sru:query>{$res-id}</sru:query>
-                <sru:requestUrl>?operation=searchRetrieve&amp;query={$orig-query}&amp;x-context={$res-id}</sru:requestUrl>
-                <sru:count>{$count}</sru:count>
-            </sru:term>
+<sru:terms>{ let $before := util:system-dateTime(),
+                 $ret := for $res in $resource-list
+                    let $hits-per-resource := $result[@cr:resource-pid = $res/@ID]
+                 return
+                 <sru:term>
+                   <sru:actualTerm>{data($res/@LABEL)}</sru:actualTerm>
+                   <sru:query>{data($res/@ID)}</sru:query>
+                   <sru:requestUrl>?operation=searchRetrieve&amp;query={$orig-query}&amp;x-context={data($res/@ID)}</sru:requestUrl>
+                   <sru:count>{count($hits-per-resource)}</sru:count>
+                 </sru:term>,
+                 $after := util:system-dateTime(),
+                 $log := util:log-app("TRACE", $config:app-name, "fcs:generateFacets counting results faceted took "||(repo-utils:time-to-milliseconds($after) - repo-utils:time-to-milliseconds($before)) div 1000||"s.")
+                 return $ret
             }
       <sru:facetDisplayLabel>Resource</sru:facetDisplayLabel>
         <sru:index>fcs.resource</sru:index>
