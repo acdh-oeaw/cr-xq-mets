@@ -34,6 +34,7 @@ import module namespace project = "http://aac.ac.at/content_repository/project" 
 import module namespace index = "http://aac.ac.at/content_repository/index" at  "../../core/index.xqm";
 import module namespace f = "http://aac.ac.at/content_repository/file" at "../../core/file.xqm";
 import module namespace diag  = "http://www.loc.gov/zing/srw/diagnostic/" at "../diagnostics/diagnostics.xqm";
+import module namespace console = "http://exist-db.org/xquery/console";
 
 declare namespace mets = "http://www.loc.gov/METS/";
 declare namespace xlink="http://www.w3.org/1999/xlink";
@@ -90,6 +91,7 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
         let $d := <debug><id>{$id}</id><project>{$project}</project><type>{$type}</type><subtype>{$subtype}</subtype><format>{$format}</format></debug>
         return util:log-app("INFO",$config:app-name,$d):)
     let $log := util:log-app("DEBUG", $config:app-name, "viewer:display($config-map,"||$id||","||$project||","||$type||","||$subtype||","||$format||")")
+    let $log := console:log("$id "||$id||" $project "||$project||" $type "||$type||" $subtype "||$subtype||" $format "||$format)
     let $data := 
                 switch ($type)
                     case 'data' return 
@@ -102,12 +104,14 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
                                 if ($resource-pid!='') 
                                 then index:apply-index(resource:dmd($resource-pid,$project),$viewer:md-is-restriced-indexname,$project,'match')
                                 else  diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id)
+                            let $index := index:index($viewer:md-is-restriced-indexname, $project)
                             return 
-                                switch (true())
-                                    case ($resource-pid='') return diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id) 
-                                    case ($is-restricted) return diag:diagnostics('record-not-authorised-to-send',('access to the data of this resource is restriced. Please refer to its metadata for further information.'))
-                                    case (not($is-restricted instance of xs:boolean)) return diag:diagnostics('general-error','value "'||$is-restricted||'" is unsuitable to determine whether data access is restriced or not')
-                                    default return cr:resolve-id-to-data($id,false())
+                                if ($resource-pid='') then diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id)
+                                else if ($is-restricted) then diag:diagnostics('record-not-authorised-to-send',('access to the data of this resource is restriced. Please refer to its metadata for further information.'))
+                                (: if the index has not been defined, we assume that the data is available freely :)
+                                else if (not(exists($index))) then cr:resolve-id-to-data($id,false()) 
+                                else if (not($is-restricted instance of xs:boolean)) then diag:diagnostics('general-error','value "'||$is-restricted||'" is unsuitable to determine whether data access is restriced or not')
+                                else cr:resolve-id-to-data($id,false())
                     
                     case 'metadata' return
                         if ($id = $project)
