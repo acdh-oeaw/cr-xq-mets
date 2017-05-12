@@ -48,7 +48,7 @@ declare variable $exist:root external;
  : actual location in the database should be autogmagically resolved by config:resolve-template-to-uri().
  : This is used to serve files which reside in 'templates'.  
 ~:)
-declare variable $local:web-resources := ('js', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'woff2', 'eot', 'ico');
+declare variable $local:web-resources := ('js', 'map', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'woff2', 'eot', 'ico');
 
 (: This way to big switch statement defines the behavior of car-xq-mets.
    FIXME: urgently needs to be split into readable blocks (that is functions)
