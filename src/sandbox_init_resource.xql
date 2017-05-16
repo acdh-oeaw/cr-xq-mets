@@ -51,29 +51,28 @@ for $rid in project:list-resource-pids($project-pid)
    return resource:dmd($rid,$project-pid,$md,"CMDI")
 };
 
-let $rid := "abacus.1",
+let $rid := "abacus.3",
     $project-pid := "abacus",
-    $resource-label := "My first resource"
+    $mappings-used-for-toc := ('front','chapter','back','body','index','n','preface','dedication'), 
+    $resource-label := "Grosse Todten Bruderschaft"
 
-let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
+let $data  := doc("/db/cr-data/abacus/Abraham-Todten_Bruderschaft.xml")
 
 (:~ 1.  uncomment this to add a new resource  :)        
 (:let  $resource-pid := resource:new-with-label($data, $project-pid, $resource-label) return $resource-pid :)
 
 (:~ 2. use this to generate/refresh all auxiliary files for given resource :)
-(:let $gen-aux := resource:refresh-aux-files(('front','chapter','back','index'), $resource-pid, $project-pid) return $gen-aux:)
+(:let $gen-aux := resource:refresh-aux-files($mappings-used-for-toc, $resource-pid, $project-pid) return $gen-aux:)
 
 (: uncomment this to refresh aux-files for all resources :)
-(:for $rid in project:list-resource-pids($project-pid):)
-    return resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) 
-    
+for $rid in project:list-resource-pids($project-pid)
+    return resource:refresh-aux-files($mappings-used-for-toc, $rid, $project-pid) 
     
     
 (:~ alternatively you can do it one by one:  :)
 (: let $wc-gen :=  wc:generate($resource-pid, $project-pid) return $wc-gen:)
-(: let $rf-gen := rf:generate($resource-pid, $project-pid) return $rf-gen :)
 (: let $lt-gen :=  lt:generate($resource-pid, $project-pid) return $lt-gen:)
-(: let $toc-gen :=  toc:generate(('front','chapter'),  $resource-pid, $project-pid) return ($resource-pid, $toc-gen) :)
+(: let $toc-gen :=  toc:generate($mappings-used-for-toc, $rid, $project-pid) return ($rid, $toc-gen) :)
 
 (:~ 3. if you have links to facsimile/images in the data you can use this to extract them and write them in the project-configuration  :)
 (:let $gen-facs := facs:generate($resource-pid,$project-pid):)
