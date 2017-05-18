@@ -354,12 +354,16 @@ function load_toc(event) {
 m.load_toc = load_toc;
 
 function toc_loaded(target, event) {               
-                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
-                close_button = $(target).find(".cmd_close");
+    $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+    close_button = $(target).find(".cmd_close");
     close_button.click(function(event){m.onCloseButtonClicked(event, target)});                     
-                 // a hack to remove the top element (Work itself)    
-               var ul_resource = target.find('ul.resource');
-                target.find('.scan-index-fcs-toc').html('').append(ul_resource);
+    // a hack to remove the top element (Work itself)    
+    var ul_resource = target.find('ul.resource');
+    // workaround: IE does not append the content of ul.resource ?! jQuery version 1.11.2?
+    var ul_resource_content = ul_resource.html();
+    target.find('.scan-index-fcs-toc').html('').append(ul_resource);
+    // workaroung: now in IE we hava a ul.resource without any child nodes :(           
+    target.find('ul.resource').html(ul_resource_content);
 }
 
 m.toc_loaded = toc_loaded;
