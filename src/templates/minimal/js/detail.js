@@ -115,36 +115,30 @@ function load_detail_data(targetRequest) {
     var detailFragment = baseurl.clone().query(params).toString() + classes_interested_in;
     
     MinimalTemplateMain.loading(detail.find('.detail-header'),"start");
-    // clear the current-detail:
-//    detail.find(".detail-content").html('');
-  //  detail.find('.detail-header').html('').toggleClass("cmd_get cmd");
-    
-    //console.log("load_detail:" + detailFragment);
-    //console.log("load_detail:" + baseurl.toString());
     detail.find(".detail-content").load(detailFragment, function () {
-                        MinimalTemplateMain.loading(detail.find('.detail-header'), "stop");
-    //                    detail.find('.detail-header').toggleClass("cmd_get cmd");
-                        
-                        // activate zoom functionality on the images, expects: jquery.elevateZoom-3.0.8.min.js
-                        // deactivated for now
-                        //detail.find(".data-view.facs img").each( function() {$(this).attr("data-zoom-image",$(this).attr("src")); });
-                        //detail.find(".data-view.facs img").elevateZoom({ zoomType : "lens", lensShape : "round", lensSize : 200 });
+      var img =  detail.find(".detail-content img"),
+          imgLoadFinished = $.Deferred(),
+          self = this;
+      if (img.length === 1) {
+        img.one("load", function() {
+          imgLoadFinished.resolve();
+        }).each(function() {
+          if(this.complete) $(this).load();
+        });
+      } else {
+        imgLoadFinished.resolve();
+      }
+      imgLoadFinished.then(function(){
+                        MinimalTemplateMain.loading(detail.find('.detail-header'),"stop");
                          
                         // move Title and navigation above the content
-                        $('.detail-header').html($(this).find(".data-view.navigation")).append($(this).find(".title"));
+                        $('.detail-header').html($(self).find(".data-view.navigation")).append($(self).find(".title"));
                         // move cite below the detail content
-                        detail.find('.context-detail').html($(this).find(".data-view.cite"));
-                        MinimalTemplateMain.customizeIcons(); 
-                        /*
-                        var detail_anno = $(this).html();
-                        $('#tabs-1').html(detail_anno);
-                        // get rid-off the highlighted stuff                        
-                        $('#tabs-1').find("span").removeClass("persName bibl placeName");
-                        // get rid-off the links
-                        $('#tabs-1').find('a').replaceWith(function(){  return $(this).contents();});
-                        */
-                        m.onDetailDataLoaded.call(this);                        
+                        detail.find('.context-detail').html($(self).find(".data-view.cite"));
+                        MinimalTemplateMain.customizeIcons();
+                        m.onDetailDataLoaded.call(self);                        
                       });
+      });
 }
 
 m.load_detail_data = load_detail_data;
