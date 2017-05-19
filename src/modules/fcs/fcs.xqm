@@ -511,75 +511,104 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
         </sru:scanResponse>
 };
 
-(:~ returns appropriate subsequence of the index based on filter, startTerm and maximumTerms as defined in
-@seeAlso http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/cs01/part6-scan/searchRetrieve-v1.0-cs01-part6-scan.html#responsePosition
+(:~ 
+ : This function returns an appropriate subsequence of the index, based on filter, startTerm and maximumTerms.
+ : @seeAlso http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/cs01/part6-scan/searchRetrieve-v1.0-cs01-part6-scan.html#responsePosition
+ : @param $terms: A flat list of sru:term elements
+ : @param $start-term: where to start the list to be output
+ : @param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
+ : @param $response-position: ????
+ : @param $x-filter: only those terms which sru:displyTerm matches this parameter are included in the output list
+ : @result a filtered list of the (cached) raw scan 
+~:)
+declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) {
+    fcs:scan-subsequence($terms, $start-term, $maximum-terms, $response-position, $x-filter, 0)
+};
 
-@param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
-:)
-declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
-let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $start-term := "||$start-term||", $terms := "||substring(serialize($terms),1,80)||"...")
-(:$max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {:)
-let $x-filter-lc := lower-case($x-filter)
-
-let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) then
-                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: there are more levels of terms:"||serialize($terms/sru:extraTermData/sru:terms/sru:term[1]))
-                        return
-                        for $term in $terms
-                                let $children-subsequence := if ($term/sru:extraTermData/sru:terms/sru:term) then (: go deeper if children terms :) 
-                                            fcs:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
-                                            else ()
-                                            (: only return term if it has any child terms (after filtering) :)
-                                return if (exists($children-subsequence) or exists($term/sru:extraTermData/*[not(self::sru:*) and not(self::cr:*) and not(self::fcs:*)]))  then 
-                                          <sru:term>{($term/*[not(local-name()='extraTermData')],
-                                         if ($term/sru:extraTermData) then (: if given term has extraTermData :)
-                                                <sru:extraTermData>
-                                                { if ($term/sru:extraTermData/sru:terms) then (: term could have extraTermData but no children terms :) 
-                                                        ($term/sru:extraTermData/*[not(local-name()='terms')],
-                                                        <sru:terms>{$children-subsequence}</sru:terms>)
-                                                   else $term/sru:extraTermData/*                                                  
-                                                } </sru:extraTermData>
-                                              else ()
-                                          )} </sru:term>
-                                       else ()
-                    else (: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) :)
-                        (: if $maximum-terms=0 return all terms :)
-                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) if $maximum-terms=0 return all terms")
-                        let $maximum-terms-resolved := if ($maximum-terms=0) then count($terms) else $maximum-terms                    
-                        return if ($x-filter='' or not(exists($x-filter))) then
-                                    if ($start-term='' or not(exists($start-term))) then
-                                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: no start-term and no x-filter, just return first $maximum-terms from the terms-sequence") 
-                                        return subsequence($terms,1,$maximum-terms-resolved)
-                                      else
-                                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: start-term and no x-filter, return the following siblings of the startTerm; regard response-position"),
-                                            $logTerms := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $terms := "||substring(serialize($terms),1,80)||"...")
-(:                                        let $start-search-term-position := count($terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*) + 1:)
-(:                                        let $start-search-term-position := $terms[starts-with(sru:value,$start-term)][1]/sru:extraTermData/fcs:position:)
-                                            let $startterm := $terms[starts-with(sru:value,$start-term)][1]
-                                            let $start-search-term-position := if (exists($startterm)) then index-of ($terms, $startterm) else 0
-                                        let $start-list-term-position := $start-search-term-position - $response-position + 1
-                                        let $dummy := util:log-app("TRACE", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
-        (:                                $terms[$start-search-term-node/position() - $response-position]:)
-                                        return subsequence($terms,$start-list-term-position,$maximum-terms-resolved)
-                                  else       
-                                    if ($start-term='' or not(exists($start-term))) then
-                                    (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
-        (:  TODO: regard other types of matches :)
-                                        subsequence($terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)],1,$maximum-terms-resolved)
-                                      else 
-                                      (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
-                                        let $filtered-terms := $terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]
-                                        let $startterm := $filtered-terms[starts-with(sru:value,$start-term)][1]
-                                        let $start-search-term-position := if (exists($startterm)) then index-of ($filtered-terms, $startterm) else 0
-                                        (: thought would need to reapply the filter :)
-(:                                        let $start-search-term-position := count($filtered-terms[starts-with(sru:value,$start-term)][1]/preceding-sibling::*[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]) + 1:)
-                                        let $start-list-term-position := $start-search-term-position - $response-position + 1
-                                        let $dummy := util:log-app("TRACE", $config:app-name, "start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
-                                        return subsequence($filtered-terms,$start-list-term-position,$maximum-terms-resolved)
-        (:                                $terms[starts-with(sru:displayTerm,$start-term)]/following-sibling::sru:term[starts-with(sru:displayTerm,$x-filter)][position()<=$maximum-terms]:)
-let $logRet := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $recurse-subsequence := "||serialize(subsequence($recurse-subsequence,1,3))||"...")
-return  $recurse-subsequence
-(:return subsequence($filteredData,  , $maximumTerms):)
-
+(:~ 
+ : This is a helper function for fcs:scan-subsequence which calls itself recursively.
+ : @seeAlso http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/cs01/part6-scan/searchRetrieve-v1.0-cs01-part6-scan.html#responsePosition
+ : @param $terms: A flat list of sru:term elements
+ : @param $start-term: Where to start the list to be output
+ : @param $maximum-terms How many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
+ : @param $response-position: ????
+ : @param $recursion-level: at which re
+ : @param $x-filter: only those terms which sru:displyTerm starts with this are included in the output list; in nested scans the filter is applied to every leaf-set separately      
+~:)
+declare %private function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?, $recursion-level as xs:integer) as item()* {
+    let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: $start-term := "||$start-term||", $terms := "||substring(serialize($terms),1,80)||"...")
+    let $x-filter-lc := lower-case($x-filter)
+    let $any-child-term-exists := exists($terms/sru:extraTermData/sru:terms/sru:term)
+    let $recurse-subsequence := 
+        if ($any-child-term-exists) 
+        then
+            let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" there are more levels of terms:"||serialize($terms/sru:extraTermData/sru:terms/sru:term[1]))
+            return
+                for $term in $terms
+                let $child-terms := $term/sru:extraTermData/sru:terms/sru:term 
+                let $children-subsequence := 
+                    (: If the current term has direct child terms, then recursively filter those, otherwise put the term in the output scan :)
+                    if ($child-terms) 
+                    then fcs:scan-subsequence($child-terms, $start-term,$maximum-terms, $response-position, $x-filter, $recursion-level + 1)
+                    else fcs:scan-subsequence($term, $start-term,$maximum-terms, $response-position, $x-filter, $recursion-level + 1)
+                (: only return term if it has any child terms (after filtering) :)
+                return 
+                    if (exists($children-subsequence) or exists($term/sru:extraTermData/*[not(self::sru:*) and not(self::cr:*) and not(self::fcs:*)])) 
+                    then
+                        <sru:term>{
+                            ($term/*[not(local-name()='extraTermData')],
+                            if ($term/sru:extraTermData) 
+                            (: if given term has extraTermData :)
+                            then
+                                <sru:extraTermData>{ 
+                                    if ($term/sru:extraTermData/sru:terms) 
+                                    (: term could have extraTermData but no children terms :)
+                                    then
+                                        ($term/sru:extraTermData/*[not(local-name()='terms')],
+                                         <sru:terms>{$children-subsequence}</sru:terms>)
+                                    else $term/sru:extraTermData/*                                                  
+                                } </sru:extraTermData>
+                            else ()
+                        )} </sru:term>
+                    else
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" removing "||substring(serialize($term), 1, 240))
+                        return ()
+        (: do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) :)
+        else 
+            (: if $maximum-terms=0 return all terms :)
+            let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" do filtering on flat terms-sequence or only on the leaf-nodes in case of nested terms-sequences (trees) if $maximum-terms=0 return all terms")
+            let $maximum-terms-resolved := if ($maximum-terms=0) then count($terms) else $maximum-terms                    
+            return 
+                if ($x-filter='' or not(exists($x-filter))) 
+                then
+                    if ($start-term='' or not(exists($start-term))) 
+                    then
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" no start-term and no x-filter, just return first $maximum-terms from the terms-sequence") 
+                        return subsequence($terms,1,$maximum-terms-resolved)
+                    else
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" start-term and no x-filter, return the following siblings of the startTerm; regard response-position"),
+                            $logTerms := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" $terms := "||substring(serialize($terms),1,80)||"...")
+                        let $startterm := $terms[starts-with(sru:value,$start-term)][1]
+                        let $start-search-term-position := if (exists($startterm)) then index-of ($terms, $startterm) else 0
+                        let $start-list-term-position := $start-search-term-position - $response-position + 1
+                        let $dummy := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" start-search/list-term position: "||$start-search-term-position||'/'||$start-list-term-position)
+                        return subsequence($terms,$start-list-term-position,$maximum-terms-resolved)
+                else       
+                    if ($start-term='' or not(exists($start-term))) 
+                    (: no start-term and x-filter, return the first $maximum-terms terms from the filtered! terms-sequence  :)
+                    (:  TODO: regard other types of matches :)
+                    then subsequence($terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)],1,$maximum-terms-resolved)
+                    else 
+                        (: start-term and x-filter, return $maximum-terms terms from the filtered! terms-sequence starting from the $start-term :)
+                        let $filtered-terms := $terms[starts-with(lower-case(sru:displayTerm),$x-filter-lc)]
+                        let $startterm := $filtered-terms[starts-with(sru:value,$start-term)][1]
+                        let $start-search-term-position := if (exists($startterm)) then index-of ($filtered-terms, $startterm) else 0
+                        (: thought would need to reapply the filter :)
+                        let $start-list-term-position := $start-search-term-position - $response-position + 1
+                        let $dummy := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" start-search/list-term position: "||$start-search-term-position||'/'||count($filtered-terms))
+                        return subsequence($filtered-terms,$start-list-term-position,$maximum-terms-resolved)
+    let $logRet := util:log-app("TRACE", $config:app-name, "fcs:scan-subsequence: "||$recursion-level||" $recurse-subsequence := "||substring(serialize(subsequence($recurse-subsequence,1,3)), 1, if ($recursion-level eq 1) then 240 else 240)||"...")
+    return  $recurse-subsequence
 };
 
 
