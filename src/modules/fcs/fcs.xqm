@@ -526,6 +526,20 @@ declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term 
 };
 
 (:~ 
+ : This function returns an appropriate subsequence of the index, based on filter, startTerm and maximumTerms.
+ : @seeAlso http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/cs01/part6-scan/searchRetrieve-v1.0-cs01-part6-scan.html#responsePosition
+ : @param $terms: A flat list of sru:term elements
+ : @param $start-term: where to start the list to be output
+ : @param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
+ : @param $response-position: ????
+ : @param $x-filter: only those terms which sru:displyTerm matches this parameter are included in the output list
+ : @result a filtered list of the (cached) raw scan 
+~:)
+declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) {
+    fcs:scan-subsequence($terms, $start-term, $maximum-terms, $response-position, $x-filter, 0)
+};
+ 
+(:~ 
  : This is a helper function for fcs:scan-subsequence which calls itself recursively.
  : @seeAlso http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/cs01/part6-scan/searchRetrieve-v1.0-cs01-part6-scan.html#responsePosition
  : @param $terms: A flat list of sru:term elements
