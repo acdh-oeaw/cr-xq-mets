@@ -712,7 +712,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
             <sru:version>1.2</sru:version>
             {$terms}
             <sru:extraResponseData>
-                <fcs:countTerms level="top">{count($terms)}</fcs:countTerms>
+                <fcs:countTerms level="top">{count($terms/sru:term)}</fcs:countTerms>
                 <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>
                 <fcs:indexLabel>{$index-label}</fcs:indexLabel>
              </sru:extraResponseData>
