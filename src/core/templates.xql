@@ -424,6 +424,13 @@ declare function templates:if-module-missing($node as node(), $model as map(*), 
     }
 };
 
+declare function templates:transform-with-xslt($node as node(), $model as map(*),$path-to-xml as xs:string, $path-to-xsl as xs:string) {
+    let $xml := config:resolve($model, $path-to-xml),
+        $xsl := config:resolve($model, $path-to-xsl)
+    let $result := transform:transform($xml,$xsl,())
+    return templates:process($result,$model)
+};
+
 declare function templates:display-source($node as node(), $model as map(*), $lang as xs:string?) {
     let $source := replace($node/string(), "^\s*(.*)\s*$", "$1")
     let $context := request:get-context-path()
