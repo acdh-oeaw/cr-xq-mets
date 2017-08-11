@@ -379,6 +379,7 @@ function query(event) {
     var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
     targetRequest = baseurl.clone().query(params).toString();
     cr_config.params["query"] = query;
+    $('#main-show').prop('checked', true);
     // persistentLink();    
     m.load_(target, targetRequest + ' ' + m.resultSelectors, m.customizeIcons );
 }
@@ -404,6 +405,7 @@ function load_main(event) {
     // set the query into the query input field
     $('#input-query').val(params["query"]);
     
+    $('#main-show').prop('checked', true);
     m.load_(target,targetRequest + ' ' + m.resultSelectors, m.customizeIcons );
 }
 
