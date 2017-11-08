@@ -1,15 +1,205 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified"
+  vc:minVersion="1.1" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
   <xs:simpleType name="config_keys">
-    <xs:restriction base="xs:NCName">
-      <xs:enumeration value="fcs.resource">
+     <xs:union memberTypes="config_keys_cql config_keys_fcs config_keys_others"/>
+  </xs:simpleType>  
+  <xs:element name="map">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" ref="namespaces"/>
+        <xs:element name="map" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="index"/>
+            </xs:sequence>
+            <xs:attribute name="base_elem" type="xs:anyURI">
+              <xs:annotation>
+                <xs:documentation>
+            A base element which is used in every XQuery specified by index elements if ignore_base_element isn't set to "true".
+            This is almost always present, the only exception is the metadata provider which can be queried for available resources.
+            It is a very bad idea to give * as default PLUS default base-elem !!!
+          </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="key" type="xs:NCName" use="required">
+              <xs:annotation>
+                <xs:documentation>
+            The project's id to which this configuration belongs.
+          </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="path" type="xs:anyURI">
+              <xs:annotation>
+                <xs:documentation>
+            The exist-db path which is the base for all XQuerys.
+            (Like prepending collection("$path") to all the XQuerys defined by this map.)
+            This is almost always present, the only exception is the metadata provider which can be queried for available resources.
+          </xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="sort" type="xs:NCName">
+              <xs:annotation>
+                <xs:documentation>By default sort by this index.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" maxOccurs="1" ref="ft"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="index">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="unbounded" ref="path"/>
+      </xs:sequence>
+      <xs:attribute name="label" type="xs:string">
         <xs:annotation>
           <xs:documentation>
-            This param provides the ID that designates the project. May be used as JavaScrpt object property identifier and XML ID
-            so the set of valid characters is restricted.
+            A human readable label for this index.3
+          </xs:documentation>
+        </xs:annotation>      
+      </xs:attribute>
+      <xs:attribute name="sort" type="ynbool">
+        <xs:annotation>
+          <xs:documentation>Whether scans (list of all possible values and their number of occurrence) should be genereated.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="scan" type="ynbool">
+        <xs:annotation>
+          <xs:documentation>Whether scans (list of all possible values and their number of occurrence) should be genereated.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="base_elem" type="xs:NMTOKEN" use="prohibited">
+        <xs:annotation>
+          <xs:documentation>
+            ??? -> should be on map so every index produces the same elements. Needed for and/or (union/intersect)
           </xs:documentation>
         </xs:annotation>
-      </xs:enumeration>
+      </xs:attribute>
+      <xs:attribute name="ignore_base_elem" type="xs:boolean" default="false">
+        <xs:annotation>
+          <xs:documentation>
+            If set to "true" the base_element provided in the map element containing this index is ignored.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="type" type="index-types">
+        <xs:annotation>
+          <xs:documentation>
+            Specifies the type of index which the db (exist-db or BaseX) uses for this element. Eg. "ft", "ngram".
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="key" use="required" type="config_keys"/>
+      <xs:attribute name="link" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>
+            Specifies a URL which does ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="status" type="xs:NCName">
+        <xs:annotation>
+          <xs:documentation>
+            Denotes the status of this index like "indexed" ???
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="case" type="ynbool">
+        <xs:annotation>
+          <xs:documentation>Whether this index should be searched case sensitive.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="coll" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>The collation used by this index to determine equality or when used to sort by this index.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="use" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            This attribute is used as the predicate for the XQuery generated from this index element.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="path">
+    <xs:complexType mixed="true">
+      <xs:attribute name="type" type="xs:NCName"/>
+      <xs:attribute name="label" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>
+            The child node or expression of the element that is presented to the user in (scan) lists.
+            Example: @someAttribute, translate(., '()_-')
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="match" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>
+            The child node or expression of the element that is actually used for searching against.
+            Examples: @someAttribute, xs:integer(.)
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="namespaces">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="unbounded" ref="ns"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ns">
+    <xs:complexType>
+      <xs:attribute name="prefix" use="required" type="xs:NCName"/>
+      <xs:attribute name="uri" use="required" type="xs:anyURI"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ft">
+    <xs:annotation>
+      <xs:documentation>Global configuration for the fulltext index.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="ignore"/>
+        <xs:element ref="inline"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ignore">
+    <xs:annotation>
+      <xs:documentation>These tags should be treated as if they were not present.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:anyURI">
+          <xs:attribute name="index" type="xs:NCName"/>
+          <xs:attribute name="qname" type="xs:NMTOKEN"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="inline">
+    <xs:annotation>
+      <xs:documentation>These tags should be treated as if they were part of their containing element.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:anyURI">
+          <xs:attribute name="index" type="xs:NCName"/>
+          <xs:attribute name="qname" type="xs:NMTOKEN"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="config_keys_cql">   
+    <xs:restriction base="xs:NCName">
       <xs:enumeration value="cql.serverChoice">
         <xs:annotation>
           <xs:documentation>
@@ -20,13 +210,10 @@
           </xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-      <xs:enumeration value="cmd.collection">
-        <xs:annotation>
-          <xs:documentation>
-            Special value for the resource providing infomation about available resources. ???
-          </xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="config_keys_fcs">
+    <xs:restriction base="xs:NCName">
       <xs:enumeration value="pos">
         <xs:annotation>
           <xs:documentation>
@@ -56,14 +243,14 @@
             This specifies an index for search requests which search all the geographical information encoded in the document ???.
           </xs:documentation>
         </xs:annotation>
-      </xs:enumeration> 
+      </xs:enumeration>
       <xs:enumeration value="ana">
         <xs:annotation>
           <xs:documentation>
             This specifies an index for search requests which search all the analytics encoded in the document ???.
           </xs:documentation>
         </xs:annotation>
-      </xs:enumeration>       
+      </xs:enumeration>
       <xs:enumeration value="resource-pid">
         <xs:annotation>
           <xs:documentation>
@@ -123,112 +310,76 @@
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-  <xs:element name="map">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="map" minOccurs="1" maxOccurs="unbounded">      
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="index"/>
-      </xs:sequence>
-      <xs:attribute name="base_elem" type="xs:anyURI">
+  <xs:simpleType name="config_keys_acdh">
+    <xs:restriction base="xs:NCName">
+      <xs:enumeration value="fcs.resource">
         <xs:annotation>
           <xs:documentation>
-            A base element which is used in every XQuery specified by index elements if ignore_base_element isn't set to "true".
-            This is almost always present, the only exception is the metadata provider which can be queried for available resources.
-            It is a very bad idea to give * as default PLUS default base-elem !!!
-          </xs:documentation>            
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="key" type="xs:NCName" use="required">
-        <xs:annotation>
-          <xs:documentation>
-            The project's id to which this configuration belongs.
+            This param provides the ID that designates the project. May be used as JavaScrpt object property identifier and XML ID
+            so the set of valid characters is restricted.
           </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="path" type="xs:anyURI">
+      </xs:enumeration>
+      <xs:enumeration value="cmd.collection">
         <xs:annotation>
           <xs:documentation>
-            The exist-db path which is the base for all XQuerys.
-            (Like prepending collection("$path") to all the XQuerys defined by this map.)
-            This is almost always present, the only exception is the metadata provider which can be queried for available resources.
+            Special value for the resource providing infomation about available resources. ???
           </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="sort" type="xs:NCName">
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="config_keys_others">
+    <xs:restriction base="xs:NCName">
+      <xs:pattern value="[a-zA-z.]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="index-types">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="default">
         <xs:annotation>
           <xs:documentation>
             ???
           </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="title"/>
-    </xs:complexType>
-        </xs:element>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="index">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element minOccurs="1" maxOccurs="unbounded" ref="path"/>
-      </xs:sequence>
-      <xs:attribute name="base_elem" type="xs:NMTOKEN">
+      </xs:enumeration>
+      <xs:enumeration value="ft">
         <xs:annotation>
           <xs:documentation>
-            ???
+            Full text index (Basex, exist-db)
           </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="ignore_base_elem" type="xs:boolean" default="false">
+      </xs:enumeration>
+      <xs:enumeration value="ngram">
         <xs:annotation>
           <xs:documentation>
-            If set to "true" the base_element provided in the map element containing this index is ignored.
+            ngram index (exist-db)
           </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="index-type" type="xs:NCName">
+      </xs:enumeration>
+      <xs:enumeration value="text">
         <xs:annotation>
           <xs:documentation>
-            Specifies the type of index which exist-db uses for this element. Eg. "ngram".
+            Text index index (BaseX)
           </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="key" use="required" type="config_keys"/>
-      <xs:attribute name="link" type="xs:anyURI">
+      </xs:enumeration>
+      <xs:enumeration value="attribute">
         <xs:annotation>
           <xs:documentation>
-            Specifies a URL which does ???
+            Attribute index index (BaseX)
           </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="status" type="xs:NCName">
-        <xs:annotation>
-          <xs:documentation>
-            Denotes the status of this index like "indexed" ???
-          </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="type" type="xs:NCName">
-        <xs:annotation>
-          <xs:documentation>
-            explicit ???
-          </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="use" type="xs:string">
-        <xs:annotation>
-          <xs:documentation>
-            This attribute is used as the predicate for the XQuery generated from this index element.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="path">
-    <xs:complexType mixed="true">
-      <xs:attribute name="type" type="xs:NCName"/>
-    </xs:complexType>
-  </xs:element>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="yn">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="yes"/>      
+      <xs:enumeration value="no"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ynbool">
+    <xs:union memberTypes="xs:boolean yn"/>
+  </xs:simpleType>
 </xs:schema>
