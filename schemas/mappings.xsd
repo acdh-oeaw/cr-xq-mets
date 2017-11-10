@@ -22,7 +22,7 @@
           </xs:documentation>
               </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="key" type="xs:NCName" use="required">
+            <xs:attribute name="key" type="xs:string" use="required">
               <xs:annotation>
                 <xs:documentation>
             The project's id to which this configuration belongs.
@@ -142,7 +142,9 @@
         <xs:annotation>
           <xs:documentation>
             The child node or expression of the element that is actually used for searching against.
-            Examples: @someAttribute, xs:integer(.)
+            Examples: @someAttribute, xs:integer(.)            
+            The default depends on the type of index this is and how it is implemented.
+            Default for most index types is '.' but e. g. for BaseX'es full text search it is text().
           </xs:documentation>
         </xs:annotation>
       </xs:attribute>
