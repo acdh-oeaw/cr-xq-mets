@@ -101,6 +101,13 @@
           </xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute name="scr" type="xs:anyURI">
+        <xs:annotation>
+          <xs:documentation>
+            Server choice for the default relation. Default is contains, can be "starts-with", "ends-with", "exact"
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="status" type="xs:NCName">
         <xs:annotation>
           <xs:documentation>
