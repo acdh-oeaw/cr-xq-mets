@@ -1131,13 +1131,13 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
 currently supporting only default sort by resource (the explicit resource order as defined in project.xml 
 TODO: read the sortkeys from orig-query and order by those :)
 declare function fcs:sort-result ($result, $orig-query as xs:string, $config) as node()* {
-let $project-id := ($result/xs:string(@cr:project-id))[1]
-let $resources-in-result := distinct-values ( $result/data(@cr:resource-pid))
+let $project-id := ($result/xs:string(substring-before(@cr:id,'.')))[1]
+let $resources-in-result := distinct-values ( $result/data(functx:substring-before-last(@cr:id,'.')))
 let $resource-list := project:list-resources($project-id)[@ID = $resources-in-result]
  
 let $before := util:system-dateTime(),
    (: sort in resource-list order :)
-    $ret := for $res in $resource-list return $result[@cr:resource-pid = $res/@ID], 
+    $ret := for $res in $resource-list return $result[functx:substring-before-last(@cr:id,'.') = $res/@ID], 
     $after := util:system-dateTime(),
     $log := util:log-app("TRACE", $config:app-name, "fcs:sort-result sorting took "||(repo-utils:time-to-milliseconds($after) - repo-utils:time-to-milliseconds($before)) div 1000||"s.")
 
@@ -1151,8 +1151,8 @@ For now only for faceting over resources
 xsi:schemaLocation="http://docs.oasis-open.org/ns/search-ws/facetedResults http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/os/schemas/facetedResults.xsd"
 :)
 declare function fcs:generateFacets($result, $orig-query) {
- let $project-id := ($result/xs:string(@cr:project-id))[1]
- let $resources-in-result := distinct-values ( $result/data(@cr:resource-pid)) 
+ let $project-id := ($result/xs:string(substring-before(@cr:id,'.')))[1]
+ let $resources-in-result := distinct-values ( $result/data(functx:substring-before-last(@cr:id,'.'))) 
  (:for $hit in $result
                 let $id := $hit/data(@cr:resource-pid)                 
                 group by $id
@@ -1165,7 +1165,7 @@ return <sru:facetedResults>
     <sru:facet>
 <sru:terms>{ let $before := util:system-dateTime(),
                  $ret := for $res in $resource-list
-                    let $hits-per-resource := $result[@cr:resource-pid = $res/@ID]
+                    let $hits-per-resource := $result[functx:substring-before-last(@cr:id,'.') = $res/@ID]
                  return
                  <sru:term>
                    <sru:actualTerm>{data($res/@LABEL)}</sru:actualTerm>
