@@ -1211,7 +1211,8 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $e
     
     let $title := index:apply-index($orig-sequence-record-data, "title", $x-context)
     (: this is (hopefully) temporary FIX: the resource-pid attribute is in fcs-namespace (or no namespace?) on resourceFragment element!  	:)
-	let $resource-pid:= ($expanded-record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),
+	(:let $resource-pid:= ($expanded-record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),:)
+let $resource-pid:= ($expanded-record-data-input/ancestor-or-self::*[1]/data(functx:substring-before-last(@cr:id,".")),
 (:	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$config,'match-only'))[1]:)
 	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$x-context,'match-only'))[1]
 	
