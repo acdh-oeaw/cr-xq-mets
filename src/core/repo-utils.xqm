@@ -337,7 +337,7 @@ declare function repo-utils:filter-by-context($data as item()*, $x-context as ma
                 (: we aggregate the nodes by resource and 
                    apply those assertions that refer to this resource :)
                 for $x in $data
-                group by $r-pid := $x/@cr:resource-pid
+                group by $r-pid := functx:substring-before-last($x/@cr:id,'.')
                 return 
                     (: get maps that directly exclude or include this resource :)
                     let $r-map := for $p in $assertions-by-type("resource")
