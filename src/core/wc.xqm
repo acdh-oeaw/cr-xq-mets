@@ -154,9 +154,9 @@ declare function wc:generate($resource-pid as xs:string, $project-pid as xs:stri
  :  
  : @param $resource-pid pid of the resource 
  : @param $project-pid id of the project
- : @return empty()
+ : @return empty-sequence()
 ~:)
-declare function wc:remove-data($resource-pid as xs:string,$project-pid as xs:string) as empty() {
+declare function wc:remove-data($resource-pid as xs:string,$project-pid as xs:string) as empty-sequence() {
     let $wc:path:=          wc:get-path($resource-pid, $project-pid),
         $wc:filename:=      tokenize($wc:path,'/')[last()],
         $wc:collection:=    substring-before($wc:path,$wc:filename)

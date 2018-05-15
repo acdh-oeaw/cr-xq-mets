@@ -97,7 +97,7 @@ declare %private function project:create-accounts($project-pid as xs:string) as 
 (:~
  : deletes the two project accounts. Returns true if the deletion was successful.
 ~:)
-declare %private function project:remove-accounts($project-pid as xs:string) as empty(){
+declare %private function project:remove-accounts($project-pid as xs:string) as empty-sequence(){
     let $usernames:=(project:usersaccountname($project-pid),project:adminsaccountname($project-pid))
     return 
         for $username in $usernames return
@@ -222,7 +222,7 @@ declare function project:label($project-pid as xs:string) as xs:string? {
 }; 
 
 
-declare function project:label($data as xs:string, $project-pid as xs:string) as empty() {
+declare function project:label($data as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $current := project:get($project-pid)/@LABEL
     let $update := update value $current with $data
     return ()
@@ -468,7 +468,7 @@ declare function project:filepath($project-pid as xs:string) as xs:string? {
 : @param $config the uri of the cr-catalog to be removed
 : @return true if projec 
 ~:)
-declare function project:purge($project-pid as xs:string) as empty() {
+declare function project:purge($project-pid as xs:string) as empty-sequence() {
     project:purge($project-pid,())
 };
 
@@ -477,9 +477,9 @@ declare function project:purge($project-pid as xs:string) as empty() {
 : 
 : @param $config the uri of the cr-catalog to be removed
 : @param $delete-data should the project's data be removed? (default: 'no')
-: @return empty()
+: @return empty-sequence()
 ~:)
-declare function project:purge($project-pid as xs:string, $delete-data as xs:boolean*) as empty() {
+declare function project:purge($project-pid as xs:string, $delete-data as xs:boolean*) as empty-sequence() {
    if (exists(project:get($project-pid)))
    then
         let $delete-data := ($delete-data,false())[1]
@@ -560,7 +560,7 @@ declare function project:status-code($project-pid as xs:string) as element(data)
 (:~
  : sets the status of the project as a numerical code 
 ~:)
-declare function project:status-code($project-pid as xs:string, $data as xs:integer) as empty() {
+declare function project:status-code($project-pid as xs:string, $data as xs:integer) as empty-sequence() {
     let $project:=          project:get($project-pid),
         $definedStatus :=   for $k in map:keys(project:statusmap())
                             let $val:=map:get(project:statusmap(),$k)
@@ -696,7 +696,7 @@ declare function project:metsHdr($project-pid as xs:string) as element(mets:mets
     return $doc/mets:metsHdr
 };
 
-declare function project:metsHdr($project-pid as xs:string, $data as element(mets:metsHdr)) as empty() {
+declare function project:metsHdr($project-pid as xs:string, $data as element(mets:metsHdr)) as empty-sequence() {
     let $doc:=      project:get($project-pid),
         $current:=  project:metsHdr($project-pid)
     let $update := 
@@ -723,7 +723,7 @@ declare function project:dmd($project) as element(cmd:CMD)? {
         else ()
 };
 
-declare function project:dmd($project, $data as element(cmd:CMD)?) as empty() {    
+declare function project:dmd($project, $data as element(cmd:CMD)?) as empty-sequence() {    
     let $doc:=      repo-utils:get-record($project),
         $project-pid := $doc/xs:string(@OBJID),
         $current:=  project:dmd($project),
@@ -767,7 +767,7 @@ declare function project:map($project) as element(map)? {
 };
 
 
-declare function project:map($data as element(map)?, $project-pid as xs:string) as empty() {
+declare function project:map($data as element(map)?, $project-pid as xs:string) as empty-sequence() {
     let $doc:=      project:get($project-pid),
         $current:=  project:map($project-pid)
     return 
@@ -800,7 +800,7 @@ declare function project:parameters($project-pid as xs:string) as element(param)
     return $doc//mets:techMD[@ID=$config:PROJECT_PARAMETERS_ID]/mets:mdWrap/mets:xmlData/param
 };
 
-declare function project:parameters($project-pid as xs:string, $data as element(param)*) as empty() {
+declare function project:parameters($project-pid as xs:string, $data as element(param)*) as empty-sequence() {
     let $doc:=      project:get($project-pid),
         $current:=  project:parameters($project-pid)
     return 
@@ -824,7 +824,7 @@ declare function project:moduleconfig($project-pid as xs:string) as element(modu
     return $doc//mets:techMD[@ID=$config:PROJECT_MODULECONFIG_ID]/mets:mdWrap/mets:xmlData/module
 };
 
-declare function project:moduleconfig($project-pid as xs:string, $data as element(module)*) as empty() {
+declare function project:moduleconfig($project-pid as xs:string, $data as element(module)*) as empty-sequence() {
     let $doc:=      project:get($project-pid),
         $current:=  project:moduleconfig($project-pid)
     return 
@@ -863,7 +863,7 @@ declare function project:license($project) as element(cmd:License)? {
     return $dmd//cmd:License
 };
 
-declare function project:license($project, $data as element(cmd:License)?) as empty() {
+declare function project:license($project, $data as element(cmd:License)?) as empty-sequence() {
      let $dmd := project:dmd($project),
          $doc:=repo-utils:get-record($project),
          $current:=  project:license($project)
@@ -921,7 +921,7 @@ declare function project:acl($project-pid as xs:string) as element(sm:permission
     return $doc//mets:rightsMD[@ID eq $config:PROJECT_ACL_ID]/mets:mdWrap/mets:xmlData/sm:permission
 };
 
-declare function project:acl($project-pid as xs:string, $data as element(sm:permission)?) as empty() {
+declare function project:acl($project-pid as xs:string, $data as element(sm:permission)?) as empty-sequence() {
     let $doc:=      project:get($project-pid),
         $current:=  project:acl($project-pid)
     let $insert:= 
@@ -977,7 +977,7 @@ declare function project:get-handle($type as xs:string, $project-pid as xs:strin
 };
 
 
-declare function project:set-handle($type as xs:string, $project-pid as xs:string) as empty() {
+declare function project:set-handle($type as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $cmdi := project:dmd($project-pid),
         $config := config:config($project-pid),
         $resourceproxy-id := config:param-value($config,"pid-resourceproxy-prefix")||$project-pid

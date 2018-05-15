@@ -211,7 +211,7 @@ declare function ltb:path($resource-pid as xs:string, $project-pid as xs:string)
  : 
  : @param $resource-pid the pid of the resource 
  : @param $project-pid the id of the project to work in
- : @return empty()
+ : @return empty-sequence()
 ~:)
 declare function ltb:remove(){
 ()

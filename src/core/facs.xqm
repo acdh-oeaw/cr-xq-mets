@@ -105,7 +105,7 @@ declare function facs:get-fileGrp($project-pid as xs:string) as element(mets:fil
  : @param $resource-pid the PID of the Resource
  : @param $project-pid the PID of the Project 
 ~:)
-declare function facs:set($version as xs:string, $mets:file as element(mets:file)+, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function facs:set($version as xs:string, $mets:file as element(mets:file)+, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $log := util:log-app("TRACE",$config:app-name,"facs:set $version := "||$version||" $mets:file := "||substring(serialize($mets:file),1,240)||"... $resourcefragment-pid := "||$resourcefragment-pid||" $resource-pid := "||$resource-pid||" $project-pid := "||$project-pid)
     let $file := facs:get-file($version,$resourcefragment-pid, $resource-pid, $project-pid)
     let $mets:div := rf:record($resourcefragment-pid, $resource-pid, $project-pid)
@@ -216,7 +216,7 @@ declare function facs:get-files($version-param as xs:string?, $resource-pid as x
  : @param $resource-pid the pid of the resource
  : @param $project-pid the pid of the project
 ~:)
-declare function facs:generate($resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function facs:generate($resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     facs:generate((),$resource-pid,$project-pid)
 };
 
@@ -228,7 +228,7 @@ declare function facs:generate($resource-pid as xs:string, $project-pid as xs:st
  : @param $resource-pid the pid of the resource
  : @param $project-pid the pid of the project
 ~:)
-declare function facs:generate($version-param as xs:string?, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function facs:generate($version-param as xs:string?, $resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $log := util:log-app("DEBUG",$config:app-name,"facs:generate $version-param := "||$version-param||" $resource-pid := "||$resource-pid||" $project-pid := "||$project-pid)
     let $fragments := resource:get($resource-pid, $project-pid)/mets:div[@TYPE=$config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],
         $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]

@@ -103,7 +103,7 @@ declare function repo-utils:base-uri($config as item()*) as xs:string* {
  : 
  : @param $config: the config of the current project.
 ~:)
-declare function repo-utils:declare-namespaces($config as item()*) as empty() {
+declare function repo-utils:declare-namespaces($config as item()*) as empty-sequence() {
     let $mappings:=config:mappings($config),
         $namespaces:=$mappings//namespaces
     return 

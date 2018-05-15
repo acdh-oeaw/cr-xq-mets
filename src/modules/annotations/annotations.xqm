@@ -107,11 +107,11 @@ declare function annotations:setByResourcefragmentPID($projectPID as xs:string, 
 
 
 (: update and helper functions :)
-declare %private function annotations:doReplace($annotations:old as element(annotations:annotation), $annotations:new as element(annotations:annotation)) as empty() {
+declare %private function annotations:doReplace($annotations:old as element(annotations:annotation), $annotations:new as element(annotations:annotation)) as empty-sequence() {
     update replace $annotations:old with $annotations:new
 };
 
-declare %private function annotations:doInsert($annotations:document as element(annotations:annotations), $annotations:new as element(annotations:annotation)) as empty() {
+declare %private function annotations:doInsert($annotations:document as element(annotations:annotations), $annotations:new as element(annotations:annotation)) as empty-sequence() {
     let $log := util:log-app("DEBUG", $config:app-name, "inserting annotation")
     return 
         try {
@@ -121,7 +121,7 @@ declare %private function annotations:doInsert($annotations:document as element(
         }
 };
 
-declare %private function annotations:doRemove($annotations:annotation as element(annotations:annotation)) as empty() {
+declare %private function annotations:doRemove($annotations:annotation as element(annotations:annotation)) as empty-sequence() {
     update delete $annotations:annotation
 };
 
@@ -203,7 +203,7 @@ declare function annotations:data2XML($projectPID as xs:string, $resourcePID as 
  : "resourcefragment" annotations: only one per resourcefragment,
  : "crID" (generic) annotations: only one per annotation class and cr-element,
  :)
-declare function annotations:new($annotations:data as element(annotations:annotation)) as empty() {
+declare function annotations:new($annotations:data as element(annotations:annotation)) as empty-sequence() {
     let $log := util:log-app("DEBUG", $config:app-name, "annotations:new()"),
         $log := util:log-app("DEBUG", $config:app-name, $annotations:data)
         
