@@ -82,7 +82,7 @@ declare function resource:make-file($fileid as xs:string, $filepath as xs:string
  : This can be done by overing the transform templates of the working stylesheet. This function sets the 
  : path of a XSL file with those templates. 
 ~:)
-declare function resource:set-preprocess-xsl-path($path as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function resource:set-preprocess-xsl-path($path as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $project:= project:get($project-pid),
         $current-path := resource:get-preprocess-xsl-path($resource-pid,$project-pid),
         $behavior-by-current-path := $project//mets:behavior[mets:mechanism/@xlink:href = $current-path][@BTYPE = $wc:behavior-btype],
@@ -135,7 +135,7 @@ declare function resource:set-preprocess-xsl-path($path as xs:string, $resource-
 };
 
 (: removes the resource's PID from the list of PIDs to be pre-processed by the preprocess XSL stylesheet. :)
-declare function resource:remove-preprocess-xsl-path($resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function resource:remove-preprocess-xsl-path($resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $project:= project:get($project-pid),
         $current-path := resource:get-preprocess-xsl-path($resource-pid,$project-pid),
         $behavior-by-current-path := $project//mets:behavior[mets:mechanism/@xlink:href = $current-path][@BTYPE = $wc:behavior-btype]
@@ -156,11 +156,11 @@ declare function resource:get-preprocess-xsl-path($resource-pid as xs:string, $p
 };
 
 
-declare function resource:purge($resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function resource:purge($resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     resource:purge($resource-pid,$project-pid,())
 };
 
-declare function resource:purge($resource-pid as xs:string, $project-pid as xs:string, $delete-data as xs:boolean*) as empty() {
+declare function resource:purge($resource-pid as xs:string, $project-pid as xs:string, $delete-data as xs:boolean*) as empty-sequence() {
     let $log := util:log-app("INFO",$config:app-name,"Purging resource "||$resource-pid||" (project "||$project-pid||")")
     let $files := resource:files($resource-pid,$project-pid)
     let $remove-data :=  
@@ -491,7 +491,7 @@ declare function resource:store-dmd($data as document-node(), $mdtype as xs:stri
  : @param $param:project-id: the id of the current project
  : @return the added mets:file element 
 ~:)
-declare function resource:add-master($master-filepath as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function resource:add-master($master-filepath as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $resource :=    resource:get($resource-pid,$project-pid)
     let $master_fileid:=$resource-pid||$config:RESOURCE_MASTER_FILEID_SUFFIX
     let $master_file:=  resource:make-file($master_fileid,$master-filepath,"master")
@@ -570,7 +570,7 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
 (:~ create an empty record for a resource
 using existing mdtype specific templates 
 :)
-declare function resource:create-dmd-from-template($resource-pid as xs:string, $project, $dmd-template as xs:string?) as empty() {
+declare function resource:create-dmd-from-template($resource-pid as xs:string, $project, $dmd-template as xs:string?) as empty-sequence() {
 
     let $template := resource:dmd-template($dmd-template)
     let $mdtype := substring-before($dmd-template,'_')    
@@ -580,7 +580,7 @@ declare function resource:create-dmd-from-template($resource-pid as xs:string, $
            util:log-app("ERROR",$config:app-name,"coulnt create a md-record, dmd-template "||$dmd-template||" not available.")
 };
 
-declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string*) as empty() {
+declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string*) as empty-sequence() {
     resource:dmd($resource-pid,$project,$data,$mdtype[1],())    
 };
 
@@ -592,9 +592,9 @@ declare function resource:dmd($resource-pid as xs:string, $project, $data as ite
  : @param $data either a string with an db-path leading to an (existing) file or a xpointer expression leading to a resource fragment, a xi:include fragment, or the content of the metadata as a element or document-node.
  : @param $store-location_param possible values are 'db' (default behaviour: metdata resource is stored as an independent resource to the database and only referenced in the mets record, 'inline' (metadata resource is embedded in the project.xml) or 'xinclude' (an xi:include element is inserted pointing to $data)
  TODO implement xinclude-storage
- : @return empty()
+ : @return empty-sequence()
 ~:)
-declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string, $store-location_param as xs:string?) as empty() {
+declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string, $store-location_param as xs:string?) as empty-sequence() {
     let $doc:=          project:get($project),
         $current :=     resource:dmd($resource-pid,$project),
         $data-location:=base-uri($current),
@@ -962,7 +962,7 @@ declare function resource:cmd($resource-pid as xs:string, $project) as element(c
     resource:dmd("CMDI",$resource-pid,$project)
 };
 
-declare function resource:cmd($resource-pid as xs:string, $project, $data as element(cmd:CMD)?) as empty() {
+declare function resource:cmd($resource-pid as xs:string, $project, $data as element(cmd:CMD)?) as empty-sequence() {
     let $doc:=      project:get($project),
         $resource := resource:get($resource-pid,$project),
         $dmdSecs :=  $project//*[some $id in $dmdID satisfies @ID  = $id],
@@ -1192,7 +1192,7 @@ declare function resource:set-handle($type as xs:string, $resource-pid as xs:str
             else util:log-app("ERROR",$config:app-name,"Can't store handle-uri for resource "||$resource-pid||" because of missing CMDI record.")
 };
 
-declare function resource:remove-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
+declare function resource:remove-handle($type as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as empty-sequence() {
     let $handle-url := resource:get-handle($type,$resource-pid,$project-pid)
     return handle:remove($handle-url,$project-pid)
 };

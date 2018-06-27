@@ -92,7 +92,7 @@ declare function rf:new($resource-pid as xs:string, $filepath as xs:string,$proj
  : @param $resource-pid the pid of the resoruce to delete
  : @return empty sequence
 ~:)
-declare function rf:remove($resourcefragment-pid as xs:string,$resource-pid as xs:string,$project-pid as xs:string) as empty() {
+declare function rf:remove($resourcefragment-pid as xs:string,$resource-pid as xs:string,$project-pid as xs:string) as empty-sequence() {
     let $mets:resource:=resource:get($resource-pid,$project-pid),
         $mets:fragment:=$mets:resource//mets:div[@TYPE eq $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE and @ID eq $resourcefragment-pid],
         $mets:fileID:=$mets:fragment/mets:fptr//@FILEID
@@ -111,7 +111,7 @@ declare function rf:remove($resourcefragment-pid as xs:string,$resource-pid as x
  : @param $project-pid the id of the project
  : @return empty sequence
 ~:)
-declare function rf:remove($resource-pid as xs:string,$project-pid as xs:string) as empty() {
+declare function rf:remove($resource-pid as xs:string,$project-pid as xs:string) as empty-sequence() {
     let $mets:resource:=resource:get($resource-pid,$project-pid),
         $mets:fragments:=$mets:resource//mets:div[@TYPE eq $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],
         $mets:fileids:=$mets:fragments//@FILEID
@@ -132,7 +132,7 @@ declare function rf:remove($resource-pid as xs:string,$project-pid as xs:string)
  : @param $project-pid the pid of the project
  : @return empty sequence
 ~:) 
-declare function rf:remove-data($resource-pid as xs:string,$project-pid as xs:string) as empty() {
+declare function rf:remove-data($resource-pid as xs:string,$project-pid as xs:string) as empty-sequence() {
     let $rf:filepath:=  rf:path($resource-pid,$project-pid),  
         $rf:filename:=  tokenize($rf:filepath,'/')[last()],
         $rf:collection:=substring-before($rf:filepath,$rf:filename)
