@@ -4,8 +4,10 @@
             <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
             <text qname="@resourcefragment-pid"/>
         </lucene>
-        <create qname="@resourcefragment-pid" type="xs:string"/>
-        <create qname="@resource-pid" type="xs:string"/>
-        <create qname="@cr:id" type="xs:string"/>
+        <range>
+            <create qname="@resourcefragment-pid" type="xs:string"/>
+            <create qname="@resource-pid" type="xs:string"/>
+            <create qname="@cr:id" type="xs:string"/>
+        </range>
     </index>
 </collection>

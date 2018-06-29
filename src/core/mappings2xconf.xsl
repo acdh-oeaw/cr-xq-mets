@@ -86,11 +86,13 @@ SOFTWARE
                 <!-- default index-defitions -->
                 <xsl:comment>Default index-definitions for working copies and lookup tables</xsl:comment>
                 <xsl:value-of select="'&#xA;'"/>
-                <create qname="@cr:id" type="xs:string"/>
-                <create qname="@cr:project-id" type="xs:string"/>
-                <create qname="@cr:resource-pid" type="xs:string"/>
-                <create qname="@cr:w" type="xs:string"/>
+                <range>
+                    <create qname="@cr:id" type="xs:string"/>
+                    <create qname="@cr:project-id" type="xs:string"/>
+                    <create qname="@cr:resource-pid" type="xs:string"/>
+                    <create qname="@cr:w" type="xs:string"/>
 <!--                <create qname="@cr:resourcefragment-pid" type="xs:string"/>-->
+                </range>
             </index>
         </collection>
     </xsl:template>

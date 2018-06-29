@@ -5,19 +5,21 @@
     </triggers>
     <index xmlns:xqdoc="http://www.xqdoc.org/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cr="http://aac.ac.at/content_repository" xmlns:xlink="http://www.w3.org/1999/xlink">
         <fulltext default="none" attributes="no"/>
-        <create qname="@xml:id" type="xs:string"/>
-        <create qname="@cr:id" type="xs:string"/>
-        <create qname="@ID" type="xs:string"/>
-        <create qname="@FILEID" type="xs:string"/>
-        <create qname="@TYPE" type="xs:string"/>
-        <create qname="@IDREF" type="xs:string"/>
-        <create qname="@OBJID" type="xs:string"/>
-        <create qname="@USE" type="xs:string"/>
-        <create qname="@xlink:href" type="xs:string"/>
-        <create qname="@BEGIN" type="xs:string"/>
-        <create qname="@END" type="xs:string"/>
-        <create qname="@BTYPE" type="xs:string"/>
-        <create qname="@STRUCTID" type="xs:string"/>
-        <create qname="@key" type="xs:string"/>
+        <range>
+            <create qname="@xml:id" type="xs:string"/>
+            <create qname="@cr:id" type="xs:string"/>
+            <create qname="@ID" type="xs:string"/>
+            <create qname="@FILEID" type="xs:string"/>
+            <create qname="@TYPE" type="xs:string"/>
+            <create qname="@IDREF" type="xs:string"/>
+            <create qname="@OBJID" type="xs:string"/>
+            <create qname="@USE" type="xs:string"/>
+            <create qname="@xlink:href" type="xs:string"/>
+            <create qname="@BEGIN" type="xs:string"/>
+            <create qname="@END" type="xs:string"/>
+            <create qname="@BTYPE" type="xs:string"/>
+            <create qname="@STRUCTID" type="xs:string"/>
+            <create qname="@key" type="xs:string"/>
+        </range>
     </index>
 </collection>
