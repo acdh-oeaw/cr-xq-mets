@@ -39,7 +39,6 @@ import module namespace request="http://exist-db.org/xquery/request";
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
 import module namespace ltb="http://aac.ac.at/content_repository/lookuptable" at "lookuptable.xqm";
-import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "/db/apps/cr-xq-dev0913/core/index.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 (:~ HELPER functions - configuration, caching, data-access
