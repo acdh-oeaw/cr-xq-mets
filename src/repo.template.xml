@@ -8,7 +8,7 @@
     <copyright>true</copyright>
     <type>application</type>
     <target>@app.name@</target>
-<!--    <prepare>setup.xql</prepare>-->
+    <prepare>pre_setup.xql</prepare>
     <finish>setup.xql</finish>
     <!--        <permissions user="admin" password="" group="dba" mode="rw-rw-r-/-"/> 
         <deployed>@timestamp@</deployed>-->
