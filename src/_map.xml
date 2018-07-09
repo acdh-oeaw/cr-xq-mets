@@ -1,0 +1,32 @@
+<map xmlns="">
+    <!-- This is the default map template used for new cr-xq projects. -->
+    <namespaces>
+        <ns prefix="tei" uri="http://www.tei-c.org/ns/1.0"/>
+    </namespaces>
+    <map key="" path="" title="">
+        <!-- needs to be adapted according to project data -->
+        <index key="rf">
+            <path match="@xml:id" label="@n">tei:pb</path>
+        </index>
+        <index key="fcs.toc" type="default">
+            <path/>
+        </index>
+        <index key="cql.serverChoice" index-type="ft">
+            <path/>
+        </index>
+        <!-- system-internal indexes - DONT change! -->
+        <index key="fcs.resource" type="ft" on-data="project">
+            <path match="@ID" label="@LABEL">mets:div</path>
+        </index>
+        <index key="fcs.rf" type="ft">
+            <path match="@resourcefragment-pid" label="@rf-label">fcs:resourceFragment</path>
+        </index>
+    </map>
+    <!-- fulltext index setup -->
+    <ft>
+        <!-- 0-n "inline" elements with QNames to not be treated as a token boundary by the fulltext indexer -->
+        <!--<inline/>-->
+        <!-- 0-n "ignore" elements with QNames be ignored by the fulltext indexer -->
+        <!--<ignore/>-->
+    </ft>
+</map>

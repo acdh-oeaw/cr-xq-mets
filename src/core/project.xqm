@@ -50,6 +50,11 @@ declare variable $project:default-template as element(mets:mets) :=
     then doc(config:path('mets.template'))/mets:mets 
     else doc($config:app-root||"/_project.xml")/mets:mets;
     
+declare variable $project:map-template as element(map) := 
+    if (doc-available(config:path('map.template'))) 
+    then doc(config:path('map.template'))/map 
+    else doc($config:app-root||"/_map.xml")/map;
+    
 declare variable $project:cmdi-template as element(cmd:CMD) := 
     if (doc-available(config:path('cmd.template'))) 
     then doc(config:path('cmd.template'))/cmd:CMD 
@@ -153,10 +158,12 @@ declare function project:new($data as element(mets:mets),$project-pid as xs:stri
             return $seed-template
             
         let $project-stored as xs:string? :=  project:store($this:id,$this:project)
+        
         return
             if ($project-stored!='')
             then 
                 let $project-collection:=   project:collection($this:id)
+                let $setup-map :=           project:map($project:map-template, $this:id)
                 let $setup-accounts:=        project:create-accounts($this:id)
                 let $users-groupname :=      project:usersaccountname($this:id)
                 let $admin-groupname :=      project:adminsaccountname($this:id)
