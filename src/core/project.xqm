@@ -797,7 +797,9 @@ declare function project:map($data as element(map)?, $project-pid as xs:string) 
                     then 
                         update insert <mdRef MDTYPE="OTHER" xmlns="http://www.loc.gov/METS/" xlink:href="{$path-to-map-instance}" LOCTYPE="URL"/>
                         into $doc//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
-                    else update insert <techMD ID="{$config:PROJECT_MAPPINGS_ID}" xmlns="http://www.loc.gov/METS/"><mdRef MDTYPE="OTHER" xlink:href="{$path-to-map-instance}" LOCTYPE="URL"/></techMD> into $doc//mets:amdSec[@ID eq $config:PROJECT_AMDSEC_ID]
+                    else 
+                        update insert <techMD ID="{$config:PROJECT_MAPPINGS_ID}" xmlns="http://www.loc.gov/METS/"><mdRef MDTYPE="OTHER" xlink:href="{$path-to-map-instance}" LOCTYPE="URL"/></techMD> 
+                        preceding $doc//mets:amdSec[@ID eq $config:PROJECT_AMDSEC_ID]/*[1]
                 return ()
 };
 
