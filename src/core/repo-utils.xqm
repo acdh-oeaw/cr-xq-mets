@@ -42,6 +42,7 @@ import module namespace ltb="http://aac.ac.at/content_repository/lookuptable" at
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "resourcefragment.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "/db/apps/cr-xq-dev0913/core/index.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+
 (:~ HELPER functions - configuration, caching, data-access
 :)
 
@@ -711,7 +712,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               {let $base-url-public := config:param-value($config,'base-url-public')
 	                                return if ($base-url-public) then <param name="base_url_public" value="{$base-url-public}"/> else ()}
 	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs_prefix')}"/>
-	                               <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>
+	                              <!-- param causes errors 
+	                              <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>-->
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
 	                               <param name="site_logo" value="{config:param-value($config, 'site.logo')}"/>
@@ -753,7 +755,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                                return if ($base-url-public) then <param name="base_url_public" value="{$base-url-public}"/> else ()}
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
                                     <param name="fcs_prefix" value="{config:param-value($config,'fcs_prefix')}"/>
-                                    <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>
+                                   <!-- param causes errors 
+	                              <param name="mappings-file" value="{concat('xmldb:exist://', (for $map in config:param-value($config, 'mappings') return base-uri($map))[1])}"/>-->
                                     <param name="dict_file" value="{config:param-value($config, 'dict_file')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site-name')}"/>
@@ -865,7 +868,23 @@ declare function repo-utils:if-absent ( $arg as item()* , $value as item()* )  a
     if (exists($arg)) then $arg else $value
  } ;
 
+declare function repo-utils:check-loglevel($loglevel as xs:string, $config) {
+let $loglevels := 
+    <loglevels>
+        <loglevel n="1">FATAL</loglevel>
+        <loglevel n="2">ERROR</loglevel>
+        <loglevel n="3">WARN</loglevel>
+        <loglevel n="4">INFO</loglevel>
+        <loglevel n="5">DEBUG</loglevel>
+        <loglevel n="6">TRACE</loglevel>
+    </loglevels>
 
+let $project-loglevel := config:param-value($config,'loglevel')
+
+return if ($loglevels/loglevel[. eq $project-loglevel]/@n >= $loglevels/loglevel[. eq $loglevel]/@n) then 
+true()
+else false()
+};
 (: Helper function to recursively create a collection hierarchy. 
 xmldb:create-collection actually obviously can do this - no need for recursive call (anymore?) :)
 declare function repo-utils:mkcol($collection as xs:string, $path as xs:string) {

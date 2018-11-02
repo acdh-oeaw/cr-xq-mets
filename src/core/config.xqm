@@ -457,7 +457,6 @@ declare function config:html-head($node as node(), $model as map(*)) as element(
 };
 
 
-
 (:~
  : Returns the repo.xml descriptor for the current application.
  : 
@@ -560,7 +559,7 @@ declare function config:app-info($node as node(), $model as map(*)) {
  declare function config:param-keys($config as map(*)*) as xs:string* {
     let $config := $config("config")
     let $special-params := ('app-root', 'app-root-collection', 'base-url', 'project-dir', 'template-dir', 'template-baseuri',
-                'project-template-dir', 'project-template-baseuri', 
+                'loglevel','project-template-dir', 'project-template-baseuri', 
                 'project-data-dir', 'project-data-baseuri',
                 'project-static-dir', 'project-static-baseuri',
                 'exist-controller', 'exist-path', 'exist-prefix', 'exist-resource', 'exist-root',
@@ -687,6 +686,8 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case 'template-baseuri'         return
                                                 let $template := $crProjectParameters//param[@key='template']
                                                 return $config:templates-baseuri||$template||"/"
+            case 'loglevel'                 return
+                                                $crProjectParameters//param[@key='loglevel']
             case 'project-data-dir'     return
                                                 let $project-id:=$mets/xs:string(@OBJID)
                                                 let $data-path:=config:common-path-from-FLocat($model,'projectData')
