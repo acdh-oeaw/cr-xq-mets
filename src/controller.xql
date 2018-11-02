@@ -48,7 +48,7 @@ declare variable $exist:root external;
  : actual location in the database should be autogmagically resolved by config:resolve-template-to-uri().
  : This is used to serve files which reside in 'templates'.  
 ~:)
-declare variable $local:web-resources := ('js', 'map', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'woff2', 'eot', 'ico');
+declare variable $local:web-resources := ('js', 'json', 'map', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'woff2', 'eot', 'ico');
 
 (: This way to big switch statement defines the behavior of car-xq-mets.
    FIXME: urgently needs to be split into readable blocks (that is functions)
@@ -184,6 +184,7 @@ switch (true())
                 <forward url="{$exist:controller}/proxy.xql">
                     <add-parameter name="{$url}-token" value="{$token}"/>
                     <set-header name="Cache-Control" value="no-cache"/>
+                    
                 </forward>
         </dispatch>
     case (ends-with(local:exist-resource-index($project), ".html")) return local:return-requested-html-view($project, $protected, local:user-may($project))
@@ -245,6 +246,7 @@ switch (true())
                                 <add-parameter name="path" value="{$path}"/>
                                 <add-parameter name="exist-path" value="{$exist:path}"/>
                                 <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                                
                              </forward>
                         </dispatch>
                     
@@ -280,6 +282,7 @@ switch (true())
                                 <add-parameter name="exist-root" value="{$exist:root}"/>
                                 <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
                                 <set-header name="Cache-Control" value="no-cache"/>
+                                
                             </forward>
                         </view>
                     </dispatch>
@@ -313,6 +316,7 @@ switch (true())
                             <add-parameter name="exist-root" value="{$exist:root}"/>
                              <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
                              <add-parameter name="rel-path" value="{$corr-rel-path}"/>
+                              <set-header name="Access-Control-Allow-Origin" value="*"/>
                         </forward>
                     </dispatch>
             (: login :)
@@ -344,7 +348,7 @@ switch (true())
     (:~
      : Requests for specific resources are forwarded to the resource module: 
     ~:)
-    case (contains($exist:path, "resource")) return
+    case (contains($exist:path, "resource/")) return
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <forward url="{$exist:controller}/modules/resource/resource.xql" >
                 <add-parameter name="project" value="{$project}"/>
@@ -352,12 +356,19 @@ switch (true())
                 <add-parameter name="exist-resource" value="{$exist:resource}"/>
             </forward>
         </dispatch>
+     case (matches($exist:path, $project||'(.*)')) return
+       <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="/apps/cr-xq-mets/{$project}/" absolute="yes">
+        
+     </forward>
+    </dispatch>
     default return
     (:~
      : everything else is passed through 
     ~:)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <cache-control cache="yes"/>
+        
     </dispatch>
 };
 
@@ -449,7 +460,9 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
                             <add-parameter name="exist-controller" value="{$exist:controller}"/>
                             <add-parameter name="exist-root" value="{$exist:root}"/>
                             <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
-                        </forward>
+                            <set-header name="Access-Control-Allow-Origin" value="*"/>
+                        
+</forward>
                            <error-handler>
                    			<forward url="{$exist:controller}/error-page.html" method="get"/>
                    			<forward url="{$exist:controller}/core/view.xql"/>
@@ -498,13 +511,15 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
                         <add-parameter name="project" value="{$project}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
                         <add-parameter name="exist-resource" value="{$exist:resource}"/>
+                        <set-header name="Access-Control-Allow-Origin" value="*"/>
                     </forward>
                 </dispatch>    
             else
                 (:let $log := util:log-app("TRACE",$config:app-name, "forwarding webresource "||$path)
                 return:)
                     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                        <forward url="{$path}" />        
+                        <forward url="{$path}" ><set-header name="Access-Control-Allow-Origin" value="*"/></forward>  
+                         
                     </dispatch>
 };
  
