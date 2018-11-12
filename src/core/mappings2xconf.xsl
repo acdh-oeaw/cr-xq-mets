@@ -81,18 +81,19 @@ SOFTWARE
                 </xsl:if>
                 
                 <!-- generated range-index definitions -->
+              <range>
                 <xsl:copy-of select="$range-indexes"/>
                 <xsl:value-of select="'&#xA;&#xA;'"/>
                 <!-- default index-defitions -->
                 <xsl:comment>Default index-definitions for working copies and lookup tables</xsl:comment>
                 <xsl:value-of select="'&#xA;'"/>
-                <range>
+                
                     <create qname="@cr:id" type="xs:string"/>
                     <create qname="@cr:project-id" type="xs:string"/>
                     <create qname="@cr:resource-pid" type="xs:string"/>
                     <create qname="@cr:w" type="xs:string"/>
 <!--                <create qname="@cr:resourcefragment-pid" type="xs:string"/>-->
-                </range>
+              </range>  
             </index>
         </collection>
     </xsl:template>
