@@ -19,7 +19,8 @@
             </nav>
             <submit>Speichern</submit>
             <submit_success>Die Änderungen wurden gespeichert!</submit_success>
-            <submit_error>Die Änderungen konnten nicht gespeichert werden! Überprüfen Sie, ob alle Pflichtfelder ausgefüllt wurden.</submit_error>
+            <submit_error>Die Änderungen konnten nicht gespeichert werden! Überprüfen Sie, ob alle
+                Pflichtfelder ausgefüllt wurden.</submit_error>
             <requiredField>Dieses Feld muss ausgefüllt werden!</requiredField>
         </general>
         <design>
@@ -45,7 +46,8 @@
             <h>Allgemeine Einstellungen</h>
             <project_name>
                 <title>Titel des Projekts:</title>
-                <hint>Der Projekttitel erscheint im Browser und in den Ergebnissen von Suchmaschinen</hint>
+                <hint>Der Projekttitel erscheint im Browser und in den Ergebnissen von
+                    Suchmaschinen</hint>
             </project_name>
             <default_project>
                 <title>Standardprojekt?</title>
@@ -53,11 +55,13 @@
             </default_project>
             <description>
                 <title>Kurzbeschreibung:</title>
-                <hint>Diese Kurzbeschreibung wird in den Metatags abgelegt und u.a. in den Suchmaschinen unter dem Seitentitel angezeigt</hint>
+                <hint>Diese Kurzbeschreibung wird in den Metatags abgelegt und u.a. in den
+                    Suchmaschinen unter dem Seitentitel angezeigt</hint>
             </description>
             <used_namespaces>
                 <title>Benutzte Namensräume:</title>
-                <hint>Hier werden die von Ihrer digitalen Edition benutzten XML-Namensräume eingetragen z.B. http://www.tei-c.org/ns/1.0</hint>
+                <hint>Hier werden die von Ihrer digitalen Edition benutzten XML-Namensräume
+                    eingetragen z.B. http://www.tei-c.org/ns/1.0</hint>
             </used_namespaces>
         </meta>
     </lang>

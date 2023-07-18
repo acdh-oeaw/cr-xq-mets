@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <h1>Data Structure</h1>
     <div style="margin-bottom:25px;">
         <h3>Namespace Definitions</h3>
@@ -8,7 +10,7 @@
                 <tr>
                     <th>Namespace Prefix</th>
                     <th>Namespace URI</th>
-                    <th/>
+                    <th></th>
                 </tr>
             </thead>
             <tbody id="ns-repeat" xf:repeat-bind="namespaces">
@@ -34,7 +36,8 @@
             <xf:trigger>
                 <xf:label>Add Namespace Declaration</xf:label>
                 <xf:action>
-                    <xf:insert nodeset="*" context="instance('data')/namespaces" origin="instance('namespaces-template')"/>
+                    <xf:insert nodeset="*" context="instance('data')/namespaces"
+                        origin="instance('namespaces-template')"/>
                 </xf:action>
             </xf:trigger>
         </xf:group>
@@ -48,7 +51,7 @@
                     <th>XPath Expression</th>
                     <th>Predicate</th>
                     <th>Index Type</th>
-                    <th/>
+                    <th></th>
                 </tr>
             </thead>
             <tbody xf:repeat-bind="indexes" id="index-repeat">
@@ -57,30 +60,40 @@
                         <xf:output ref="@key"/>
                     </td>
                     <td>
-                        <xf:output value="if (count(path) gt 1) then concat('(',string-join(path,'|'),')') else path" incremental="true()"/>
+                        <xf:output
+                            value="if (count(path) gt 1) then concat('(',string-join(path,'|'),')') else path"
+                            incremental="true()"/>
                     </td>
                     <td>
                         <xf:output ref="@use"/>
                     </td>
                     <td>
-                        <xf:output value="if (@index-type) then @index-type else 'default'"/>
+                        <xf:output value="if (@index-type) then @index-type else 'default'"
+                        />
                     </td>
                     <td>
                         <xf:group appearance="minimal">
                             <xf:trigger appearance="minimal">
                                 <xf:label>[remove]</xf:label>
-                                <xf:delete at="index('index-repeat')" context="instance('data')/map/index[index('index-repeat')]" if="(@key != 'cql.serverChoice' and @key != 'resourcefragment-pid')"/>
+                                <xf:delete at="index('index-repeat')"
+                                    context="instance('data')/map/index[index('index-repeat')]"
+                                    if="(@key != 'cql.serverChoice' and @key != 'resourcefragment-pid')"
+                                />
                             </xf:trigger>
                             <xf:trigger appearance="minimal">
                                 <xf:label>[edit]</xf:label>
-                                <xf:insert context="instance('data')/map/map/index[index('index-repeat')]" if="not(@index-type)" origin="instance('index-template')/@index-type"/>
+                                <xf:insert
+                                    context="instance('data')/map/map/index[index('index-repeat')]"
+                                    if="not(@index-type)"
+                                    origin="instance('index-template')/@index-type"/>
                                 <xf:toggle case="editMappings"/>
                                 <xf:setfocus control="editIndexPath"/>
                             </xf:trigger>
                             <xf:trigger appearance="minimal">
                                 <xf:label>[add]</xf:label>
                                 <xf:action>
-                                    <xf:insert nodeset="*" context="instance('data')/map" origin="instance('index-template')"/>
+                                    <xf:insert nodeset="*" context="instance('data')/map"
+                                        origin="instance('index-template')"/>
                                     <xf:toggle case="edit"/>
                                     <xf:setfocus control="editIndexName"/>
                                 </xf:action>
@@ -90,14 +103,14 @@
                 </tr>
             </tbody>
         </table>
-
         <!-- Editing -->
         <xf:switch id="indexEditor">
             <xf:case id="hide">
-                <div style="margin: 25px 0 35px 45px;"/>
+                <div style="margin: 25px 0 35px 45px;"></div>
             </xf:case>
             <xf:case id="editMappings">
-                <div style="border:1px solid black; margin: 25px 0 35px 45px; padding: 10px; ">
+                <div
+                    style="border:1px solid black; margin: 25px 0 35px 45px; padding: 10px; ">
                     <h3>Edit Index Definition</h3>
                     <xf:group ref="instance('data')//index[index('index-repeat')]">
                         <h4>Index Name</h4>
@@ -113,11 +126,14 @@
                                     </xf:input>
                                     <xf:trigger appearance="minimal">
                                         <xf:label>[remove Path]</xf:label>
-                                        <xf:delete ref="parent::index/path[index('path-repeat')]" if="count(parent::index/path) gt 1"/>
+                                        <xf:delete
+                                          ref="parent::index/path[index('path-repeat')]"
+                                          if="count(parent::index/path) gt 1"/>
                                     </xf:trigger>
                                     <xf:trigger appearance="minimal">
                                         <xf:label>[add Path]</xf:label>
-                                        <xf:insert context="parent::index" nodeset="*" origin="instance('index-template')/path"/>
+                                        <xf:insert context="parent::index" nodeset="*"
+                                          origin="instance('index-template')/path"/>
                                     </xf:trigger>
                                 </xf:group>
                             </div>
@@ -146,7 +162,8 @@
                             <xf:trigger>
                                 <xf:label>Add new Index Definition</xf:label>
                                 <xf:action>
-                                    <xf:insert nodeset="*" context="instance('data')/map" origin="instance('index-template')"/>
+                                    <xf:insert nodeset="*" context="instance('data')/map"
+                                        origin="instance('index-template')"/>
                                 </xf:action>
                             </xf:trigger>
                             <xf:trigger>

@@ -1,52 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/XSL/Format" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:fotex="http://www.tug.org/fotex" exclude-result-prefixes="a fotex rng tei teix" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/XSL/Format"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0"
+    xmlns:fotex="http://www.tug.org/fotex" exclude-result-prefixes="a fotex rng tei teix"
+    version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>
-    TEI stylesheet dealing  with elements from the core module, making XSL-FO output.
-      </p>
-            <p>
-This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-      </p>
+            <p> TEI stylesheet dealing with elements from the core module, making XSL-FO output. </p>
+            <p> This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: core.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2011, TEI Consortium</p>
         </desc>
     </doc>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
-        <desc>Process elements  processing-instruction()[name()='xmltex']</desc>
+        <desc>Process elements processing-instruction()[name()='xmltex']</desc>
     </doc>
-    <xsl:template match="processing-instruction()[name()='xmltex']">
+    <xsl:template match="processing-instruction()[name() = 'xmltex']">
         <xsl:message>xmltex pi <xsl:value-of select="."/>
         </xsl:message>
         <xsl:copy-of select="."/>
@@ -70,12 +59,12 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="tei:add">
         <xsl:choose>
-            <xsl:when test="@place='sup' or @place='above'">
+            <xsl:when test="@place = 'sup' or @place = 'above'">
                 <inline vertical-align="super">
                     <xsl:apply-templates/>
                 </inline>
             </xsl:when>
-            <xsl:when test="@place='sub' or @place='below'">
+            <xsl:when test="@place = 'sub' or @place = 'below'">
                 <inline vertical-align="sub">
                     <xsl:apply-templates/>
                 </inline>
@@ -98,7 +87,7 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="tei:cell//tei:lb">
         <xsl:choose>
-            <xsl:when test="$foEngine='passivetex'"> </xsl:when>
+            <xsl:when test="$foEngine = 'passivetex'"> </xsl:when>
             <xsl:otherwise>
                 <inline linefeed-treatment="preserve">
                     <xsl:text>
@@ -168,8 +157,12 @@ of this software, even if advised of the possibility of such damage.
         <desc/>
     </doc>
     <xsl:template match="tei:eg">
-        <block font-family="{$typewriterFont}" background-color="{$exampleBackgroundColor}" color="{$exampleColor}" white-space-treatment="preserve" linefeed-treatment="preserve" white-space-collapse="false" wrap-option="no-wrap" text-indent="0em" hyphenate="false" start-indent="{$exampleMargin}" text-align="start" font-size="{$exampleSize}" space-before.optimum="4pt" space-after.optimum="4pt">
-            <xsl:if test="not($flowMarginLeft='')">
+        <block font-family="{$typewriterFont}" background-color="{$exampleBackgroundColor}"
+            color="{$exampleColor}" white-space-treatment="preserve" linefeed-treatment="preserve"
+            white-space-collapse="false" wrap-option="no-wrap" text-indent="0em" hyphenate="false"
+            start-indent="{$exampleMargin}" text-align="start" font-size="{$exampleSize}"
+            space-before.optimum="4pt" space-after.optimum="4pt">
+            <xsl:if test="not($flowMarginLeft = '')">
                 <xsl:attribute name="padding-start">
                     <xsl:value-of select="$exampleMargin"/>
                 </xsl:attribute>
@@ -178,7 +171,7 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:text>
 </xsl:text>
             </xsl:if>
-            <xsl:value-of select="translate(.,' ','&#160;')"/>
+            <xsl:value-of select="translate(., ' ', '&#160;')"/>
         </block>
     </xsl:template>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
@@ -187,8 +180,12 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="teix:egXML">
         <xsl:param name="simple">false</xsl:param>
         <xsl:param name="highlight"/>
-        <block font-family="{$typewriterFont}" background-color="{$exampleBackgroundColor}" color="{$exampleColor}" white-space-treatment="preserve" linefeed-treatment="preserve" white-space-collapse="false" wrap-option="no-wrap" text-indent="0em" hyphenate="false" start-indent="{$exampleMargin}" text-align="start" font-size="{$exampleSize}" space-before.optimum="4pt" space-after.optimum="4pt">
-            <xsl:if test="not($flowMarginLeft='')">
+        <block font-family="{$typewriterFont}" background-color="{$exampleBackgroundColor}"
+            color="{$exampleColor}" white-space-treatment="preserve" linefeed-treatment="preserve"
+            white-space-collapse="false" wrap-option="no-wrap" text-indent="0em" hyphenate="false"
+            start-indent="{$exampleMargin}" text-align="start" font-size="{$exampleSize}"
+            space-before.optimum="4pt" space-after.optimum="4pt">
+            <xsl:if test="not($flowMarginLeft = '')">
                 <xsl:attribute name="padding-start">
                     <xsl:value-of select="$exampleMargin"/>
                 </xsl:attribute>
@@ -203,7 +200,7 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc/>
     </doc>
-    <xsl:template match="tei:eg[@rend='kwic']/tei:lb"/>
+    <xsl:template match="tei:eg[@rend = 'kwic']/tei:lb"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc/>
     </doc>
@@ -216,7 +213,8 @@ of this software, even if advised of the possibility of such damage.
         <desc/>
     </doc>
     <xsl:template match="tei:epigraph">
-        <block text-align="center" space-before.optimum="4pt" space-after.optimum="4pt" start-indent="{$exampleMargin}">
+        <block text-align="center" space-before.optimum="4pt" space-after.optimum="4pt"
+            start-indent="{$exampleMargin}">
             <xsl:apply-templates/>
         </block>
     </xsl:template>
@@ -268,7 +266,8 @@ of this software, even if advised of the possibility of such damage.
         <desc/>
     </doc>
     <xsl:template match="tei:att">
-        <inline hyphenate="false" color="{$giColor}" font-family="{$typewriterFont}" font-weight="bold">
+        <inline hyphenate="false" color="{$giColor}" font-family="{$typewriterFont}"
+            font-weight="bold">
             <xsl:text>@</xsl:text>
             <xsl:apply-templates/>
         </inline>
@@ -345,32 +344,32 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc/>
     </doc>
-    <xsl:template match="tei:item|tei:biblStruct">
+    <xsl:template match="tei:item | tei:biblStruct">
         <xsl:call-template name="makeItem"/>
     </xsl:template>
     <xsl:template match="tei:item" mode="xref">
         <xsl:variable name="listdepth" select="count(ancestor::tei:list)"/>
-        <xsl:if test="parent::tei:list[@type='bibliography']">
+        <xsl:if test="parent::tei:list[@type = 'bibliography']">
             <xsl:text> [</xsl:text>
         </xsl:if>
         <xsl:variable name="listNFormat">
             <xsl:choose>
-                <xsl:when test="$listdepth=1">
+                <xsl:when test="$listdepth = 1">
                     <xsl:text>1</xsl:text>
                 </xsl:when>
-                <xsl:when test="$listdepth=2">
+                <xsl:when test="$listdepth = 2">
                     <xsl:text>i</xsl:text>
                 </xsl:when>
-                <xsl:when test="$listdepth=3">
+                <xsl:when test="$listdepth = 3">
                     <xsl:text>a</xsl:text>
                 </xsl:when>
-                <xsl:when test="$listdepth=4">
+                <xsl:when test="$listdepth = 4">
                     <xsl:text>I</xsl:text>
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
         <xsl:number format="{$listNFormat}"/>
-        <xsl:if test="parent::tei:list[@type='bibliography']">
+        <xsl:if test="parent::tei:list[@type = 'bibliography']">
             <xsl:text>]</xsl:text>
         </xsl:if>
     </xsl:template>
@@ -388,12 +387,14 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="tei:l">
         <block space-before.optimum="0pt" space-after.optimum="0pt">
             <xsl:choose>
-                <xsl:when test="starts-with(@rend,'indent(')">
+                <xsl:when test="starts-with(@rend, 'indent(')">
                     <xsl:attribute name="text-indent">
-                        <xsl:value-of select="concat(substring-before(substring-after(@rend,'('),')'),'em')"/>
+                        <xsl:value-of
+                            select="concat(substring-before(substring-after(@rend, '('), ')'), 'em')"
+                        />
                     </xsl:attribute>
                 </xsl:when>
-                <xsl:when test="starts-with(@rend,'indent')">
+                <xsl:when test="starts-with(@rend, 'indent')">
                     <xsl:attribute name="text-indent">1em</xsl:attribute>
                 </xsl:when>
             </xsl:choose>
@@ -415,12 +416,12 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="tei:lb">
         <xsl:choose>
-            <xsl:when test="$activeLinebreaks='true'">
+            <xsl:when test="$activeLinebreaks = 'true'">
                 <xsl:choose>
-	    <!-- this is a *visible* linebreak character 
+                    <!-- this is a *visible* linebreak character 
 		 PassiveTeX implements it as a real line break
 	    -->
-                    <xsl:when test="$foEngine='passivetex'"> </xsl:when>
+                    <xsl:when test="$foEngine = 'passivetex'"> </xsl:when>
                     <xsl:when test="parent::tei:list">
                         <list-item>
                             <list-item-label>
@@ -449,7 +450,7 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc/>
     </doc>
-    <xsl:template match="tei:list|tei:listBibl">
+    <xsl:template match="tei:list | tei:listBibl">
         <xsl:if test="child::tei:head">
             <block font-style="italic" text-align="start" space-before.optimum="4pt">
                 <xsl:for-each select="tei:head">
@@ -458,7 +459,7 @@ of this software, even if advised of the possibility of such damage.
             </block>
         </xsl:if>
         <xsl:choose>
-            <xsl:when test="@type='runin'">
+            <xsl:when test="@type = 'runin'">
                 <block>
                     <xsl:apply-templates mode="runin"/>
                 </block>
@@ -476,7 +477,7 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="tei:cit">
         <xsl:choose>
-            <xsl:when test="@rend='display'">
+            <xsl:when test="@rend = 'display'">
                 <block font-size="8pt">
                     <xsl:apply-templates/>
                 </block>
@@ -504,17 +505,19 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc/>
     </doc>
-    <xsl:template match="tei:list[@type='catalogue']">
+    <xsl:template match="tei:list[@type = 'catalogue']">
         <block space-before="{$spaceAroundTable}" space-after="{$spaceAroundTable}">
             <table>
                 <table-column column-number="1" column-width="20%">
-                    <xsl:if test="$foEngine='passivetex'">
-                        <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex">p</xsl:attribute>
+                    <xsl:if test="$foEngine = 'passivetex'">
+                        <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex"
+                            >p</xsl:attribute>
                     </xsl:if>
                 </table-column>
                 <table-column column-number="2" column-width="80%">
-                    <xsl:if test="$foEngine='passivetex'">
-                        <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex">p</xsl:attribute>
+                    <xsl:if test="$foEngine = 'passivetex'">
+                        <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex"
+                            >p</xsl:attribute>
                     </xsl:if>
                 </table-column>
                 <table-body>
@@ -531,7 +534,8 @@ of this software, even if advised of the possibility of such damage.
         <desc/>
     </doc>
     <xsl:template match="tei:lg">
-        <block start-indent="{$exampleMargin}" text-align="start" space-before.optimum="4pt" space-after.optimum="4pt">
+        <block start-indent="{$exampleMargin}" text-align="start" space-before.optimum="4pt"
+            space-after.optimum="4pt">
             <xsl:apply-templates/>
         </block>
     </xsl:template>
@@ -595,7 +599,7 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="tei:note" mode="real">
         <xsl:choose>
-            <xsl:when test="@place='end'">
+            <xsl:when test="@place = 'end'">
                 <basic-link>
                     <xsl:attribute name="internal-destination">
                         <xsl:value-of select="generate-id()"/>
@@ -612,20 +616,24 @@ of this software, even if advised of the possibility of such damage.
                     </inline>
                 </basic-link>
             </xsl:when>
-            <xsl:when test="@place='inline'">
+            <xsl:when test="@place = 'inline'">
                 <inline>
                     <xsl:text> (</xsl:text>
                     <xsl:apply-templates/>
                     <xsl:text>)</xsl:text>
                 </inline>
             </xsl:when>
-            <xsl:when test="@place='display'">
-                <block text-indent="0pt" end-indent="{$exampleMargin}" start-indent="{$exampleMargin}" font-size="{$exampleSize}" space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
+            <xsl:when test="@place = 'display'">
+                <block text-indent="0pt" end-indent="{$exampleMargin}"
+                    start-indent="{$exampleMargin}" font-size="{$exampleSize}"
+                    space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
                     <xsl:apply-templates/>
                 </block>
             </xsl:when>
-            <xsl:when test="@place='divtop'">
-                <block text-indent="0pt" end-indent="{$exampleMargin}" start-indent="{$exampleMargin}" font-style="italic" font-size="{$exampleSize}" space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
+            <xsl:when test="@place = 'divtop'">
+                <block text-indent="0pt" end-indent="{$exampleMargin}"
+                    start-indent="{$exampleMargin}" font-style="italic" font-size="{$exampleSize}"
+                    space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
                     <xsl:apply-templates/>
                 </block>
             </xsl:when>
@@ -668,7 +676,8 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:if>
             </inline>
             <footnote-body>
-                <block end-indent="0pt" start-indent="0pt" text-align="start" font-style="normal" text-indent="{$parIndent}" font-size="{$footnoteSize}">
+                <block end-indent="0pt" start-indent="0pt" text-align="start" font-style="normal"
+                    text-indent="{$parIndent}" font-size="{$footnoteSize}">
                     <xsl:if test="@xml:id">
                         <xsl:attribute name="id">
                             <xsl:value-of select="@xml:id"/>
@@ -703,10 +712,10 @@ of this software, even if advised of the possibility of such damage.
             </xsl:if>
             <xsl:if test="@xml:lang">
                 <xsl:attribute name="country">
-                    <xsl:value-of select="substring-before(@xml:lang,'-')"/>
+                    <xsl:value-of select="substring-before(@xml:lang, '-')"/>
                 </xsl:attribute>
                 <xsl:attribute name="language">
-                    <xsl:value-of select="substring-after(@xml:lang,'-')"/>
+                    <xsl:value-of select="substring-after(@xml:lang, '-')"/>
                 </xsl:attribute>
             </xsl:if>
             <xsl:apply-templates/>
@@ -718,7 +727,8 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="tei:pb">
         <xsl:variable name="e">
             <xsl:choose>
-                <xsl:when test="parent::tei:body or parent::tei:front or    parent::tei:back or parent::tei:div">
+                <xsl:when
+                    test="parent::tei:body or parent::tei:front or parent::tei:back or parent::tei:div">
                     <xsl:text>block</xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
@@ -728,7 +738,7 @@ of this software, even if advised of the possibility of such damage.
         </xsl:variable>
         <xsl:choose>
             <xsl:when test="parent::tei:list"/>
-            <xsl:when test="$pagebreakStyle='active'">
+            <xsl:when test="$pagebreakStyle = 'active'">
                 <xsl:element name="{$e}">
                     <xsl:attribute name="break-before">page</xsl:attribute>
                     <xsl:if test="@xml:id">
@@ -738,7 +748,7 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:if>
                 </xsl:element>
             </xsl:when>
-            <xsl:when test="$pagebreakStyle='visible'">
+            <xsl:when test="$pagebreakStyle = 'visible'">
                 <xsl:element name="{$e}">
                     <xsl:if test="@xml:id">
                         <xsl:attribute name="id">
@@ -758,7 +768,9 @@ of this software, even if advised of the possibility of such damage.
         <desc/>
     </doc>
     <xsl:template match="tei:quote">
-        <block text-align="start" text-indent="0pt" end-indent="{$exampleMargin}" start-indent="{$exampleMargin}" font-size="{$quoteSize}" space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
+        <block text-align="start" text-indent="0pt" end-indent="{$exampleMargin}"
+            start-indent="{$exampleMargin}" font-size="{$quoteSize}"
+            space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
             <xsl:apply-templates/>
         </block>
     </xsl:template>
@@ -770,28 +782,35 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="tei:text">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:when test="@rend='display' or tei:p or tei:lg">
-                <block text-align="start" text-indent="0pt" end-indent="{$exampleMargin}" start-indent="{$exampleMargin}" font-size="{$quoteSize}" space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
+            <xsl:when test="@rend = 'display' or tei:p or tei:lg">
+                <block text-align="start" text-indent="0pt" end-indent="{$exampleMargin}"
+                    start-indent="{$exampleMargin}" font-size="{$quoteSize}"
+                    space-before.optimum="{$exampleBefore}" space-after.optimum="{$exampleAfter}">
                     <xsl:apply-templates/>
                 </block>
             </xsl:when>
-            <xsl:when test="@rend='eg'">
-                <block text-align="start" font-size="{$exampleSize}" space-before.optimum="4pt" text-indent="0pt" space-after.optimum="4pt" start-indent="{$exampleMargin}" font-family="{$typewriterFont}">
+            <xsl:when test="@rend = 'eg'">
+                <block text-align="start" font-size="{$exampleSize}" space-before.optimum="4pt"
+                    text-indent="0pt" space-after.optimum="4pt" start-indent="{$exampleMargin}"
+                    font-family="{$typewriterFont}">
                     <xsl:apply-templates/>
                 </block>
             </xsl:when>
             <xsl:when test="@rend = 'qwic'">
                 <block space-before="{$spaceAroundTable}" space-after="{$spaceAroundTable}">
                     <inline-container>
-                        <table font-size="{$exampleSize}" font-family="{$typewriterFont}" start-indent="{$exampleMargin}">
+                        <table font-size="{$exampleSize}" font-family="{$typewriterFont}"
+                            start-indent="{$exampleMargin}">
                             <table-column column-number="1" column-width="">
-                                <xsl:if test="$foEngine='passivetex'">
-                                    <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex">p</xsl:attribute>
+                                <xsl:if test="$foEngine = 'passivetex'">
+                                    <xsl:attribute name="column-align"
+                                        namespace="http://www.tug.org/fotex">p</xsl:attribute>
                                 </xsl:if>
                             </table-column>
                             <table-column column-number="2" column-width="">
-                                <xsl:if test="$foEngine='passivetex'">
-                                    <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex">l</xsl:attribute>
+                                <xsl:if test="$foEngine = 'passivetex'">
+                                    <xsl:attribute name="column-align"
+                                        namespace="http://www.tug.org/fotex">l</xsl:attribute>
                                 </xsl:if>
                             </table-column>
                             <table-body>
@@ -800,13 +819,15 @@ of this software, even if advised of the possibility of such damage.
                                         <table-row>
                                             <table-cell>
                                                 <block>
-                                                    <xsl:apply-templates select="preceding-sibling::node()"/>
+                                                  <xsl:apply-templates
+                                                  select="preceding-sibling::node()"/>
                                                 </block>
                                             </table-cell>
                                             <table-cell>
                                                 <block>
-                                                    <xsl:apply-templates/>
-                                                    <xsl:apply-templates select="following-sibling::node()"/>
+                                                  <xsl:apply-templates/>
+                                                  <xsl:apply-templates
+                                                  select="following-sibling::node()"/>
                                                 </block>
                                             </table-cell>
                                         </table-row>
@@ -817,18 +838,21 @@ of this software, even if advised of the possibility of such damage.
                     </inline-container>
                 </block>
             </xsl:when>
-            <xsl:when test="starts-with(@rend,'kwic')">
+            <xsl:when test="starts-with(@rend, 'kwic')">
                 <block space-before="{$spaceAroundTable}" space-after="{$spaceAroundTable}">
                     <inline-container>
-                        <table font-size="{$exampleSize}" start-indent="{$exampleMargin}" font-family="{$typewriterFont}">
+                        <table font-size="{$exampleSize}" start-indent="{$exampleMargin}"
+                            font-family="{$typewriterFont}">
                             <table-column column-number="1" column-width="">
-                                <xsl:if test="$foEngine='passivetex'">
-                                    <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex">r</xsl:attribute>
+                                <xsl:if test="$foEngine = 'passivetex'">
+                                    <xsl:attribute name="column-align"
+                                        namespace="http://www.tug.org/fotex">r</xsl:attribute>
                                 </xsl:if>
                             </table-column>
                             <table-column column-number="2" column-width="">
-                                <xsl:if test="$foEngine='passivetex'">
-                                    <xsl:attribute name="column-align" namespace="http://www.tug.org/fotex">l</xsl:attribute>
+                                <xsl:if test="$foEngine = 'passivetex'">
+                                    <xsl:attribute name="column-align"
+                                        namespace="http://www.tug.org/fotex">l</xsl:attribute>
                                 </xsl:if>
                             </table-column>
                             <table-body>
@@ -836,13 +860,15 @@ of this software, even if advised of the possibility of such damage.
                                     <table-row>
                                         <table-cell>
                                             <block>
-                                                <xsl:value-of select="preceding-sibling::node()[1]"/>
+                                                <xsl:value-of select="preceding-sibling::node()[1]"
+                                                />
                                             </block>
                                         </table-cell>
                                         <table-cell>
                                             <block>
                                                 <xsl:apply-templates/>
-                                                <xsl:value-of select="following-sibling::node()[1]"/>
+                                                <xsl:value-of select="following-sibling::node()[1]"
+                                                />
                                             </block>
                                         </table-cell>
                                     </table-row>
@@ -852,8 +878,10 @@ of this software, even if advised of the possibility of such damage.
                     </inline-container>
                 </block>
             </xsl:when>
-            <xsl:when test="@rend='literal'">
-                <block white-space-collapse="false" wrap-option="no-wrap" font-size="{$exampleSize}" space-before.optimum="4pt" space-after.optimum="4pt" start-indent="{$exampleMargin}" font-family="{$typewriterFont}">
+            <xsl:when test="@rend = 'literal'">
+                <block white-space-collapse="false" wrap-option="no-wrap" font-size="{$exampleSize}"
+                    space-before.optimum="4pt" space-after.optimum="4pt"
+                    start-indent="{$exampleMargin}" font-family="{$typewriterFont}">
                     <xsl:apply-templates/>
                 </block>
             </xsl:when>
@@ -905,7 +933,11 @@ of this software, even if advised of the possibility of such damage.
         <desc/>
     </doc>
     <xsl:template match="tei:seg">
-        <block font-family="{$typewriterFont}" background-color="yellow" white-space-collapse="false" wrap-option="no-wrap" text-indent="0em" start-indent="{$exampleMargin}" text-align="start" font-size="{$exampleSize}" padding-before="8pt" padding-after="8pt" space-before.optimum="4pt" space-after.optimum="4pt">
+        <block font-family="{$typewriterFont}" background-color="yellow"
+            white-space-collapse="false" wrap-option="no-wrap" text-indent="0em"
+            start-indent="{$exampleMargin}" text-align="start" font-size="{$exampleSize}"
+            padding-before="8pt" padding-after="8pt" space-before.optimum="4pt"
+            space-after.optimum="4pt">
             <xsl:apply-templates/>
         </block>
     </xsl:template>
@@ -962,43 +994,44 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="applyRend">
         <xsl:param name="value"/>
         <xsl:choose>
-            <xsl:when test="$value='gothic'">
+            <xsl:when test="$value = 'gothic'">
                 <xsl:attribute name="font-family">fantasy</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='calligraphic'">
+            <xsl:when test="$value = 'calligraphic'">
                 <xsl:attribute name="font-family">cursive</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='ital' or $value='italic' or $value='it' or $value='i' or $value='italics'">
+            <xsl:when
+                test="$value = 'ital' or $value = 'italic' or $value = 'it' or $value = 'i' or $value = 'italics'">
                 <xsl:attribute name="font-style">italic</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='sc'">
+            <xsl:when test="$value = 'sc'">
                 <xsl:attribute name="font-variant">small-caps</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='code'">
+            <xsl:when test="$value = 'code'">
                 <xsl:attribute name="font-family">
                     <xsl:value-of select="$typewriterFont"/>
                 </xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='bo' or $value='bold'">
+            <xsl:when test="$value = 'bo' or $value = 'bold'">
                 <xsl:attribute name="font-weight">bold</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='BO'">
+            <xsl:when test="$value = 'BO'">
                 <xsl:attribute name="font-style">italic</xsl:attribute>
                 <xsl:attribute name="text-decoration">underline</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='UL' or $value='ul'">
+            <xsl:when test="$value = 'UL' or $value = 'ul'">
                 <xsl:attribute name="text-decoration">underline</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='sub'">
+            <xsl:when test="$value = 'sub'">
                 <xsl:attribute name="vertical-align">sub</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='small'">
+            <xsl:when test="$value = 'small'">
                 <xsl:attribute name="font-size">small</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='strike'">
+            <xsl:when test="$value = 'strike'">
                 <xsl:attribute name="text-decoration">line-through</xsl:attribute>
             </xsl:when>
-            <xsl:when test="$value='sup'">
+            <xsl:when test="$value = 'sup'">
                 <xsl:attribute name="vertical-align">super</xsl:attribute>
             </xsl:when>
         </xsl:choose>
@@ -1007,7 +1040,7 @@ of this software, even if advised of the possibility of such damage.
         <desc>[fo] </desc>
     </doc>
     <xsl:template name="calculateEndNoteNumber">
-        <xsl:number level="any" format="i" count="tei:note[@place='end']"/>
+        <xsl:number level="any" format="i" count="tei:note[@place = 'end']"/>
     </xsl:template>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>[fo] </desc>
@@ -1019,12 +1052,12 @@ of this software, even if advised of the possibility of such damage.
         <desc>[fo] </desc>
     </doc>
     <xsl:template name="makeItem">
-<!-- item behaviour depends on the type attribute of our parent:
+        <!-- item behaviour depends on the type attribute of our parent:
 simple, bullets, ordered, gloss, unordered, or bibliography
 -->
         <xsl:variable name="listdepth" select="count(ancestor::tei:list)"/>
         <list-item>
-            <xsl:if test="not(parent::tei:note[@place='foot' or @place='bottom' ])">
+            <xsl:if test="not(parent::tei:note[@place = 'foot' or @place = 'bottom'])">
                 <xsl:attribute name="space-before.optimum">
                     <xsl:value-of select="$listItemsep"/>
                 </xsl:attribute>
@@ -1043,16 +1076,16 @@ simple, bullets, ordered, gloss, unordered, or bibliography
                             <xsl:attribute name="text-align">end</xsl:attribute>
                             <xsl:value-of select="@n"/>
                         </xsl:when>
-                        <xsl:when test="../@type='bibliography'">
+                        <xsl:when test="../@type = 'bibliography'">
                             <xsl:attribute name="text-align">end</xsl:attribute>
                             <xsl:apply-templates mode="xref" select="."/>
                         </xsl:when>
-                        <xsl:when test="../@type='ordered' or self::tei:bibl">
+                        <xsl:when test="../@type = 'ordered' or self::tei:bibl">
                             <xsl:attribute name="text-align">end</xsl:attribute>
                             <xsl:apply-templates mode="xref" select="."/>
                             <xsl:text>.</xsl:text>
                         </xsl:when>
-                        <xsl:when test="../@type='gloss'">
+                        <xsl:when test="../@type = 'gloss'">
                             <xsl:attribute name="text-align">start</xsl:attribute>
                             <xsl:attribute name="font-weight">bold</xsl:attribute>
                             <xsl:choose>
@@ -1060,18 +1093,20 @@ simple, bullets, ordered, gloss, unordered, or bibliography
                                     <xsl:apply-templates mode="print" select="tei:label"/>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <xsl:apply-templates mode="print" select="preceding-sibling::tei:*[1]"/>
+                                    <xsl:apply-templates mode="print"
+                                        select="preceding-sibling::tei:*[1]"/>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:when>
-                        <xsl:when test="../@type='numbered' or       self::tei:biblStruct or self::tei:bibl">
-		    <!-- numbered support added rbl 26.3.2005 -->
+                        <xsl:when
+                            test="../@type = 'numbered' or self::tei:biblStruct or self::tei:bibl">
+                            <!-- numbered support added rbl 26.3.2005 -->
                             <xsl:attribute name="text-align">end</xsl:attribute>
                             <xsl:number/>
                             <xsl:text>.</xsl:text>
                         </xsl:when>
-                        <xsl:when test="../@type='ordered'">
-		    <!-- numbered support added rbl 26.3.2005 -->
+                        <xsl:when test="../@type = 'ordered'">
+                            <!-- numbered support added rbl 26.3.2005 -->
                             <xsl:attribute name="text-align">end</xsl:attribute>
                             <xsl:number/>
                             <xsl:text>.</xsl:text>
@@ -1079,19 +1114,19 @@ simple, bullets, ordered, gloss, unordered, or bibliography
                         <xsl:otherwise>
                             <xsl:attribute name="text-align">end</xsl:attribute>
                             <xsl:choose>
-                                <xsl:when test="$listdepth=0">
+                                <xsl:when test="$listdepth = 0">
                                     <xsl:value-of select="$bulletOne"/>
                                 </xsl:when>
-                                <xsl:when test="$listdepth=1">
+                                <xsl:when test="$listdepth = 1">
                                     <xsl:value-of select="$bulletOne"/>
                                 </xsl:when>
-                                <xsl:when test="$listdepth=2">
+                                <xsl:when test="$listdepth = 2">
                                     <xsl:value-of select="$bulletTwo"/>
                                 </xsl:when>
-                                <xsl:when test="$listdepth=3">
+                                <xsl:when test="$listdepth = 3">
                                     <xsl:value-of select="$bulletThree"/>
                                 </xsl:when>
-                                <xsl:when test="$listdepth=4">
+                                <xsl:when test="$listdepth = 4">
                                     <xsl:value-of select="$bulletFour"/>
                                 </xsl:when>
                             </xsl:choose>
@@ -1135,17 +1170,17 @@ simple, bullets, ordered, gloss, unordered, or bibliography
         <xsl:param name="defaultstyle"/>
         <xsl:param name="rend"/>
         <xsl:choose>
-            <xsl:when test="$rend=''">
+            <xsl:when test="$rend = ''">
                 <xsl:attribute name="{$defaultstyle}">
                     <xsl:value-of select="$defaultvalue"/>
                 </xsl:attribute>
             </xsl:when>
-            <xsl:when test="contains($rend,';')">
+            <xsl:when test="contains($rend, ';')">
                 <xsl:call-template name="applyRend">
-                    <xsl:with-param name="value" select="substring-before($rend,';')"/>
+                    <xsl:with-param name="value" select="substring-before($rend, ';')"/>
                 </xsl:call-template>
                 <xsl:call-template name="rend">
-                    <xsl:with-param name="rend" select="substring-after($rend,';')"/>
+                    <xsl:with-param name="rend" select="substring-after($rend, ';')"/>
                 </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
@@ -1164,7 +1199,7 @@ simple, bullets, ordered, gloss, unordered, or bibliography
                 <xsl:when test="self::tei:listBibl[tei:biblStruct]">
                     <xsl:value-of select="$betweenBiblStarts"/>
                 </xsl:when>
-                <xsl:when test="@type='gloss'">
+                <xsl:when test="@type = 'gloss'">
                     <xsl:value-of select="$betweenGlossStarts"/>
                 </xsl:when>
                 <xsl:otherwise>
@@ -1181,7 +1216,7 @@ simple, bullets, ordered, gloss, unordered, or bibliography
         </xsl:attribute>
         <xsl:variable name="listdepth" select="count(ancestor::tei:list)"/>
         <xsl:choose>
-            <xsl:when test="$listdepth=0">
+            <xsl:when test="$listdepth = 0">
                 <xsl:attribute name="space-before">
                     <xsl:value-of select="$listAbove-1"/>
                 </xsl:attribute>
@@ -1189,7 +1224,7 @@ simple, bullets, ordered, gloss, unordered, or bibliography
                     <xsl:value-of select="$listBelow-1"/>
                 </xsl:attribute>
             </xsl:when>
-            <xsl:when test="$listdepth=1">
+            <xsl:when test="$listdepth = 1">
                 <xsl:attribute name="space-before">
                     <xsl:value-of select="$listAbove-2"/>
                 </xsl:attribute>
@@ -1197,7 +1232,7 @@ simple, bullets, ordered, gloss, unordered, or bibliography
                     <xsl:value-of select="$listBelow-2"/>
                 </xsl:attribute>
             </xsl:when>
-            <xsl:when test="$listdepth=2">
+            <xsl:when test="$listdepth = 2">
                 <xsl:attribute name="space-before">
                     <xsl:value-of select="$listAbove-3"/>
                 </xsl:attribute>
@@ -1205,7 +1240,7 @@ simple, bullets, ordered, gloss, unordered, or bibliography
                     <xsl:value-of select="$listBelow-3"/>
                 </xsl:attribute>
             </xsl:when>
-            <xsl:when test="$listdepth=3">
+            <xsl:when test="$listdepth = 3">
                 <xsl:attribute name="space-before">
                     <xsl:value-of select="$listAbove-4"/>
                 </xsl:attribute>
@@ -1227,13 +1262,13 @@ simple, bullets, ordered, gloss, unordered, or bibliography
         <xsl:param name="class"/>
         <xsl:param name="content"/>
         <xsl:choose>
-            <xsl:when test="$class='titlem'">
+            <xsl:when test="$class = 'titlem'">
                 <inline>
                     <xsl:attribute name="font-style">italic</xsl:attribute>
                     <xsl:copy-of select="$content"/>
                 </inline>
             </xsl:when>
-            <xsl:when test="$class='titlea'">
+            <xsl:when test="$class = 'titlea'">
                 <xsl:text>‘</xsl:text>
                 <xsl:copy-of select="$content"/>
                 <xsl:text>’</xsl:text>

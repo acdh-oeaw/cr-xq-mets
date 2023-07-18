@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xpath-default-namespace="http://www.tei-c.org/ns/1.0" version="2.0">
-<!--
+<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0" version="2.0">
+    <!--
 This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
@@ -43,27 +44,28 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="teiHeader">
         <xsl:copy-of select="."/>
     </xsl:template>
-    <xsl:template match="TEI|teiCorpus|group">
+    <xsl:template match="TEI | teiCorpus | group">
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
-            <xsl:apply-templates select="*|processing-instruction()|comment()|text()"/>
+            <xsl:apply-templates select="* | processing-instruction() | comment() | text()"/>
         </xsl:copy>
     </xsl:template>
-    <xsl:template match="text|body|back|front">
+    <xsl:template match="text | body | back | front">
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
             <xsl:variable name="pages">
-                <xsl:apply-templates select="*|processing-instruction()|comment()|text()"/>
+                <xsl:apply-templates select="* | processing-instruction() | comment() | text()"/>
             </xsl:variable>
             <xsl:for-each select="$pages">
-                <xsl:apply-templates select="*|processing-instruction()|comment()|text()" mode="pass2"/>
+                <xsl:apply-templates select="* | processing-instruction() | comment() | text()"
+                    mode="pass2"/>
             </xsl:for-each>
         </xsl:copy>
     </xsl:template>
 
 
- <!-- first (recursive) pass. look for <pb> elements and group on them -->
-    <xsl:template match="comment()|@*|processing-instruction()|text()">
+    <!-- first (recursive) pass. look for <pb> elements and group on them -->
+    <xsl:template match="comment() | @* | processing-instruction() | text()">
         <xsl:copy-of select="."/>
     </xsl:template>
     <xsl:template match="*">
@@ -82,7 +84,8 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="not(.//pb)">
                 <xsl:copy>
                     <xsl:apply-templates select="@*"/>
-                    <xsl:apply-templates select="*|processing-instruction()|comment()|text()"/>
+                    <xsl:apply-templates select="* | processing-instruction() | comment() | text()"
+                    />
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
@@ -120,11 +123,12 @@ of this software, even if advised of the possibility of such damage.
         </xsl:for-each-group>
     </xsl:template>
 
-  <!-- second pass. group by <pb> (now all at top level) and wrap groups
+    <!-- second pass. group by <pb> (now all at top level) and wrap groups
        in <page> -->
     <xsl:template match="*" mode="pass2">
         <xsl:copy>
-            <xsl:apply-templates select="@*|*|processing-instruction()|comment()|text()" mode="pass2"/>
+            <xsl:apply-templates select="@* | * | processing-instruction() | comment() | text()"
+                mode="pass2"/>
         </xsl:copy>
     </xsl:template>
     <xsl:template match="*[pb]" mode="pass2">
@@ -145,7 +149,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:for-each-group>
         </xsl:copy>
     </xsl:template>
-    <xsl:template match="comment()|@*|processing-instruction()|text()" mode="pass2">
+    <xsl:template match="comment() | @* | processing-instruction() | text()" mode="pass2">
         <xsl:copy-of select="."/>
     </xsl:template>
 </xsl:stylesheet>

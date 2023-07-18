@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink rng tei teix xhtml a html xs xsl" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="xlink rng tei teix xhtml a html xs xsl" version="2.0">
     <xsl:import href="../../../epub/tei-to-epub.xsl"/>
     <xsl:import href="../../../odds2/teiodds.xsl"/>
     <xsl:import href="../../../xhtml2/oddprocessing.xsl"/>
@@ -26,39 +33,45 @@
     <xsl:param name="cssPrintFile">../profiles/tei/epub/guidelines-print.css</xsl:param>
     <xsl:template name="copyrightStatement">Copyright TEI Consortium 2011</xsl:template>
     <xsl:template name="epubManifestHook">
-        <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml" id="index-toc" href="index-toc.html"/>
-        <xsl:for-each select="key('ATTCLASSDOCS',1)">
+        <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml" id="index-toc"
+            href="index-toc.html"/>
+        <xsl:for-each select="key('ATTCLASSDOCS', 1)">
             <xsl:variable name="me" select="@ident"/>
-            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml" id="ref-{$me}" href="ref-{$me}.html"/>
+            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml"
+                id="ref-{$me}" href="ref-{$me}.html"/>
         </xsl:for-each>
-        <xsl:for-each select="key('MODELCLASSDOCS',1)">
+        <xsl:for-each select="key('MODELCLASSDOCS', 1)">
             <xsl:variable name="me" select="@ident"/>
-            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml" id="ref-{$me}" href="ref-{$me}.html"/>
+            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml"
+                id="ref-{$me}" href="ref-{$me}.html"/>
         </xsl:for-each>
-        <xsl:for-each select="key('MACRODOCS',1)">
+        <xsl:for-each select="key('MACRODOCS', 1)">
             <xsl:variable name="me" select="@ident"/>
-            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml" id="ref-{$me}" href="ref-{$me}.html"/>
+            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml"
+                id="ref-{$me}" href="ref-{$me}.html"/>
         </xsl:for-each>
-        <xsl:for-each select="key('ELEMENTDOCS',1)">
+        <xsl:for-each select="key('ELEMENTDOCS', 1)">
             <xsl:variable name="me" select="@ident"/>
-            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml" id="ref-{$me}" href="ref-{$me}.html"/>
-            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml" id="examples-{$me}" href="examples-{$me}.html"/>
+            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml"
+                id="ref-{$me}" href="ref-{$me}.html"/>
+            <item xmlns="http://www.idpf.org/2007/opf" media-type="application/xhtml+xml"
+                id="examples-{$me}" href="examples-{$me}.html"/>
         </xsl:for-each>
     </xsl:template>
     <xsl:template name="epubSpineHook">
         <itemref xmlns="http://www.idpf.org/2007/opf" idref="index-toc" linear="yes"/>
-        <xsl:for-each select="key('ELEMENTDOCS',1)">
+        <xsl:for-each select="key('ELEMENTDOCS', 1)">
             <xsl:variable name="me" select="@ident"/>
             <itemref xmlns="http://www.idpf.org/2007/opf" idref="ref-{$me}" linear="no"/>
             <itemref xmlns="http://www.idpf.org/2007/opf" idref="examples-{$me}" linear="no"/>
         </xsl:for-each>
-        <xsl:for-each select="key('ATTCLASSDOCS',1)">
+        <xsl:for-each select="key('ATTCLASSDOCS', 1)">
             <itemref xmlns="http://www.idpf.org/2007/opf" idref="ref-{@ident}" linear="no"/>
         </xsl:for-each>
-        <xsl:for-each select="key('MODELCLASSDOCS',1)">
+        <xsl:for-each select="key('MODELCLASSDOCS', 1)">
             <itemref xmlns="http://www.idpf.org/2007/opf" idref="ref-{@ident}" linear="no"/>
         </xsl:for-each>
-        <xsl:for-each select="key('MACRODOCS',1)">
+        <xsl:for-each select="key('MACRODOCS', 1)">
             <itemref xmlns="http://www.idpf.org/2007/opf" idref="ref-{@ident}" linear="no"/>
         </xsl:for-each>
     </xsl:template>

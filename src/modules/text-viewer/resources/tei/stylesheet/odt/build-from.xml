@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="dist" name="docxtei">
-<!--
+    <!--
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
 	License as published by the Free Software Foundation; either
@@ -18,20 +18,20 @@
         Id: $Id: build-from.xml 9316 2011-09-13 08:06:05Z rahtz $
         Copyright: 2011, TEI Consortium<
 -->
-  <!--
+    <!--
  Convert odt files to TEI documents.
  -->
-  <!-- Path to ODT file. -->
+    <!-- Path to ODT file. -->
     <property name="inputFile" value=""/>
-  <!-- Path where the output TEI file will be saved. -->
+    <!-- Path where the output TEI file will be saved. -->
     <property name="outputFile" value=""/>
-  <!-- which profile -->
+    <!-- which profile -->
     <property name="profile" value="default"/>
-  <!-- which language -->
+    <!-- which language -->
     <property name="lang" value="en"/>
-  <!-- where does oxygen keep stuff -->
+    <!-- where does oxygen keep stuff -->
     <property name="oxygenlib" value=""/>
-  <!-- Stylesheet for transformation -->
+    <!-- Stylesheet for transformation -->
     <property name="odttotei" value="../profiles/${profile}/odt/from.xsl"/>
     <dirname property="inputFileDir" file="${inputFile}"/>
     <dirname property="outputDir" file="${outputFile}"/>
@@ -40,14 +40,15 @@
         <pathelement path="${java.class.path}"/>
     </path>
     <target name="setup">
-    <!-- Recreate temporary output directory -->
+        <!-- Recreate temporary output directory -->
         <delete dir="${outputTempDir}"/>
         <mkdir dir="${outputTempDir}"/>
     </target>
     <target name="dist" depends="convert,mediadir.check,picturecopy,cleanup"/>
     <target name="convert" depends="setup">
         <unzip src="${inputFile}" dest="${outputTempDir}"/>
-        <xslt force="yes" style="${odttotei}" classpath="classpath" in="${outputTempDir}/content.xml" out="${outputFile}">
+        <xslt force="yes" style="${odttotei}" classpath="classpath"
+            in="${outputTempDir}/content.xml" out="${outputFile}">
             <xmlcatalog>
                 <catalogpath>
                     <pathelement location="../../../../catalog.xml"/>

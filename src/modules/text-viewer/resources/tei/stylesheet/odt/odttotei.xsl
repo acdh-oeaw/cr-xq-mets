@@ -1,60 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" exclude-result-prefixes="office style text table draw fo xlink dc       meta number tei svg chart dr3d math form       script ooo ooow oooc dom xforms xs xsd xsi" office:version="1.0" version="2.0">
+<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:ooow="http://openoffice.org/2004/writer"
+    xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:dom="http://www.w3.org/2001/xml-events"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
+    xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+    xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+    xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+    xmlns:ooo="http://openoffice.org/2004/office" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+    xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0"
+    xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+    xmlns:xforms="http://www.w3.org/2002/xforms"
+    xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
+    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+    xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0"
+    xmlns:math="http://www.w3.org/1998/Math/MathML"
+    xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
+    xmlns:oooc="http://openoffice.org/2004/calc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    exclude-result-prefixes="office style text table draw fo xlink dc       meta number tei svg chart dr3d math form       script ooo ooow oooc dom xforms xs xsd xsi"
+    office:version="1.0" version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p> TEI stylesheet for making TEI files from
-	 OpenOffice. Originally derived from the OpenOffice /Docbook
-	 conversion, but largely rewritten</p>
+            <p> TEI stylesheet for making TEI files from OpenOffice. Originally derived from the
+                OpenOffice /Docbook conversion, but largely rewritten</p>
             <p>
-                <h1 xmlns="">License</h1>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+                <h1 xmlns="">License</h1>This software is dual-licensed: 1. Distributed under a
+                Creative Commons Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: odttotei.xsl 9777 2011-11-18 09:03:41Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
         </desc>
     </doc>
     <xsl:key match="style:style" name="STYLES" use="@style:name"/>
-    <xsl:key name="LISTS" match="text:list-level-style-number" use="parent::text:list-style/@style:name"/>
+    <xsl:key name="LISTS" match="text:list-level-style-number"
+        use="parent::text:list-style/@style:name"/>
     <xsl:key match="text:h" name="Headings" use="text:outline-level"/>
     <xsl:param name="debug">false</xsl:param>
     <xsl:param name="dir">.</xsl:param>
     <xsl:output encoding="utf-8" indent="no"/>
 
-  <!--  <xsl:strip-space elements="text:span"/>-->
+    <!--  <xsl:strip-space elements="text:span"/>-->
     <xsl:variable name="META">
         <xsl:choose>
-            <xsl:when test="doc-available(concat($dir,'/meta.xml'))">
-                <xsl:copy-of select="document(concat($dir,'/meta.xml'))//office:meta"/>
+            <xsl:when test="doc-available(concat($dir, '/meta.xml'))">
+                <xsl:copy-of select="document(concat($dir, '/meta.xml'))//office:meta"/>
             </xsl:when>
             <xsl:when test="/office:document/office:meta">
                 <xsl:copy-of select="/office:document/office:meta"/>
@@ -66,8 +77,11 @@ of this software, even if advised of the possibility of such damage.
     </xsl:variable>
     <xsl:variable name="document-title">
         <xsl:choose>
-            <xsl:when test="/office:document-content/office:body/office:text/text:p[@text:style-name='Title']">
-                <xsl:value-of select="/office:document-content/office:body/office:text/text:p[@text:style-name='Title'][1]"/>
+            <xsl:when
+                test="/office:document-content/office:body/office:text/text:p[@text:style-name = 'Title']">
+                <xsl:value-of
+                    select="/office:document-content/office:body/office:text/text:p[@text:style-name = 'Title'][1]"
+                />
             </xsl:when>
             <xsl:when test="$META/office:meta/dc:title">
                 <xsl:value-of select="$META/office:meta/dc:title"/>
@@ -83,12 +97,11 @@ of this software, even if advised of the possibility of such damage.
         <xsl:for-each select="ancestor::*">
             <xsl:text>.</xsl:text>
         </xsl:for-each>
-        <xsl:value-of select="name()"/>:
-    <xsl:apply-templates mode="summary"/>
+        <xsl:value-of select="name()"/>: <xsl:apply-templates mode="summary"/>
     </xsl:template>
     <xsl:template match="/">
-        <xsl:if test="$debug='true'">
-            <xsl:message>Look for metadata in <xsl:value-of select="concat($dir,'/meta.xml')"/>
+        <xsl:if test="$debug = 'true'">
+            <xsl:message>Look for metadata in <xsl:value-of select="concat($dir, '/meta.xml')"/>
             </xsl:message>
         </xsl:if>
         <xsl:variable name="pass1">
@@ -98,18 +111,18 @@ of this software, even if advised of the possibility of such damage.
             <xsl:apply-templates mode="pass2"/>
         </xsl:for-each>
     </xsl:template>
-    <xsl:template match="office:document-content|office:body">
+    <xsl:template match="office:document-content | office:body">
         <xsl:for-each select="descendant::text:variable-decl">
             <xsl:variable name="name">
                 <xsl:value-of select="@text:name"/>
             </xsl:variable>
-            <xsl:if test="contains(@text:name,'entitydecl')">
+            <xsl:if test="contains(@text:name, 'entitydecl')">
                 <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE TEI [
 	</xsl:text>
                 <xsl:text disable-output-escaping="yes">&lt;!ENTITY </xsl:text>
-                <xsl:value-of select="substring-after(@text:name,'entitydecl_')"/>
+                <xsl:value-of select="substring-after(@text:name, 'entitydecl_')"/>
                 <xsl:text> "</xsl:text>
-                <xsl:value-of select="/descendant::text:variable-set[@text:name= $name][1]"/>
+                <xsl:value-of select="/descendant::text:variable-set[@text:name = $name][1]"/>
                 <xsl:text disable-output-escaping="yes">"&gt;</xsl:text>
                 <xsl:text disable-output-escaping="yes">]&gt;</xsl:text>
             </xsl:if>
@@ -126,11 +139,11 @@ of this software, even if advised of the possibility of such damage.
             </text>
         </TEI>
     </xsl:template>
-    <xsl:template match="text:variable-set|text:variable-get">
+    <xsl:template match="text:variable-set | text:variable-get">
         <xsl:choose>
-            <xsl:when test="contains(@text:style-name,'entitydecl')">
+            <xsl:when test="contains(@text:style-name, 'entitydecl')">
                 <xsl:text disable-output-escaping="yes">&amp;</xsl:text>
-                <xsl:value-of select="substring-after(@text:style-name,'entitydecl_')"/>
+                <xsl:value-of select="substring-after(@text:style-name, 'entitydecl_')"/>
                 <xsl:text disable-output-escaping="yes">;</xsl:text>
             </xsl:when>
         </xsl:choose>
@@ -209,19 +222,19 @@ of this software, even if advised of the possibility of such damage.
         <xsl:apply-templates/>
     </xsl:template>
 
-  <!-- sections -->
+    <!-- sections -->
     <xsl:template match="text:h">
         <xsl:choose>
             <xsl:when test="ancestor::text:note-body">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:when test="@text:style-name='ArticleInfo'"/>
-            <xsl:when test="@text:style-name='Abstract'">
+            <xsl:when test="@text:style-name = 'ArticleInfo'"/>
+            <xsl:when test="@text:style-name = 'Abstract'">
                 <div type="abstract">
                     <xsl:apply-templates/>
                 </div>
             </xsl:when>
-            <xsl:when test="@text:style-name='Appendix'">
+            <xsl:when test="@text:style-name = 'Appendix'">
                 <div type="appendix">
                     <xsl:apply-templates/>
                 </div>
@@ -263,9 +276,9 @@ of this software, even if advised of the possibility of such damage.
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-  
-  <!-- special case paragraphs -->
-    <xsl:template match="text:p[@text:style-name='XMLComment']">
+
+    <!-- special case paragraphs -->
+    <xsl:template match="text:p[@text:style-name = 'XMLComment']">
         <xsl:comment>
             <xsl:value-of select="."/>
         </xsl:comment>
@@ -275,29 +288,29 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="draw:frame and parent::draw:text-box">
                 <xsl:apply-templates select="draw:frame"/>
                 <head>
-                    <xsl:apply-templates select="text()|*[not(local-name(.)='frame')]"/>
+                    <xsl:apply-templates select="text() | *[not(local-name(.) = 'frame')]"/>
                 </head>
             </xsl:when>
             <xsl:when test="parent::table:table-cell">
                 <xsl:call-template name="applyStyle"/>
             </xsl:when>
-            <xsl:when test="count(parent::text:note-body/text:p)=1">
+            <xsl:when test="count(parent::text:note-body/text:p) = 1">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:when test="count(parent::text:list-item/text:p)=1">
+            <xsl:when test="count(parent::text:list-item/text:p) = 1">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:when test="@text:style-name='Document Title'">
+            <xsl:when test="@text:style-name = 'Document Title'">
                 <title>
                     <xsl:apply-templates/>
                 </title>
             </xsl:when>
-            <xsl:when test="@text:style-name='Author'">
+            <xsl:when test="@text:style-name = 'Author'">
                 <author>
                     <xsl:apply-templates/>
                 </author>
             </xsl:when>
-            <xsl:when test="@text:style-name='lg'">
+            <xsl:when test="@text:style-name = 'lg'">
                 <lg>
                     <xsl:for-each-group select="node()" group-ending-with="text:line-break">
                         <l>
@@ -306,32 +319,32 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:for-each-group>
                 </lg>
             </xsl:when>
-            <xsl:when test="@text:style-name='Title'">
+            <xsl:when test="@text:style-name = 'Title'">
                 <title>
                     <xsl:apply-templates/>
                 </title>
             </xsl:when>
-            <xsl:when test="@text:style-name='Date'">
+            <xsl:when test="@text:style-name = 'Date'">
                 <date>
                     <xsl:apply-templates/>
                 </date>
             </xsl:when>
-            <xsl:when test="@text:style-name='Section Title'">
+            <xsl:when test="@text:style-name = 'Section Title'">
                 <head>
                     <xsl:apply-templates/>
                 </head>
             </xsl:when>
-            <xsl:when test="@text:style-name='Appendix Title'">
+            <xsl:when test="@text:style-name = 'Appendix Title'">
                 <head>
                     <xsl:apply-templates/>
                 </head>
             </xsl:when>
-            <xsl:when test="@text:style-name='Screen'">
+            <xsl:when test="@text:style-name = 'Screen'">
                 <Screen>
                     <xsl:apply-templates/>
                 </Screen>
             </xsl:when>
-            <xsl:when test="@text:style-name='Output'">
+            <xsl:when test="@text:style-name = 'Output'">
                 <Output>
                     <xsl:apply-templates/>
                 </Output>
@@ -350,7 +363,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
 
 
-  <!-- normal paragraphs -->
+    <!-- normal paragraphs -->
     <xsl:template match="text:p">
         <xsl:choose>
             <xsl:when test="parent::text:list-item">
@@ -359,9 +372,9 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="parent::table:table-cell">
                 <xsl:call-template name="applyStyle"/>
             </xsl:when>
-            <xsl:when test="@text:style-name='Table'"/>
+            <xsl:when test="@text:style-name = 'Table'"/>
             <xsl:when test="text:span[@text:style-name = 'XrefLabel']"/>
-            <xsl:when test="@text:style-name='Speech'">
+            <xsl:when test="@text:style-name = 'Speech'">
                 <sp>
                     <speaker/>
                     <p>
@@ -379,10 +392,10 @@ of this software, even if advised of the possibility of such damage.
         </xsl:choose>
     </xsl:template>
 
-  <!-- lists -->
+    <!-- lists -->
     <xsl:template match="text:list">
         <xsl:variable name="style">
-            <xsl:for-each select="key('LISTS',@text:style-name)[1]">
+            <xsl:for-each select="key('LISTS', @text:style-name)[1]">
                 <xsl:value-of select="@text:style-name"/>
             </xsl:for-each>
         </xsl:variable>
@@ -392,12 +405,12 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:apply-templates/>
                 </xsl:for-each>
             </xsl:when>
-            <xsl:when test="@text:style-name='Var List'">
+            <xsl:when test="@text:style-name = 'Var List'">
                 <list>
                     <xsl:apply-templates/>
                 </list>
             </xsl:when>
-            <xsl:when test="contains($style,'Number')">
+            <xsl:when test="contains($style, 'Number')">
                 <list type="ordered">
                     <xsl:apply-templates/>
                 </list>
@@ -416,9 +429,9 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template match="text:list-item">
         <xsl:choose>
-            <xsl:when test="parent::text:list/@text:style-name='Var List'">
+            <xsl:when test="parent::text:list/@text:style-name = 'Var List'">
                 <item>
-                    <xsl:for-each select="text:p[@text:style-name='VarList Term']">
+                    <xsl:for-each select="text:p[@text:style-name = 'VarList Term']">
                         <xsl:apply-templates select="."/>
                     </xsl:for-each>
                 </item>
@@ -430,53 +443,55 @@ of this software, even if advised of the possibility of such damage.
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="text:p[@text:style-name='VarList Item' or     @text:style-name='List Contents']">
+    <xsl:template
+        match="text:p[@text:style-name = 'VarList Item' or @text:style-name = 'List Contents']">
         <GLOSS n="item">
             <xsl:apply-templates/>
         </GLOSS>
     </xsl:template>
-    <xsl:template match="text:p[@text:style-name='VarList Term' or @text:style-name='List Heading']">
+    <xsl:template
+        match="text:p[@text:style-name = 'VarList Term' or @text:style-name = 'List Heading']">
         <GLOSS n="label">
             <xsl:apply-templates/>
         </GLOSS>
     </xsl:template>
 
-  <!-- inline -->
+    <!-- inline -->
     <xsl:template match="text:span">
         <xsl:variable name="Style">
             <xsl:value-of select="@text:style-name"/>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="$Style='Emphasis'">
+            <xsl:when test="$Style = 'Emphasis'">
                 <emph>
                     <xsl:apply-templates/>
                 </emph>
             </xsl:when>
-            <xsl:when test="$Style='Underline'">
+            <xsl:when test="$Style = 'Underline'">
                 <hi rend="ul">
                     <xsl:apply-templates/>
                 </hi>
             </xsl:when>
-            <xsl:when test="$Style='SmallCaps'">
+            <xsl:when test="$Style = 'SmallCaps'">
                 <hi rend="sc">
                     <xsl:apply-templates/>
                 </hi>
             </xsl:when>
-            <xsl:when test="$Style='Emphasis Bold'">
+            <xsl:when test="$Style = 'Emphasis Bold'">
                 <hi rend="bold">
                     <xsl:apply-templates/>
                 </hi>
             </xsl:when>
-            <xsl:when test="$Style='Highlight'">
+            <xsl:when test="$Style = 'Highlight'">
                 <hi>
                     <xsl:apply-templates/>
                 </hi>
             </xsl:when>
-            <xsl:when test="$Style='q'">
+            <xsl:when test="$Style = 'q'">
                 <q>
                     <xsl:choose>
-                        <xsl:when test="starts-with(.,'‘')">
-                            <xsl:value-of select="substring-before(substring-after(.,'‘'),'’')"/>
+                        <xsl:when test="starts-with(., '‘')">
+                            <xsl:value-of select="substring-before(substring-after(., '‘'), '’')"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:apply-templates/>
@@ -484,50 +499,50 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:choose>
                 </q>
             </xsl:when>
-            <xsl:when test="$Style='date'">
+            <xsl:when test="$Style = 'date'">
                 <date>
                     <xsl:apply-templates/>
                 </date>
             </xsl:when>
-            <xsl:when test="$Style='l'">
+            <xsl:when test="$Style = 'l'">
                 <l>
                     <xsl:apply-templates/>
                 </l>
             </xsl:when>
-            <xsl:when test="$Style='Filespec'">
+            <xsl:when test="$Style = 'Filespec'">
                 <Filespec>
                     <xsl:apply-templates/>
                 </Filespec>
             </xsl:when>
-            <xsl:when test="$Style='gi'">
+            <xsl:when test="$Style = 'gi'">
                 <gi>
                     <xsl:apply-templates/>
                 </gi>
             </xsl:when>
-            <xsl:when test="$Style='Code'">
+            <xsl:when test="$Style = 'Code'">
                 <Code>
                     <xsl:apply-templates/>
                 </Code>
             </xsl:when>
-            <xsl:when test="$Style='Input'">
+            <xsl:when test="$Style = 'Input'">
                 <Input>
                     <xsl:apply-templates/>
                 </Input>
             </xsl:when>
-            <xsl:when test="$Style='Internet Link'">
+            <xsl:when test="$Style = 'Internet Link'">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:when test="$Style='SubScript'">
+            <xsl:when test="$Style = 'SubScript'">
                 <hi rend="sub">
                     <xsl:apply-templates/>
                 </hi>
             </xsl:when>
-            <xsl:when test="$Style='SuperScript'">
+            <xsl:when test="$Style = 'SuperScript'">
                 <hi rend="sup">
                     <xsl:apply-templates/>
                 </hi>
             </xsl:when>
-            <xsl:when test="style:text-properties[@fo:text-transform='small-caps']">
+            <xsl:when test="style:text-properties[@fo:text-transform = 'small-caps']">
                 <hi rend="sc">
                     <xsl:apply-templates/>
                 </hi>
@@ -545,43 +560,45 @@ of this software, even if advised of the possibility of such damage.
             <xsl:value-of select="@text:style-name"/>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="string-length(.)=0"/>
+            <xsl:when test="string-length(.) = 0"/>
             <xsl:when test="text:note">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:when test="key('STYLES',$name)">
+            <xsl:when test="key('STYLES', $name)">
                 <xsl:variable name="contents">
                     <xsl:apply-templates/>
                 </xsl:variable>
-                <xsl:for-each select="key('STYLES',$name)">
+                <xsl:for-each select="key('STYLES', $name)">
 
-    <!--! <xsl:for-each select="style:text-properties/@*">
+                    <!--! <xsl:for-each select="style:text-properties/@*">
     <xsl:value-of select="name(.)"/>:        <xsl:value-of select="."/>
 
     </xsl:for-each>
     -->
                     <xsl:choose>
-                        <xsl:when test="style:text-properties[starts-with(@style:text-position,'super')]">
+                        <xsl:when
+                            test="style:text-properties[starts-with(@style:text-position, 'super')]">
                             <hi rend="sup">
                                 <xsl:copy-of select="$contents"/>
                             </hi>
                         </xsl:when>
-                        <xsl:when test="style:text-properties[starts-with(@style:text-position,'sub')]">
+                        <xsl:when
+                            test="style:text-properties[starts-with(@style:text-position, 'sub')]">
                             <hi rend="sub">
                                 <xsl:copy-of select="$contents"/>
                             </hi>
                         </xsl:when>
-                        <xsl:when test="style:text-properties[@fo:font-weight='bold']">
+                        <xsl:when test="style:text-properties[@fo:font-weight = 'bold']">
                             <hi>
                                 <xsl:copy-of select="$contents"/>
                             </hi>
                         </xsl:when>
-                        <xsl:when test="style:text-properties[style:text-underline-style='solid']">
+                        <xsl:when test="style:text-properties[style:text-underline-style = 'solid']">
                             <hi rend="underline">
                                 <xsl:copy-of select="$contents"/>
                             </hi>
                         </xsl:when>
-                        <xsl:when test="style:text-properties[@fo:font-style='italic']">
+                        <xsl:when test="style:text-properties[@fo:font-style = 'italic']">
                             <emph>
                                 <xsl:copy-of select="$contents"/>
                             </emph>
@@ -598,7 +615,7 @@ of this software, even if advised of the possibility of such damage.
         </xsl:choose>
     </xsl:template>
 
-  <!-- tables -->
+    <!-- tables -->
     <xsl:template match="table:table">
         <table rend="frame">
             <xsl:if test="@table:name and not(@table:name = 'local-table')">
@@ -606,9 +623,9 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:value-of select="@table:name"/>
                 </xsl:attribute>
             </xsl:if>
-            <xsl:if test="following-sibling::text:p[@text:style-name='Table']">
+            <xsl:if test="following-sibling::text:p[@text:style-name = 'Table']">
                 <head>
-                    <xsl:value-of select="following-sibling::text:p[@text:style-name='Table']"/>
+                    <xsl:value-of select="following-sibling::text:p[@text:style-name = 'Table']"/>
                 </head>
             </xsl:if>
             <xsl:call-template name="generictable"/>
@@ -617,7 +634,7 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="generictable">
         <xsl:variable name="cells" select="count(descendant::table:table-cell)"/>
         <xsl:variable name="rows">
-            <xsl:value-of select="count(descendant::table:table-row) "/>
+            <xsl:value-of select="count(descendant::table:table-row)"/>
         </xsl:variable>
         <xsl:variable name="cols">
             <xsl:value-of select="$cells div $rows"/>
@@ -625,7 +642,8 @@ of this software, even if advised of the possibility of such damage.
         <xsl:variable name="numcols">
             <xsl:choose>
                 <xsl:when test="child::table:table-column/@table:number-columns-repeated">
-                    <xsl:value-of select="number(table:table-column/@table:number-columns-repeated+1)"/>
+                    <xsl:value-of
+                        select="number(table:table-column/@table:number-columns-repeated + 1)"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$cols"/>
@@ -636,7 +654,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template name="colspec">
         <xsl:param name="left"/>
-        <xsl:if test="number($left &lt; ( table:table-column/@table:number-columns-repeated +2)  )">
+        <xsl:if test="number($left &lt; (table:table-column/@table:number-columns-repeated + 2))">
             <colspec>
                 <xsl:attribute name="colnum">
                     <xsl:value-of select="$left"/>
@@ -647,7 +665,7 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:attribute>
             </colspec>
             <xsl:call-template name="colspec">
-                <xsl:with-param name="left" select="$left+1"/>
+                <xsl:with-param name="left" select="$left + 1"/>
             </xsl:call-template>
         </xsl:if>
     </xsl:template>
@@ -672,7 +690,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template match="table:table-cell">
         <cell>
-            <xsl:if test="@table:number-columns-spanned &gt;'1'">
+            <xsl:if test="@table:number-columns-spanned &gt; '1'">
                 <xsl:attribute name="cols">
                     <xsl:value-of select="@table:number-columns-spanned"/>
                 </xsl:attribute>
@@ -685,7 +703,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
 
 
-  <!-- notes -->
+    <!-- notes -->
     <xsl:template match="text:note-citation"/>
     <xsl:template match="text:note-body">
         <xsl:apply-templates/>
@@ -703,10 +721,10 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:attribute>
             </xsl:if>
             <xsl:choose>
-                <xsl:when test="@text:note-class='endnote'">
+                <xsl:when test="@text:note-class = 'endnote'">
                     <xsl:attribute name="place">end</xsl:attribute>
                 </xsl:when>
-                <xsl:when test="@text:note-class='footnote'">
+                <xsl:when test="@text:note-class = 'footnote'">
                     <xsl:attribute name="place">foot</xsl:attribute>
                 </xsl:when>
             </xsl:choose>
@@ -719,7 +737,7 @@ of this software, even if advised of the possibility of such damage.
         </note>
     </xsl:template>
 
-  <!-- drawing -->
+    <!-- drawing -->
     <xsl:template match="draw:plugin">
         <ptr target="{@xlink:href}"/>
     </xsl:template>
@@ -746,7 +764,7 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="ancestor::draw:frame">
                 <xsl:call-template name="findGraphic"/>
             </xsl:when>
-            <xsl:when test="parent::text:p[@text:style-name='Mediaobject']">
+            <xsl:when test="parent::text:p[@text:style-name = 'Mediaobject']">
                 <figure>
                     <xsl:call-template name="findGraphic"/>
                     <head>
@@ -782,12 +800,12 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
 
 
-  <!-- linking -->
+    <!-- linking -->
     <xsl:template match="text:a">
         <xsl:choose>
-            <xsl:when test="starts-with(@xlink:href,'mailto:')">
+            <xsl:when test="starts-with(@xlink:href, 'mailto:')">
                 <xsl:choose>
-                    <xsl:when test=".=@xlink:href">
+                    <xsl:when test=". = @xlink:href">
                         <ptr target="{substring-after(@xlink:href,'mailto:')}"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -797,9 +815,9 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
-            <xsl:when test="contains(@xlink:href,'://')">
+            <xsl:when test="contains(@xlink:href, '://')">
                 <xsl:choose>
-                    <xsl:when test=".=@xlink:href">
+                    <xsl:when test=". = @xlink:href">
                         <ptr target="{@xlink:href}"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -809,7 +827,7 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
-            <xsl:when test="not(contains(@xlink:href,'#'))">
+            <xsl:when test="not(contains(@xlink:href, '#'))">
                 <ref target="{@xlink:href}">
                     <xsl:apply-templates/>
                 </ref>
@@ -817,7 +835,7 @@ of this software, even if advised of the possibility of such damage.
             <xsl:otherwise>
                 <xsl:variable name="linkvar" select="@xlink:href"/>
                 <xsl:choose>
-                    <xsl:when test=".=$linkvar">
+                    <xsl:when test=". = $linkvar">
                         <ptr target="{$linkvar}"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -831,8 +849,8 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template match="text:line-break">
         <xsl:choose>
-            <xsl:when test="parent::text:span[@text:style-name='l']"/>
-            <xsl:when test="parent::text:p[@text:style-name='lg']"/>
+            <xsl:when test="parent::text:span[@text:style-name = 'l']"/>
+            <xsl:when test="parent::text:p[@text:style-name = 'lg']"/>
             <xsl:otherwise>
                 <lb/>
             </xsl:otherwise>
@@ -950,7 +968,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:attribute>
         </anchor>
     </xsl:template>
-  <!--
+    <!--
 These seem to have no obvious translation
 -->
     <xsl:template match="text:endnotes-configuration"/>
@@ -963,10 +981,11 @@ These seem to have no obvious translation
     <xsl:template match="text:outline-level-style"/>
     <xsl:template match="text:outline-style"/>
     <xsl:template match="text:s"/>
-    <xsl:template match="text:*"> [[[UNTRANSLATED <xsl:value-of select="name(.)"/>:     <xsl:apply-templates/>]]] </xsl:template>
+    <xsl:template match="text:*"> [[[UNTRANSLATED <xsl:value-of select="name(.)"/>:
+        <xsl:apply-templates/>]]] </xsl:template>
 
 
-  <!-- sections of the OO format we don't need at present -->
+    <!-- sections of the OO format we don't need at present -->
     <xsl:template match="office:automatic-styles"/>
     <xsl:template match="office:font-decls"/>
     <xsl:template match="office:meta"/>
@@ -985,7 +1004,7 @@ These seem to have no obvious translation
     <xsl:template match="meta:generator"/>
     <xsl:template match="meta:user-defined"/>
 
-  <!--
+    <!--
 <xsl:template match="text()">
   <xsl:apply-templates select="normalize-space(.)"/>
 </xsl:template>
@@ -1006,7 +1025,7 @@ These seem to have no obvious translation
     <xsl:template match="text:soft-page-break"/>
     <xsl:template name="stars">
         <xsl:param name="n"/>
-        <xsl:if test="$n &gt;0">
+        <xsl:if test="$n &gt; 0">
             <xsl:text>*</xsl:text>
             <xsl:call-template name="stars">
                 <xsl:with-param name="n">
@@ -1015,7 +1034,7 @@ These seem to have no obvious translation
             </xsl:call-template>
         </xsl:if>
     </xsl:template>
-    <xsl:template match="text:change|text:changed-region|text:change-end|text:change-start">
+    <xsl:template match="text:change | text:changed-region | text:change-end | text:change-start">
         <xsl:apply-templates/>
     </xsl:template>
     <xsl:template match="text:table-of-content"/>
@@ -1032,7 +1051,7 @@ These seem to have no obvious translation
                 <HEAD level="1" magic="true">Start</HEAD>
                 <xsl:apply-templates/>
             </xsl:variable>
-      <!-- debug
+            <!-- debug
       <xsl:result-document href="/tmp/temp.xml">
 	<xsl:copy-of select="$Body"/>
       </xsl:result-document>
@@ -1043,9 +1062,9 @@ These seem to have no obvious translation
                 </xsl:for-each>
             </xsl:variable>
             <xsl:for-each select="$Body2">
-                <xsl:for-each-group select="tei:*" group-starting-with="tei:HEAD[@level='1']">
+                <xsl:for-each-group select="tei:*" group-starting-with="tei:HEAD[@level = '1']">
                     <xsl:choose>
-                        <xsl:when test="self::tei:HEAD[@level='1']">
+                        <xsl:when test="self::tei:HEAD[@level = '1']">
                             <xsl:call-template name="group-by-section"/>
                         </xsl:when>
                         <xsl:otherwise>
@@ -1058,10 +1077,11 @@ These seem to have no obvious translation
     </xsl:template>
     <xsl:template name="group-by-section">
         <xsl:variable name="ThisHeader" select="number(@level)"/>
-        <xsl:variable name="NextHeader" select="number(@level)+1"/>
+        <xsl:variable name="NextHeader" select="number(@level) + 1"/>
         <xsl:choose>
             <xsl:when test="@magic">
-                <xsl:for-each-group select="current-group() except ." group-starting-with="tei:HEAD[number(@level)=$NextHeader]">
+                <xsl:for-each-group select="current-group() except ."
+                    group-starting-with="tei:HEAD[number(@level) = $NextHeader]">
                     <xsl:choose>
                         <xsl:when test="self::tei:HEAD">
                             <xsl:call-template name="group-by-section"/>
@@ -1075,17 +1095,18 @@ These seem to have no obvious translation
             <xsl:otherwise>
                 <div>
                     <xsl:choose>
-                        <xsl:when test="starts-with(@style,'Heading')"/>
+                        <xsl:when test="starts-with(@style, 'Heading')"/>
                         <xsl:when test="@style">
                             <xsl:attribute name="rend" select="@style"/>
                         </xsl:when>
                     </xsl:choose>
-                    <xsl:if test="not(@interpolated='true')">
+                    <xsl:if test="not(@interpolated = 'true')">
                         <head>
                             <xsl:apply-templates mode="pass1"/>
                         </head>
                     </xsl:if>
-                    <xsl:for-each-group select="current-group() except ." group-starting-with="tei:HEAD[number(@level)=$NextHeader]">
+                    <xsl:for-each-group select="current-group() except ."
+                        group-starting-with="tei:HEAD[number(@level) = $NextHeader]">
                         <xsl:choose>
                             <xsl:when test="self::tei:HEAD">
                                 <xsl:call-template name="group-by-section"/>
@@ -1100,9 +1121,13 @@ These seem to have no obvious translation
         </xsl:choose>
     </xsl:template>
     <xsl:template name="inSection">
-        <xsl:for-each-group select="current-group()" group-adjacent="if (self::tei:GLOSS)      then 1      else 2">
+        <xsl:for-each-group select="current-group()" group-adjacent="
+                if (self::tei:GLOSS) then
+                    1
+                else
+                    2">
             <xsl:choose>
-                <xsl:when test="current-grouping-key()=1">
+                <xsl:when test="current-grouping-key() = 1">
                     <list type="gloss">
                         <xsl:for-each select="current-group()">
                             <xsl:element name="{@n}">
@@ -1119,40 +1144,44 @@ These seem to have no obvious translation
             </xsl:choose>
         </xsl:for-each-group>
     </xsl:template>
-    <xsl:template match="@*|text()|comment()|processing-instruction()" mode="pass1">
+    <xsl:template match="@* | text() | comment() | processing-instruction()" mode="pass1">
         <xsl:copy-of select="."/>
     </xsl:template>
     <xsl:template match="tei:p[not(node())]" mode="pass1"/>
     <xsl:template match="tei:HEAD" mode="pass1">
         <xsl:if test="preceding-sibling::tei:HEAD">
-            <xsl:variable name="prev" select="xs:integer(number(preceding-sibling::tei:HEAD[1]/@level))"/>
+            <xsl:variable name="prev"
+                select="xs:integer(number(preceding-sibling::tei:HEAD[1]/@level))"/>
             <xsl:variable name="current" select="xs:integer(number(@level))"/>
-            <xsl:if test="($current - $prev) &gt;1 ">
-	  <!--<xsl:message>Walk from <xsl:value-of select="$prev"/> to <xsl:value-of select="$current"/></xsl:message>-->
-                <xsl:for-each select="$prev + 1   to $current - 1 ">
+            <xsl:if test="($current - $prev) &gt; 1">
+                <!--<xsl:message>Walk from <xsl:value-of select="$prev"/> to <xsl:value-of select="$current"/></xsl:message>-->
+                <xsl:for-each select="$prev + 1 to $current - 1">
                     <HEAD interpolated="true" level="{.}"/>
                 </xsl:for-each>
             </xsl:if>
         </xsl:if>
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="pass1"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"
+                mode="pass1"/>
         </xsl:copy>
     </xsl:template>
     <xsl:template match="*" mode="pass1">
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="pass1"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"
+                mode="pass1"/>
         </xsl:copy>
     </xsl:template>
 
 
-  <!-- second pass -->
-    <xsl:template match="tei:p[not(*) and normalize-space(.)='']" mode="pass2"/>
-    <xsl:template match="@*|comment()|processing-instruction()" mode="pass2">
+    <!-- second pass -->
+    <xsl:template match="tei:p[not(*) and normalize-space(.) = '']" mode="pass2"/>
+    <xsl:template match="@* | comment() | processing-instruction()" mode="pass2">
         <xsl:copy-of select="."/>
     </xsl:template>
     <xsl:template match="*" mode="pass2">
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="pass2"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"
+                mode="pass2"/>
         </xsl:copy>
     </xsl:template>
     <xsl:template match="text()" mode="pass2">
@@ -1160,14 +1189,18 @@ These seem to have no obvious translation
     </xsl:template>
     <xsl:template match="tei:title" mode="pass2">
         <xsl:choose>
-            <xsl:when test="parent::tei:div|parent::tei:body">
+            <xsl:when test="parent::tei:div | parent::tei:body">
                 <head>
-                    <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="pass2"/>
+                    <xsl:apply-templates
+                        select="* | @* | processing-instruction() | comment() | text()" mode="pass2"
+                    />
                 </head>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:copy>
-                    <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="pass2"/>
+                    <xsl:apply-templates
+                        select="* | @* | processing-instruction() | comment() | text()" mode="pass2"
+                    />
                 </xsl:copy>
             </xsl:otherwise>
         </xsl:choose>

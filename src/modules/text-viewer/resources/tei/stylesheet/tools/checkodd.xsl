@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="tei xsl rng" version="2.0">
-<!--
+<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    exclude-result-prefixes="tei xsl rng" version="2.0">
+    <!--
 This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
@@ -41,7 +43,7 @@ $Id: checkodd.xsl 9646 2011-11-05 23:39:08Z rahtz $
     <xsl:key name="SPECS" match="tei:*[@ident]" use="@ident"/>
     <xsl:template match="/">
         <xsl:for-each select="//rng:ref">
-            <xsl:if test="not(key('SPECS',@name))">
+            <xsl:if test="not(key('SPECS', @name))">
                 <xsl:message>No *Spec defined for <xsl:value-of select="@name"/>
                 </xsl:message>
             </xsl:if>

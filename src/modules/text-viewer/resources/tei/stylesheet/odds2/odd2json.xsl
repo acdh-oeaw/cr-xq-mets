@@ -1,43 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:i="http://www.iso.org/ns/1.0" xmlns:s="http://www.ascc.net/xml/schematron" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:sch="http://purl.oclc.org/dsdl/schematron" exclude-result-prefixes="a fo html i rng s sch tei teix xi xs xsl" version="2.0">
+<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0"
+    xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:i="http://www.iso.org/ns/1.0" xmlns:s="http://www.ascc.net/xml/schematron"
+    xmlns:html="http://www.w3.org/1999/xhtml" xmlns:sch="http://purl.oclc.org/dsdl/schematron"
+    exclude-result-prefixes="a fo html i rng s sch tei teix xi xs xsl" version="2.0">
     <xsl:import href="teiodds.xsl"/>
     <xsl:import href="../common2/i18n.xsl"/>
     <xsl:import href="../common2/tei-param.xsl"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
             <p> TEI stylesheet for making JSON from ODD </p>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: odd2json.xsl 9669 2011-11-07 19:17:54Z rahtz $</p>
             <p>Copyright: 2011, TEI Consortium</p>
@@ -55,9 +49,9 @@ of this software, even if advised of the possibility of such damage.
     <xsl:param name="splitLevel">-1</xsl:param>
     <xsl:variable name="oddmode">dtd</xsl:variable>
     <xsl:variable name="filesuffix"/>
-   <!-- get list of output files -->
+    <!-- get list of output files -->
     <xsl:variable name="linkColor"/>
-    <xsl:template match="tei:moduleSpec[@type='decls']"/>
+    <xsl:template match="tei:moduleSpec[@type = 'decls']"/>
     <xsl:variable name="dq">"</xsl:variable>
     <xsl:variable name="escdq">\\"</xsl:variable>
     <xsl:template match="/">
@@ -69,7 +63,7 @@ of this software, even if advised of the possibility of such damage.
     "date":"</xsl:text>
         <xsl:call-template name="showDate"/>
         <xsl:text>","modules": [</xsl:text>
-        <xsl:for-each select="key('Modules',1)">
+        <xsl:for-each select="key('Modules', 1)">
             <xsl:sort select="@ident"/>
             <xsl:text>{"ident":"</xsl:text>
             <xsl:value-of select="@ident"/>
@@ -82,7 +76,7 @@ of this software, even if advised of the possibility of such damage.
         </xsl:for-each>
         <xsl:text>],</xsl:text>
         <xsl:text>"elements": [</xsl:text>
-        <xsl:for-each select="key('ELEMENTDOCS',1)">
+        <xsl:for-each select="key('ELEMENTDOCS', 1)">
             <xsl:sort select="@ident"/>
             <xsl:text>{"ident":"</xsl:text>
             <xsl:value-of select="@ident"/>
@@ -97,7 +91,7 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:text>{"</xsl:text>
                     <xsl:value-of select="@key"/>
                     <xsl:text>":"</xsl:text>
-                    <xsl:for-each select="key('IDENTS',@key)">
+                    <xsl:for-each select="key('IDENTS', @key)">
                         <xsl:value-of select="@type"/>
                     </xsl:for-each>
                     <xsl:text>"}</xsl:text>
@@ -125,7 +119,7 @@ of this software, even if advised of the possibility of such damage.
         </xsl:for-each>
         <xsl:text>],</xsl:text>
         <xsl:text>"attclasses": [</xsl:text>
-        <xsl:for-each select="key('ATTCLASSDOCS',1)">
+        <xsl:for-each select="key('ATTCLASSDOCS', 1)">
             <xsl:sort select="@ident"/>
             <xsl:text>{"ident":"</xsl:text>
             <xsl:value-of select="@ident"/>
@@ -141,7 +135,7 @@ of this software, even if advised of the possibility of such damage.
         </xsl:for-each>
         <xsl:text>],</xsl:text>
         <xsl:text>"modelclasses": [</xsl:text>
-        <xsl:for-each select="key('MODELCLASSDOCS',1)">
+        <xsl:for-each select="key('MODELCLASSDOCS', 1)">
             <xsl:sort select="@ident"/>
             <xsl:text>{"ident":"</xsl:text>
             <xsl:value-of select="@ident"/>
@@ -157,7 +151,7 @@ of this software, even if advised of the possibility of such damage.
         </xsl:for-each>
         <xsl:text>],</xsl:text>
         <xsl:text>"macros": [</xsl:text>
-        <xsl:for-each select="key('MACRODOCS',1)">
+        <xsl:for-each select="key('MACRODOCS', 1)">
             <xsl:sort select="@ident"/>
             <xsl:text>{"ident":"</xsl:text>
             <xsl:value-of select="@ident"/>
@@ -189,12 +183,12 @@ of this software, even if advised of the possibility of such damage.
             <xsl:call-template name="makeDescription"/>
         </xsl:variable>
         <xsl:text>"desc":"</xsl:text>
-        <xsl:value-of select="replace(normalize-space($d),$dq,$escdq)"/>
+        <xsl:value-of select="replace(normalize-space($d), $dq, $escdq)"/>
         <xsl:text>"</xsl:text>
     </xsl:template>
     <xsl:template name="atts">
         <xsl:call-template name="listAtts"/>
-        <xsl:if test="$TEIC='true'">
+        <xsl:if test="$TEIC = 'true'">
             <xsl:call-template name="classA">
                 <xsl:with-param name="i">att.global</xsl:with-param>
             </xsl:call-template>
@@ -216,7 +210,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template name="classA">
         <xsl:param name="i"/>
-        <xsl:for-each select="key('CLASSES',$i)">
+        <xsl:for-each select="key('CLASSES', $i)">
             <xsl:call-template name="listAtts"/>
             <xsl:for-each select="tei:classes/tei:memberOf">
                 <xsl:call-template name="classA">
@@ -231,7 +225,7 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="generateTitle">
         <xsl:for-each select="tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt">
             <xsl:choose>
-                <xsl:when test="tei:title[@type='main']">
+                <xsl:when test="tei:title[@type = 'main']">
                     <xsl:apply-templates select="tei:title"/>
                 </xsl:when>
                 <xsl:otherwise>

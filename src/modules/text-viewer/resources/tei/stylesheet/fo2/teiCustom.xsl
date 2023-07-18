@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/XSL/Format" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:fotex="http://www.tug.org/fotex" version="1.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/XSL/Format"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:fotex="http://www.tug.org/fotex" version="1.0">
     <xsl:import href="tei.xsl"/>
-    
+
     <!-- oXygen begin change -->
     <!--
         The default value of the 'tableAlign' param set in common/ tei-param.xsl is 
@@ -13,17 +15,17 @@
     <!-- oXygen end change -->
     <xsl:template match="tei:table">
         <xsl:choose>
-            <xsl:when test="@rend='eqnarray' and $foEngine='passivetex'">
+            <xsl:when test="@rend = 'eqnarray' and $foEngine = 'passivetex'">
                 <fotex:eqnarray>
                     <xsl:apply-templates select=".//tei:formula"/>
                 </fotex:eqnarray>
             </xsl:when>
-            <xsl:when test=".//tei:formula[@type='subeqn'] and $foEngine='passivetex'">
+            <xsl:when test=".//tei:formula[@type = 'subeqn'] and $foEngine = 'passivetex'">
                 <fotex:eqnarray>
                     <xsl:apply-templates select=".//tei:formula"/>
                 </fotex:eqnarray>
             </xsl:when>
-            <xsl:when test="$inlineTables or @rend='inline'">
+            <xsl:when test="$inlineTables or @rend = 'inline'">
                 <xsl:if test="tei:head">
                     <block>
                         <xsl:call-template name="tableCaptionstyle"/>
@@ -36,7 +38,7 @@
                         -->
                         <!-- <xsl:call-template name="addID"/> -->
                         <!-- oXygen end change -->
-                        <xsl:if test="$makeTableCaption='true'">
+                        <xsl:if test="$makeTableCaption = 'true'">
                             <xsl:call-template name="i18n">
                                 <xsl:with-param name="word">tableWord</xsl:with-param>
                             </xsl:call-template>

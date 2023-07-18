@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:test="http://www.jenitennison.com/xslt/unit-test" xmlns:o="http://www.w3.org/1999/XSL/TransformAliasAlias" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:s="http://www.jenitennison.com/xslt/xspec" xmlns:x="http://www.jenitennison.com/xslt/xspec" version="2.0">
+<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:test="http://www.jenitennison.com/xslt/unit-test"
+    xmlns:o="http://www.w3.org/1999/XSL/TransformAliasAlias"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:s="http://www.jenitennison.com/xslt/xspec"
+    xmlns:x="http://www.jenitennison.com/xslt/xspec" version="2.0">
     <xsl:import href="file:/usr/local/bin/xspec-v0.1/generate-tests-utils.xsl"/>
-    <xsl:import href="file:/Users/amittelbach/EDV%20Dienstleistungen/Kunden/OUCS/TEIISO/workspace/Stylesheets/docx/from/dynamic/toc.xsl"/>
+    <xsl:import
+        href="file:/Users/amittelbach/EDV%20Dienstleistungen/Kunden/OUCS/TEIISO/workspace/Stylesheets/docx/from/dynamic/toc.xsl"/>
     <xsl:namespace-alias stylesheet-prefix="o" result-prefix="xsl"/>
-    <xsl:variable name="s:stylesheet-uri" as="xs:string" select="'file:/Users/amittelbach/EDV%20Dienstleistungen/Kunden/OUCS/TEIISO/workspace/Stylesheets/docx/from/dynamic/toc.xsl'"/>
+    <xsl:variable name="s:stylesheet-uri" as="xs:string"
+        select="'file:/Users/amittelbach/EDV%20Dienstleistungen/Kunden/OUCS/TEIISO/workspace/Stylesheets/docx/from/dynamic/toc.xsl'"/>
     <xsl:output method="xml" indent="yes"/>
     <xsl:template name="s:main">
         <xsl:message>
@@ -27,7 +33,8 @@
             <xsl:call-template name="test:report-value">
                 <xsl:with-param name="value" select="$actual-result"/>
                 <xsl:with-param name="wrapper-name" select="'s:result'"/>
-                <xsl:with-param name="wrapper-ns" select="'http://www.jenitennison.com/xslt/xspec'"/>
+                <xsl:with-param name="wrapper-ns" select="'http://www.jenitennison.com/xslt/xspec'"
+                />
             </xsl:call-template>
             <xsl:call-template name="s:d4e3">
                 <xsl:with-param name="actual-result" select="$actual-result"/>
@@ -36,16 +43,17 @@
     </xsl:template>
     <xsl:template name="s:d4e3">
         <xsl:param name="actual-result" as="item()*" required="yes"/>
-        <xsl:message>    a divGen element should be created</xsl:message>
+        <xsl:message> a divGen element should be created</xsl:message>
         <xsl:variable name="expected-result-doc" as="document-node()">
             <xsl:document>
                 <divGen type="toc"/>
             </xsl:document>
         </xsl:variable>
         <xsl:variable name="expected-result" select="$expected-result-doc/node()"/>
-        <xsl:variable name="successful" as="xs:boolean" select="test:deep-equal($expected-result, $actual-result, 2)"/>
+        <xsl:variable name="successful" as="xs:boolean"
+            select="test:deep-equal($expected-result, $actual-result, 2)"/>
         <xsl:if test="not($successful)">
-            <xsl:message>      FAILED</xsl:message>
+            <xsl:message> FAILED</xsl:message>
         </xsl:if>
         <s:test label="a divGen element should be created" successful="{$successful}">
             <s:expect>

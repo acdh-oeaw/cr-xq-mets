@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:dt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:v="urn:schemas-microsoft-com:vml" exclude-result-prefixes="h v o w dt" version="1.0">
+<xsl:stylesheet xmlns:dt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:h="http://www.w3.org/1999/xhtml"
+    xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:v="urn:schemas-microsoft-com:vml"
+    exclude-result-prefixes="h v o w dt" version="1.0">
     <xsl:output method="xml" indent="yes"/>
     <xsl:param name="filename"/>
     <xsl:key name="H" match="h:h1" use="1"/>
@@ -9,16 +13,16 @@
     <xsl:template match="h:html">
         <xsl:variable name="author">
             <xsl:choose>
-                <xsl:when test="h:head/h:meta[@name='Author']">
-                    <xsl:value-of select="h:head/h:meta[@name='Author']/@content"/>
+                <xsl:when test="h:head/h:meta[@name = 'Author']">
+                    <xsl:value-of select="h:head/h:meta[@name = 'Author']/@content"/>
                 </xsl:when>
                 <xsl:when test="h:body/h:address">
                     <xsl:variable name="add">
                         <xsl:value-of select="h:body/h:address"/>
                     </xsl:variable>
                     <xsl:choose>
-                        <xsl:when test="contains($add,'Author: ')">
-                            <xsl:value-of select="substring-after($add,'Author: ')"/>
+                        <xsl:when test="contains($add, 'Author: ')">
+                            <xsl:value-of select="substring-after($add, 'Author: ')"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="$add"/>
@@ -35,14 +39,14 @@
                         <xsl:value-of select="h:body/h:address"/>
                     </xsl:variable>
                     <xsl:choose>
-                        <xsl:when test="contains($add,'Date: ')">
-                            <xsl:value-of select="substring-after($add,'Date: ')"/>
+                        <xsl:when test="contains($add, 'Date: ')">
+                            <xsl:value-of select="substring-after($add, 'Date: ')"/>
                         </xsl:when>
-                        <xsl:when test="contains($add,'Last updated: ')">
-                            <xsl:value-of select="substring-after($add,'Last updated: ')"/>
+                        <xsl:when test="contains($add, 'Last updated: ')">
+                            <xsl:value-of select="substring-after($add, 'Last updated: ')"/>
                         </xsl:when>
-                        <xsl:when test="contains($add,'Last Updated: ')">
-                            <xsl:value-of select="substring-after($add,'Last Updated: ')"/>
+                        <xsl:when test="contains($add, 'Last Updated: ')">
+                            <xsl:value-of select="substring-after($add, 'Last Updated: ')"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="$add"/>
@@ -77,8 +81,8 @@
                         </address>
                     </publicationStmt>
                     <sourceDesc>
-                        <p>This is the master version of an original document,
-created by converting an HTML file to TEI XML on TODAYSDATE.</p>
+                        <p>This is the master version of an original document, created by converting
+                            an HTML file to TEI XML on TODAYSDATE.</p>
                     </sourceDesc>
                 </fileDesc>
                 <revisionDesc>
@@ -102,14 +106,14 @@ created by converting an HTML file to TEI XML on TODAYSDATE.</p>
     <xsl:template match="h:body">
         <body>
             <xsl:apply-templates/>
-         <!--This code is intended to balance the div tags created by headers with -->
-  <!--     the correct number of /divs. At the moment it fails if there are -->
-  <!-- Hn tags inside td's, which we are intending to make cell labels -->
+            <!--This code is intended to balance the div tags created by headers with -->
+            <!--     the correct number of /divs. At the moment it fails if there are -->
+            <!-- Hn tags inside td's, which we are intending to make cell labels -->
             <xsl:variable name="starter">
-                <xsl:value-of select="substring(name(key('H',1)[1]),2)"/>
+                <xsl:value-of select="substring(name(key('H', 1)[1]), 2)"/>
             </xsl:variable>
             <xsl:variable name="ender">
-                <xsl:value-of select="substring(name(key('H',1)[last()]),2)"/>
+                <xsl:value-of select="substring(name(key('H', 1)[last()]), 2)"/>
             </xsl:variable>
             <xsl:variable name="difference">
                 <xsl:value-of select="$starter - $ender"/>
@@ -118,19 +122,19 @@ created by converting an HTML file to TEI XML on TODAYSDATE.</p>
      Started with a <xsl:value-of select="$starter"/>, ended with a <xsl:value-of select="$ender"/>
    diff=<xsl:value-of select="$difference"/>
             </xsl:comment>
-         <!-- test call of for loop to handle closure of divs
+            <!-- test call of for loop to handle closure of divs
 got to find a way to set a trigger for closing div if no headers -->
             <xsl:call-template name="for-loop">
                 <xsl:with-param name="i" select="$ender"/>
                 <xsl:with-param name="stepsize" select="1"/>
                 <xsl:with-param name="until" select="$starter"/>
                 <xsl:with-param name="insert" select="'/div'"/>
-            </xsl:call-template> 
-         <!-- old div closing code was here-->
+            </xsl:call-template>
+            <!-- old div closing code was here-->
         </body>
     </xsl:template>
-    <xsl:template match="h:h1|h:h2|h:h3|h:h4">
-  <!--headers inside td's are labels-->
+    <xsl:template match="h:h1 | h:h2 | h:h3 | h:h4">
+        <!--headers inside td's are labels-->
         <xsl:choose>
             <xsl:when test="parent::h:td">
                 <emph>
@@ -138,23 +142,26 @@ got to find a way to set a trigger for closing div if no headers -->
                 </emph>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:if test="preceding::h:h1 or preceding::h:h2 or preceding::h:h3 or preceding::h:h4">
+                <xsl:if
+                    test="preceding::h:h1 or preceding::h:h2 or preceding::h:h3 or preceding::h:h4">
                     <xsl:variable name="previous">
-                        <xsl:value-of select="substring(name(preceding::*[name()='h1' or name()='h2' or name()='h3' or name()='h4'][1]),2)"/>
+                        <xsl:value-of
+                            select="substring(name(preceding::*[name() = 'h1' or name() = 'h2' or name() = 'h3' or name() = 'h4'][1]), 2)"
+                        />
                     </xsl:variable>
                     <xsl:variable name="me">
-                        <xsl:value-of select="substring(name(.),2)"/>
+                        <xsl:value-of select="substring(name(.), 2)"/>
                     </xsl:variable>
                     <xsl:variable name="difference">
                         <xsl:value-of select="$me - $previous"/>
                     </xsl:variable>
-               <!--
+                    <!--
    <xsl:message>
  I am a <xsl:value-of select="$me"/>, previous is <xsl:value-of select="$previous"/>, difference is <xsl:value-of select="$difference"/>
 
    </xsl:message>
 -->
-<!-- test call of for loop to handle this ... -->
+                    <!-- test call of for loop to handle this ... -->
                     <xsl:if test="$difference &lt; 1">
                         <xsl:call-template name="for-loop">
                             <xsl:with-param name="i" select="$previous"/>
@@ -194,7 +201,7 @@ got to find a way to set a trigger for closing div if no headers -->
         </xsl:choose>
     </xsl:template>
 
-   <!-- low-level markup -->
+    <!-- low-level markup -->
     <xsl:template match="h:td/h:p">
         <xsl:apply-templates/>
     </xsl:template>
@@ -203,45 +210,49 @@ got to find a way to set a trigger for closing div if no headers -->
             <xsl:apply-templates/>
         </p>
     </xsl:template>
-    <xsl:template match="h:strong|h:b|h:em|h:i" mode="head">
+    <xsl:template match="h:strong | h:b | h:em | h:i" mode="head">
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="h:strong|h:b">
+    <xsl:template match="h:strong | h:b">
         <hi>
             <xsl:apply-templates/>
         </hi>
     </xsl:template>
-    <xsl:template match="h:tt|h:var|h:kbd|h:samp|h:code">
+    <xsl:template match="h:tt | h:var | h:kbd | h:samp | h:code">
         <code>
             <xsl:apply-templates/>
         </code>
     </xsl:template>
-    <xsl:template match="h:em|h:i">
+    <xsl:template match="h:em | h:i">
         <emph>
             <xsl:apply-templates/>
         </emph>
     </xsl:template>
-    <xsl:template match="h:font"><!-- just continue -->
+    <xsl:template match="h:font">
+        <!-- just continue -->
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="h:big|h:small|h:center"><!-- just continue -->
+    <xsl:template match="h:big | h:small | h:center">
+        <!-- just continue -->
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="h:span"><!-- just continue -->
+    <xsl:template match="h:span">
+        <!-- just continue -->
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="h:span[@class]"><!-- just continue -->
+    <xsl:template match="h:span[@class]">
+        <!-- just continue -->
         <hi rend="{@class}">
             <xsl:apply-templates/>
         </hi>
     </xsl:template>
-   <!-- links -->
+    <!-- links -->
     <xsl:template match="h:a[@href]">
         <xsl:variable name="content" select="descendant-or-self::text()"/>
         <xsl:choose>
             <xsl:when test="@href = $content">
                 <xsl:choose>
-                    <xsl:when test="starts-with(@href,'#')">
+                    <xsl:when test="starts-with(@href, '#')">
                         <ptr target="{substring(@href,2)}"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -251,7 +262,7 @@ got to find a way to set a trigger for closing div if no headers -->
             </xsl:when>
             <xsl:otherwise>
                 <xsl:choose>
-                    <xsl:when test="starts-with(@href,'#')">
+                    <xsl:when test="starts-with(@href, '#')">
                         <ref target="{substring(@href,2)}">
                             <xsl:value-of select="$content"/>
                         </ref>
@@ -266,7 +277,7 @@ got to find a way to set a trigger for closing div if no headers -->
         </xsl:choose>
     </xsl:template>
 
-   <!-- ====== quotes, verbatim ====== -->
+    <!-- ====== quotes, verbatim ====== -->
     <xsl:template match="h:blockquote">
         <p>
             <q rend="display">
@@ -280,7 +291,7 @@ got to find a way to set a trigger for closing div if no headers -->
         </eg>
     </xsl:template>
 
-   <!-- ============ Lists ============== -->
+    <!-- ============ Lists ============== -->
     <xsl:template match="h:dl">
         <list type="gloss">
             <xsl:apply-templates/>
@@ -312,7 +323,7 @@ got to find a way to set a trigger for closing div if no headers -->
         </item>
     </xsl:template>
 
-   <!-- ===== sub, sup -->
+    <!-- ===== sub, sup -->
     <xsl:template match="h:sub">
         <hi rend="sub">
             <xsl:apply-templates/>
@@ -326,7 +337,7 @@ got to find a way to set a trigger for closing div if no headers -->
 
 
 
-   <!-- tables -->
+    <!-- tables -->
     <xsl:template match="h:tr">
         <row>
             <xsl:apply-templates/>
@@ -365,7 +376,7 @@ got to find a way to set a trigger for closing div if no headers -->
             <xsl:value-of select="name(preceding-sibling::*[1])"/>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="$N='h1' or $N='h3' or $N='h3' or $N='h4'">
+            <xsl:when test="$N = 'h1' or $N = 'h3' or $N = 'h3' or $N = 'h4'">
                 <p>
                     <xsl:value-of select="normalize-space(.)"/>
                 </p>
@@ -376,7 +387,7 @@ got to find a way to set a trigger for closing div if no headers -->
                         <xsl:value-of select="."/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="translate(.,'&#160;',' ')"/>
+                        <xsl:value-of select="translate(., '&#160;', ' ')"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:otherwise>
@@ -391,14 +402,14 @@ got to find a way to set a trigger for closing div if no headers -->
             </xsl:if>
         </figure>
     </xsl:template>
-    <xsl:template match="h:form|h:input|h:textarea|h:option|h:select">
+    <xsl:template match="h:form | h:input | h:textarea | h:option | h:select">
         <xsl:copy>
             <xsl:copy-of select="@*"/>
             <xsl:apply-templates/>
         </xsl:copy>
     </xsl:template>
     <xsl:template name="for-loop">
-<!-- simplified from tidwell p86. only does step up or down until -->
+        <!-- simplified from tidwell p86. only does step up or down until -->
         <xsl:param name="i" select="1"/>
         <xsl:param name="stepsize" select="1"/>
         <xsl:param name="until" select="1"/>

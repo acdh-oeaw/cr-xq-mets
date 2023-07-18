@@ -1,50 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="tei html" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="tei html" version="2.0">
     <!-- import base conversion style -->
     <xsl:import href="../../../tools/html2tei.xsl"/>
     <xsl:param name="NAME"/>
     <xsl:variable name="Q">'</xsl:variable>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: to.xsl 8923 2011-05-25 13:11:45Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
         </desc>
     </doc>
     <xsl:template match="head">
-        <xsl:variable name="T" select="replace(translate(title,$Q,''), ' /  Rudyard Kipling','')"/>
+        <xsl:variable name="T" select="replace(translate(title, $Q, ''), ' /  Rudyard Kipling', '')"/>
         <teiHeader>
             <fileDesc>
                 <titleStmt>
@@ -52,7 +41,7 @@ of this software, even if advised of the possibility of such damage.
                         <xsl:value-of select="title"/>
                     </title>
                     <author>
-                        <xsl:value-of select="meta[@name='dc.Creator']/@content"/>
+                        <xsl:value-of select="meta[@name = 'dc.Creator']/@content"/>
                     </author>
                 </titleStmt>
                 <publicationStmt>
@@ -69,18 +58,18 @@ of this software, even if advised of the possibility of such damage.
                     <idno type="ota">http://ota.ox.ac.uk/id/3001</idno>
                     <availability status="restricted">
                         <p>
-                            <ref type="license" target="http://creativecommons.org/licenses/by-nc-sa/3.0/">
-                                <graphic url="http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png"/>
-	      Distributed by the University of Oxford under a Creative Commons
-	    Attribution-NonCommercial-ShareAlike 3.0 Unported License</ref>
+                            <ref type="license"
+                                target="http://creativecommons.org/licenses/by-nc-sa/3.0/">
+                                <graphic url="http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png"
+                                /> Distributed by the University of Oxford under a Creative Commons
+                                Attribution-NonCommercial-ShareAlike 3.0 Unported License</ref>
                         </p>
                     </availability>
                 </publicationStmt>
                 <sourceDesc>
-                    <bibl>TEI XML version of  
-	<relatedItem type="otherVersion">
+                    <bibl>TEI XML version of <relatedItem type="otherVersion">
                             <xsl:attribute name="target">
-                                <xsl:value-of select="meta[@name='dc.Identifier']/@content"/>
+                                <xsl:value-of select="meta[@name = 'dc.Identifier']/@content"/>
                             </xsl:attribute>
                         </relatedItem>
                     </bibl>
@@ -88,8 +77,7 @@ of this software, even if advised of the possibility of such damage.
             </fileDesc>
             <profileDesc>
                 <creation>
-                    <date>
-</date>
+                    <date> </date>
                 </creation>
                 <langUsage>
                     <language ident="eng">English</language>
@@ -97,20 +85,20 @@ of this software, even if advised of the possibility of such damage.
             </profileDesc>
         </teiHeader>
     </xsl:template>
-    <xsl:template match="div[@class='colophon']"/>
-    <xsl:template match="div[@class='titlepage']"/>
-    <xsl:template match="div[@class='titleverso']"/>
-    <xsl:template match="div[@class='contents']"/>
-    <xsl:template match="div[@class='section center c1']">
+    <xsl:template match="div[@class = 'colophon']"/>
+    <xsl:template match="div[@class = 'titlepage']"/>
+    <xsl:template match="div[@class = 'titleverso']"/>
+    <xsl:template match="div[@class = 'contents']"/>
+    <xsl:template match="div[@class = 'section center c1']">
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="div[@class='section center']">
+    <xsl:template match="div[@class = 'section center']">
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="div[@class='c1']">
+    <xsl:template match="div[@class = 'c1']">
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="div[@class='center' or @class=' center']">
+    <xsl:template match="div[@class = 'center' or @class = ' center']">
         <xsl:choose>
             <xsl:when test="p">
                 <xsl:for-each select="p">
@@ -126,12 +114,12 @@ of this software, even if advised of the possibility of such damage.
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="div[@class='c2']">
+    <xsl:template match="div[@class = 'c2']">
         <signed>
             <xsl:apply-templates/>
         </signed>
     </xsl:template>
-    <xsl:template match="div[@class='epigraph']">
+    <xsl:template match="div[@class = 'epigraph']">
         <xsl:choose>
             <xsl:when test="preceding-sibling::p">
                 <quote rend="display">
@@ -141,10 +129,10 @@ of this software, even if advised of the possibility of such damage.
             <xsl:otherwise>
                 <epigraph>
                     <xsl:choose>
-                        <xsl:when test="count(p)&gt;1">
+                        <xsl:when test="count(p) &gt; 1">
                             <cit>
                                 <quote>
-                                    <xsl:for-each select="p[not(position()=last())]">
+                                    <xsl:for-each select="p[not(position() = last())]">
                                         <p>
                                             <xsl:apply-templates/>
                                         </p>
@@ -167,9 +155,9 @@ of this software, even if advised of the possibility of such damage.
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="div[@class='quote']">
+    <xsl:template match="div[@class = 'quote']">
         <xsl:choose>
-            <xsl:when test="count(p)&gt;1">
+            <xsl:when test="count(p) &gt; 1">
                 <cit>
                     <quote>
                         <xsl:for-each select="p[not(last())]">
@@ -183,7 +171,7 @@ of this software, even if advised of the possibility of such damage.
                     </bibl>
                 </cit>
             </xsl:when>
-            <xsl:when test="p/br and not(preceding-sibling::p or preceding-sibling::div) ">
+            <xsl:when test="p/br and not(preceding-sibling::p or preceding-sibling::div)">
                 <xsl:for-each select="p">
                     <epigraph>
                         <xsl:call-template name="linesofverse"/>
@@ -209,7 +197,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="div[@class='stanza']">
+    <xsl:template match="div[@class = 'stanza']">
         <quote rend="display" type="stanza">
             <xsl:for-each select="p">
                 <l>
@@ -218,53 +206,53 @@ of this software, even if advised of the possibility of such damage.
             </xsl:for-each>
         </quote>
     </xsl:template>
-    <xsl:template match="div[@class='inscription']">
+    <xsl:template match="div[@class = 'inscription']">
         <quote rend="display" type="inscription">
             <xsl:apply-templates/>
         </quote>
     </xsl:template>
-    <xsl:template match="div[@class='notice']">
+    <xsl:template match="div[@class = 'notice']">
         <quote rend="display" type="notice">
             <xsl:apply-templates/>
         </quote>
     </xsl:template>
-    <xsl:template match="div[@class='letter quote']">
+    <xsl:template match="div[@class = 'letter quote']">
         <quote rend="display" type="letter">
             <xsl:apply-templates/>
         </quote>
     </xsl:template>
-    <xsl:template match="div[@class='poem']">
+    <xsl:template match="div[@class = 'poem']">
         <xsl:for-each select="p">
             <lg>
                 <xsl:call-template name="linesofverse"/>
             </lg>
         </xsl:for-each>
     </xsl:template>
-    <xsl:template match="div[@class='illustration']">
+    <xsl:template match="div[@class = 'illustration']">
         <figure>
             <xsl:apply-templates/>
         </figure>
     </xsl:template>
     <xsl:template match="div/text()">
         <xsl:choose>
-            <xsl:when test="string-length(normalize-space(.))=0"/>
-            <xsl:when test="starts-with(.,'*')">
+            <xsl:when test="string-length(normalize-space(.)) = 0"/>
+            <xsl:when test="starts-with(., '*')">
                 <p>
                     <xsl:value-of select="."/>
                 </p>
             </xsl:when>
-            <xsl:when test="starts-with(.,'. .')">
+            <xsl:when test="starts-with(., '. .')">
                 <p>
                     <xsl:value-of select="."/>
                 </p>
             </xsl:when>
-            <xsl:when test="parent::div[@class='c2']">
+            <xsl:when test="parent::div[@class = 'c2']">
                 <xsl:value-of select="."/>
             </xsl:when>
-            <xsl:when test="parent::div[@class='center']">
+            <xsl:when test="parent::div[@class = 'center']">
                 <xsl:value-of select="."/>
             </xsl:when>
-            <xsl:when test="parent::div[@class='section center']">
+            <xsl:when test="parent::div[@class = 'section center']">
                 <xsl:value-of select="."/>
             </xsl:when>
             <xsl:otherwise>
@@ -275,17 +263,17 @@ of this software, even if advised of the possibility of such damage.
         </xsl:choose>
     </xsl:template>
     <xsl:template name="linesofverse">
-        <xsl:for-each-group select="*|text()" group-ending-with="br">
+        <xsl:for-each-group select="* | text()" group-ending-with="br">
             <l>
                 <xsl:apply-templates select="current-group()[not(self::br)]"/>
             </l>
         </xsl:for-each-group>
     </xsl:template>
-    <xsl:template match="div[@class='section']">
+    <xsl:template match="div[@class = 'section']">
         <xsl:choose>
-            <xsl:when test="h3|h4|h5|h6">
+            <xsl:when test="h3 | h4 | h5 | h6">
                 <div>
-                    <xsl:apply-templates select="@*|*|text()"/>
+                    <xsl:apply-templates select="@* | * | text()"/>
                 </div>
             </xsl:when>
             <xsl:otherwise>
@@ -313,9 +301,9 @@ of this software, even if advised of the possibility of such damage.
             <xsl:apply-templates/>
         </head>
     </xsl:template>
-    <xsl:template match="h4|h5|h6">
+    <xsl:template match="h4 | h5 | h6">
         <xsl:choose>
-            <xsl:when test="starts-with(.,'. .')">
+            <xsl:when test="starts-with(., '. .')">
                 <p>
                     <xsl:apply-templates/>
                 </p>

@@ -11,15 +11,15 @@
             <h>Create new SADE-project</h>
             <id>
                 <title>Project ID</title>
-                <hint>A short unique identifier of your new project, without spaces and special characters, only for technical proposes</hint>
+                <hint>A short unique identifier of your new project, without spaces and special
+                    characters, only for technical proposes</hint>
             </id>
             <name>
                 <title>Project name</title>
-                <hint>A short name of your project to identify the project in SADE-Admininterface. You can change this value afterwards</hint>
+                <hint>A short name of your project to identify the project in SADE-Admininterface.
+                    You can change this value afterwards</hint>
             </name>
-            <submit>
-                Create project!
-            </submit>
+            <submit> Create project! </submit>
         </newproject>
         <general>
             <showWebsite>Show website</showWebsite>
@@ -33,7 +33,8 @@
             </nav>
             <submit>Save</submit>
             <submit_success>Changes saved!</submit_success>
-            <submit_error>Changes were not saved! Check, if all required fiels are filled.</submit_error>
+            <submit_error>Changes were not saved! Check, if all required fiels are
+                filled.</submit_error>
             <requiredField>You have to fill in this field</requiredField>
         </general>
         <design>
@@ -59,7 +60,8 @@
             <h>General Settings</h>
             <project_name>
                 <title>Projecttitle:</title>
-                <hint>The projecttitle will be displayed in the browser and in searchengines results</hint>
+                <hint>The projecttitle will be displayed in the browser and in searchengines
+                    results</hint>
             </project_name>
             <default_project>
                 <title>Defaultproject?</title>
@@ -67,11 +69,13 @@
             </default_project>
             <description>
                 <title>Short description</title>
-                <hint>This short description is applied to the HTML metatags and will be displayed in searchengines results</hint>
+                <hint>This short description is applied to the HTML metatags and will be displayed
+                    in searchengines results</hint>
             </description>
             <used_namespaces>
                 <title>Used namespaces</title>
-                <hint>Enter the XML namespaces, which are used by your digital scholarly edition e.g. http://www.tei-c.org/ns/1.0</hint>
+                <hint>Enter the XML namespaces, which are used by your digital scholarly edition
+                    e.g. http://www.tei-c.org/ns/1.0</hint>
             </used_namespaces>
         </meta>
         <edition>

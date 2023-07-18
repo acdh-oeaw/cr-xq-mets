@@ -14,7 +14,8 @@
     <xqdoc:functions>
         <xqdoc:function>
             <xqdoc:name>navi:create</xqdoc:name>
-            <xqdoc:signature>navi:create($projectname as xs:string, $uri as xs:string, $container as xs:string) as node()</xqdoc:signature>
+            <xqdoc:signature>navi:create($projectname as xs:string, $uri as xs:string, $container as
+                xs:string) as node()</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$projectname </xqdoc:param>
@@ -25,7 +26,8 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>navi:create-breadcrumb</xqdoc:name>
-            <xqdoc:signature>navi:create-breadcrumb($projectname as xs:string, $uri as xs:string) as node()</xqdoc:signature>
+            <xqdoc:signature>navi:create-breadcrumb($projectname as xs:string, $uri as xs:string) as
+                node()</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$projectname </xqdoc:param>
@@ -35,7 +37,8 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>navi:createLevel</xqdoc:name>
-            <xqdoc:signature>navi:createLevel($navi as node(), $uri as xs:string) as node()+</xqdoc:signature>
+            <xqdoc:signature>navi:createLevel($navi as node(), $uri as xs:string) as
+                node()+</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$navi </xqdoc:param>

@@ -1,40 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:i="http://www.iso.org/ns/1.0" xmlns:s="http://www.ascc.net/xml/schematron" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:sch="http://purl.oclc.org/dsdl/schematron" xmlns:fo="http://www.w3.org/1999/XSL/Format" exclude-result-prefixes="a fo html i rng s sch tei teix xi xs xsl         m atom xlink xhtml dbk" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:dbk="http://docbook.org/ns/docbook" xmlns:m="http://www.w3.org/1998/Math/MathML"
+    xmlns:i="http://www.iso.org/ns/1.0" xmlns:s="http://www.ascc.net/xml/schematron"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:html="http://www.w3.org/1999/xhtml" xmlns:sch="http://purl.oclc.org/dsdl/schematron"
+    xmlns:fo="http://www.w3.org/1999/XSL/Format"
+    exclude-result-prefixes="a fo html i rng s sch tei teix xi xs xsl         m atom xlink xhtml dbk"
+    version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
             <p> TEI stylesheet dealing with elements from the core module. </p>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: verbatim.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2011, TEI Consortium</p>
@@ -48,7 +46,8 @@ of this software, even if advised of the possibility of such damage.
     <xsl:param name="endElement">&lt;/span&gt;</xsl:param>
     <xsl:param name="startElementName">&lt;span class="elementname"&gt;</xsl:param>
     <xsl:param name="endElementName">&lt;/span&gt;</xsl:param>
-    <xsl:param name="highlightStartElementName">&lt;span class="highlightelementname"&gt;</xsl:param>
+    <xsl:param name="highlightStartElementName">&lt;span
+        class="highlightelementname"&gt;</xsl:param>
     <xsl:param name="highlightEndElementName">&lt;/span&gt;</xsl:param>
     <xsl:param name="startAttribute">&lt;span class="attribute"&gt;</xsl:param>
     <xsl:param name="endAttribute">&lt;/span&gt;</xsl:param>
@@ -73,28 +72,29 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template name="verbatim-getNamespacePrefix">
         <xsl:variable name="ns" select="namespace-uri()"/>
-        <xsl:variable name="prefix" select="tei:getPrefix($ns,ancestor-or-self::*[1])[1]"/>
+        <xsl:variable name="prefix" select="tei:getPrefix($ns, ancestor-or-self::*[1])[1]"/>
         <xsl:choose>
-            <xsl:when test="$prefix !=''">
+            <xsl:when test="$prefix != ''">
                 <xsl:value-of select="$prefix"/>
             </xsl:when>
-            <xsl:when test="$ns='http://docbook.org/ns/docbook'">dbk</xsl:when>
-            <xsl:when test="$ns='http://earth.google.com/kml/2.1'">kml</xsl:when>
-            <xsl:when test="$ns='http://purl.oclc.org/dsdl/nvdl/ns/structure/1.0'">nvdl</xsl:when>
-            <xsl:when test="$ns='http://purl.org/rss/1.0/modules/event/'">ev</xsl:when>
-            <xsl:when test="$ns='http://purl.oclc.org/dsdl/schematron'">s</xsl:when>
-            <xsl:when test="$ns='http://relaxng.org/ns/compatibility/annotations/1.0'">a</xsl:when>
-            <xsl:when test="$ns='http://relaxng.org/ns/structure/1.0'">rng</xsl:when>
-            <xsl:when test="$ns='http://www.ascc.net/xml/schematron'">sch</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/1998/Math/MathML'">m</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/1999/XSL/Transform'">xsl</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/1999/xhtml'">xhtml</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/1999/xlink'">xlink</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/2001/XMLSchema'">xsd</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/2005/11/its'">its</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/2005/Atom'">atom</xsl:when>
-            <xsl:when test="$ns='http://www.w3.org/XML/1998/namespace'">xml</xsl:when>
-            <xsl:when test="$ns='http://www.tei-c.org/ns/geneticEditions'">ge</xsl:when>
+            <xsl:when test="$ns = 'http://docbook.org/ns/docbook'">dbk</xsl:when>
+            <xsl:when test="$ns = 'http://earth.google.com/kml/2.1'">kml</xsl:when>
+            <xsl:when test="$ns = 'http://purl.oclc.org/dsdl/nvdl/ns/structure/1.0'">nvdl</xsl:when>
+            <xsl:when test="$ns = 'http://purl.org/rss/1.0/modules/event/'">ev</xsl:when>
+            <xsl:when test="$ns = 'http://purl.oclc.org/dsdl/schematron'">s</xsl:when>
+            <xsl:when test="$ns = 'http://relaxng.org/ns/compatibility/annotations/1.0'"
+                >a</xsl:when>
+            <xsl:when test="$ns = 'http://relaxng.org/ns/structure/1.0'">rng</xsl:when>
+            <xsl:when test="$ns = 'http://www.ascc.net/xml/schematron'">sch</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/1998/Math/MathML'">m</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/1999/XSL/Transform'">xsl</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/1999/xhtml'">xhtml</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/1999/xlink'">xlink</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/2001/XMLSchema'">xsd</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/2005/11/its'">its</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/2005/Atom'">atom</xsl:when>
+            <xsl:when test="$ns = 'http://www.w3.org/XML/1998/namespace'">xml</xsl:when>
+            <xsl:when test="$ns = 'http://www.tei-c.org/ns/geneticEditions'">ge</xsl:when>
         </xsl:choose>
     </xsl:template>
     <xsl:template name="verbatim-newLine"/>
@@ -127,7 +127,7 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:value-of disable-output-escaping="yes" select="$startComment"/>
                 <xsl:text>&lt;!--</xsl:text>
                 <xsl:choose>
-                    <xsl:when test="$forceWrap='true'">
+                    <xsl:when test="$forceWrap = 'true'">
                         <xsl:call-template name="verbatim-reformatText">
                             <xsl:with-param name="sofar">0</xsl:with-param>
                             <xsl:with-param name="indent">
@@ -155,13 +155,13 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="text()" mode="verbatim">
         <xsl:choose>
-            <xsl:when test="$forceWrap='true'">
+            <xsl:when test="$forceWrap = 'true'">
                 <xsl:variable name="indent">
                     <xsl:for-each select="parent::*">
                         <xsl:call-template name="verbatim-makeIndent"/>
                     </xsl:for-each>
                 </xsl:variable>
-                <xsl:if test="string-length(.)&gt;$wrapLength or parent::sch:assert">
+                <xsl:if test="string-length(.) &gt; $wrapLength or parent::sch:assert">
                     <xsl:text>
 </xsl:text>
                     <xsl:value-of select="$indent"/>
@@ -175,14 +175,14 @@ of this software, even if advised of the possibility of such damage.
                         <xsl:value-of select="normalize-space(.)"/>
                     </xsl:with-param>
                 </xsl:call-template>
-                <xsl:if test="string-length(.)&gt;$wrapLength or parent::sch:assert">
+                <xsl:if test="string-length(.) &gt; $wrapLength or parent::sch:assert">
                     <xsl:text>
 </xsl:text>
                     <xsl:value-of select="$indent"/>
                 </xsl:if>
             </xsl:when>
-            <xsl:when test="not(preceding-sibling::node() or         contains(.,'&#xA;'))">
-                <xsl:if test="starts-with(.,' ')">
+            <xsl:when test="not(preceding-sibling::node() or contains(., '&#xA;'))">
+                <xsl:if test="starts-with(., ' ')">
                     <xsl:text> </xsl:text>
                 </xsl:if>
                 <xsl:call-template name="verbatim-Text">
@@ -190,11 +190,11 @@ of this software, even if advised of the possibility of such damage.
                         <xsl:value-of select="normalize-space(.)"/>
                     </xsl:with-param>
                 </xsl:call-template>
-                <xsl:if test="substring(.,string-length(.),1)=' '">
+                <xsl:if test="substring(., string-length(.), 1) = ' '">
                     <xsl:text> </xsl:text>
                 </xsl:if>
             </xsl:when>
-            <xsl:when test="normalize-space(.)=''">
+            <xsl:when test="normalize-space(.) = ''">
                 <xsl:for-each select="following-sibling::*[1]">
                     <xsl:call-template name="verbatim-lineBreak">
                         <xsl:with-param name="id">7</xsl:with-param>
@@ -212,16 +212,17 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:with-param>
                     <xsl:with-param name="text">
                         <xsl:choose>
-                            <xsl:when test="starts-with(.,'&#xA;') and not          (preceding-sibling::node())">
-                                <xsl:value-of select="translate(substring(.,2),'&#xA;','⌤')"/>
+                            <xsl:when
+                                test="starts-with(., '&#xA;') and not(preceding-sibling::node())">
+                                <xsl:value-of select="translate(substring(., 2), '&#xA;', '⌤')"/>
                             </xsl:when>
                             <xsl:otherwise>
-                                <xsl:value-of select="translate(.,'&#xA;','⌤')"/>
+                                <xsl:value-of select="translate(., '&#xA;', '⌤')"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:with-param>
                 </xsl:call-template>
-        <!--
+                <!--
 	<xsl:if test="substring(.,string-length(.))=' '">
 	  <xsl:text> </xsl:text>
 	</xsl:if>
@@ -250,7 +251,7 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="not(contains($text,' '))">
+            <xsl:when test="not(contains($text, ' '))">
                 <xsl:call-template name="verbatim-Text">
                     <xsl:with-param name="words">
                         <xsl:value-of select="$text"/>
@@ -259,7 +260,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:when>
             <xsl:otherwise>
                 <xsl:variable name="chunk">
-                    <xsl:value-of select="substring-before($text,' ')"/>
+                    <xsl:value-of select="substring-before($text, ' ')"/>
                 </xsl:variable>
                 <xsl:call-template name="verbatim-Text">
                     <xsl:with-param name="words">
@@ -269,7 +270,7 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:call-template>
                 <xsl:call-template name="verbatim-reformatText">
                     <xsl:with-param name="text">
-                        <xsl:value-of select="substring-after($text,' ')"/>
+                        <xsl:value-of select="substring-after($text, ' ')"/>
                     </xsl:with-param>
                     <xsl:with-param name="sofar">
                         <xsl:value-of select="$sofar + string-length($chunk) + 1"/>
@@ -287,10 +288,10 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="count">0</xsl:param>
         <xsl:variable name="finalSpace">
             <xsl:choose>
-                <xsl:when test="substring($text,string-length($text),1)=' '">
+                <xsl:when test="substring($text, string-length($text), 1) = ' '">
                     <xsl:text> </xsl:text>
                 </xsl:when>
-                <xsl:when test="substring($text,string-length($text),1)='⌤'">
+                <xsl:when test="substring($text, string-length($text), 1) = '⌤'">
                     <xsl:text> </xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
@@ -298,26 +299,26 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-    <!--
+        <!--
 <xsl:message>my text is [<xsl:value-of select="$text"/>]</xsl:message>
 <xsl:message>my space is [<xsl:value-of select="$finalSpace"/>]</xsl:message>
 -->
         <xsl:choose>
-            <xsl:when test="normalize-space($text)=''"/>
-            <xsl:when test="contains($text,'⌤')">
+            <xsl:when test="normalize-space($text) = ''"/>
+            <xsl:when test="contains($text, '⌤')">
                 <xsl:if test="$count &gt; 0">
                     <xsl:value-of select="$indent"/>
                     <xsl:text> </xsl:text>
                 </xsl:if>
-                <xsl:if test="starts-with($text,' ')">
+                <xsl:if test="starts-with($text, ' ')">
                     <xsl:text> </xsl:text>
                 </xsl:if>
                 <xsl:call-template name="verbatim-Text">
                     <xsl:with-param name="words">
-                        <xsl:value-of select="normalize-space(substring-before($text,'⌤'))"/>
+                        <xsl:value-of select="normalize-space(substring-before($text, '⌤'))"/>
                     </xsl:with-param>
                 </xsl:call-template>
-        <!--	<xsl:if test="not(substring-after($text,'
+                <!--	<xsl:if test="not(substring-after($text,'
 ')='')">-->
                 <xsl:call-template name="verbatim-lineBreak">
                     <xsl:with-param name="id">6</xsl:with-param>
@@ -328,7 +329,7 @@ of this software, even if advised of the possibility of such damage.
                         <xsl:value-of select="$indent"/>
                     </xsl:with-param>
                     <xsl:with-param name="text">
-                        <xsl:value-of select="normalize-space(substring-after($text,'⌤'))"/>
+                        <xsl:value-of select="normalize-space(substring-after($text, '⌤'))"/>
                         <xsl:value-of select="$finalSpace"/>
                     </xsl:with-param>
                     <xsl:with-param name="count">
@@ -337,7 +338,7 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:if test="starts-with($text,' ')">
+                <xsl:if test="starts-with($text, ' ')">
                     <xsl:text> </xsl:text>
                 </xsl:if>
                 <xsl:if test="$count &gt; 0 and parent::*">
@@ -364,7 +365,7 @@ of this software, even if advised of the possibility of such damage.
         <xsl:analyze-string select="$words" regex="(&amp;)(.)">
             <xsl:matching-substring>
                 <xsl:choose>
-                    <xsl:when test="starts-with(regex-group(2),'#')">
+                    <xsl:when test="starts-with(regex-group(2), '#')">
                         <xsl:text>&amp;</xsl:text>
                     </xsl:when>
                     <xsl:otherwise>
@@ -388,10 +389,11 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="highlight"/>
         <xsl:choose>
             <xsl:when test="parent::xhtml:Wrapper"/>
-      <!--      <xsl:when test="child::node()[last()]/self::text()[not(.='')] and child::node()[1]/self::text()[not(.='')]"/>-->
-            <xsl:when test="not(parent::*)  or parent::teix:egXML">
+            <!--      <xsl:when test="child::node()[last()]/self::text()[not(.='')] and child::node()[1]/self::text()[not(.='')]"/>-->
+            <xsl:when test="not(parent::*) or parent::teix:egXML">
                 <xsl:choose>
-                    <xsl:when test="preceding-sibling::node()[1][self::text()]      and following-sibling::node()[1][self::text()]"/>
+                    <xsl:when
+                        test="preceding-sibling::node()[1][self::text()] and following-sibling::node()[1][self::text()]"/>
                     <xsl:when test="preceding-sibling::*">
                         <xsl:call-template name="verbatim-lineBreak">
                             <xsl:with-param name="id">-1</xsl:with-param>
@@ -399,7 +401,7 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:call-template name="verbatim-newLine"/>
-            <!-- <xsl:call-template name="makeIndent"/>-->
+                        <!-- <xsl:call-template name="makeIndent"/>-->
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
@@ -432,7 +434,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:with-param>
         </xsl:call-template>
         <xsl:apply-templates select="@*" mode="verbatim"/>
-        <xsl:if test="$showNamespaceDecls='true' or parent::teix:egXML[@rend='full']">
+        <xsl:if test="$showNamespaceDecls = 'true' or parent::teix:egXML[@rend = 'full']">
             <xsl:choose>
                 <xsl:when test="not(parent::*)">
                     <xsl:call-template name="nsList"/>
@@ -452,13 +454,14 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:with-param>
                 </xsl:apply-templates>
                 <xsl:choose>
-                    <xsl:when test="child::node()[last()]/self::text() and child::node()[1]/self::text()"/>
-                    <xsl:when test="not(parent::*)  or parent::teix:egXML">
+                    <xsl:when
+                        test="child::node()[last()]/self::text() and child::node()[1]/self::text()"/>
+                    <xsl:when test="not(parent::*) or parent::teix:egXML">
                         <xsl:call-template name="verbatim-lineBreak">
                             <xsl:with-param name="id">23</xsl:with-param>
                         </xsl:call-template>
                     </xsl:when>
-                    <xsl:when test="child::node()[last()]/self::text()[normalize-space(.)='']">
+                    <xsl:when test="child::node()[last()]/self::text()[normalize-space(.) = '']">
                         <xsl:call-template name="verbatim-lineBreak">
                             <xsl:with-param name="id">3</xsl:with-param>
                         </xsl:call-template>
@@ -498,7 +501,7 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="name"/>
         <xsl:param name="special"/>
         <xsl:choose>
-            <xsl:when test="$special='true'">
+            <xsl:when test="$special = 'true'">
                 <xsl:value-of disable-output-escaping="yes" select="$highlightStartElementName"/>
                 <xsl:value-of select="$name"/>
                 <xsl:value-of disable-output-escaping="yes" select="$highlightEndElementName"/>
@@ -515,18 +518,18 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="verbatim-makeElementName">
         <xsl:param name="start"/>
         <xsl:param name="highlight"/>
-    <!-- get namespace prefix -->
+        <!-- get namespace prefix -->
         <xsl:variable name="ns-prefix">
             <xsl:call-template name="verbatim-getNamespacePrefix"/>
         </xsl:variable>
         <xsl:variable name="highlightMe">
             <xsl:choose>
-                <xsl:when test="$highlight=local-name()">true</xsl:when>
+                <xsl:when test="$highlight = local-name()">true</xsl:when>
                 <xsl:otherwise>false</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="namespace-uri()='http://www.tei-c.org/ns/Examples'">
+            <xsl:when test="namespace-uri() = 'http://www.tei-c.org/ns/Examples'">
                 <xsl:call-template name="verbatim-createElement">
                     <xsl:with-param name="name" select="local-name(.)"/>
                     <xsl:with-param name="special">
@@ -534,7 +537,7 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="contains($omitNSDecls,namespace-uri())">
+            <xsl:when test="contains($omitNSDecls, namespace-uri())">
                 <xsl:call-template name="verbatim-createElement">
                     <xsl:with-param name="name" select="local-name(.)"/>
                     <xsl:with-param name="special">
@@ -542,26 +545,26 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="$useNSPrefixes='true' and string-length($ns-prefix) &gt; 0">
+            <xsl:when test="$useNSPrefixes = 'true' and string-length($ns-prefix) &gt; 0">
                 <xsl:call-template name="verbatim-createElement">
-                    <xsl:with-param name="name" select="concat($ns-prefix,':',local-name(.))"/>
+                    <xsl:with-param name="name" select="concat($ns-prefix, ':', local-name(.))"/>
                     <xsl:with-param name="special">
                         <xsl:value-of select="$highlightMe"/>
                     </xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="not(namespace-uri()='')">
+            <xsl:when test="not(namespace-uri() = '')">
                 <xsl:call-template name="verbatim-createElement">
                     <xsl:with-param name="name" select="local-name(.)"/>
                     <xsl:with-param name="special">
                         <xsl:value-of select="$highlightMe"/>
                     </xsl:with-param>
                 </xsl:call-template>
-                <xsl:if test="$start='true' and not(namespace-uri()=namespace-uri(..))">
+                <xsl:if test="$start = 'true' and not(namespace-uri() = namespace-uri(..))">
                     <xsl:text> xmlns="</xsl:text>
                     <xsl:value-of select="namespace-uri()"/>
                     <xsl:text>"</xsl:text>
-          <!-- 
+                    <!-- 
 	       <xsl:call-template name="verbatim-lineBreak">
 	       <xsl:with-param name="id">5</xsl:with-param>
 	       </xsl:call-template>
@@ -582,7 +585,8 @@ of this software, even if advised of the possibility of such damage.
         </xsl:choose>
     </xsl:template>
     <xsl:template name="verbatim-makeIndent">
-        <xsl:variable name="depth" select="count(ancestor::*[not(namespace-uri()='http://www.tei-c.org/ns/1.0')])"/>
+        <xsl:variable name="depth"
+            select="count(ancestor::*[not(namespace-uri() = 'http://www.tei-c.org/ns/1.0')])"/>
         <xsl:call-template name="verbatim-makeSpace">
             <xsl:with-param name="d">
                 <xsl:value-of select="$depth"/>
@@ -591,11 +595,11 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template name="verbatim-makeSpace">
         <xsl:param name="d"/>
-        <xsl:if test="number($d)&gt;1">
+        <xsl:if test="number($d) &gt; 1">
             <xsl:value-of select="$spaceCharacter"/>
             <xsl:call-template name="verbatim-makeSpace">
                 <xsl:with-param name="d">
-                    <xsl:value-of select="$d -1"/>
+                    <xsl:value-of select="$d - 1"/>
                 </xsl:with-param>
             </xsl:call-template>
         </xsl:if>
@@ -606,7 +610,8 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:value-of select="."/>
             </xsl:for-each>
         </xsl:variable>
-        <xsl:if test="count(../@*)&gt;$attsOnSameLine or      string-length($L)&gt;$attLength or     ancestor::tei:cell[not(@rend='wovenodd-col2')] or     namespace-uri()='http://www.w3.org/2005/11/its' or     string-length(.)+string-length(name(.)) &gt;     $attLength">
+        <xsl:if
+            test="count(../@*) &gt; $attsOnSameLine or string-length($L) &gt; $attLength or ancestor::tei:cell[not(@rend = 'wovenodd-col2')] or namespace-uri() = 'http://www.w3.org/2005/11/its' or string-length(.) + string-length(name(.)) &gt; $attLength">
             <xsl:call-template name="verbatim-lineBreak">
                 <xsl:with-param name="id">5</xsl:with-param>
             </xsl:call-template>
@@ -639,7 +644,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template match="@*" mode="attributetext">
         <xsl:choose>
-            <xsl:when test="string-length(.)&gt;$attLength and contains(.,' ')">
+            <xsl:when test="string-length(.) &gt; $attLength and contains(., ' ')">
                 <xsl:call-template name="verbatim-reformatText">
                     <xsl:with-param name="sofar">0</xsl:with-param>
                     <xsl:with-param name="indent">
@@ -655,18 +660,18 @@ of this software, even if advised of the possibility of such damage.
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="text()|comment()|processing-instruction()" mode="ns"/>
+    <xsl:template match="text() | comment() | processing-instruction()" mode="ns"/>
     <xsl:template match="*" mode="ns">
         <xsl:for-each select="namespace::*">
             <xsl:variable name="ns" select="."/>
             <xsl:choose>
-                <xsl:when test=".='http://relaxng.org/ns/structure/1.0'"/>
-                <xsl:when test=".='http://www.w3.org/2001/XInclude'"/>
-                <xsl:when test=".='http://www.tei-c.org/ns/Examples'"/>
-                <xsl:when test=".='http://www.ascc.net/xml/schematron'"/>
-                <xsl:when test=".='http://relaxng.org/ns/compatibility/annotations/1.0'"/>
-                <xsl:when test="name(.)=''"/>
-                <xsl:when test=".='http://www.w3.org/XML/1998/namespace'"/>
+                <xsl:when test=". = 'http://relaxng.org/ns/structure/1.0'"/>
+                <xsl:when test=". = 'http://www.w3.org/2001/XInclude'"/>
+                <xsl:when test=". = 'http://www.tei-c.org/ns/Examples'"/>
+                <xsl:when test=". = 'http://www.ascc.net/xml/schematron'"/>
+                <xsl:when test=". = 'http://relaxng.org/ns/compatibility/annotations/1.0'"/>
+                <xsl:when test="name(.) = ''"/>
+                <xsl:when test=". = 'http://www.w3.org/XML/1998/namespace'"/>
                 <xsl:otherwise>
                     <ns name="{name(.)}" value="{.}"/>
                 </xsl:otherwise>
@@ -687,7 +692,7 @@ of this software, even if advised of the possibility of such damage.
         </xsl:variable>
         <xsl:for-each select="$ns/all/names">
             <xsl:for-each-group select="ns" group-by="@name">
-                <xsl:if test="key('NSUsed',@value)">
+                <xsl:if test="key('NSUsed', @value)">
                     <xsl:call-template name="verbatim-lineBreak">
                         <xsl:with-param name="id">22</xsl:with-param>
                     </xsl:call-template>
@@ -706,8 +711,8 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="here"/>
         <xsl:for-each select="in-scope-prefixes($here)">
             <xsl:choose>
-                <xsl:when test=".=''"/>
-                <xsl:when test="$ns=namespace-uri-for-prefix(.,$here)">
+                <xsl:when test=". = ''"/>
+                <xsl:when test="$ns = namespace-uri-for-prefix(., $here)">
                     <xsl:value-of select="."/>
                 </xsl:when>
             </xsl:choose>

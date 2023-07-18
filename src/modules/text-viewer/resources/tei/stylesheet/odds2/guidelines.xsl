@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink rng tei teix xhtml a html xs xsl" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="xlink rng tei teix xhtml a html xs xsl" version="2.0">
     <xsl:param name="outputDir">
         <xsl:value-of select="$directory"/>/OEBPS</xsl:param>
-    <xsl:key name="EXAMPLES" match="teix:*[ancestor::teix:egXML]" use="concat(ancestor::tei:div[last()]/@xml:id,local-name())"/>
-    <xsl:key name="HEADS" match="tei:head" use="concat(@xml:lang,@corresp)"/>
-    <xsl:key name="BACKLINKS" match="teix:egXML[@corresp]" use="substring(@corresp,2)"/>
-    <xsl:key name="BACKLINKS" match="tei:ptr[@type='cit']" use="substring(@target,2)"/>
+    <xsl:key name="EXAMPLES" match="teix:*[ancestor::teix:egXML]"
+        use="concat(ancestor::tei:div[last()]/@xml:id, local-name())"/>
+    <xsl:key name="HEADS" match="tei:head" use="concat(@xml:lang, @corresp)"/>
+    <xsl:key name="BACKLINKS" match="teix:egXML[@corresp]" use="substring(@corresp, 2)"/>
+    <xsl:key name="BACKLINKS" match="tei:ptr[@type = 'cit']" use="substring(@target, 2)"/>
     <heads xmlns="http://www.tei-c.org/ns/1.0">
         <head xml:lang="fr" corresp="AB">À propos des Principes directeurs</head>
         <head xml:lang="fr" corresp="AI">Mécanismes analytiques simples</head>
@@ -42,8 +49,8 @@
         <head xml:lang="fr" corresp="TS">Transcriptions de la parole</head>
         <head xml:lang="fr" corresp="USE">Utiliser la TEI</head>
         <head xml:lang="fr" corresp="VE">Poésie</head>
-        <head xml:lang="fr" corresp="WD">Représentation des caractères et des
-glyphes non standard</head>
+        <head xml:lang="fr" corresp="WD">Représentation des caractères et des glyphes non
+            standard</head>
         <head xml:lang="zh-tw" corresp="AI">簡易分析機制</head>
         <head xml:lang="zh-tw" corresp="CE">確定程度與不確定程度</head>
         <head xml:lang="zh-tw" corresp="CO">所有TEI文件所通用的元素</head>
@@ -94,8 +101,7 @@ glyphes non standard</head>
         <head xml:lang="it" corresp="GD">Grafici, reti e alberi</head>
         <head xml:lang="it" corresp="TS">Trascrizione del parlato</head>
         <head xml:lang="it" corresp="TD">Documentazione dei moduli TEI</head>
-        <head xml:lang="it" corresp="ST">Dichiarazione di classi, tipi di dati e macro
-</head>
+        <head xml:lang="it" corresp="ST">Dichiarazione di classi, tipi di dati e macro </head>
         <head xml:lang="it" corresp="TC">Apparato critico</head>
         <head xml:lang="it" corresp="DS">Struttura standard del testo</head>
         <head xml:lang="it" corresp="PH">Trascrizione di fonti primarie</head>
@@ -124,7 +130,8 @@ glyphes non standard</head>
         <head xml:lang="pt" corresp="GD">Grafos, redes, e árvores</head>
         <head xml:lang="pt" corresp="TS">Transcrição do discurso</head>
         <head xml:lang="pt" corresp="TD">Documentação dos módulos TEI</head>
-        <head xml:lang="pt" corresp="ST">Declaraçoes de classes, tipos de dados, e macros disponíveis em todos os módulos  TEI </head>
+        <head xml:lang="pt" corresp="ST">Declaraçoes de classes, tipos de dados, e macros
+            disponíveis em todos os módulos TEI </head>
         <head xml:lang="pt" corresp="TC">Critical Apparatus</head>
         <head xml:lang="pt" corresp="DS">Estrutura do texto por defeito</head>
         <head xml:lang="pt" corresp="PH">Transcrição de fontes primárias</head>
@@ -137,7 +144,7 @@ glyphes non standard</head>
         <head xml:lang="pt" corresp="REF-CLASSES-MODEL">Classes do modelo</head>
         <head xml:lang="pt" corresp="REF-ELEMENTS">Elementos</head>
         <head xml:lang="pt" corresp="REF-MACROS">Tipos de dados e outras macros</head>
-    <!-- keywords on the interface for Module -->
+        <!-- keywords on the interface for Module -->
         <head xml:lang="ja" corresp="AI">分析モジュール</head>
         <head xml:lang="ja" corresp="CE">確信度モジュール</head>
         <head xml:lang="ja" corresp="CO">コアモジュール</head>
@@ -158,7 +165,7 @@ glyphes non standard</head>
         <head xml:lang="ja" corresp="DS">テキスト構造モジュール</head>
         <head xml:lang="ja" corresp="PH">転記モジュール</head>
         <head xml:lang="ja" corresp="VE">韻文モジュール</head>
-    <!-- keywords on the interface for toc -->
+        <!-- keywords on the interface for toc -->
         <head xml:lang="ja" corresp="COL">コロフォン</head>
         <head xml:lang="ja" corresp="dedication">献辞</head>
         <head xml:lang="ja" corresp="PREF">序文と謝辞</head>
@@ -166,7 +173,7 @@ glyphes non standard</head>
         <head xml:lang="ja" corresp="REF-CLASSES-ATTS">属性クラス</head>
         <head xml:lang="ja" corresp="REF-CLASSES-MODEL">モデルクラス</head>
         <head xml:lang="ja" corresp="REF-ELEMENTS">要素</head>
-    <!-- keywords on the interface for app.D -->
+        <!-- keywords on the interface for app.D -->
         <head xml:lang="ja" corresp="REF-MACROS">データ型とマクロ</head>
         <head xml:lang="ja" corresp="ST">TEIの基礎構造</head>
         <head xml:lang="ja" corresp="AB">本ガイドラインについて</head>
@@ -188,7 +195,8 @@ glyphes non standard</head>
         <head xml:lang="es" corresp="GD">Grafos, redes y árboles</head>
         <head xml:lang="es" corresp="TS">Habla transcrita</head>
         <head xml:lang="es" corresp="TD">Documentación de los módulos de TEI</head>
-        <head xml:lang="es" corresp="ST">Declaraciones de clases, tipos de datos y macros disponibles para todos los módulos TEI</head>
+        <head xml:lang="es" corresp="ST">Declaraciones de clases, tipos de datos y macros
+            disponibles para todos los módulos TEI</head>
         <head xml:lang="es" corresp="TC">Aparato crítico</head>
         <head xml:lang="es" corresp="DS">Estructura textual por defecto</head>
         <head xml:lang="es" corresp="PH">Transcripción de fuentes primarias</head>
@@ -199,7 +207,7 @@ glyphes non standard</head>
         <head xml:lang="es" corresp="REF-ELEMENTS">Elementos</head>
         <head xml:lang="es" corresp="SG">Una introducción suave a XML</head>
         <head xml:lang="es" corresp="USE">Cómo usar TEI</head>
-    <!-- Catalan -->
+        <!-- Catalan -->
         <head xml:lang="ca" corresp="AI">Mecanismes analítics simples</head>
         <head xml:lang="ca" corresp="CE">Certitud i incertitud</head>
         <head xml:lang="ca" corresp="CO">Elements comuns a tots els documents TEI</head>
@@ -216,7 +224,8 @@ glyphes non standard</head>
         <head xml:lang="ca" corresp="GD">Grafs, xarxes i arbres</head>
         <head xml:lang="ca" corresp="TS">Parla transcrita</head>
         <head xml:lang="ca" corresp="TD">Documentació dels mòduls de TEI</head>
-        <head xml:lang="ca" corresp="ST">Declaracions de classes, tipus de dades i macros disponibles per a tots els mòduls TEI</head>
+        <head xml:lang="ca" corresp="ST">Declaracions de classes, tipus de dades i macros
+            disponibles per a tots els mòduls TEI</head>
         <head xml:lang="ca" corresp="TC">Aparat crític</head>
         <head xml:lang="ca" corresp="DS">Estructura textual per defecte</head>
         <head xml:lang="ca" corresp="PH">Transcripció de fonts primàries</head>
@@ -227,7 +236,7 @@ glyphes non standard</head>
         <head xml:lang="ca" corresp="REF-ELEMENTS">Elements</head>
         <head xml:lang="ca" corresp="SG">Una introducció suau a XML</head>
         <head xml:lang="ca" corresp="USE">Com usar TEI</head>
-    <!-- German -->
+        <!-- German -->
         <head xml:lang="de" corresp="AI">Einfache Analyse-Mechanismen</head>
         <head xml:lang="de" corresp="CE">Zuverlässigkeit und Unsicherheit</head>
         <head xml:lang="de" corresp="CO">Elemente, verfügbar in allen TEI-Dokumenten</head>
@@ -244,7 +253,8 @@ glyphes non standard</head>
         <head xml:lang="de" corresp="GD">Graphen, Netze und Bäume</head>
         <head xml:lang="de" corresp="TS">Transkription gesprochener Sprache</head>
         <head xml:lang="de" corresp="TD">Dokumentation zu den TEI-Modulen</head>
-        <head xml:lang="de" corresp="ST">Deklaration zu Klassen, Datentypen und Makros, verfügbar in allen TEI-Modulen</head>
+        <head xml:lang="de" corresp="ST">Deklaration zu Klassen, Datentypen und Makros, verfügbar in
+            allen TEI-Modulen</head>
         <head xml:lang="de" corresp="TC">Kritische Apparate</head>
         <head xml:lang="de" corresp="DS">Standard-Textstruktur</head>
         <head xml:lang="de" corresp="PH">Transkription von Primärquellen</head>
@@ -280,15 +290,17 @@ glyphes non standard</head>
         <head xml:lang="kr" corresp="REF-MACROS">자료유형과 다른 마크로</head>
     </heads>
     <xsl:template name="processTEIHook">
-        <xsl:for-each select="key('ELEMENTDOCS',1)">
+        <xsl:for-each select="key('ELEMENTDOCS', 1)">
             <xsl:variable name="me" select="@ident"/>
             <xsl:variable name="documentationLanguage">
                 <xsl:call-template name="generateDoc"/>
             </xsl:variable>
             <xsl:variable name="langs">
-                <xsl:value-of select="concat(normalize-space($documentationLanguage),' ')"/>
+                <xsl:value-of select="concat(normalize-space($documentationLanguage), ' ')"/>
             </xsl:variable>
-            <xsl:result-document doctype-public="{$doctypePublic}" doctype-system="{$doctypeSystem}" encoding="{$outputEncoding}" href="{$outputDir}/examples-{$me}.html" method="{$outputMethod}">
+            <xsl:result-document doctype-public="{$doctypePublic}" doctype-system="{$doctypeSystem}"
+                encoding="{$outputEncoding}" href="{$outputDir}/examples-{$me}.html"
+                method="{$outputMethod}">
                 <html>
                     <xsl:comment>THIS IS A GENERATED FILE. DO NOT EDIT (10) </xsl:comment>
                     <head>
@@ -304,7 +316,8 @@ glyphes non standard</head>
                             </xsl:call-template>
                         </title>
                         <xsl:call-template name="includeCSS"/>
-                        <meta content="Text Encoding Initiative Consortium XSLT stylesheets" name="generator"/>
+                        <meta content="Text Encoding Initiative Consortium XSLT stylesheets"
+                            name="generator"/>
                         <meta name="DC.Title">
                             <xsl:attribute name="content">
                                 <xsl:call-template name="i18n">
@@ -318,7 +331,8 @@ glyphes non standard</head>
                                 </xsl:call-template>
                             </xsl:attribute>
                         </meta>
-                        <meta content="application/xhtml+xml; charset=utf-8" http-equiv="Content-Type"/>
+                        <meta content="application/xhtml+xml; charset=utf-8"
+                            http-equiv="Content-Type"/>
                         <xsl:call-template name="includeJavascript"/>
                         <xsl:call-template name="javascriptHook"/>
                     </head>
@@ -349,22 +363,21 @@ glyphes non standard</head>
                                     <xsl:with-param name="langs" select="$langs"/>
                                 </xsl:call-template>
                             </h3>
-                            <p>These search results reproduce every example of the
-	      use of <xsl:text>&lt;</xsl:text>
+                            <p>These search results reproduce every example of the use of <xsl:text>&lt;</xsl:text>
                                 <xsl:value-of select="$me"/>
                                 <xsl:text>&gt;</xsl:text> in the Guidelines, including all localised
-	      and translated versions. In some cases, the examples have been drawn
-	      from discussion of other elements in the Guidelines and illustrating
-	      the use of <xsl:text>&lt;</xsl:text>
+                                and translated versions. In some cases, the examples have been drawn
+                                from discussion of other elements in the Guidelines and illustrating
+                                the use of <xsl:text>&lt;</xsl:text>
                                 <xsl:value-of select="$me"/>
-                                <xsl:text>&gt;</xsl:text>
-	      is not the main 
-	      focus of the passage in question. In other cases, examples may be direct 
-	      translations of each other, and hence identical from the perspective of 
-	      their encoding.</p>
+                                <xsl:text>&gt;</xsl:text> is not the main focus of the passage in
+                                question. In other cases, examples may be direct translations of
+                                each other, and hence identical from the perspective of their
+                                encoding.</p>
                             <xsl:variable name="items">
                                 <xsl:for-each select="/tei:TEI/tei:text/tei:body/tei:div">
-                                    <xsl:if test="count(key('EXAMPLES',concat(@xml:id,$me)))&gt;0">
+                                    <xsl:if
+                                        test="count(key('EXAMPLES', concat(@xml:id, $me))) &gt; 0">
                                         <li>
                                             <a href="#{@xml:id}">
                                                 <xsl:call-template name="header"/>
@@ -373,52 +386,59 @@ glyphes non standard</head>
                                     </xsl:if>
                                 </xsl:for-each>
                             </xsl:variable>
-                            <xsl:if test="count($items/html:li)&gt;0">
+                            <xsl:if test="count($items/html:li) &gt; 0">
                                 <ul>
                                     <xsl:copy-of select="$items/html:li"/>
                                 </ul>
                             </xsl:if>
                             <xsl:for-each select="/tei:TEI/tei:text/tei:body/tei:div">
-                                <xsl:if test="count(key('EXAMPLES',concat(@xml:id,$me)))&gt;0">
+                                <xsl:if test="count(key('EXAMPLES', concat(@xml:id, $me))) &gt; 0">
                                     <h4 id="{@xml:id}">
                                         <xsl:call-template name="header"/>
                                     </h4>
-                                    <xsl:for-each select="key('EXAMPLES',concat(@xml:id,$me))">
+                                    <xsl:for-each select="key('EXAMPLES', concat(@xml:id, $me))">
                                         <xsl:variable name="pos">
                                             <xsl:number level="any" from="teix:egXML"/>
                                         </xsl:variable>
-                                        <xsl:if test="number($pos)=1 or ($me='egXML' and         number($pos)=2)">
+                                        <xsl:if
+                                            test="number($pos) = 1 or ($me = 'egXML' and number($pos) = 2)">
                                             <hr/>
                                             <p>
                                                 <xsl:choose>
-                                                    <xsl:when test="ancestor::tei:elementSpec">
-                                                        <a href="ref-{ancestor::tei:elementSpec/@ident}.html">
-                                                            <xsl:text>&lt;</xsl:text>
-                                                            <xsl:value-of select="ancestor::tei:elementSpec/@ident"/>
-                                                            <xsl:text>&gt;</xsl:text>
-                                                        </a>
-                                                    </xsl:when>
-                                                    <xsl:when test="ancestor::tei:classSpec">
-                                                        <a href="ref-{ancestor::tei:classSpec/@ident}.html">
-                                                            <xsl:value-of select="ancestor::tei:classSpec/@ident"/>
-                                                        </a>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:for-each select="ancestor::tei:div[@xml:id and tei:head][1]">
-                                                            <a>
-                                                                <xsl:attribute name="href">
-                                                                    <xsl:apply-templates select="." mode="generateLink"/>
-                                                                </xsl:attribute>
-                                                                <xsl:call-template name="header"/>
-                                                            </a>
-                                                        </xsl:for-each>
-                                                    </xsl:otherwise>
+                                                  <xsl:when test="ancestor::tei:elementSpec">
+                                                  <a
+                                                  href="ref-{ancestor::tei:elementSpec/@ident}.html">
+                                                  <xsl:text>&lt;</xsl:text>
+                                                  <xsl:value-of
+                                                  select="ancestor::tei:elementSpec/@ident"/>
+                                                  <xsl:text>&gt;</xsl:text>
+                                                  </a>
+                                                  </xsl:when>
+                                                  <xsl:when test="ancestor::tei:classSpec">
+                                                  <a
+                                                  href="ref-{ancestor::tei:classSpec/@ident}.html">
+                                                  <xsl:value-of
+                                                  select="ancestor::tei:classSpec/@ident"/>
+                                                  </a>
+                                                  </xsl:when>
+                                                  <xsl:otherwise>
+                                                  <xsl:for-each
+                                                  select="ancestor::tei:div[@xml:id and tei:head][1]">
+                                                  <a>
+                                                  <xsl:attribute name="href">
+                                                  <xsl:apply-templates select="."
+                                                  mode="generateLink"/>
+                                                  </xsl:attribute>
+                                                  <xsl:call-template name="header"/>
+                                                  </a>
+                                                  </xsl:for-each>
+                                                  </xsl:otherwise>
                                                 </xsl:choose>
                                             </p>
                                             <xsl:apply-templates select="ancestor::teix:egXML">
                                                 <xsl:with-param name="simple">true</xsl:with-param>
                                                 <xsl:with-param name="highlight">
-                                                    <xsl:value-of select="$me"/>
+                                                  <xsl:value-of select="$me"/>
                                                 </xsl:with-param>
                                             </xsl:apply-templates>
                                         </xsl:if>
@@ -442,19 +462,20 @@ glyphes non standard</head>
         <meta name="Language" content="{$documentationLanguage}"/>
         <meta name="DC.Title" content="{$title}"/>
         <meta name="DC.Language" content="(SCHEME=iso639) {$documentationLanguage}"/>
-        <meta name="DC.Creator" content="TEI, Oxford University Computing Services, 13 Banbury Road, Oxford OX2 6NN, United Kingdom"/>
+        <meta name="DC.Creator"
+            content="TEI, Oxford University Computing Services, 13 Banbury Road, Oxford OX2 6NN, United Kingdom"/>
         <meta name="DC.Creator.Address" content="tei@oucs.ox.ac.uk"/>
         <meta content="application/xhtml+xml; charset=utf-8" http-equiv="Content-Type"/>
     </xsl:template>
     <xsl:template name="startDivHook">
-        <xsl:if test="$outputTarget='epub' and not(parent::tei:div)">
+        <xsl:if test="$outputTarget = 'epub' and not(parent::tei:div)">
             <h2>
                 <xsl:call-template name="header"/>
             </h2>
         </xsl:if>
-        <xsl:if test="not(parent::tei:div) or not(local-name(preceding::*[1])='head')">
+        <xsl:if test="not(parent::tei:div) or not(local-name(preceding::*[1]) = 'head')">
             <div>
-                <xsl:if test="$outputTarget='epub'">
+                <xsl:if test="$outputTarget = 'epub'">
                     <xsl:attribute name="style">
                         <xsl:text>margin-top: 0em;</xsl:text>
                     </xsl:attribute>
@@ -503,7 +524,7 @@ glyphes non standard</head>
                                     </xsl:call-template>
                                 </a>
                             </xsl:when>
-                            <xsl:when test="self::tei:classSpec[@type='model']">
+                            <xsl:when test="self::tei:classSpec[@type = 'model']">
                                 <a class="navigation" href="REF-CLASSES-MODEL.html">
                                     <xsl:call-template name="showHead">
                                         <xsl:with-param name="ID">
@@ -512,7 +533,7 @@ glyphes non standard</head>
                                     </xsl:call-template>
                                 </a>
                             </xsl:when>
-                            <xsl:when test="self::tei:classSpec[@type='atts']">
+                            <xsl:when test="self::tei:classSpec[@type = 'atts']">
                                 <a class="navigation" href="REF-CLASSES-ATTS.html">
                                     <xsl:call-template name="showHead">
                                         <xsl:with-param name="ID">
@@ -544,7 +565,7 @@ glyphes non standard</head>
                 <xsl:with-param name="currentID" select="$currentID"/>
                 <xsl:with-param name="minimal">true</xsl:with-param>
             </xsl:call-template>
-            <xsl:if test="$currentID=''">
+            <xsl:if test="$currentID = ''">
                 <div style="float:left; margin:4%;">
                     <h3>
                         <xsl:call-template name="i18n">
@@ -559,7 +580,7 @@ glyphes non standard</head>
                                 </xsl:call-template>
                             </a>
                         </li>
-                        <xsl:if test="$outputTarget='html'">
+                        <xsl:if test="$outputTarget = 'html'">
                             <li>
                                 <a href="../../en/Guidelines.pdf">PDF</a>
                             </li>
@@ -567,19 +588,22 @@ glyphes non standard</head>
                         <li>
                             <a href="http://www.tei-c.org/Council/tcw06.xml">
                                 <xsl:call-template name="i18n">
-                                    <xsl:with-param name="word">Getting the most recent version</xsl:with-param>
+                                    <xsl:with-param name="word">Getting the most recent
+                                        version</xsl:with-param>
                                 </xsl:call-template>
                             </a>
                         </li>
                         <li>
                             <a href="http://tei.svn.sourceforge.net/viewvc/tei/">
                                 <xsl:call-template name="i18n">
-                                    <xsl:with-param name="word">Sourceforge Subversion Repository</xsl:with-param>
+                                    <xsl:with-param name="word">Sourceforge Subversion
+                                        Repository</xsl:with-param>
                                 </xsl:call-template>
                             </a>
                         </li>
                         <li>
-                            <a href="http://sourceforge.net/tracker/?group_id=106328&amp;func=browse">
+                            <a
+                                href="http://sourceforge.net/tracker/?group_id=106328&amp;func=browse">
                                 <xsl:call-template name="i18n">
                                     <xsl:with-param name="word">BugsFeatures</xsl:with-param>
                                 </xsl:call-template>
@@ -685,11 +709,13 @@ glyphes non standard</head>
                         </xsl:with-param>
                     </xsl:call-template>
                 </xsl:variable>
-                <xsl:if test="$verbose='true'">
+                <xsl:if test="$verbose = 'true'">
                     <xsl:message>Opening file <xsl:value-of select="$outName"/>
                     </xsl:message>
                 </xsl:if>
-                <xsl:result-document doctype-public="{$doctypePublic}" omit-xml-declaration="yes" doctype-system="{$doctypeSystem}" encoding="{$outputEncoding}" href="{$outName}" method="{$outputMethod}">
+                <xsl:result-document doctype-public="{$doctypePublic}" omit-xml-declaration="yes"
+                    doctype-system="{$doctypeSystem}" encoding="{$outputEncoding}" href="{$outName}"
+                    method="{$outputMethod}">
                     <html>
                         <xsl:comment>THIS IS A GENERATED FILE. DO NOT EDIT (8) </xsl:comment>
                         <head>
@@ -697,9 +723,11 @@ glyphes non standard</head>
                                 <xsl:value-of select="$name"/>
                             </title>
                             <xsl:call-template name="includeCSS"/>
-                            <meta content="Text Encoding Initiative Consortium XSLT stylesheets" name="generator"/>
+                            <meta content="Text Encoding Initiative Consortium XSLT stylesheets"
+                                name="generator"/>
                             <meta content="{$name}" name="DC.Title"/>
-                            <meta content="application/xhtml+xml; charset=utf-8" http-equiv="Content-Type"/>
+                            <meta content="application/xhtml+xml; charset=utf-8"
+                                http-equiv="Content-Type"/>
                             <xsl:call-template name="includeJavascript"/>
                             <xsl:call-template name="javascriptHook"/>
                         </head>
@@ -713,7 +741,7 @@ glyphes non standard</head>
                         </body>
                     </html>
                 </xsl:result-document>
-                <xsl:if test="$verbose='true'">
+                <xsl:if test="$verbose = 'true'">
                     <xsl:message>Closing file <xsl:value-of select="$outName"/>
                     </xsl:message>
                 </xsl:if>
@@ -739,8 +767,8 @@ glyphes non standard</head>
         </xsl:for-each>
         <xsl:for-each select="document('')">
             <xsl:choose>
-                <xsl:when test="key('HEADS',concat($documentationLanguage,$ID))">
-                    <xsl:for-each select="key('HEADS',concat($documentationLanguage,$ID))">
+                <xsl:when test="key('HEADS', concat($documentationLanguage, $ID))">
+                    <xsl:for-each select="key('HEADS', concat($documentationLanguage, $ID))">
                         <xsl:value-of select="."/>
                     </xsl:for-each>
                 </xsl:when>
@@ -756,9 +784,9 @@ glyphes non standard</head>
     </xsl:template>
     <xsl:template name="numberFrontDiv">
         <xsl:param name="minimal"/>
-        <xsl:if test="count(ancestor::tei:div)&lt;2">
+        <xsl:if test="count(ancestor::tei:div) &lt; 2">
             <xsl:number count="tei:div" format="i.1.1." level="multiple"/>
-            <xsl:if test="$minimal='false'">
+            <xsl:if test="$minimal = 'false'">
                 <xsl:value-of select="$numberSpacer"/>
             </xsl:if>
         </xsl:if>
@@ -785,7 +813,7 @@ glyphes non standard</head>
         <xsl:call-template name="pageHeader"/>
     </xsl:template>
     <xsl:template match="tei:titlePage">
-    <!--
+        <!--
 	<div class="titlePage">
 	<h1>
 	<xsl:apply-templates
@@ -809,10 +837,10 @@ glyphes non standard</head>
         <xsl:variable name="myName">
             <xsl:value-of select="local-name(.)"/>
         </xsl:variable>
-        <xsl:if test="tei:head or $autoHead='true'">
+        <xsl:if test="tei:head or $autoHead = 'true'">
             <xsl:variable name="Depth">
                 <xsl:choose>
-                    <xsl:when test="not($forcedepth='')">
+                    <xsl:when test="not($forcedepth = '')">
                         <xsl:value-of select="$forcedepth"/>
                     </xsl:when>
                     <xsl:otherwise>
@@ -828,7 +856,7 @@ glyphes non standard</head>
             </xsl:variable>
             <li>
                 <xsl:choose>
-                    <xsl:when test="$outputTarget='epub'"/>
+                    <xsl:when test="$outputTarget = 'epub'"/>
                     <xsl:when test="not(ancestor::tei:div) and tei:div">
                         <xsl:attribute name="class">
                             <xsl:text>tocTree</xsl:text>
@@ -862,7 +890,7 @@ glyphes non standard</head>
             </li>
         </xsl:if>
     </xsl:template>
-  <!--
+    <!--
   <xsl:template name="mainTOC">
     <xsl:param name="force"/>
 
@@ -925,14 +953,14 @@ glyphes non standard</head>
   </xsl:template>
 
 -->
-    <xsl:template match="tei:divGen[@type='toc']">
+    <xsl:template match="tei:divGen[@type = 'toc']">
         <xsl:call-template name="mainPage"/>
     </xsl:template>
     <xsl:template name="javascriptHook">
         <script type="text/javascript" src="jquery-1.2.6.min.js">
             <xsl:comment>JQuery</xsl:comment>
         </script>
-    <!--
+        <!--
     <script type="text/javascript" src="jquery.treeview.js">	
        <xsl:comment>JQuery treeview</xsl:comment>
     </script>
@@ -941,20 +969,23 @@ glyphes non standard</head>
             <xsl:comment>JQuery columnlist</xsl:comment>
         </script>
         <script type="text/javascript">
-        $(function() {
-         $('ul.attrefs-class').columnizeList({cols:3,width:30,unit:'%'});
-         $('ul.attrefs-element').columnizeList({cols:3,width:30,unit:'%'});
-         $(".displayRelaxButton").click(function() {
-           $(this).parent().find('.RNG_XML').toggle();
-           $(this).parent().find('.RNG_Compact').toggle();
-         });
-         $(".tocTree .showhide").click(function() {
-          $(this).find(".tocShow,.tocHide").toggle();
-          $(this).parent().find("ul.continuedtoc").toggle();
-	  });
-        })
-    </script>
-        <xsl:if test="not($googleAnalytics='')">
+            $(function () {
+                $('ul.attrefs-class').columnizeList({
+                    cols: 3, width: 30, unit: '%'
+                });
+                $('ul.attrefs-element').columnizeList({
+                    cols: 3, width: 30, unit: '%'
+                });
+                $(".displayRelaxButton").click(function () {
+                    $(this).parent().find('.RNG_XML').toggle();
+                    $(this).parent().find('.RNG_Compact').toggle();
+                });
+                $(".tocTree .showhide").click(function () {
+                    $(this).find(".tocShow,.tocHide").toggle();
+                    $(this).parent().find("ul.continuedtoc").toggle();
+                });
+            })</script>
+        <xsl:if test="not($googleAnalytics = '')">
             <script type="text/javascript" src="udm-all.js">
                 <xsl:comment>UDM</xsl:comment>
             </script>
@@ -990,17 +1021,17 @@ glyphes non standard</head>
     <xsl:template name="myi18n">
         <xsl:param name="word"/>
         <xsl:choose>
-            <xsl:when test="$word='previousWord'">
+            <xsl:when test="$word = 'previousWord'">
                 <span class="icon">
                     <xsl:text>« </xsl:text>
                 </span>
             </xsl:when>
-            <xsl:when test="$word='upWord'">
+            <xsl:when test="$word = 'upWord'">
                 <span class="icon">
                     <xsl:text>↑ </xsl:text>
                 </span>
             </xsl:when>
-            <xsl:when test="$word='nextWord'">
+            <xsl:when test="$word = 'nextWord'">
                 <span class="icon">
                     <xsl:text>» </xsl:text>
                 </span>
@@ -1008,13 +1039,13 @@ glyphes non standard</head>
         </xsl:choose>
     </xsl:template>
 
-  <!-- only use listBibl if its in right language-->
-    <xsl:template match="tei:listBibl[@xml:lang and not($documentationLanguage=@xml:lang)]"/>
+    <!-- only use listBibl if its in right language-->
+    <xsl:template match="tei:listBibl[@xml:lang and not($documentationLanguage = @xml:lang)]"/>
 
-  <!-- link from bibl back to egXML -->
-    <xsl:template match="tei:listBibl/tei:biblStruct|tei:listBibl/tei:bibl">
+    <!-- link from bibl back to egXML -->
+    <xsl:template match="tei:listBibl/tei:biblStruct | tei:listBibl/tei:bibl">
         <xsl:apply-templates/>
-        <xsl:for-each select="key('BACKLINKS',@xml:id)">
+        <xsl:for-each select="key('BACKLINKS', @xml:id)">
             <xsl:if test="self::teix:egXML">
                 <xsl:text> </xsl:text>
                 <a class="link_return" title="Go back to text">
@@ -1027,14 +1058,15 @@ glyphes non standard</head>
         </xsl:for-each>
     </xsl:template>
     <xsl:template name="egXMLEndHook">
-        <xsl:if test="@corresp and id(substring(@corresp,2))">
+        <xsl:if test="@corresp and id(substring(@corresp, 2))">
             <div style="float: right;">
                 <a>
                     <xsl:attribute name="href">
-                        <xsl:apply-templates mode="generateLink" select="id(substring(@corresp,2))"/>
+                        <xsl:apply-templates mode="generateLink" select="id(substring(@corresp, 2))"
+                        />
                     </xsl:attribute>
                     <xsl:text>bibliography</xsl:text>
-          <!--	  <span class="citLink">✍</span>-->
+                    <!--	  <span class="citLink">✍</span>-->
                 </a>
                 <xsl:text>&#160;</xsl:text>
             </div>
@@ -1051,11 +1083,12 @@ glyphes non standard</head>
         </xsl:for-each>
     </xsl:template>
     <xsl:template name="figureHook">
-        <xsl:if test="@corresp and id(substring(@corresp,2))">
+        <xsl:if test="@corresp and id(substring(@corresp, 2))">
             <div style="float: right;">
                 <a>
                     <xsl:attribute name="href">
-                        <xsl:apply-templates mode="generateLink" select="id(substring(@corresp,2))"/>
+                        <xsl:apply-templates mode="generateLink" select="id(substring(@corresp, 2))"
+                        />
                     </xsl:attribute>
                     <xsl:text>bibliography</xsl:text>
                 </a>
@@ -1072,27 +1105,26 @@ glyphes non standard</head>
             <xsl:call-template name="generateAuthor"/>
         </xsl:variable>
         <div class="stdfooter">
-            <xsl:if test="$outputTarget='html'">
-                <p>
-	  [<a href="../../en/html/{$file}.html">English</a>]
-	  [<a href="../../de/html/{$file}.html">Deutsch</a>]
-	  [<a href="../../es/html/{$file}.html">Español</a>]
-	  [<a href="../../it/html/{$file}.html">Italiano</a>]
-	  [<a href="../../fr/html/{$file}.html">Français</a>]
-	  [<a href="../../ja/html/{$file}.html">日本語</a>]
-	  [<a href="../../kr/html/{$file}.html">한국어</a>]
-	  [<a href="../../zh-tw/html/{$file}.html">中文</a>]
-	</p>
+            <xsl:if test="$outputTarget = 'html'">
+                <p> [<a href="../../en/html/{$file}.html">English</a>] [<a
+                        href="../../de/html/{$file}.html">Deutsch</a>] [<a
+                        href="../../es/html/{$file}.html">Español</a>] [<a
+                        href="../../it/html/{$file}.html">Italiano</a>] [<a
+                        href="../../fr/html/{$file}.html">Français</a>] [<a
+                        href="../../ja/html/{$file}.html">日本語</a>] [<a
+                        href="../../kr/html/{$file}.html">한국어</a>] [<a
+                        href="../../zh-tw/html/{$file}.html">中文</a>] </p>
             </xsl:if>
             <hr/>
-            <xsl:if test="$linkPanel='true'">
+            <xsl:if test="$linkPanel = 'true'">
                 <div class="footer">
-                    <xsl:if test="not($parentURL='')">
+                    <xsl:if test="not($parentURL = '')">
                         <a class="{$style}" href="{$parentURL}">
                             <xsl:value-of select="$parentWords"/>
                         </a>
                     </xsl:if>
-                    <xsl:if test="$searchURL"> | <a class="{$style}" href="{$searchURL}" target="_top">
+                    <xsl:if test="$searchURL"> | <a class="{$style}" href="{$searchURL}"
+                            target="_top">
                             <xsl:call-template name="searchWords"/>
                         </a>
                     </xsl:if>
@@ -1103,18 +1135,19 @@ glyphes non standard</head>
                 </div>
                 <hr/>
             </xsl:if>
-            <xsl:for-each select="ancestor-or-self::tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability">
+            <xsl:for-each
+                select="ancestor-or-self::tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability">
                 <div class="availability">
                     <xsl:apply-templates/>
                     <xsl:choose>
-                        <xsl:when test="count(tei:licence)&gt;1">
+                        <xsl:when test="count(tei:licence) &gt; 1">
                             <ol>
                                 <xsl:for-each select="tei:licence">
                                     <li>
                                         <xsl:choose>
                                             <xsl:when test="@target">
                                                 <a href="{@target}">
-                                                    <xsl:value-of select="@target"/>
+                                                  <xsl:value-of select="@target"/>
                                                 </a>
                                             </xsl:when>
                                             <xsl:otherwise>
@@ -1140,14 +1173,16 @@ glyphes non standard</head>
             <address>
                 <br/>
                 <xsl:text>Version </xsl:text>
-                <xsl:value-of select="ancestor-or-self::tei:TEI/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition"/>
+                <xsl:value-of
+                    select="ancestor-or-self::tei:TEI/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition"/>
                 <xsl:text>This page generated on </xsl:text>
                 <xsl:call-template name="whatsTheDate"/>
             </address>
         </div>
-        <xsl:if test="not($googleAnalytics='')">
+        <xsl:if test="not($googleAnalytics = '')">
             <script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
-        <!-- load google analytics -->
+        <!--
+                load google analytics//-->
             </script>
             <script type="text/javascript">
                 <xsl:text>_uacct = "</xsl:text>
@@ -1160,8 +1195,8 @@ glyphes non standard</head>
     </xsl:template>
     <xsl:template name="guidelinesTop">
         <xsl:param name="name"/>
-        <xsl:if test="$outputTarget='html'">
-            <xsl:if test="not($googleAnalytics='')">
+        <xsl:if test="$outputTarget = 'html'">
+            <xsl:if test="not($googleAnalytics = '')">
                 <script type="text/javascript" src="udm-dom.js">
                     <xsl:comment>&#160;</xsl:comment>
                 </script>
@@ -1174,36 +1209,46 @@ glyphes non standard</head>
                 <div id="banner">
                     <img src="Images/banner.jpg" alt="Text Encoding Initiative logo and banner"/>
                 </div>
-                <xsl:if test="not($googleAnalytics='')">
+                <xsl:if test="not($googleAnalytics = '')">
                     <xsl:copy-of select="document('staticnav.xml')/html:ul"/>
                 </xsl:if>
             </div>
             <div id="searchbox" style="float:left;">
                 <form action="http://www.google.com/search" method="get">
                     <fieldset>
-                        <input style="color:#225588;" value="" maxlength="255" size="20" name="q" type="text"/>&#160;<select name="sitesearch">
+                        <input style="color:#225588;" value="" maxlength="255" size="20" name="q"
+                            type="text"/>&#160;<select name="sitesearch">
                             <option value="http://www.tei-c.org/">Entire site</option>
-                            <option value="http://www.tei-c.org/release/doc/tei-p5-doc/{$documentationLanguage}/html/" selected="selected">P5 Guidelines
-	    <xsl:choose>
-                                    <xsl:when test="$documentationLanguage='en'"> — English</xsl:when>
-                                    <xsl:when test="$documentationLanguage='de'"> — Deutsch</xsl:when>
-                                    <xsl:when test="$documentationLanguage='es'"> — Español</xsl:when>
-                                    <xsl:when test="$documentationLanguage='it'"> — Italiano</xsl:when>
-                                    <xsl:when test="$documentationLanguage='fr'"> — Français</xsl:when>
-                                    <xsl:when test="$documentationLanguage='ja'"> — 日本語</xsl:when>
-                                    <xsl:when test="$documentationLanguage='kr'"> — 한국어</xsl:when>
-                                    <xsl:when test="$documentationLanguage='zh-tw'"> — 中文</xsl:when>
+                            <option
+                                value="http://www.tei-c.org/release/doc/tei-p5-doc/{$documentationLanguage}/html/"
+                                selected="selected">P5 Guidelines <xsl:choose>
+                                    <xsl:when test="$documentationLanguage = 'en'"> —
+                                        English</xsl:when>
+                                    <xsl:when test="$documentationLanguage = 'de'"> —
+                                        Deutsch</xsl:when>
+                                    <xsl:when test="$documentationLanguage = 'es'"> —
+                                        Español</xsl:when>
+                                    <xsl:when test="$documentationLanguage = 'it'"> —
+                                        Italiano</xsl:when>
+                                    <xsl:when test="$documentationLanguage = 'fr'"> —
+                                        Français</xsl:when>
+                                    <xsl:when test="$documentationLanguage = 'ja'"> — 日本語</xsl:when>
+                                    <xsl:when test="$documentationLanguage = 'kr'"> — 한국어</xsl:when>
+                                    <xsl:when test="$documentationLanguage = 'zh-tw'"> —
+                                        中文</xsl:when>
                                 </xsl:choose>
                             </option>
-                            <option value="http://www.tei-c.org/Guidelines/P4/html/">P4 Guidelines</option>
-                        </select>&#160;<input style="font-size:100%; font-weight:bold;      color:#FFFFFF; background-color:#225588; height: 2em;" value="Search" type="submit"/>
+                            <option value="http://www.tei-c.org/Guidelines/P4/html/">P4
+                                Guidelines</option>
+                        </select>&#160;<input
+                            style="font-size:100%; font-weight:bold;      color:#FFFFFF; background-color:#225588; height: 2em;"
+                            value="Search" type="submit"/>
                     </fieldset>
                 </form>
             </div>
         </xsl:if>
         <div class="mainhead">
-            <h1>P5: 
-    <xsl:call-template name="i18n">
+            <h1>P5: <xsl:call-template name="i18n">
                     <xsl:with-param name="word">GuidelinesTEI</xsl:with-param>
                 </xsl:call-template>
             </h1>
@@ -1211,7 +1256,7 @@ glyphes non standard</head>
     </xsl:template>
     <xsl:template name="generateParentsByAttribute">
         <xsl:variable name="this" select="@ident"/>
-        <xsl:if test="count(key('ATTREFS-CLASS',$this))&gt;0">
+        <xsl:if test="count(key('ATTREFS-CLASS', $this)) &gt; 0">
             <div>
                 <xsl:call-template name="i18n">
                     <xsl:with-param name="word">
@@ -1220,7 +1265,7 @@ glyphes non standard</head>
                 </xsl:call-template>
                 <xsl:text>: </xsl:text>
                 <ul class="attrefs-class">
-                    <xsl:for-each select="key('ATTREFS-CLASS',$this)">
+                    <xsl:for-each select="key('ATTREFS-CLASS', $this)">
                         <xsl:sort select="ancestor::tei:classSpec/@ident"/>
                         <xsl:sort select="@ident"/>
                         <li>
@@ -1242,7 +1287,7 @@ glyphes non standard</head>
                 </ul>
             </div>
         </xsl:if>
-        <xsl:if test="count(key('ATTREFS-ELEMENT',$this))&gt;0">
+        <xsl:if test="count(key('ATTREFS-ELEMENT', $this)) &gt; 0">
             <div>
                 <xsl:call-template name="i18n">
                     <xsl:with-param name="word">
@@ -1251,7 +1296,7 @@ glyphes non standard</head>
                 </xsl:call-template>
                 <xsl:text>: </xsl:text>
                 <ul class="attrefs-element">
-                    <xsl:for-each select="key('ATTREFS-ELEMENT',$this)">
+                    <xsl:for-each select="key('ATTREFS-ELEMENT', $this)">
                         <xsl:sort select="ancestor::tei:elementSpec/@ident"/>
                         <xsl:sort select="@ident"/>
                         <li>
@@ -1267,7 +1312,7 @@ glyphes non standard</head>
                             </xsl:for-each>
                             <xsl:text>/@</xsl:text>
                             <xsl:for-each select="ancestor::tei:attDef">
-                                <xsl:value-of select="(tei:altIdent|@ident)[last()]"/>
+                                <xsl:value-of select="(tei:altIdent | @ident)[last()]"/>
                             </xsl:for-each>
                             <xsl:call-template name="showSpace"/>
                         </li>

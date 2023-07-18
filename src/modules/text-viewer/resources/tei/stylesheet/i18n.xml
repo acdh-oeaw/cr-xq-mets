@@ -487,9 +487,12 @@
     </entry>
     <entry>
         <key>In addition to global attributes and those inherited from</key>
-        <text xml:lang="en" lang3="eng">In addition to global attributes and those inherited from</text>
-        <text xml:lang="de" lang3="deu">Neben global gültigen Attributen und solchen ererbt von ...</text>
-        <text xml:lang="ro" lang3="ron">În plus faţă de atributele globale şi de cele moştenite din</text>
+        <text xml:lang="en" lang3="eng">In addition to global attributes and those inherited
+            from</text>
+        <text xml:lang="de" lang3="deu">Neben global gültigen Attributen und solchen ererbt von
+            ...</text>
+        <text xml:lang="ro" lang3="ron">În plus faţă de atributele globale şi de cele moştenite
+            din</text>
         <text xml:lang="fr" lang3="fra">En complément des attributs globaux et hérités</text>
         <text xml:lang="pt" lang3="por">Para além de atributos globais e herdados de...</text>
         <text xml:lang="it" lang3="ita">Oltre agli attributi globali e a quelli ereditati da</text>
@@ -502,11 +505,14 @@
         <text xml:lang="pl" lang3="pol">Oprócz atrybutów globalnych i odziedziczonych po...</text>
         <text xml:lang="hi" lang3="hin">Vishva Guna Ke Alava Aur Jinmese Adhikara Paya</text>
         <text xml:lang="th" lang3="tha">คุณสมบัติโดยรวมและที่เทียบโอนมาเพิ่มเติม</text>
-        <text xml:lang="nl" lang3="nld">Naast de globale attributen en de attributen geërfd van</text>
-        <text xml:lang="ru" lang3="rus">Вдобавок к глобальным атрибутам и атрибутам, унаследованным от</text>
+        <text xml:lang="nl" lang3="nld">Naast de globale attributen en de attributen geërfd
+            van</text>
+        <text xml:lang="ru" lang3="rus">Вдобавок к глобальным атрибутам и атрибутам, унаследованным
+            от</text>
         <text xml:lang="tr" lang3="tur">Genel ve ~'dan kalıtsal özniteliklerden başka</text>
         <text xml:lang="bg" lang3="bul">Освен глобалните атрибути и атрибутите, наследени от</text>
-        <text xml:lang="el" lang3="ell">Πλήν τωνχαρακτηριστικών καθολικών και κληρονομικών από</text>
+        <text xml:lang="el" lang3="ell">Πλήν τωνχαρακτηριστικών καθολικών και κληρονομικών
+            από</text>
         <text xml:lang="ca" lang3="cat">A més dels atributs globals i els heretats de</text>
         <text xml:lang="es" lang3="spa">Además de los atributos globales y los heredados de</text>
         <text xml:lang="ko" lang3="kor">&gt;전체 속성 및 상속 속성에 부가</text>
@@ -1720,15 +1726,22 @@
     </entry>
     <entry>
         <key>GuidelinesTEI</key>
-        <text xml:lang="ca" lang3="cat">Directrius per a la codificació i l'intercanvi de textos electrònics</text>
+        <text xml:lang="ca" lang3="cat">Directrius per a la codificació i l'intercanvi de textos
+            electrònics</text>
         <text xml:lang="ja" lang3="jpn">TEIガイドライン</text>
-        <text xml:lang="en" lang3="eng">Guidelines for Electronic Text Encoding and Interchange</text>
-        <text xml:lang="fr" lang3="fra">Principes directeurs pour l'encodage et l'échange de textes électroniques</text>
+        <text xml:lang="en" lang3="eng">Guidelines for Electronic Text Encoding and
+            Interchange</text>
+        <text xml:lang="fr" lang3="fra">Principes directeurs pour l'encodage et l'échange de textes
+            électroniques</text>
         <text xml:lang="zh-tw">TEI指引</text>
-        <text xml:lang="it" lang3="ita">Linee guida per la codifica e l'interscambio del testo elettronico</text>
-        <text xml:lang="pt" lang3="por">Instruçoes para Electronic Text Encoding and Interchange</text>
-        <text xml:lang="es" lang3="spa">Directrices para la codificación y el intercambio de textos electrónicos</text>
-        <text xml:lang="de" lang3="deu">Richtlinien für die Auszeichnung und den Austausch elektronischer Texte</text>
+        <text xml:lang="it" lang3="ita">Linee guida per la codifica e l'interscambio del testo
+            elettronico</text>
+        <text xml:lang="pt" lang3="por">Instruçoes para Electronic Text Encoding and
+            Interchange</text>
+        <text xml:lang="es" lang3="spa">Directrices para la codificación y el intercambio de textos
+            electrónicos</text>
+        <text xml:lang="de" lang3="deu">Richtlinien für die Auszeichnung und den Austausch
+            elektronischer Texte</text>
         <text xml:lang="ko" lang3="kor">전자 텍스트 부호화 및 교환에 대한 지침</text>
     </entry>
     <entry>

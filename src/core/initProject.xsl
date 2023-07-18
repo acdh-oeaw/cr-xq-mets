@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.loc.gov/METS/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:mets="http://www.loc.gov/METS/" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" exclude-result-prefixes="xs xd" version="2.0">
+<xsl:stylesheet xmlns="http://www.loc.gov/METS/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mods="http://www.loc.gov/mods/v3"
+    xmlns:mets="http://www.loc.gov/METS/" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd"
+    exclude-result-prefixes="xs xd" version="2.0">
     <xd:doc scope="stylesheet">
         <xd:desc>
             <xd:p>
@@ -40,7 +47,8 @@
             <xsl:value-of select="$RECORDSTATUS"/>
         </xsl:attribute>
     </xsl:template>
-    <xsl:template match="mets:metsHdr/mets:agent[@ROLE='CREATOR' and @OTHERTYPE='software']/*[name() = ('name','note')]">
+    <xsl:template
+        match="mets:metsHdr/mets:agent[@ROLE = 'CREATOR' and @OTHERTYPE = 'software']/*[name() = ('name', 'note')]">
         <xsl:copy>
             <xsl:copy-of select="@*"/>
             <xsl:choose>
@@ -53,7 +61,8 @@
             </xsl:choose>
         </xsl:copy>
     </xsl:template>
-    <xsl:template match="mets:metsHdr/mets:agent[@ROLE='CREATOR' and @TYPE='INDIVIDUAL']/mets:name">
+    <xsl:template
+        match="mets:metsHdr/mets:agent[@ROLE = 'CREATOR' and @TYPE = 'INDIVIDUAL']/mets:name">
         <xsl:copy>
             <xsl:copy-of select="@*"/>
             <xsl:value-of select="$CREATOR.INDIVIDUAL.NAME"/>

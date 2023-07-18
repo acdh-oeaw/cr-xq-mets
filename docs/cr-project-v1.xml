@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <METS_Profile xmlns="http://www.loc.gov/METS_Profile/v2"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.loc.gov/METS_Profile/v2 http://www.loc.gov/standards/mets/profile_docs/mets.profile.v2-0.xsd" STATUS="provisional" REGISTRATION="unregistered">
-    <URI LOCTYPE="URL" ASSIGNEDBY="local">http://www.github.com/vronk/SADE/docs/cr-project-v1.xml</URI>
+    xsi:schemaLocation="http://www.loc.gov/METS_Profile/v2 http://www.loc.gov/standards/mets/profile_docs/mets.profile.v2-0.xsd"
+    STATUS="provisional" REGISTRATION="unregistered">
+    <URI LOCTYPE="URL" ASSIGNEDBY="local"
+        >http://www.github.com/vronk/SADE/docs/cr-project-v1.xml</URI>
     <title>CR-Project</title>
     <abstract>This METS profile describes the data structure of a cr-project file, the base model for any cr-xq project used by the cr-xq content repository.</abstract>
     <date>2013-09-25T10:14:25.858+02:00</date>
@@ -14,100 +16,100 @@
         <email>daniel.schopper@oeaw.ac.at</email>
     </contact>
     <profile_context>
-        <resource_model></resource_model>
+        <resource_model/>
         <uses>
-            <use></use>
+            <use/>
         </uses>
     </profile_context>
     <external_schema>
         <name>TEI Header</name>
-        <URL></URL>
-        <context></context>
-        <note></note>
+        <URL/>
+        <context/>
+        <note/>
     </external_schema>
-    <description_rules></description_rules>
+    <description_rules/>
     <controlled_vocabularies>
         <vocabulary>
-            <name></name>
-            <maintenance_agency></maintenance_agency>
-            <URI></URI>
+            <name/>
+            <maintenance_agency/>
+            <URI/>
             <values>
-                <value></value>
+                <value/>
             </values>
-            <context></context>
-            <description></description>
+            <context/>
+            <description/>
         </vocabulary>
     </controlled_vocabularies>
     <structural_requirements>
         <metsRootElement>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </metsRootElement>
         <metsHdr>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </metsHdr>
         <dmdSec>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </dmdSec>
         <amdSec>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </amdSec>
         <fileSec>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </fileSec>
         <structMap>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </structMap>
         <structLink>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </structLink>
         <behaviorSec>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </behaviorSec>
         <multiSection>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </multiSection>
@@ -115,25 +117,25 @@
     <technical_requirements>
         <content_files>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </content_files>
         <behavior_files>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </behavior_files>
         <metadata_files>
             <requirement>
-                <description></description>
+                <description/>
                 <tests>
-                    <test TESTLANGUAGE=""></test>
+                    <test TESTLANGUAGE=""/>
                 </tests>
             </requirement>
         </metadata_files>
@@ -144,6 +146,6 @@
         <URI>http://www.github.com/vronk/SADE/</URI>
     </tool>
     <Appendix NUMBER="1">
-        <mets xmlns="http://www.loc.gov/METS"></mets>
+        <mets xmlns="http://www.loc.gov/METS"/>
     </Appendix>
 </METS_Profile>

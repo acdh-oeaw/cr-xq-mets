@@ -8,14 +8,14 @@
         mainpage -->
     <param key="template">bootstrap</param>
     <param key="data-dir">/db/data/prj1/</param>
-    
-    
+
+
     <!-- parameters for MODULE -->
     <module key="other-module">
         <param key="param1" value="module-wide"/>
         <param key="param2">module-wide</param>
     </module>
-    
+
     <!-- parameters for specific function call in the specific containers -->
     <container key="">
         <function key="test:main">

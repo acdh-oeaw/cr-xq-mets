@@ -1,41 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples"
+    xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="xlink dbk rng tei teix xhtml a html xs xsl" version="2.0">
     <xsl:import href="../../../latex2/tei.xsl"/>
     <xsl:import href="../../../common2/msdescription.xsl"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: to.xsl 9669 2011-11-07 19:17:54Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
@@ -52,21 +45,11 @@ of this software, even if advised of the possibility of such damage.
     <xsl:param name="parSkip">3pt</xsl:param>
     <xsl:param name="parIndent">3pt</xsl:param>
     <xsl:variable name="docClass">article</xsl:variable>
-    <xsl:template name="latexPreambleHook">
-\usepackage{makeidx}
-\makeindex
-\defaultfontfeatures{Scale=MatchLowercase}
-%\setromanfont{DejaVu Serif}
-%\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}
-%\setmonofont[Scale=0.9]{Lucida Sans Typewriter}
-%\setsansfont[Scale=0.85]{Lucida Sans}
-%\setromanfont{Times New Roman}
-\setromanfont{Minion Pro}
-%\setmonofont{CourierStd}
-\setsansfont{Myriad Pro}
-\setlength{\headheight}{14pt}
-</xsl:template>
+    <xsl:template name="latexPreambleHook"> \usepackage{makeidx} \makeindex
+        \defaultfontfeatures{Scale=MatchLowercase} %\setromanfont{DejaVu Serif} %\setsansfont{DejaVu
+        Sans} \setmonofont{DejaVu Sans Mono} %\setmonofont[Scale=0.9]{Lucida Sans Typewriter}
+        %\setsansfont[Scale=0.85]{Lucida Sans} %\setromanfont{Times New Roman} \setromanfont{Minion
+        Pro} %\setmonofont{CourierStd} \setsansfont{Myriad Pro} \setlength{\headheight}{14pt} </xsl:template>
     <xsl:template name="latexBegin">
         <xsl:text>\makeatletter
 \thispagestyle{plain}</xsl:text>
@@ -188,7 +171,8 @@ of this software, even if advised of the possibility of such damage.
 \makeatother </xsl:text>
         <xsl:call-template name="beginDocumentHook"/>
     </xsl:template>
-    <xsl:param name="latexGeometryOptions">twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param>
+    <xsl:param name="latexGeometryOptions"
+        >twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param>
     <xsl:template match="tei:byline"/>
     <xsl:template match="tei:titlePage/tei:note"/>
     <xsl:template match="tei:list">
@@ -207,29 +191,21 @@ of this software, even if advised of the possibility of such damage.
         <xsl:text>
 </xsl:text>
         <xsl:choose>
-            <xsl:when test="$level=1">\section</xsl:when>
-            <xsl:when test="$level=2">\subsection</xsl:when>
-            <xsl:when test="$level=3">\subsubsection</xsl:when>
-            <xsl:when test="$level=4">\paragraph</xsl:when>
+            <xsl:when test="$level = 1">\section</xsl:when>
+            <xsl:when test="$level = 2">\subsection</xsl:when>
+            <xsl:when test="$level = 3">\subsubsection</xsl:when>
+            <xsl:when test="$level = 4">\paragraph</xsl:when>
         </xsl:choose>
         <xsl:text>{</xsl:text>
         <xsl:value-of select="$heading"/>
         <xsl:text>}
 </xsl:text>
         <xsl:choose>
-            <xsl:when test="$implicitBlock='true'">
-\par
-	    <xsl:apply-templates/>
-\par
-	</xsl:when>
+            <xsl:when test="$implicitBlock = 'true'"> \par <xsl:apply-templates/> \par </xsl:when>
             <xsl:when test="*">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:otherwise>
-\par
-	    <xsl:apply-templates/>
-\par
-	</xsl:otherwise>
+            <xsl:otherwise> \par <xsl:apply-templates/> \par </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
     <xsl:template name="msInline">
@@ -238,12 +214,12 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="after"/>
         <xsl:value-of select="$before"/>
         <xsl:choose>
-            <xsl:when test="$style='italic'">
+            <xsl:when test="$style = 'italic'">
                 <xsl:text>\textit{</xsl:text>
                 <xsl:value-of select="normalize-space(.)"/>
                 <xsl:text>}</xsl:text>
             </xsl:when>
-            <xsl:when test="$style='bold'">
+            <xsl:when test="$style = 'bold'">
                 <xsl:text>\textbf{</xsl:text>
                 <xsl:value-of select="normalize-space(.)"/>
                 <xsl:text>}</xsl:text>

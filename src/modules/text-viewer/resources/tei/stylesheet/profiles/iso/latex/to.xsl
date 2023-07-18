@@ -1,41 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="xlink dbk rng tei teix xhtml a html  xs xsl" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples"
+    xmlns:dbk="http://docbook.org/ns/docbook" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="xlink dbk rng tei teix xhtml a html  xs xsl" version="2.0">
     <xsl:import href="../../../latex2/tei.xsl"/>
     <xsl:import href="../isoutils.xsl"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: to.xsl 9669 2011-11-07 19:17:54Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
@@ -50,21 +43,11 @@ of this software, even if advised of the possibility of such damage.
     <xsl:param name="tocNumberSuffix">.\ </xsl:param>
     <xsl:param name="numberSpacer">\ </xsl:param>
     <xsl:variable name="docClass">article</xsl:variable>
-    <xsl:template name="latexPreambleHook">
-\usepackage{makeidx}
-\makeindex
-\defaultfontfeatures{Scale=MatchLowercase}
-%\setromanfont{DejaVu Serif}
-%\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}
-%\setmonofont[Scale=0.9]{Lucida Sans Typewriter}
-%\setsansfont[Scale=0.85]{Lucida Sans}
-%\setromanfont{Times New Roman}
-\setromanfont{Minion Pro}
-%\setmonofont{CourierStd}
-\setsansfont{Myriad Pro}
-\setlength{\headheight}{14pt}
-</xsl:template>
+    <xsl:template name="latexPreambleHook"> \usepackage{makeidx} \makeindex
+        \defaultfontfeatures{Scale=MatchLowercase} %\setromanfont{DejaVu Serif} %\setsansfont{DejaVu
+        Sans} \setmonofont{DejaVu Sans Mono} %\setmonofont[Scale=0.9]{Lucida Sans Typewriter}
+        %\setsansfont[Scale=0.85]{Lucida Sans} %\setromanfont{Times New Roman} \setromanfont{Minion
+        Pro} %\setmonofont{CourierStd} \setsansfont{Myriad Pro} \setlength{\headheight}{14pt} </xsl:template>
     <xsl:template name="latexBegin">
         <xsl:text>\makeatletter
 \thispagestyle{plain}</xsl:text>
@@ -186,7 +169,8 @@ of this software, even if advised of the possibility of such damage.
 \makeatother </xsl:text>
         <xsl:call-template name="beginDocumentHook"/>
     </xsl:template>
-    <xsl:param name="latexGeometryOptions">twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param>
+    <xsl:param name="latexGeometryOptions"
+        >twoside,letterpaper,lmargin=1in,rmargin=1in,tmargin=1in,bmargin=1in</xsl:param>
     <xsl:template match="tei:byline"/>
     <xsl:template match="tei:titlePage/tei:note"/>
     <xsl:template match="tei:list">
@@ -204,27 +188,27 @@ of this software, even if advised of the possibility of such damage.
             <xsl:value-of select="@rend"/>
         </xsl:variable>
         <xsl:text>{</xsl:text>
-        <xsl:if test="$r='rules'">|</xsl:if>
+        <xsl:if test="$r = 'rules'">|</xsl:if>
         <xsl:choose>
-            <xsl:when test="@xml:id='tab-conformance'">
+            <xsl:when test="@xml:id = 'tab-conformance'">
                 <xsl:text>P{.35\textwidth}llllllll</xsl:text>
             </xsl:when>
-            <xsl:when test="@xml:id='tab-content-models'">
+            <xsl:when test="@xml:id = 'tab-content-models'">
                 <xsl:text>P{.25\textwidth}P{.15\textwidth}P{.5\textwidth}</xsl:text>
             </xsl:when>
-            <xsl:when test="@xml:id='tab-mods'">
+            <xsl:when test="@xml:id = 'tab-mods'">
                 <xsl:text>L{.15\textwidth}P{.4\textwidth}L{.35\textwidth}</xsl:text>
             </xsl:when>
-            <xsl:when test="@rend='wovenodd'">
+            <xsl:when test="@rend = 'wovenodd'">
                 <xsl:text>L{.15\textwidth}P{.85\textwidth}</xsl:text>
             </xsl:when>
-            <xsl:when test="@rend='attList'">
+            <xsl:when test="@rend = 'attList'">
                 <xsl:text>L{.15\textwidth}P{.65\textwidth}</xsl:text>
             </xsl:when>
-            <xsl:when test="@rend='attDef'">
+            <xsl:when test="@rend = 'attDef'">
                 <xsl:text>L{.1\textwidth}P{.5\textwidth}</xsl:text>
             </xsl:when>
-            <xsl:when test="@rend='valList'">
+            <xsl:when test="@rend = 'valList'">
                 <xsl:text>L{.1\textwidth}P{.4\textwidth}</xsl:text>
             </xsl:when>
             <xsl:when test="@preamble">
@@ -238,7 +222,7 @@ of this software, even if advised of the possibility of such damage.
 </xsl:text>
         <xsl:call-template name="tableHline"/>
         <xsl:choose>
-            <xsl:when test="tei:head and not(@rend='display')">
+            <xsl:when test="tei:head and not(@rend = 'display')">
                 <xsl:if test="not(ancestor::tei:table)">
                     <xsl:text>\endfirsthead </xsl:text>
                     <xsl:text>\multicolumn{</xsl:text>
@@ -253,9 +237,9 @@ of this software, even if advised of the possibility of such damage.
             </xsl:when>
             <xsl:otherwise> </xsl:otherwise>
         </xsl:choose>
-        <xsl:if test="$r='rules'">\hline </xsl:if>
+        <xsl:if test="$r = 'rules'">\hline </xsl:if>
         <xsl:apply-templates/>
-        <xsl:if test="$r='rules'">
+        <xsl:if test="$r = 'rules'">
             <xsl:text>\\ \hline </xsl:text>
         </xsl:if>
     </xsl:template>
@@ -272,9 +256,9 @@ of this software, even if advised of the possibility of such damage.
         </xsl:if>
     </xsl:template>
     <xsl:template name="egXMLEndHook">
-        <xsl:if test="@corresp and id(substring(corresp,2))">
+        <xsl:if test="@corresp and id(substring(corresp, 2))">
             <xsl:text>\egxmlcite{</xsl:text>
-            <xsl:for-each select="id(substring(corresp,2))">
+            <xsl:for-each select="id(substring(corresp, 2))">
                 <xsl:text>Source: \cite{</xsl:text>
                 <xsl:value-of select="@xml:id"/>
                 <xsl:text>}</xsl:text>
@@ -295,7 +279,7 @@ of this software, even if advised of the possibility of such damage.
             <xsl:text>&gt;</xsl:text>
             <xsl:text>|</xsl:text>
             <xsl:choose>
-                <xsl:when test="ancestor::tei:div[@xml:id=$Me]">
+                <xsl:when test="ancestor::tei:div[@xml:id = $Me]">
                     <xsl:text>mainexampleindex</xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
@@ -305,7 +289,7 @@ of this software, even if advised of the possibility of such damage.
             <xsl:text>}</xsl:text>
             <xsl:for-each select="@*">
                 <xsl:choose>
-                    <xsl:when test="starts-with(name(),'xml:')"/>
+                    <xsl:when test="starts-with(name(), 'xml:')"/>
                     <xsl:otherwise>
                         <xsl:text>\index{</xsl:text>
                         <xsl:value-of select="name()"/>
@@ -320,12 +304,8 @@ of this software, even if advised of the possibility of such damage.
             </xsl:for-each>
         </xsl:for-each>
     </xsl:template>
-    <xsl:template name="latexEnd">
-\cleardoublepage
-\pdfbookmark[0]{Index}{INDEX}
-\hypertarget{INDEX}{}
-\printindex
-</xsl:template>
+    <xsl:template name="latexEnd"> \cleardoublepage \pdfbookmark[0]{Index}{INDEX}
+        \hypertarget{INDEX}{} \printindex </xsl:template>
     <xsl:template name="numberFrontDiv">
         <xsl:param name="minimal"/>
     </xsl:template>
@@ -336,133 +316,59 @@ of this software, even if advised of the possibility of such damage.
         <xsl:text>:</xsl:text>
         <xsl:call-template name="getiso_year"/>
     </xsl:template>
-    <xsl:template name="printTitleAndLogo">
-\begin{raggedleft}
-\begin{LARGE}
-\hfill\begin{tabular}{lr}
-INTERNATIONAL  &amp; \bfseries <xsl:call-template name="getiso_authority"/>\\
-STANDARD &amp;\bfseries <xsl:call-template name="getiso_documentNumber"/>-<xsl:call-template name="getiso_partNumber"/>\\\\
-\end{tabular}
-\end{LARGE}
-\end{raggedleft}
-
-\hrule
-\vskip4pt
-
-\begin{Large}\upshape\noindent
-<xsl:apply-templates select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang='en']"/>
-\end{Large}
-
-\vskip 12pt
-
-\begin{large}\itshape\noindent
-<xsl:apply-templates select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang='fr']"/>
-\end{large}
-
-\vskip4pt
-\hrule
-
-\tableofcontents
-</xsl:template>
-    <xsl:template match="tei:titleStmt/tei:title[@type='main']">
+    <xsl:template name="printTitleAndLogo"> \begin{raggedleft} \begin{LARGE}
+        \hfill\begin{tabular}{lr} INTERNATIONAL &amp; \bfseries <xsl:call-template
+            name="getiso_authority"/>\\ STANDARD &amp;\bfseries <xsl:call-template
+            name="getiso_documentNumber"/>-<xsl:call-template name="getiso_partNumber"/>\\\\
+        \end{tabular} \end{LARGE} \end{raggedleft} \hrule \vskip4pt \begin{Large}\upshape\noindent
+            <xsl:apply-templates
+            select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang = 'en']"/>
+        \end{Large} \vskip 12pt \begin{large}\itshape\noindent <xsl:apply-templates
+            select="/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang = 'fr']"/>
+        \end{large} \vskip4pt \hrule \tableofcontents </xsl:template>
+    <xsl:template match="tei:titleStmt/tei:title[@type = 'main']">
         <xsl:value-of select="normalize-space(.)"/>
         <xsl:text> </xsl:text>
     </xsl:template>
-    <xsl:template name="latexLayout">
-\paperwidth211mm
-\paperheight297mm
-\def\@pnumwidth{1.55em}
-\def\@tocrmarg {2.55em}
-\def\@dotsep{4.5}
-\setcounter{tocdepth}{3}
-\clubpenalty=8000
-\emergencystretch 3em
-\hbadness=4000
-\hyphenpenalty=400
-\pretolerance=750
-\tolerance=2000
-\vbadness=4000
-\widowpenalty=10000
-<xsl:if test="not($docClass='letter')">
-\renewcommand\section{\@startsection {section}{1}{\z@}%
-     {-1.75ex \@plus -0.5ex \@minus -.2ex}%
-     {0.5ex \@plus .2ex}%
-     {\reset@font\Large\bfseries\sffamily}}
-\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
-     {-1.75ex\@plus -0.5ex \@minus- .2ex}%
-     {0.5ex \@plus .2ex}%
-     {\reset@font\Large\sffamily}}
-\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
-     {-1.5ex\@plus -0.35ex \@minus -.2ex}%
-     {0.5ex \@plus .2ex}%
-     {\reset@font\large\sffamily}}
-\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
-     {-1ex \@plus-0.35ex \@minus -0.2ex}%
-     {0.5ex \@plus .2ex}%
-     {\reset@font\normalsize\sffamily}}
-\renewcommand\subparagraph{\@startsection{subparagraph}{5}{\parindent}%
-     {1.5ex \@plus1ex \@minus .2ex}%
-     {-1em}%
-     {\reset@font\normalsize\bfseries}}
-
-</xsl:if>
-\def\l@section#1#2{\addpenalty{\@secpenalty} \addvspace{1.0em plus 1pt}
- \@tempdima 1.5em \begingroup
- \parindent \z@ \rightskip \@pnumwidth 
- \parfillskip -\@pnumwidth 
- \bfseries \leavevmode #1\hfil \hbox to\@pnumwidth{\hss #2}\par
- \endgroup}
-\def\l@subsection{\@dottedtocline{2}{1.5em}{2.3em}}
-\def\l@subsubsection{\@dottedtocline{3}{3.8em}{3.2em}}
-\def\l@paragraph{\@dottedtocline{4}{7.0em}{4.1em}}
-\def\l@subparagraph{\@dottedtocline{5}{10em}{5em}}
-\@ifundefined{c@section}{\newcounter{section}}{}
-\@ifundefined{c@chapter}{\newcounter{chapter}}{}
-\newif\if@mainmatter 
-\@mainmattertrue
-\def\frontmatter{%
-  \pagenumbering{roman}
-  \setcounter{secnumdepth}{0}
-  \def\@chapapp{}%
-}
-\def\mainmatter{%
-  \cleardoublepage
-  \setcounter{chapter}{0}
-  \setcounter{section}{0}
-  \pagenumbering{arabic}
-  \setcounter{secnumdepth}{6}
-}
-\def\backmatter{%
-  \setcounter{chapter}{0}
-  \setcounter{section}{0}
-  \setcounter{secnumdepth}{6}
-  \def\thesection{A.\arabic{section}}
-  \def\theHsection{A.\arabic{section}}
-}
-\newenvironment{bibitemlist}[1]{%
-   \list{\@biblabel{\@arabic\c@enumiv}}%
-       {\settowidth\labelwidth{\@biblabel{#1}}%
-        \leftmargin\labelwidth
-        \advance\leftmargin\labelsep
-        \@openbib@code
-        \usecounter{enumiv}%
-        \let\p@enumiv\@empty
-        \renewcommand\theenumiv{\@arabic\c@enumiv}%
-	}%
-  \sloppy
-  \clubpenalty4000
-  \@clubpenalty \clubpenalty
-  \widowpenalty4000%
-  \sfcode`\.\@m}%
-  {\def\@noitemerr
-    {\@latex@warning{Empty `bibitemlist' environment}}%
-    \endlist}
-
-\def\tableofcontents{\section*{\contentsname}\@starttoc{toc}}
-\usepackage[pdftitle={<xsl:call-template name="generateSimpleTitle"/>},
- pdfauthor={<xsl:call-template name="generateAuthor"/>}]{hyperref}
-\hyperbaseurl{<xsl:value-of select="$baseURL"/>}
-<xsl:call-template name="latexPreambleHook"/>
+    <xsl:template name="latexLayout"> \paperwidth211mm \paperheight297mm \def\@pnumwidth{1.55em}
+        \def\@tocrmarg {2.55em} \def\@dotsep{4.5} \setcounter{tocdepth}{3} \clubpenalty=8000
+        \emergencystretch 3em \hbadness=4000 \hyphenpenalty=400 \pretolerance=750 \tolerance=2000
+        \vbadness=4000 \widowpenalty=10000 <xsl:if test="not($docClass = 'letter')">
+            \renewcommand\section{\@startsection {section}{1}{\z@}% {-1.75ex \@plus -0.5ex \@minus
+            -.2ex}% {0.5ex \@plus .2ex}% {\reset@font\Large\bfseries\sffamily}}
+            \renewcommand\subsection{\@startsection{subsection}{2}{\z@}% {-1.75ex\@plus -0.5ex
+            \@minus- .2ex}% {0.5ex \@plus .2ex}% {\reset@font\Large\sffamily}}
+            \renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}% {-1.5ex\@plus -0.35ex
+            \@minus -.2ex}% {0.5ex \@plus .2ex}% {\reset@font\large\sffamily}}
+            \renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}% {-1ex \@plus-0.35ex \@minus
+            -0.2ex}% {0.5ex \@plus .2ex}% {\reset@font\normalsize\sffamily}}
+            \renewcommand\subparagraph{\@startsection{subparagraph}{5}{\parindent}% {1.5ex \@plus1ex
+            \@minus .2ex}% {-1em}% {\reset@font\normalsize\bfseries}} </xsl:if>
+        \def\l@section#1#2{\addpenalty{\@secpenalty} \addvspace{1.0em plus 1pt} \@tempdima 1.5em
+        \begingroup \parindent \z@ \rightskip \@pnumwidth \parfillskip -\@pnumwidth \bfseries
+        \leavevmode #1\hfil \hbox to\@pnumwidth{\hss #2}\par \endgroup}
+        \def\l@subsection{\@dottedtocline{2}{1.5em}{2.3em}}
+        \def\l@subsubsection{\@dottedtocline{3}{3.8em}{3.2em}}
+        \def\l@paragraph{\@dottedtocline{4}{7.0em}{4.1em}}
+        \def\l@subparagraph{\@dottedtocline{5}{10em}{5em}}
+        \@ifundefined{c@section}{\newcounter{section}}{}
+        \@ifundefined{c@chapter}{\newcounter{chapter}}{} \newif\if@mainmatter \@mainmattertrue
+        \def\frontmatter{% \pagenumbering{roman} \setcounter{secnumdepth}{0} \def\@chapapp{}% }
+        \def\mainmatter{% \cleardoublepage \setcounter{chapter}{0} \setcounter{section}{0}
+        \pagenumbering{arabic} \setcounter{secnumdepth}{6} } \def\backmatter{%
+        \setcounter{chapter}{0} \setcounter{section}{0} \setcounter{secnumdepth}{6}
+        \def\thesection{A.\arabic{section}} \def\theHsection{A.\arabic{section}} }
+        \newenvironment{bibitemlist}[1]{% \list{\@biblabel{\@arabic\c@enumiv}}%
+        {\settowidth\labelwidth{\@biblabel{#1}}% \leftmargin\labelwidth \advance\leftmargin\labelsep
+        \@openbib@code \usecounter{enumiv}% \let\p@enumiv\@empty
+        \renewcommand\theenumiv{\@arabic\c@enumiv}% }% \sloppy \clubpenalty4000 \@clubpenalty
+        \clubpenalty \widowpenalty4000% \sfcode`\.\@m}% {\def\@noitemerr {\@latex@warning{Empty
+        `bibitemlist' environment}}% \endlist}
+        \def\tableofcontents{\section*{\contentsname}\@starttoc{toc}}
+            \usepackage[pdftitle={<xsl:call-template name="generateSimpleTitle"/>},
+            pdfauthor={<xsl:call-template name="generateAuthor"/>}]{hyperref}
+            \hyperbaseurl{<xsl:value-of select="$baseURL"/>} <xsl:call-template
+            name="latexPreambleHook"/>
     </xsl:template>
     <xsl:template name="simpleRun">
         <xsl:param name="text"/>
@@ -470,7 +376,7 @@ STANDARD &amp;\bfseries <xsl:call-template name="getiso_documentNumber"/>-<xsl:c
         <xsl:param name="italic"/>
         <xsl:value-of select="$prefix"/>
         <xsl:choose>
-            <xsl:when test="$italic='true'">
+            <xsl:when test="$italic = 'true'">
                 <xsl:text>\textit{</xsl:text>
                 <xsl:value-of select="$text"/>
                 <xsl:text>}</xsl:text>
@@ -481,7 +387,7 @@ STANDARD &amp;\bfseries <xsl:call-template name="getiso_documentNumber"/>-<xsl:c
         </xsl:choose>
     </xsl:template>
     <xsl:template name="termNum">
-        <xsl:value-of select="substring-after(../@id,'_')"/>
+        <xsl:value-of select="substring-after(../@id, '_')"/>
         <xsl:text> </xsl:text>
     </xsl:template>
     <xsl:template name="block-element">

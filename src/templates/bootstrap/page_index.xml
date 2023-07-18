@@ -2,16 +2,16 @@
 <html>
     <head>
         <title>TELOTA - Scalable Architecture for Digital Editions</title>
-        <meta charset="utf-8"/>
-<!--        <link href="/exist/apps/sade/templates/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>-->
-        <link href="css/bootstrap.min.css" rel="stylesheet"/>
-        <link href="css/bootstrap.min.css" rel="stylesheet"/>
-        <link href="css/bootstrap.min.css" rel="stylesheet"/>
-        <link href="css/bootstrap-responsive.css" rel="stylesheet"/>
-        <link href="css/sade.css" rel="stylesheet"/>
-  <!--link href="css/bootstrap-theme-simplex.css" rel="stylesheet"-->
-  <!--link href="css/bootstrap-theme-cerulean.css" rel="stylesheet"-->
-  <!--link href="css/bootstrap-theme-spacelab.css" rel="stylesheet"-->
+        <meta charset="utf-8" />
+        <!--        <link href="/exist/apps/sade/templates/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>-->
+        <link href="css/bootstrap.min.css" rel="stylesheet" />
+        <link href="css/bootstrap.min.css" rel="stylesheet" />
+        <link href="css/bootstrap.min.css" rel="stylesheet" />
+        <link href="css/bootstrap-responsive.css" rel="stylesheet" />
+        <link href="css/sade.css" rel="stylesheet" />
+        <!--link href="css/bootstrap-theme-simplex.css" rel="stylesheet"-->
+        <!--link href="css/bootstrap-theme-cerulean.css" rel="stylesheet"-->
+        <!--link href="css/bootstrap-theme-spacelab.css" rel="stylesheet"-->
     </head>
     <body>
         <div class="navbar navbar-inverse navbar-fixed-top">
@@ -24,7 +24,8 @@
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span2">
-                    <img src="sade/templates/default/images/ide_logo.png" style="padding-bottom:10px"/>
+                    <img src="sade/templates/default/images/ide_logo.png"
+                        style="padding-bottom:10px" />
                     <div id="left" class="well">
                         <p>left</p>
                     </div>
@@ -35,7 +36,8 @@
                     </div>
                 </div>
                 <div class="span3">
-                    <img src="templates/default/images/bbaw_logo.png" style="padding-bottom:10px; float:right;"/>
+                    <img src="templates/default/images/bbaw_logo.png"
+                        style="padding-bottom:10px; float:right;" />
                     <div class="well" style="clear:both;">
                         <div id="right">
                             <p>right</p>
@@ -44,12 +46,12 @@
                 </div>
             </div>
         </div>
-    
-    <!-- Le javascript
+
+        <!-- Le javascript
     ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-1.11.2.min.js"/>
-        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-migrate-1.2.1.min.js"/>
-        <script type="text/javascript" src="js/bootstrap.min.js"/>
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-1.11.2.min.js"></script>
+        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-migrate-1.2.1.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
     </body>
 </html>

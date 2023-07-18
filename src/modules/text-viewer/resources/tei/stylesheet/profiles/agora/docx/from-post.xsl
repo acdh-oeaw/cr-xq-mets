@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="tei">
+<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0" exclude-result-prefixes="tei">
     <xsl:output indent="yes"/>
 
-<!-- fix up the default header -->
+    <!-- fix up the default header -->
     <xsl:template match="tei:encodingDesc"/>
     <xsl:template match="tei:titleStmt/tei:author">
         <xsl:choose>
@@ -12,34 +13,34 @@
             <xsl:otherwise>
                 <author>
                     <name>
-                        <xsl:value-of select="substring-before(.,' ')"/>
+                        <xsl:value-of select="substring-before(., ' ')"/>
                     </name>
                     <surname>
-                        <xsl:value-of select="substring-after(.,' ')"/>
+                        <xsl:value-of select="substring-after(., ' ')"/>
                     </surname>
                 </author>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-            
-<!-- jiggle around the paragraphs which should be in front -->
+
+    <!-- jiggle around the paragraphs which should be in front -->
     <xsl:template match="tei:body">
         <front>
             <titlePage>
                 <docTitle>
                     <titlePart type="main">
-                        <xsl:value-of select="//tei:p[@rend='Title']"/>
+                        <xsl:value-of select="//tei:p[@rend = 'Title']"/>
                     </titlePart>
                     <titlePart type="sub">
-                        <xsl:value-of select="//tei:p[@rend='Subtitle']"/>
+                        <xsl:value-of select="//tei:p[@rend = 'Subtitle']"/>
                     </titlePart>
                 </docTitle>
                 <docAuthor>
-                    <xsl:value-of select="//tei:p[@rend='author']"/>
+                    <xsl:value-of select="//tei:p[@rend = 'author']"/>
                 </docAuthor>
             </titlePage>
             <div type="abstract">
-                <xsl:for-each select="//tei:p[@rend='abstract']">
+                <xsl:for-each select="//tei:p[@rend = 'abstract']">
                     <p>
                         <xsl:apply-templates/>
                     </p>
@@ -50,30 +51,30 @@
             <xsl:apply-templates/>
         </body>
     </xsl:template>
-    <xsl:template match="tei:body/tei:p[@rend='Title']"/>
-    <xsl:template match="tei:body/tei:p[@rend='author']"/>
-    <xsl:template match="tei:body/tei:p[@rend='Subtitle']"/>
-    <xsl:template match="tei:body/tei:p[@rend='abstract']"/>
+    <xsl:template match="tei:body/tei:p[@rend = 'Title']"/>
+    <xsl:template match="tei:body/tei:p[@rend = 'author']"/>
+    <xsl:template match="tei:body/tei:p[@rend = 'Subtitle']"/>
+    <xsl:template match="tei:body/tei:p[@rend = 'abstract']"/>
 
-<!-- fix paragraph styles which should be TEI elements -->
-    <xsl:template match="tei:p[@rend='epigraph']">
+    <!-- fix paragraph styles which should be TEI elements -->
+    <xsl:template match="tei:p[@rend = 'epigraph']">
         <epigraph>
             <p>
                 <xsl:value-of select="."/>
             </p>
         </epigraph>
     </xsl:template>
-    <xsl:template match="tei:p[@rend='Quote']">
+    <xsl:template match="tei:p[@rend = 'Quote']">
         <quote rend="block">
             <xsl:apply-templates/>
         </quote>
     </xsl:template>
-    <xsl:template match="tei:hi[@rend='Quote']">
+    <xsl:template match="tei:hi[@rend = 'Quote']">
         <quote>
             <xsl:apply-templates/>
         </quote>
     </xsl:template>
-    <xsl:template match="tei:hi[@rend='foreign']">
+    <xsl:template match="tei:hi[@rend = 'foreign']">
         <foreign>
             <xsl:apply-templates/>
         </foreign>
@@ -82,55 +83,56 @@
 
 
 
-<!-- now some word artefacts we want to suppress -->
-    <xsl:template match="tei:hi[@rend='footnote_reference']">
+    <!-- now some word artefacts we want to suppress -->
+    <xsl:template match="tei:hi[@rend = 'footnote_reference']">
         <xsl:apply-templates/>
     </xsl:template>
     <xsl:template match="tei:seg">
-<!-- <xsl:if test="matches(.,'[a-zA-Z0-9]')">
+        <!-- <xsl:if test="matches(.,'[a-zA-Z0-9]')">
 <xsl:apply-templates/>
 </xsl:if-->
         <xsl:value-of select="."/>
     </xsl:template>
-    <xsl:template match="tei:hi[matches(@rend,'color')]"/>
+    <xsl:template match="tei:hi[matches(@rend, 'color')]"/>
 
 
-<!-- contexta magic references -->
-    <xsl:template match="tei:hi[@rend='reference']">
+    <!-- contexta magic references -->
+    <xsl:template match="tei:hi[@rend = 'reference']">
         <xsl:variable name="magicString">
-            <xsl:value-of select="substring-before(substring-after(., '&lt;'),'&gt;')"/>
+            <xsl:value-of select="substring-before(substring-after(., '&lt;'), '&gt;')"/>
         </xsl:variable>
         <xsl:element name="ref">
             <xsl:attribute name="cRef">
                 <xsl:value-of select="$magicString"/>
             </xsl:attribute>
-            <xsl:value-of select="substring-before(.,'&lt;')"/>
+            <xsl:value-of select="substring-before(., '&lt;')"/>
         </xsl:element>
     </xsl:template>
 
-<!-- now some attribute values we want to kill -->
-    <xsl:template match="tei:p[@rend='Body Text First Indent']">
+    <!-- now some attribute values we want to kill -->
+    <xsl:template match="tei:p[@rend = 'Body Text First Indent']">
         <p>
             <xsl:apply-templates/>
         </p>
     </xsl:template>
-    <xsl:template match="tei:p[@rend='FootnoteText']">
+    <xsl:template match="tei:p[@rend = 'FootnoteText']">
         <xsl:apply-templates/>
     </xsl:template>
 
-<!-- and copy everything else -->
-    <xsl:template match="*|@*|processing-instruction()">
+    <!-- and copy everything else -->
+    <xsl:template match="* | @* | processing-instruction()">
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"/>
         </xsl:copy>
     </xsl:template>
     <xsl:template match="text()">
-        <xsl:value-of select="."/> <!-- could normalize() here -->
+        <xsl:value-of select="."/>
+        <!-- could normalize() here -->
     </xsl:template>
 
 
 
-<!-- <xsl:template match="/">
+    <!-- <xsl:template match="/">
 
      <xsl:variable name="pass0">
        <xsl:apply-templates mode="pass0"/>

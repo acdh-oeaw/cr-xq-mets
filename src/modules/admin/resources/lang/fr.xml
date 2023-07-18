@@ -19,7 +19,8 @@
             </nav>
             <submit>Enregistrer</submit>
             <submit_success>Les modifications étaient enregistrées!</submit_success>
-            <submit_error>Les modifications n'étaient pas enregistrées! Vérifiez si tout les champs obligatoires sont rempli.</submit_error>
+            <submit_error>Les modifications n'étaient pas enregistrées! Vérifiez si tout les champs
+                obligatoires sont rempli.</submit_error>
             <requiredField>Vous devez remplir ce champ!</requiredField>
         </general>
         <design>
@@ -45,7 +46,8 @@
             <h>Configuration génerale</h>
             <project_name>
                 <title>Intitulé du projet:</title>
-                <hint>L'intitulé sera affiché en navigateur et dans les résultats des moteurs de recherche</hint>
+                <hint>L'intitulé sera affiché en navigateur et dans les résultats des moteurs de
+                    recherche</hint>
             </project_name>
             <default_project>
                 <title>Projet par défaut?</title>
@@ -53,11 +55,13 @@
             </default_project>
             <description>
                 <title>Brève description</title>
-                <hint>La brève description est appliquée au meta-tags HTML et sera affichée dans les résultats des moteurs de recherche</hint>
+                <hint>La brève description est appliquée au meta-tags HTML et sera affichée dans les
+                    résultats des moteurs de recherche</hint>
             </description>
             <used_namespaces>
                 <title>Espaces de nommage utilisées</title>
-                <hint>Tapez les espaces de nommage XML, qui sont utilisées dans votre édition digitale, par exemple http://www.tei-c.org/ns/1.0</hint>
+                <hint>Tapez les espaces de nommage XML, qui sont utilisées dans votre édition
+                    digitale, par exemple http://www.tei-c.org/ns/1.0</hint>
             </used_namespaces>
         </meta>
     </lang>

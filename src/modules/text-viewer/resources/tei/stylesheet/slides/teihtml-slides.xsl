@@ -1,44 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" exclude-result-prefixes="tei xlink xhtml m" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://www.w3.org/1998/Math/MathML"
+    xmlns:xlink="http://www.w3.org/1999/xlink" exclude-result-prefixes="tei xlink xhtml m"
+    version="2.0">
     <xsl:import href="../xhtml2/tei.xsl"/>
     <xsl:strip-space elements="teix:* rng:* xsl:* xhtml:* atom:* m:*"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>
-      TEI stylesheet for making HTML presentations from TEI documents
-      </p>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p> TEI stylesheet for making HTML presentations from TEI documents </p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: teihtml-slides.xsl 9669 2011-11-07 19:17:54Z rahtz $</p>
             <p>Copyright: 2011, TEI Consortium</p>
@@ -59,7 +49,7 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="id"/>
         <xhtml:br/>
     </xsl:template>
-   <!--
+    <!--
 <xsl:text>(</xsl:text>
 <xsl:value-of select="$id"/>
 <xsl:text>)</xsl:text>
@@ -88,7 +78,8 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template match="tei:*" mode="genid">
         <xsl:value-of select="$masterFile"/>
-        <xsl:apply-templates select="ancestor-or-self::tei:div1|ancestor-or-self::tei:div[1]" mode="number"/>
+        <xsl:apply-templates select="ancestor-or-self::tei:div1 | ancestor-or-self::tei:div[1]"
+            mode="number"/>
     </xsl:template>
     <xsl:template match="tei:docAuthor">
         <div class="docAuthor">
@@ -110,19 +101,20 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:with-param>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:if test="$verbose='true'">
+        <xsl:if test="$verbose = 'true'">
             <xsl:message>Opening file <xsl:value-of select="$outName"/>
             </xsl:message>
         </xsl:if>
-        <xsl:result-document doctype-public="{$doctypePublic}" doctype-system="{$doctypeSystem}" encoding="{$outputEncoding}" href="{$outName}" method="{$outputMethod}">
+        <xsl:result-document doctype-public="{$doctypePublic}" doctype-system="{$doctypeSystem}"
+            encoding="{$outputEncoding}" href="{$outName}" method="{$outputMethod}">
             <xsl:call-template name="mainslide"/>
         </xsl:result-document>
-        <xsl:if test="$verbose='true'">
+        <xsl:if test="$verbose = 'true'">
             <xsl:message>Closing file <xsl:value-of select="$outName"/>
             </xsl:message>
         </xsl:if>
         <xsl:for-each select="tei:text/tei:body">
-            <xsl:apply-templates select="tei:div|tei:div1"/>
+            <xsl:apply-templates select="tei:div | tei:div1"/>
         </xsl:for-each>
     </xsl:template>
     <xsl:template name="xrefpanel">
@@ -143,7 +135,7 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
-        <xsl:if test="not($prev='')">
+        <xsl:if test="not($prev = '')">
             <a class="xreflink" accesskey="p" href="{concat($prev,$outputSuffix)}">
                 <span class="button">«</span>
             </a>
@@ -168,7 +160,7 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
-        <xsl:if test="not($next='')">
+        <xsl:if test="not($next = '')">
             <a class="xreflink" accesskey="n" href="{concat($next,$outputSuffix)}">
                 <span class="button">»</span>
             </a>
@@ -196,7 +188,7 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:apply-templates select="tei:text/tei:front//tei:docDate"/>
                     <ul class="slidetoc">
                         <xsl:for-each select="tei:text/tei:body">
-                            <xsl:for-each select="tei:div|tei:div1">
+                            <xsl:for-each select="tei:div | tei:div1">
                                 <xsl:variable name="n">
                                     <xsl:apply-templates select="." mode="genid"/>
                                 </xsl:variable>
@@ -211,7 +203,8 @@ of this software, even if advised of the possibility of such damage.
                 </div>
                 <div class="slidebottom">
                     <div class="slidebottom-image">
-                        <img id="logo" src="{$logoFile}" width="{$logoWidth}" height="{$logoHeight}" alt="logo"/>
+                        <img id="logo" src="{$logoFile}" width="{$logoWidth}" height="{$logoHeight}"
+                            alt="logo"/>
                     </div>
                     <div class="slidebottom-text">
                         <xsl:variable name="next">
@@ -329,11 +322,12 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:with-param>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:if test="$verbose='true'">
+        <xsl:if test="$verbose = 'true'">
             <xsl:message>Opening file <xsl:value-of select="$outName"/>
             </xsl:message>
         </xsl:if>
-        <xsl:result-document doctype-public="{$doctypePublic}" doctype-system="{$doctypeSystem}" encoding="{$outputEncoding}" href="{$outName}" method="{$outputMethod}">
+        <xsl:result-document doctype-public="{$doctypePublic}" doctype-system="{$doctypeSystem}"
+            encoding="{$outputEncoding}" href="{$outName}" method="{$outputMethod}">
             <html>
                 <xsl:call-template name="addLangAtt"/>
                 <head>
@@ -352,15 +346,15 @@ of this software, even if advised of the possibility of such damage.
                 </body>
             </html>
         </xsl:result-document>
-        <xsl:if test="$verbose='true'">
+        <xsl:if test="$verbose = 'true'">
             <xsl:message>Closing file <xsl:value-of select="$outName"/>
             </xsl:message>
         </xsl:if>
         <xsl:apply-templates select="tei:div"/>
     </xsl:template>
-    <xsl:template match="tei:body/tei:div|tei:div">
+    <xsl:template match="tei:body/tei:div | tei:div">
         <xsl:choose>
-            <xsl:when test="$splitLevel&gt;-1">
+            <xsl:when test="$splitLevel &gt; -1">
                 <xsl:variable name="slidenum">
                     <xsl:apply-templates select="." mode="genid"/>
                 </xsl:variable>
@@ -371,14 +365,16 @@ of this software, even if advised of the possibility of such damage.
                         </xsl:with-param>
                     </xsl:call-template>
                 </xsl:variable>
-                <xsl:if test="$verbose='true'">
+                <xsl:if test="$verbose = 'true'">
                     <xsl:message>Opening file <xsl:value-of select="$outName"/>
                     </xsl:message>
                 </xsl:if>
-                <xsl:result-document doctype-public="{$doctypePublic}" doctype-system="{$doctypeSystem}" encoding="{$outputEncoding}" href="{$outName}" method="{$outputMethod}">
+                <xsl:result-document doctype-public="{$doctypePublic}"
+                    doctype-system="{$doctypeSystem}" encoding="{$outputEncoding}" href="{$outName}"
+                    method="{$outputMethod}">
                     <xsl:call-template name="slideout"/>
                 </xsl:result-document>
-                <xsl:if test="$verbose='true'">
+                <xsl:if test="$verbose = 'true'">
                     <xsl:message>Closing file <xsl:value-of select="$outName"/>
                     </xsl:message>
                 </xsl:if>
@@ -412,7 +408,7 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:with-param name="display">full</xsl:with-param>
                 </xsl:call-template>
             </div>
-            <xsl:if test="$splitLevel &gt;-1">
+            <xsl:if test="$splitLevel &gt; -1">
                 <div class="xref">
                     <xsl:call-template name="xrefpanel"/>
                 </div>
@@ -428,7 +424,8 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="slideBottom">
         <div class="slidebottom">
             <div class="slidebottom-image">
-                <img id="logo" src="{$logoFile}" width="{$logoWidth}" height="${logoHeight}" alt="logo"/>
+                <img id="logo" src="{$logoFile}" width="{$logoWidth}" height="${logoHeight}"
+                    alt="logo"/>
             </div>
             <div class="slidebottom-text">
                 <xsl:call-template name="generateTitle"/>
@@ -444,7 +441,7 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:when test="@role">
                     <xsl:value-of select="@role"/>
                 </xsl:when>
-                <xsl:when test="$c mod 2=0">
+                <xsl:when test="$c mod 2 = 0">
                     <xsl:text>Even</xsl:text>
                 </xsl:when>
                 <xsl:otherwise>

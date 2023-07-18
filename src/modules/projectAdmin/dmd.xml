@@ -9,7 +9,7 @@
             </role>
         </name>
     </xf:instance>
-    
+
 
     <!-- bind to existing data -->
     <xf:bind id="title" ref="instance('dmd')/mods:mods/mods:titleInfo/mods:title"/>

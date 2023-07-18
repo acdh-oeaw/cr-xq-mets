@@ -1,77 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="xar" name="sade-main">
-<!--    <property name="project-name" value="cr-xq"/>-->
-   
-   <import file="../build.xml"/>
+    <!--    <property name="project-name" value="cr-xq"/>-->
 
-<!--    <property  file="../build.properties"  />-->
+    <import file="../build.xml"/>
+
+    <!--    <property  file="../build.properties"  />-->
 
     <property name="build.dir" value="build"/>
     <target name="xar" depends="configure-metafiles">
-        
+
         <echo>building: ${app.name}#${app.version}</echo>
         <echo>into: ${build.dir}</echo>
         <mkdir dir="${build.dir}"/>
-        <zip basedir="." destfile="${build.dir}/${app.name}-${app.version}.xar" excludes="${exclude.dirs},${build.dir},${build.dir}/**,**/*.template.*,**/build.*"/>
+        <zip basedir="." destfile="${build.dir}/${app.name}-${app.version}.xar"
+            excludes="${exclude.dirs},${build.dir},${build.dir}/**,**/*.template.*,**/build.*"/>
     </target>
-    
-    <!-- insert the values from build.properties into the xar meta files: repo.xml and expath-pkg.xml -->  
+
+    <!-- insert the values from build.properties into the xar meta files: repo.xml and expath-pkg.xml -->
     <target name="configure-metafiles">
         <copy file="repo.template.xml" tofile="repo.xml" overwrite="true"/>
-        <copy file="expath-pkg.template.xml" tofile="expath-pkg.xml" overwrite="true" />
-        <replace dir="." includes="repo.xml expath-pkg.xml"
-                propertyFile="../build.properties">
-                <replacefilter 
-                    token="@app.name@" 
-                    property="app.name"/>
-                <replacefilter 
-                    token="@app.uri@" 
-                    property="app.uri"/>                            
+        <copy file="expath-pkg.template.xml" tofile="expath-pkg.xml" overwrite="true"/>
+        <replace dir="." includes="repo.xml expath-pkg.xml" propertyFile="../build.properties">
+            <replacefilter token="@app.name@" property="app.name"/>
+            <replacefilter token="@app.uri@" property="app.uri"/>
         </replace>
-        
-        <replace dir="." includes="repo.xml expath-pkg.xml"
-            propertyFile="../.version">            
-            <replacefilter 
-                token="@app.version@" 
-                property="app.version"/>            
+
+        <replace dir="." includes="repo.xml expath-pkg.xml" propertyFile="../.version">
+            <replacefilter token="@app.version@" property="app.version"/>
         </replace>
-        
-        <copy file="core/config.template.xql" tofile="core/config.xql" overwrite="true"  />
-        <replace file="core/config.xql"
-            propertyFile="../build.properties">
-            <replacefilter 
-                token="@projects.dir@" 
-                property="projects.dir"/>
-            <replacefilter 
-                token="@data.dir@" 
-                property="data.dir"/>
-            <replacefilter 
-                token="@app.name@" 
-                property="app.name"/>
-            <replacefilter 
-                token="@system.account.user@" 
-                property="system.account.user"/>            
-            <replacefilter 
-                token="@system.account.pwd@" 
-                property="system.account.pwd"/>
+
+        <copy file="core/config.template.xql" tofile="core/config.xql" overwrite="true"/>
+        <replace file="core/config.xql" propertyFile="../build.properties">
+            <replacefilter token="@projects.dir@" property="projects.dir"/>
+            <replacefilter token="@data.dir@" property="data.dir"/>
+            <replacefilter token="@app.name@" property="app.name"/>
+            <replacefilter token="@system.account.user@" property="system.account.user"/>
+            <replacefilter token="@system.account.pwd@" property="system.account.pwd"/>
         </replace>
-        
-        <copy file="conf.template.xml" tofile="conf.xml" overwrite="true"  />
-        <replace file="conf.xml"
-            propertyFile="../build.properties">
-            <replacefilter 
-                token="@projects.dir@" 
-                property="projects.dir"/>
-            <replacefilter 
-                token="@data.dir@" 
-                property="data.dir"/>                        
-            <replacefilter 
-                token="@public.repo.baseurl@" 
-                property="public.repo.baseurl"/>
-            <replacefilter 
-                token="@public.repo.displayname@" 
-                property="public.repo.displayname"/>
-            
+
+        <copy file="conf.template.xml" tofile="conf.xml" overwrite="true"/>
+        <replace file="conf.xml" propertyFile="../build.properties">
+            <replacefilter token="@projects.dir@" property="projects.dir"/>
+            <replacefilter token="@data.dir@" property="data.dir"/>
+            <replacefilter token="@public.repo.baseurl@" property="public.repo.baseurl"/>
+            <replacefilter token="@public.repo.displayname@" property="public.repo.displayname"/>
+
         </replace>
     </target>
 </project>

@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://purl.org/NET/crm-owl#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:crm="http://purl.org/NET/crm-owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" version="2.0" xpath-default-namespace="http://www.tei-c.org/ns/1.0" exclude-result-prefixes="tei rdf rdfs owl xsd crm xsl xs">
+<xsl:stylesheet xmlns="http://purl.org/NET/crm-owl#" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:crm="http://purl.org/NET/crm-owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#" version="2.0"
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0"
+    exclude-result-prefixes="tei rdf rdfs owl xsd crm xsl xs">
     <xsl:output encoding="utf-8" method="xml" indent="yes"/>
     <xsl:key name="persons" match="persName" use="@ref"/>
     <xsl:key name="Places" match="place[placeName]" use="placeName"/>
-    <xsl:key name="Idents" match="crm:P131_is_identified_by" use="crm:E82_Actor_Appellation/@rdf:about"/>
+    <xsl:key name="Idents" match="crm:P131_is_identified_by"
+        use="crm:E82_Actor_Appellation/@rdf:about"/>
     <xsl:key name="Idents" match="crm:P87_is_identified_by" use="crm:E48_Place_Name/@rdf:about"/>
     <xsl:template name="TEI">
         <xsl:choose>
@@ -28,7 +35,7 @@
         <xsl:apply-templates select="$rdf1" mode="rdf2"/>
     </xsl:template>
 
-  <!-- clean up pass -->
+    <!-- clean up pass -->
     <xsl:template match="crm:*[crm:E53_Place]" mode="rdf2">
         <xsl:copy>
             <xsl:attribute name="rdf:resource" select="crm:E53_Place/@rdf:about"/>
@@ -37,25 +44,28 @@
     <xsl:template match="crm:E53_Place" mode="rdf2"/>
     <xsl:template match="crm:E53_Place" mode="rdf3">
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="rdf2"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"
+                mode="rdf2"/>
         </xsl:copy>
     </xsl:template>
     <xsl:template match="rdf:RDF" mode="rdf2">
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="rdf2"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"
+                mode="rdf2"/>
             <xsl:apply-templates select=".//crm:E53_Place" mode="rdf3"/>
         </xsl:copy>
     </xsl:template>
     <xsl:template match="*" mode="rdf2">
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="rdf2"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"
+                mode="rdf2"/>
         </xsl:copy>
     </xsl:template>
-    <xsl:template match="text()|comment()|@*|processing-instruction()" mode="rdf2">
+    <xsl:template match="text() | comment() | @* | processing-instruction()" mode="rdf2">
         <xsl:copy-of select="."/>
     </xsl:template>
 
-   <!-- normal pass -->
+    <!-- normal pass -->
     <xsl:template name="E31">
         <E31_Document rdf:about="{tei:makeID(.,'id')}">
             <xsl:apply-templates select="fileDesc"/>
@@ -64,7 +74,7 @@
     </xsl:template>
     <xsl:template name="anonblock">
         <xsl:choose>
-            <xsl:when test="@type='dDay'">
+            <xsl:when test="@type = 'dDay'">
                 <E5_Event rdf:about="{tei:makeID(.,'event')}">
                     <rdf:value>
                         <xsl:value-of select="."/>
@@ -76,10 +86,10 @@
     </xsl:template>
     <xsl:template name="teiname">
         <xsl:choose>
-            <xsl:when test="@type='place'">
+            <xsl:when test="@type = 'place'">
                 <xsl:call-template name="E53"/>
             </xsl:when>
-            <xsl:when test="@type='person'">
+            <xsl:when test="@type = 'person'">
                 <xsl:call-template name="E21"/>
             </xsl:when>
         </xsl:choose>
@@ -91,7 +101,7 @@
             <xsl:when test="parent::p"/>
             <xsl:otherwise>
                 <E53_Place>
-                    <xsl:attribute name="rdf:about" select="tei:makeID(.,'place')"/>
+                    <xsl:attribute name="rdf:about" select="tei:makeID(., 'place')"/>
                     <xsl:apply-templates select="*[not(self::place or self::listPlace)]"/>
                     <xsl:for-each select="parent::place[1]">
                         <P89_falls_within rdf:resource="{tei:makeID(.,'place')}"/>
@@ -99,7 +109,7 @@
                 </E53_Place>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:apply-templates select="place|listPlace"/>
+        <xsl:apply-templates select="place | listPlace"/>
     </xsl:template>
     <xsl:template name="E21">
         <xsl:choose>
@@ -214,11 +224,12 @@
                     </E82_Actor_Appellation>
                 </P131_is_identified_by>
             </xsl:when>
-            <xsl:when test="self::name or ancestor::event or ancestor::ab[@type='dDay']">
+            <xsl:when test="self::name or ancestor::event or ancestor::ab[@type = 'dDay']">
                 <P11_had_participant>
                     <xsl:choose>
                         <xsl:when test="@ref">
-                            <xsl:attribute name="rdf:resource" select="resolve-uri(@ref,base-uri(ancestor::tei:TEI))"/>
+                            <xsl:attribute name="rdf:resource"
+                                select="resolve-uri(@ref, base-uri(ancestor::tei:TEI))"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <E21_Person rdf:about="{tei:makeID(.,'person')}">
@@ -248,7 +259,7 @@
                     </P131_is_identified_by>
                 </E21_Person>
             </xsl:when>
-            <xsl:when test="generate-id(.) = generate-id(key('persons',@ref)[1])">
+            <xsl:when test="generate-id(.) = generate-id(key('persons', @ref)[1])">
                 <E21_Person rdf:about="{tei:makeID(.,'person')}">
                     <P131_is_identified_by>
                         <xsl:copy-of select="@xml:lang"/>
@@ -264,7 +275,7 @@
     </xsl:template>
     <xsl:template name="E48">
         <xsl:choose>
-            <xsl:when test=".=''"/>
+            <xsl:when test=". = ''"/>
             <xsl:when test="parent::label"/>
             <xsl:when test="parent::desc"/>
             <xsl:when test="parent::tei:location"/>
@@ -278,16 +289,17 @@
                     </E48_Place_Name>
                 </P87_is_identified_by>
             </xsl:when>
-            <xsl:when test="district|settlement|region|country|bloc">
+            <xsl:when test="district | settlement | region | country | bloc">
                 <xsl:call-template name="placeHierarchy">
                     <xsl:with-param name="next">district</xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="self::name or ancestor::event  or ancestor::ab[@type='dDay']">
+            <xsl:when test="self::name or ancestor::event or ancestor::ab[@type = 'dDay']">
                 <P7_took_place_at>
                     <xsl:choose>
                         <xsl:when test="@ref">
-                            <xsl:attribute name="rdf:resource" select="resolve-uri(@ref,base-uri(ancestor::tei:TEI))"/>
+                            <xsl:attribute name="rdf:resource"
+                                select="resolve-uri(@ref, base-uri(ancestor::tei:TEI))"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <E53_Place rdf:about="{tei:makeID(.,'place')}">
@@ -320,8 +332,8 @@
     </xsl:template>
     <xsl:template name="placeHierarchy">
         <xsl:param name="next"/>
-        <xsl:if test="*[local-name()=$next]">
-            <xsl:for-each select="*[local-name()=$next][1]">
+        <xsl:if test="*[local-name() = $next]">
+            <xsl:for-each select="*[local-name() = $next][1]">
                 <E53_Place rdf:about="{tei:makeID(.,'place')}">
                     <P2_has_type rdf:resource="http://www.tei-c.org/type/place/{$next}"/>
                     <P87_is_identified_by>
@@ -333,22 +345,22 @@
                         </E48_Place_Name>
                     </P87_is_identified_by>
                     <xsl:choose>
-                        <xsl:when test="$next='district'">
+                        <xsl:when test="$next = 'district'">
                             <xsl:call-template name="placeParent">
                                 <xsl:with-param name="next">settlement</xsl:with-param>
                             </xsl:call-template>
                         </xsl:when>
-                        <xsl:when test="$next='settlement'">
+                        <xsl:when test="$next = 'settlement'">
                             <xsl:call-template name="placeParent">
                                 <xsl:with-param name="next">region</xsl:with-param>
                             </xsl:call-template>
                         </xsl:when>
-                        <xsl:when test="$next='region'">
+                        <xsl:when test="$next = 'region'">
                             <xsl:call-template name="placeParent">
                                 <xsl:with-param name="next">country</xsl:with-param>
                             </xsl:call-template>
                         </xsl:when>
-                        <xsl:when test="$next='country'">
+                        <xsl:when test="$next = 'country'">
                             <xsl:call-template name="placeParent">
                                 <xsl:with-param name="next">bloc</xsl:with-param>
                             </xsl:call-template>
@@ -358,22 +370,22 @@
             </xsl:for-each>
         </xsl:if>
         <xsl:choose>
-            <xsl:when test="$next='district'">
+            <xsl:when test="$next = 'district'">
                 <xsl:call-template name="placeHierarchy">
                     <xsl:with-param name="next">settlement</xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="$next='settlement'">
+            <xsl:when test="$next = 'settlement'">
                 <xsl:call-template name="placeHierarchy">
                     <xsl:with-param name="next">region</xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="$next='region'">
+            <xsl:when test="$next = 'region'">
                 <xsl:call-template name="placeHierarchy">
                     <xsl:with-param name="next">country</xsl:with-param>
                 </xsl:call-template>
             </xsl:when>
-            <xsl:when test="$next='country'">
+            <xsl:when test="$next = 'country'">
                 <xsl:call-template name="placeHierarchy">
                     <xsl:with-param name="next">bloc</xsl:with-param>
                 </xsl:call-template>
@@ -382,7 +394,7 @@
     </xsl:template>
     <xsl:template name="placeParent">
         <xsl:param name="next"/>
-        <xsl:if test="parent::*/*[local-name()=$next]">
+        <xsl:if test="parent::*/*[local-name() = $next]">
             <P89_falls_within rdf:resource="{tei:makeID(parent::*/*[local-name()=$next],'place')}"/>
         </xsl:if>
     </xsl:template>
@@ -441,8 +453,8 @@
             </P94i_was_created_by>
         </xsl:if>
     </xsl:template>
-  
-  <!-- general templates -->
+
+    <!-- general templates -->
     <xsl:template name="calc-date-value">
         <rdf:value>
             <xsl:choose>
@@ -474,8 +486,11 @@
         <xsl:for-each select="$here">
             <xsl:variable name="baseid">
                 <xsl:choose>
-                    <xsl:when test="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[starts-with(.,'http')]">
-                        <xsl:value-of select="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[starts-with(.,'http')][1]"/>
+                    <xsl:when
+                        test="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[starts-with(., 'http')]">
+                        <xsl:value-of
+                            select="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[starts-with(., 'http')][1]"
+                        />
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:choose>
@@ -491,7 +506,9 @@
                                 <xsl:value-of select="@xml:id"/>
                             </xsl:when>
                             <xsl:when test="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno">
-                                <xsl:value-of select="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[1]"/>
+                                <xsl:value-of
+                                    select="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[1]"
+                                />
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:number level="any"/>
@@ -502,8 +519,11 @@
             </xsl:variable>
             <xsl:variable name="baseurl">
                 <xsl:choose>
-                    <xsl:when test="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[contains(.,'/id/')]">
-                        <xsl:analyze-string select="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[contains(.,'/id/')][1]" regex="(.*)/id/[^/]+">
+                    <xsl:when
+                        test="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[contains(., '/id/')]">
+                        <xsl:analyze-string
+                            select="ancestor::TEI/teiHeader/fileDesc/publicationStmt/idno[contains(., '/id/')][1]"
+                            regex="(.*)/id/[^/]+">
                             <xsl:matching-substring>
                                 <xsl:value-of select="regex-group(1)"/>
                             </xsl:matching-substring>
@@ -525,23 +545,24 @@
                 </xsl:choose>
             </xsl:variable>
             <xsl:choose>
-                <xsl:when test="$type='id'">
+                <xsl:when test="$type = 'id'">
                     <xsl:value-of select="$baseid"/>
                 </xsl:when>
-                <xsl:when test="$type='place' and @ref">
-                    <xsl:value-of select="resolve-uri(@ref,base-uri(ancestor::tei:TEI))"/>
+                <xsl:when test="$type = 'place' and @ref">
+                    <xsl:value-of select="resolve-uri(@ref, base-uri(ancestor::tei:TEI))"/>
                 </xsl:when>
-                <xsl:when test="$type='person' and @ref">
-                    <xsl:value-of select="resolve-uri(@ref,base-uri(ancestor::tei:TEI))"/>
+                <xsl:when test="$type = 'person' and @ref">
+                    <xsl:value-of select="resolve-uri(@ref, base-uri(ancestor::tei:TEI))"/>
                 </xsl:when>
-                <xsl:when test="$type='place' and placeName[@ref]">
-                    <xsl:value-of select="placeName/resolve-uri(@ref,base-uri(ancestor::tei:TEI))"/>
+                <xsl:when test="$type = 'place' and placeName[@ref]">
+                    <xsl:value-of select="placeName/resolve-uri(@ref, base-uri(ancestor::tei:TEI))"
+                    />
                 </xsl:when>
-                <xsl:when test="$type='place' and key('Places',.)">
-                    <xsl:value-of select="tei:makeID(key('Places',.)[1],'place')"/>
+                <xsl:when test="$type = 'place' and key('Places', .)">
+                    <xsl:value-of select="tei:makeID(key('Places', .)[1], 'place')"/>
                 </xsl:when>
-                <xsl:when test="$type='placename' and key('Places',.)">
-                    <xsl:value-of select="tei:makeID(key('Places',.)[1],'placename')"/>
+                <xsl:when test="$type = 'placename' and key('Places', .)">
+                    <xsl:value-of select="tei:makeID(key('Places', .)[1], 'placename')"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:variable name="composite">
@@ -556,20 +577,25 @@
                             <xsl:when test="placeName[@key]">
                                 <xsl:value-of select="placeName/@key"/>
                             </xsl:when>
-                            <xsl:when test="self::placeName and          parent::place[@xml:id]">
+                            <xsl:when test="self::placeName and parent::place[@xml:id]">
                                 <xsl:value-of select="parent::place/@xml:id"/>
                             </xsl:when>
-                            <xsl:when test="self::persName and          parent::person[@xml:id]">
+                            <xsl:when test="self::persName and parent::person[@xml:id]">
                                 <xsl:value-of select="parent::person/@xml:id"/>
                             </xsl:when>
-                            <xsl:when test="self::placeName|self::persName|self::district|self::settlement|self::region|self::country|self::bloc">
-                                <xsl:value-of select="replace(lower-case(normalize-space(.)),'[^A-z]','')"/>
+                            <xsl:when
+                                test="self::placeName | self::persName | self::district | self::settlement | self::region | self::country | self::bloc">
+                                <xsl:value-of
+                                    select="replace(lower-case(normalize-space(.)), '[^A-z]', '')"/>
                             </xsl:when>
                             <xsl:when test="self::author">
-                                <xsl:value-of select="replace(lower-case(normalize-space(.)),'[^A-z]','')"/>
+                                <xsl:value-of
+                                    select="replace(lower-case(normalize-space(.)), '[^A-z]', '')"/>
                             </xsl:when>
-                            <xsl:when test="persName|placeName">
-                                <xsl:value-of select="replace(lower-case(normalize-space((persName|placeName)[1])),'[^A-z]','')"/>
+                            <xsl:when test="persName | placeName">
+                                <xsl:value-of
+                                    select="replace(lower-case(normalize-space((persName | placeName)[1])), '[^A-z]', '')"
+                                />
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="generate-id()"/>

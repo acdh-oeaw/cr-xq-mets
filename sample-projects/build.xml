@@ -3,6 +3,7 @@
     <property name="build.dir" value="build"/>
     <target name="xar">
         <mkdir dir="${build.dir}"/>
-        <zip basedir="." destfile="${build.dir}/sade-sample-projects-0.2.xar" excludes="${build.dir},${build.dir}/**"/>
+        <zip basedir="." destfile="${build.dir}/sade-sample-projects-0.2.xar"
+            excludes="${build.dir},${build.dir}/**"/>
     </target>
 </project>

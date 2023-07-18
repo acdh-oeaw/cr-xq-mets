@@ -35,8 +35,6 @@ to serve static html files and images.
     <Arg>/webapps/quercus</Arg>
     </Call>-->
 </Configure>
-
-
 <!--
 <Configure class="org.mortbay.jetty.servlet.Context">
   <Set name="contextPath">/</Set>
@@ -46,7 +44,6 @@ to serve static html files and images.
     <Arg>/</Arg>
   </Call>
   </Configure>-->
-
 <!--<Configure class="org.mortbay.jetty.handler.ContextHandler">
   <Set name="contextPath">/</Set>
   <Set name="resourceBase"><SystemProperty name="jetty.home" default="."/>/webapps/quercus/docroot</Set>
@@ -56,8 +53,3 @@ to serve static html files and images.
     </Arg>
   </Call>
 </Configure>-->
-
-
-
-
-

@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:cr="http://aac.ac.at/content_repository" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms"
+    xmlns:cr="http://aac.ac.at/content_repository"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <xf:group>
         <xf:trigger id="t-tabBasic" appearance="minimal">
             <xf:label>Basic Metadata</xf:label>
             <xf:toggle case="tabbasic"/>
             <xf:action>
-                <xf:setvalue ref="instance('help-output')" value="instance('help')//xhtml:div[@id='help-dmd-basic']"/>
+                <xf:setvalue ref="instance('help-output')"
+                    value="instance('help')//xhtml:div[@id='help-dmd-basic']"/>
             </xf:action>
         </xf:trigger>
         <span> | </span>
@@ -13,7 +17,8 @@
             <xf:label>Persons</xf:label>
             <xf:toggle case="tabpersons"/>
             <xf:action>
-                <xf:setvalue ref="instance('help-output')" value="instance('help')//xhtml:div[@id='help-dmd-persons']"/>
+                <xf:setvalue ref="instance('help-output')"
+                    value="instance('help')//xhtml:div[@id='help-dmd-persons']"/>
             </xf:action>
         </xf:trigger>
         <xf:switch id="tabSwitch">
@@ -115,7 +120,8 @@
                         <xf:trigger>
                             <xf:label>Add Person</xf:label>
                             <xf:action>
-                                <xf:insert nodeset="instance('dmd')/*" origin="instance('person-template')" position="after"/>
+                                <xf:insert nodeset="instance('dmd')/*"
+                                    origin="instance('person-template')" position="after"/>
                             </xf:action>
                         </xf:trigger>
                         <xf:trigger>

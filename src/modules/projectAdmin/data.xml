@@ -14,7 +14,8 @@
     <xf:bind nodeset="instance('data')/map/map/index" id="indexes"/>
     <xf:bind nodeset="instance('data')/map/index/path" required="true()"/>
     <xf:bind ref="instance('data')/map/map/index[@key='resourcefragment-pid']" required="true()"/>
-    <xf:bind ref="instance('data')/map/map/index[@key='resourcefragment-pid']/@key" readonly="true()"/>
+    <xf:bind ref="instance('data')/map/map/index[@key='resourcefragment-pid']/@key"
+        readonly="true()"/>
     <xf:bind ref="instance('data')/map/map/index[@key='cql.serverChoice']" required="true()"/>
     <xf:bind ref="instance('data')/map/map/index[@key='cql.serverChoice']/@key" readonly="true()"/>
 </binds>

@@ -1,39 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:t="http://www.thaiopensource.com/ns/annotations" xmlns:s="http://www.ascc.net/xml/schematron" xmlns:cals="http://www.oasis-open.org/specs/tm9901" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="tei html t a rng s iso tbx cals teix" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/Examples"
+    xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:iso="http://www.iso.org/ns/1.0"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:t="http://www.thaiopensource.com/ns/annotations"
+    xmlns:s="http://www.ascc.net/xml/schematron" xmlns:cals="http://www.oasis-open.org/specs/tm9901"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="tei html t a rng s iso tbx cals teix" version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: cals.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
@@ -41,7 +37,7 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" type="stylesheet">
         <desc> Process CALS tables, using code borrowed from Andrew Welch
-      http://www.biglist.com/lists/xsl-list/archives/200202/msg00666.html</desc>
+            http://www.biglist.com/lists/xsl-list/archives/200202/msg00666.html</desc>
     </doc>
     <xsl:template match="cals:tgroup">
         <table>
@@ -51,9 +47,9 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:attribute>
             </xsl:if>
             <xsl:choose>
-                <xsl:when test="../@frame='topbot'">
-                    <xsl:attribute name="style">border-top:thin solid
-	black;border-bottom:thin solid black</xsl:attribute>
+                <xsl:when test="../@frame = 'topbot'">
+                    <xsl:attribute name="style">border-top:thin solid black;border-bottom:thin solid
+                        black</xsl:attribute>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:attribute name="border">0</xsl:attribute>
@@ -72,7 +68,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template match="cals:colspec"/>
     <xsl:template match="cals:spanspec"/>
-    <xsl:template match="cals:thead|cals:tfoot">
+    <xsl:template match="cals:thead | cals:tfoot">
         <xsl:element name="{name(.)}">
             <xsl:if test="@align">
                 <xsl:attribute name="align">
@@ -193,17 +189,21 @@ of this software, even if advised of the possibility of such damage.
         </xsl:if>
         <xsl:element name="{$cellgi}">
             <xsl:if test="@spanname">
-                <xsl:variable name="namest" select="ancestor::cals:tgroup/cals:spanspec[@spanname=./@spanname]/@namest"/>
-                <xsl:variable name="nameend" select="ancestor::cals:tgroup/cals:spanspec[@spanname=./@spanname]/@nameend"/>
-                <xsl:variable name="colst" select="ancestor::*[cals:colspec/@colname=$namest]/cals:colspec[@colname=$namest]/@colnum"/>
-                <xsl:variable name="colend" select="ancestor::*[cals:colspec/@colname=$nameend]/cals:colspec[@colname=$nameend]/@colnum"/>
+                <xsl:variable name="namest"
+                    select="ancestor::cals:tgroup/cals:spanspec[@spanname = ./@spanname]/@namest"/>
+                <xsl:variable name="nameend"
+                    select="ancestor::cals:tgroup/cals:spanspec[@spanname = ./@spanname]/@nameend"/>
+                <xsl:variable name="colst"
+                    select="ancestor::*[cals:colspec/@colname = $namest]/cals:colspec[@colname = $namest]/@colnum"/>
+                <xsl:variable name="colend"
+                    select="ancestor::*[cals:colspec/@colname = $nameend]/cals:colspec[@colname = $nameend]/@colnum"/>
                 <xsl:attribute name="colspan">
                     <xsl:value-of select="number($colend) - number($colst) + 1"/>
                 </xsl:attribute>
             </xsl:if>
             <xsl:if test="@morerows">
                 <xsl:attribute name="rowspan">
-                    <xsl:value-of select="@morerows+1"/>
+                    <xsl:value-of select="@morerows + 1"/>
                 </xsl:attribute>
             </xsl:if>
             <xsl:if test="@namest">
@@ -231,10 +231,10 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:value-of select="@valign"/>
                 </xsl:attribute>
             </xsl:if>
-            <xsl:if test="@rowsep='1'">
+            <xsl:if test="@rowsep = '1'">
                 <xsl:attribute name="style">border-bottom:thin solid black</xsl:attribute>
             </xsl:if>
-            <xsl:if test="not(preceding-sibling::*)                   and ancestor::cals:row/@id">
+            <xsl:if test="not(preceding-sibling::*) and ancestor::cals:row/@id">
                 <a name="{ancestor::cals:row/@id}"/>
             </xsl:if>
             <xsl:if test="@id">
@@ -267,14 +267,16 @@ of this software, even if advised of the possibility of such damage.
         <xsl:choose>
             <xsl:when test="$entry/@colname">
                 <xsl:variable name="colname" select="$entry/@colname"/>
-                <xsl:variable name="colspec" select="$entry/ancestor::cals:tgroup/cals:colspec[@colname=$colname]"/>
+                <xsl:variable name="colspec"
+                    select="$entry/ancestor::cals:tgroup/cals:colspec[@colname = $colname]"/>
                 <xsl:call-template name="colspec.colnum">
                     <xsl:with-param name="colspec" select="$colspec"/>
                 </xsl:call-template>
             </xsl:when>
             <xsl:when test="$entry/@namest">
                 <xsl:variable name="namest" select="$entry/@namest"/>
-                <xsl:variable name="colspec" select="$entry/ancestor::cals:tgroup/cals:colspec[@colname=$namest]"/>
+                <xsl:variable name="colspec"
+                    select="$entry/ancestor::cals:tgroup/cals:colspec[@colname = $namest]"/>
                 <xsl:call-template name="colspec.colnum">
                     <xsl:with-param name="colspec" select="$colspec"/>
                 </xsl:call-template>
@@ -295,14 +297,16 @@ of this software, even if advised of the possibility of such damage.
         <xsl:choose>
             <xsl:when test="$entry/@colname">
                 <xsl:variable name="colname" select="$entry/@colname"/>
-                <xsl:variable name="colspec" select="$entry/ancestor::cals:tgroup/cals:colspec[@colname=$colname]"/>
+                <xsl:variable name="colspec"
+                    select="$entry/ancestor::cals:tgroup/cals:colspec[@colname = $colname]"/>
                 <xsl:call-template name="colspec.colnum">
                     <xsl:with-param name="colspec" select="$colspec"/>
                 </xsl:call-template>
             </xsl:when>
             <xsl:when test="$entry/@nameend">
                 <xsl:variable name="nameend" select="$entry/@nameend"/>
-                <xsl:variable name="colspec" select="$entry/ancestor::cals:tgroup/cals:colspec[@colname=$nameend]"/>
+                <xsl:variable name="colspec"
+                    select="$entry/ancestor::cals:tgroup/cals:colspec[@colname = $nameend]"/>
                 <xsl:call-template name="colspec.colnum">
                     <xsl:with-param name="colspec" select="$colspec"/>
                 </xsl:call-template>
@@ -327,7 +331,8 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="$colspec/preceding-sibling::cals:colspec">
                 <xsl:variable name="prec.colspec.colnum">
                     <xsl:call-template name="colspec.colnum">
-                        <xsl:with-param name="colspec" select="$colspec/preceding-sibling::cals:colspec[1]"/>
+                        <xsl:with-param name="colspec"
+                            select="$colspec/preceding-sibling::cals:colspec[1]"/>
                     </xsl:call-template>
                 </xsl:variable>
                 <xsl:value-of select="$prec.colspec.colnum + 1"/>
@@ -339,14 +344,14 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="cols" select="1"/>
         <xsl:param name="count" select="1"/>
         <xsl:choose>
-            <xsl:when test="$count&gt;$cols"/>
+            <xsl:when test="$count &gt; $cols"/>
             <xsl:otherwise>
                 <xsl:call-template name="generate.col">
                     <xsl:with-param name="countcol" select="$count"/>
                 </xsl:call-template>
                 <xsl:call-template name="generate.colgroup">
                     <xsl:with-param name="cols" select="$cols"/>
-                    <xsl:with-param name="count" select="$count+1"/>
+                    <xsl:with-param name="count" select="$count + 1"/>
                 </xsl:call-template>
             </xsl:otherwise>
         </xsl:choose>
@@ -357,11 +362,11 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="count">1</xsl:param>
         <xsl:param name="colnum">1</xsl:param>
         <xsl:choose>
-            <xsl:when test="$count&gt;count($colspecs)">
+            <xsl:when test="$count &gt; count($colspecs)">
                 <col/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:variable name="colspec" select="$colspecs[$count=position()]"/>
+                <xsl:variable name="colspec" select="$colspecs[$count = position()]"/>
                 <xsl:variable name="colspec.colnum">
                     <xsl:choose>
                         <xsl:when test="$colspec/@colnum">
@@ -373,7 +378,7 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:choose>
-                    <xsl:when test="$colspec.colnum=$countcol">
+                    <xsl:when test="$colspec.colnum = $countcol">
                         <col>
                             <xsl:if test="$colspec/@align">
                                 <xsl:attribute name="align">
@@ -396,7 +401,7 @@ of this software, even if advised of the possibility of such damage.
                         <xsl:call-template name="generate.col">
                             <xsl:with-param name="countcol" select="$countcol"/>
                             <xsl:with-param name="colspecs" select="$colspecs"/>
-                            <xsl:with-param name="count" select="$count+1"/>
+                            <xsl:with-param name="count" select="$count + 1"/>
                             <xsl:with-param name="colnum">
                                 <xsl:choose>
                                     <xsl:when test="$colspec/@colnum">
@@ -414,24 +419,24 @@ of this software, even if advised of the possibility of such damage.
         </xsl:choose>
     </xsl:template>
     <xsl:template name="colspec.colwidth">
-    <!-- when this macro is called, the current context must be an entry -->
+        <!-- when this macro is called, the current context must be an entry -->
         <xsl:param name="colname"/>
-    <!-- .. = row, ../.. = thead|tbody, ../../.. = cals:tgroup -->
+        <!-- .. = row, ../.. = thead|tbody, ../../.. = cals:tgroup -->
         <xsl:param name="colspecs" select="../../../../cals:tgroup/cals:colspec"/>
         <xsl:param name="count">1</xsl:param>
         <xsl:choose>
-            <xsl:when test="$count&gt;count($colspecs)"/>
+            <xsl:when test="$count &gt; count($colspecs)"/>
             <xsl:otherwise>
-                <xsl:variable name="colspec" select="$colspecs[$count=position()]"/>
+                <xsl:variable name="colspec" select="$colspecs[$count = position()]"/>
                 <xsl:choose>
-                    <xsl:when test="$colspec/@colname=$colname">
+                    <xsl:when test="$colspec/@colname = $colname">
                         <xsl:value-of select="$colspec/@colwidth"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:call-template name="colspec.colwidth">
                             <xsl:with-param name="colname" select="$colname"/>
                             <xsl:with-param name="colspecs" select="$colspecs"/>
-                            <xsl:with-param name="count" select="$count+1"/>
+                            <xsl:with-param name="count" select="$count + 1"/>
                         </xsl:call-template>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -444,12 +449,14 @@ of this software, even if advised of the possibility of such damage.
         <xsl:variable name="nameend" select="$entry/@nameend"/>
         <xsl:variable name="scol">
             <xsl:call-template name="colspec.colnum">
-                <xsl:with-param name="colspec" select="$entry/ancestor::cals:tgroup/cals:colspec[@colname=$namest]"/>
+                <xsl:with-param name="colspec"
+                    select="$entry/ancestor::cals:tgroup/cals:colspec[@colname = $namest]"/>
             </xsl:call-template>
         </xsl:variable>
         <xsl:variable name="ecol">
             <xsl:call-template name="colspec.colnum">
-                <xsl:with-param name="colspec" select="$entry/ancestor::cals:tgroup/cals:colspec[@colname=$nameend]"/>
+                <xsl:with-param name="colspec"
+                    select="$entry/ancestor::cals:tgroup/cals:colspec[@colname = $nameend]"/>
             </xsl:call-template>
         </xsl:variable>
         <xsl:value-of select="$ecol - $scol + 1"/>

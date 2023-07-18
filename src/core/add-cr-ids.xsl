@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:cr="http://aac.ac.at/content_repository" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" exclude-result-prefixes="xs xd" version="2.0">
+<xsl:stylesheet xmlns:cr="http://aac.ac.at/content_repository"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" exclude-result-prefixes="xs xd" version="2.0">
     <xd:doc scope="stylesheet">
         <xd:desc>
             <xd:p>
@@ -17,7 +19,7 @@
     <xsl:template match="element()" priority="1">
         <xsl:copy>
             <xsl:attribute name="cr:id" select="generate-id()"/>
-            <xsl:apply-templates select="@*|node()"/>
+            <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
     </xsl:template>
 </xsl:stylesheet>

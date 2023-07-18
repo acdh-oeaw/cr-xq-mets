@@ -1,39 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:its="http://www.w3.org/2005/11/its" xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:t="http://www.thaiopensource.com/ns/annotations" xmlns:s="http://www.ascc.net/xml/schematron" xmlns:cals="http://www.oasis-open.org/specs/tm9901" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="tei html t a rng s iso tbx       cals teix w" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:its="http://www.w3.org/2005/11/its"
+    xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html"
+    xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:iso="http://www.iso.org/ns/1.0"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:t="http://www.thaiopensource.com/ns/annotations"
+    xmlns:s="http://www.ascc.net/xml/schematron" xmlns:cals="http://www.oasis-open.org/specs/tm9901"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="tei html t a rng s iso tbx       cals teix w" version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: web.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
@@ -42,17 +39,17 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="myi18n">
         <xsl:param name="word"/>
         <xsl:choose>
-            <xsl:when test="$word='appendixWords'">
+            <xsl:when test="$word = 'appendixWords'">
                 <xsl:text>Annex</xsl:text>
             </xsl:when>
         </xsl:choose>
     </xsl:template>
-    <xsl:template match="processing-instruction()[name()='ISOerror']">
+    <xsl:template match="processing-instruction()[name() = 'ISOerror']">
         <span style="border: solid red 1pt; color:red">
             <xsl:value-of select="."/>
         </span>
     </xsl:template>
-    <xsl:template match="tei:note[@place='comment']">
+    <xsl:template match="tei:note[@place = 'comment']">
         <span style="border: solid red 1pt; color:red">
             <xsl:value-of select="."/>
         </span>
@@ -70,7 +67,9 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:text>teidiv</xsl:text>
                     <xsl:value-of select="$depth"/>
                     <xsl:text> from-</xsl:text>
-                    <xsl:value-of select="local-name(ancestor::tei:body|ancestor::tei:front|ancestor::tei:back)"/>
+                    <xsl:value-of
+                        select="local-name(ancestor::tei:body | ancestor::tei:front | ancestor::tei:back)"
+                    />
                 </xsl:attribute>
             </xsl:otherwise>
         </xsl:choose>
@@ -81,14 +80,14 @@ of this software, even if advised of the possibility of such damage.
             <xsl:value-of select="$ident"/>
         </xsl:attribute>
     </xsl:template>
-    <xsl:template match="tei:note[@place='foot']/tei:p">
+    <xsl:template match="tei:note[@place = 'foot']/tei:p">
         <xsl:apply-templates/>
     </xsl:template>
-    <xsl:template match="tei:note[@rend='example']">
+    <xsl:template match="tei:note[@rend = 'example']">
         <p>EXAMPLE <xsl:apply-templates/>
         </p>
     </xsl:template>
-    <xsl:template match="tei:p[count(*)=1 and tei:gloss]">
+    <xsl:template match="tei:p[count(*) = 1 and tei:gloss]">
         <p style="margin-left: 1em">
             <xsl:apply-templates/>
         </p>
@@ -96,16 +95,16 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="tei:num">
         <span class="isonum">
             <xsl:choose>
-                <xsl:when test="$numberFormat='fr'">
+                <xsl:when test="$numberFormat = 'fr'">
                     <xsl:value-of select="."/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:value-of select="translate(.,',&#160;','.,')"/>
+                    <xsl:value-of select="translate(., ',&#160;', '.,')"/>
                 </xsl:otherwise>
             </xsl:choose>
         </span>
     </xsl:template>
-    <xsl:template match="tei:g[@ref='x:tab']">
+    <xsl:template match="tei:g[@ref = 'x:tab']">
         <xsl:text>	</xsl:text>
     </xsl:template>
     <xsl:template match="tei:c[@iso:font]">
@@ -123,7 +122,7 @@ of this software, even if advised of the possibility of such damage.
         <xsl:for-each select="$select">
             <p>
                 <xsl:choose>
-                    <xsl:when test="not($style='')">
+                    <xsl:when test="not($style = '')">
                         <xsl:attribute name="class">
                             <xsl:value-of select="$style"/>
                         </xsl:attribute>
@@ -147,14 +146,15 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="copyIt">
         <xsl:copy>
             <xsl:apply-templates select="@*" mode="checkSchematron"/>
-            <xsl:apply-templates select="*|processing-instruction()|comment()|text()" mode="checkSchematron"/>
+            <xsl:apply-templates select="* | processing-instruction() | comment() | text()"
+                mode="checkSchematron"/>
         </xsl:copy>
     </xsl:template>
     <xsl:template name="copyMe">
         <xsl:copy-of select="."/>
     </xsl:template>
     <xsl:template match="text()">
-        <xsl:value-of select="translate(.,'ߛ','-')"/>
+        <xsl:value-of select="translate(., 'ߛ', '-')"/>
     </xsl:template>
     <xsl:template name="simpleRun">
         <xsl:param name="text"/>
@@ -162,7 +162,7 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="italic"/>
         <xsl:value-of select="$prefix"/>
         <xsl:choose>
-            <xsl:when test="$italic='true'">
+            <xsl:when test="$italic = 'true'">
                 <i>
                     <xsl:value-of select="$text"/>
                 </i>
@@ -178,9 +178,9 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:attribute name="lang" select="../@xml:lang"/>
             </xsl:if>
             <xsl:variable name="style">
-                <xsl:for-each select="tokenize(@iso:style,';')">
+                <xsl:for-each select="tokenize(@iso:style, ';')">
                     <xsl:choose>
-                        <xsl:when test=".=''"/>
+                        <xsl:when test=". = ''"/>
                         <xsl:otherwise>
                             <s>
                                 <xsl:value-of select="."/>
@@ -189,46 +189,47 @@ of this software, even if advised of the possibility of such damage.
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:for-each>
-                <xsl:for-each select="tokenize(@rend,' ')">
+                <xsl:for-each select="tokenize(@rend, ' ')">
                     <xsl:choose>
-                        <xsl:when test=".='bold'">
+                        <xsl:when test=". = 'bold'">
                             <s>font-weight:bold;</s>
                         </xsl:when>
-                        <xsl:when test=".='italic'">
+                        <xsl:when test=". = 'italic'">
                             <s>font-style:italic;</s>
                         </xsl:when>
-                        <xsl:when test=".='smallcaps'">
+                        <xsl:when test=". = 'smallcaps'">
                             <s>font-variant:small-caps;</s>
                         </xsl:when>
-                        <xsl:when test=".='capsall'">
+                        <xsl:when test=". = 'capsall'">
                             <s>text-transform:capitalize;</s>
                         </xsl:when>
-                        <xsl:when test=".='strikethrough'">
+                        <xsl:when test=". = 'strikethrough'">
                             <s>text-decoration:line-through;</s>
                         </xsl:when>
-                        <xsl:when test=".='strikedoublethrough'">
+                        <xsl:when test=". = 'strikedoublethrough'">
                             <s>text-decoration:line-through;</s>
                         </xsl:when>
-                        <xsl:when test=".='underwavyline'">
+                        <xsl:when test=". = 'underwavyline'">
                             <s>text-decoration:wavy;</s>
                         </xsl:when>
-                        <xsl:when test=".='underline'">
+                        <xsl:when test=". = 'underline'">
                             <s>text-decoration:underline;</s>
                         </xsl:when>
-                        <xsl:when test=".='underdoubleline'">
+                        <xsl:when test=". = 'underdoubleline'">
                             <s>border-bottom: 3px double;</s>
                         </xsl:when>
-                        <xsl:when test="starts-with(.,'color(')">
-                            <xsl:value-of select="translate(.,'()',':;')"/>
+                        <xsl:when test="starts-with(., 'color(')">
+                            <xsl:value-of select="translate(., '()', ':;')"/>
                         </xsl:when>
-                        <xsl:when test=".='superscript'">
+                        <xsl:when test=". = 'superscript'">
                             <s>vertical-align: top;font-size: 70%;</s>
                         </xsl:when>
-                        <xsl:when test=".='subscript'">
+                        <xsl:when test=". = 'subscript'">
                             <s>vertical-align: bottom;font-size: 70%;</s>
                         </xsl:when>
-                        <xsl:when test="starts-with(.,'background(')">
-                            <s>background-color:<xsl:value-of select="substring-before(substring-after(.,'('),')')"/>
+                        <xsl:when test="starts-with(., 'background(')">
+                            <s>background-color:<xsl:value-of
+                                    select="substring-before(substring-after(., '('), ')')"/>
                             </s>
                         </xsl:when>
                     </xsl:choose>
@@ -259,17 +260,18 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="class">title</xsl:param>
         <xsl:param name="level">1</xsl:param>
         <xsl:if test="$class = 'maintitle'">
-            <div class="healthwarning">This extract from an ISO document has been created for test purposes only. The design and layout are subject to change by ISO.</div>
+            <div class="healthwarning">This extract from an ISO document has been created for test
+                purposes only. The design and layout are subject to change by ISO.</div>
         </xsl:if>
         <xsl:choose>
-            <xsl:when test="key('ISOMETA','docReference')">
+            <xsl:when test="key('ISOMETA', 'docReference')">
                 <xsl:element name="h{$level}">
                     <xsl:attribute name="class">
                         <xsl:value-of select="$class"/>
                     </xsl:attribute>
-                    <xsl:value-of select="substring-before(key('ISOMETA','docReference'),'(')"/>
+                    <xsl:value-of select="substring-before(key('ISOMETA', 'docReference'), '(')"/>
                     <br/>
-                    <xsl:value-of select="key('ISOMETA','fullTitle')"/>
+                    <xsl:value-of select="key('ISOMETA', 'fullTitle')"/>
                 </xsl:element>
             </xsl:when>
             <xsl:otherwise>
@@ -285,7 +287,7 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template name="rendToClass">
         <xsl:param name="id">true</xsl:param>
         <xsl:param name="default">.</xsl:param>
-        <xsl:if test="$id='true' and @xml:id">
+        <xsl:if test="$id = 'true' and @xml:id">
             <xsl:attribute name="id">
                 <xsl:value-of select="@xml:id"/>
             </xsl:attribute>
@@ -294,12 +296,12 @@ of this software, even if advised of the possibility of such damage.
             <xsl:attribute name="lang" select="../@xml:lang"/>
         </xsl:if>
         <xsl:variable name="style">
-            <xsl:for-each select="tokenize(@iso:style,';')">
+            <xsl:for-each select="tokenize(@iso:style, ';')">
                 <xsl:choose>
-                    <xsl:when test=".=''"/>
-                    <xsl:when test="starts-with(.,'direction')">
+                    <xsl:when test=". = ''"/>
+                    <xsl:when test="starts-with(., 'direction')">
                         <d>
-                            <xsl:value-of select="substring-after(.,':')"/>
+                            <xsl:value-of select="substring-after(., ':')"/>
                         </d>
                     </xsl:when>
                     <xsl:otherwise>
@@ -310,7 +312,7 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:for-each>
-            <xsl:for-each select="tokenize(@rend,' ')">
+            <xsl:for-each select="tokenize(@rend, ' ')">
                 <c>
                     <xsl:value-of select="."/>
                 </c>

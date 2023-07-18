@@ -3,7 +3,11 @@
 <!-- Status: beta -->
 <!-- Author: Daniel Schopper -->
 <!-- Date: 2013-09-20 -->
-<mets xmlns="http://www.loc.gov/METS/" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" OBJID="crEd:projectTemplate" LABEL="cr xq project template" TYPE="crEd:template">
+<mets xmlns="http://www.loc.gov/METS/" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mods="http://www.loc.gov/mods/v3"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd"
+    OBJID="crEd:projectTemplate" LABEL="cr xq project template" TYPE="crEd:template">
     <metsHdr CREATEDATE="2013-08-19T13:24:26.123+02:00" RECORDSTATUS="a">
         <agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="software">
             <name>cr_xq</name>
@@ -21,7 +25,8 @@
     <dmdSec ID="projectDMD">
         <mdWrap MDTYPE="MODS">
             <xmlData>
-                <mods:mods xmlns="http://www.loc.gov/mods/v3" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-5.xsd">
+                <mods:mods xmlns="http://www.loc.gov/mods/v3"
+                    xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-5.xsd">
                     <titleInfo>
                         <title>ABaC:us - Austrian Baroque Corpus</title>
                     </titleInfo>
@@ -36,16 +41,20 @@
                         <languageTerm type="text">german</languageTerm>
                     </language>
                     <typeOfResource>mixed material</typeOfResource>
-                    <abstract>ABaC:us is a growing digital collection of printed German language texts dating from the Baroque era, in particular the years from 1650 to 1750.</abstract>
+                    <abstract>ABaC:us is a growing digital collection of printed German language
+                        texts dating from the Baroque era, in particular the years from 1650 to
+                        1750.</abstract>
                 </mods:mods>
             </xmlData>
         </mdWrap>
     </dmdSec>
     <dmdSec ID="text1DMD">
-        <mdRef LOCTYPE="URL" MDTYPE="TEIHDR" xlink:href="/db/cr-data/_md/abacus/ABACUS_Mercks_Wienn.xml"/>
+        <mdRef LOCTYPE="URL" MDTYPE="TEIHDR"
+            xlink:href="/db/cr-data/_md/abacus/ABACUS_Mercks_Wienn.xml"/>
     </dmdSec>
     <dmdSec ID="text2DMD">
-        <mdRef LOCTYPE="URL" MDTYPE="TEIHDR" xlink:href="/db/cr-data/_md/abacus/ABACUS_Todten_Capelle.xml"/>
+        <mdRef LOCTYPE="URL" MDTYPE="TEIHDR"
+            xlink:href="/db/cr-data/_md/abacus/ABACUS_Todten_Capelle.xml"/>
     </dmdSec>
     <amdSec ID="projectAMD">
         <techMD ID="crProjectMappings">
@@ -95,11 +104,15 @@
         <rightsMD ID="projectACL" GROUPID="config.xml">
             <mdWrap MDTYPE="OTHER">
                 <xmlData>
-                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="admin" group="dba" mode="rw-------">
+                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager"
+                        owner="admin" group="dba" mode="rw-------">
                         <sm:acl entries="3">
-                            <sm:ace index="0" target="GROUP" who="abacusReaders" access_type="ALLOWED" mode="r-x"/>
-                            <sm:ace index="1" target="GROUP" who="abacusEditors" access_type="ALLOWED" mode="rwx"/>
-                            <sm:ace index="2" target="GROUP" who="abacusAdmins" access_type="ALLOWED" mode="rwx"/>
+                            <sm:ace index="0" target="GROUP" who="abacusReaders"
+                                access_type="ALLOWED" mode="r-x"/>
+                            <sm:ace index="1" target="GROUP" who="abacusEditors"
+                                access_type="ALLOWED" mode="rwx"/>
+                            <sm:ace index="2" target="GROUP" who="abacusAdmins"
+                                access_type="ALLOWED" mode="rwx"/>
                         </sm:acl>
                     </sm:permission>
                 </xmlData>
@@ -119,7 +132,8 @@
                     <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/main.html"/>
                 </file>
                 <file ID="templates0004" GROUPID="static">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/navigation.html"/>
+                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/navigation.html"
+                    />
                 </file>
             </fileGrp>
             <fileGrp ID="components">
@@ -127,14 +141,8 @@
                     <FContent>
                         <xmlData>
                             <script xmlns="http://www.w3.org/1999/xhml" type="text/javascript">
-                                
-                                $(function()
-                                {
-                                // Accordion
-                                $("#accordion").accordion({ header: "h3", autoHeight: false, active: 0  });
-                                });
-                                
-                            </script>
+                                $(function() { // Accordion $("#accordion").accordion({ header:
+                                "h3", autoHeight: false, active: 0 }); }); </script>
                         </xmlData>
                     </FContent>
                 </file>
@@ -143,7 +151,9 @@
                         <xmlData>
                             <p xmlns="http://www.w3.org/1999/xhml">
                                 <p>Text zum Totentanz<br/>
-                                    <a href="get?id=_md/ABACUS/ABACUS_Loesch_Wienn.xml&amp;format=html">sample metadata</a>
+                                    <a
+                                        href="get?id=_md/ABACUS/ABACUS_Loesch_Wienn.xml&amp;format=html"
+                                        >sample metadata</a>
                                 </p>
                             </p>
                         </xmlData>
@@ -152,41 +162,53 @@
             </fileGrp>
             <fileGrp ID="content">
                 <file ID="content1" GROUPID="static:content">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Corpus.xml"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/content/Corpus.xml"/>
                 </file>
                 <file ID="content2" GROUPID="static:content">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Dank.xml"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/content/Dank.xml"/>
                 </file>
                 <file ID="content3" GROUPID="static:content">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Impressum.xml"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/content/Impressum.xml"/>
                 </file>
                 <file ID="content004" GROUPID="static:content">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Nutzung.xml"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/content/Nutzung.xml"/>
                 </file>
                 <file ID="content005" GROUPID="static:content">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/content/Annotation.xml"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/content/Annotation.xml"/>
                 </file>
             </fileGrp>
             <fileGrp ID="images">
                 <file ID="images001" GROUPID="static:images">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/2Corpus.jpg"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/images/2Corpus.jpg"/>
                 </file>
                 <file ID="images002" GROUPID="static:images">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/3Annotation.jpg"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/images/3Annotation.jpg"/>
                 </file>
                 <file ID="images003" GROUPID="static:images">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/1Anfang.jpg"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/images/1Anfang.jpg"/>
                 </file>
                 <file ID="images004" GROUPID="static:images">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/1Anfang.jpg"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/images/1Anfang.jpg"/>
                 </file>
                 <file ID="images005" USE="projectLogo" GROUPID="static:images">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/images/logo_abacus_crop_resize.png"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/images/logo_abacus_crop_resize.png"
+                    />
                 </file>
             </fileGrp>
             <fileGrp ID="xsl">
                 <file ID="xsl001">
-                    <FLocat LOCTYPE="URL" xlink:href="/db/cr-projects/abacus/static/result2view_v1_custom.xsl"/>
+                    <FLocat LOCTYPE="URL"
+                        xlink:href="/db/cr-projects/abacus/static/result2view_v1_custom.xsl"/>
                 </file>
             </fileGrp>
         </fileGrp>
@@ -194,26 +216,38 @@
             <fileGrp ID="text1Facs" USE="facsimile">
                 <fileGrp USE="thumbnail">
                     <file ID="mercksWien00001t">
-                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/thumbnail/content"/>
+                        <FLocat LOCTYPE="URL"
+                            xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/thumbnail/content"
+                        />
                     </file>
                     <file ID="mercksWien00002t">
-                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/thumbnail/content"/>
+                        <FLocat LOCTYPE="URL"
+                            xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/thumbnail/content"
+                        />
                     </file>
                 </fileGrp>
                 <fileGrp USE="archive image">
                     <file ID="mercksWien00001a">
-                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/archive/content"/>
+                        <FLocat LOCTYPE="URL"
+                            xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/archive/content"
+                        />
                     </file>
                     <file ID="mercksWien00002a">
-                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/archive/content"/>
+                        <FLocat LOCTYPE="URL"
+                            xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/archive/content"
+                        />
                     </file>
                 </fileGrp>
                 <fileGrp USE="web image">
                     <file ID="mercksWien00001w">
-                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/web/content"/>
+                        <FLocat LOCTYPE="URL"
+                            xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/web/content"
+                        />
                     </file>
                     <file ID="mercksWien00002w">
-                        <FLocat LOCTYPE="URL" xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/web/content"/>
+                        <FLocat LOCTYPE="URL"
+                            xlink:href="fedora.acdh.ac.at/objects/o:abc12345/datastreams/IMAGE/web/content"
+                        />
                     </file>
                 </fileGrp>
             </fileGrp>
@@ -224,10 +258,12 @@
                     <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/mercks_wien.xml"/>
                 </file>
                 <file ID="text1TeiPage001" MIMETYPE="text/xml" USE="PAGE">
-                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00001.xml"/>
+                    <FLocat LOCTYPE="OTHER"
+                        xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00001.xml"/>
                 </file>
                 <file ID="text1TeiPage002" MIMETYPE="text/xml" USE="PAGE">
-                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00002.xml"/>
+                    <FLocat LOCTYPE="OTHER"
+                        xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00002.xml"/>
                 </file>
             </fileGrp>
             <fileGrp ID="text2Tei">
@@ -235,10 +271,12 @@
                     <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/mercks_wien.xml"/>
                 </file>
                 <file ID="text2TeiPage001" MIMETYPE="text/xml" USE="PAGE">
-                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00001.xml"/>
+                    <FLocat LOCTYPE="OTHER"
+                        xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00001.xml"/>
                 </file>
                 <file ID="text2TeiPage002" MIMETYPE="text/xml" USE="PAGE">
-                    <FLocat LOCTYPE="OTHER" xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00002.xml"/>
+                    <FLocat LOCTYPE="OTHER"
+                        xlink:href="/db/exist/cr-data/abacus/pages/mercks_wien/page00002.xml"/>
                 </file>
             </fileGrp>
         </fileGrp>

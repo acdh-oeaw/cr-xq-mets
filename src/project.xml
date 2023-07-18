@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mets xmlns="http://www.loc.gov/METS/" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:mets="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" OBJID="" LABEL="cr_xq Project" TYPE="cr-xq project">
+<mets xmlns="http://www.loc.gov/METS/" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:mods="http://www.loc.gov/mods/v3"
+    xmlns:mets="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd"
+    OBJID="" LABEL="cr_xq Project" TYPE="cr-xq project">
     <metsHdr CREATEDATE="" RECORDSTATUS="">
         <agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="SOFTWARE">
             <name>cr_xq</name>
@@ -12,7 +17,8 @@
     <dmdSec ID="projectDMD">
         <mdWrap MDTYPE="MODS">
             <xmlData>
-                <mods:mods xmlns="http://www.loc.gov/mods/v3" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-5.xsd">
+                <mods:mods xmlns="http://www.loc.gov/mods/v3"
+                    xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-5.xsd">
                     <titleInfo>
                         <title/>
                     </titleInfo>
@@ -92,7 +98,8 @@
         <rightsMD ID="projectACL" GROUPID="config.xml">
             <mdWrap MDTYPE="OTHER" OTHERMDTYPE="EXISTACL">
                 <xmlData>
-                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager" owner="noone" group="nogroup" mode="---------">
+                    <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager"
+                        owner="noone" group="nogroup" mode="---------">
                         <!-- this is just a template and will be filled by project:new() -->
                     </sm:permission>
                 </xmlData>
@@ -101,13 +108,16 @@
     </amdSec>
     <fileSec>
         <fileGrp ID="guiResources" USE="Resources related to the Web Interface">
-            <fileGrp ID="templates" USE="Customized HTML files to override the ones provided by the template"/>
+            <fileGrp ID="templates"
+                USE="Customized HTML files to override the ones provided by the template"/>
             <fileGrp ID="fragments" USE="Customized HTML fragments to be included in the GUI"/>
             <fileGrp ID="static" USE="Static web content (HTML files)"/>
             <fileGrp ID="images" USE="Static web content (image files)"/>
-            <fileGrp ID="xsl" USE="Customized XSL stylesheets to override the default data rendering"/>
+            <fileGrp ID="xsl"
+                USE="Customized XSL stylesheets to override the default data rendering"/>
         </fileGrp>
-        <fileGrp ID="projectImages" USE="Visual representations of the project's data (Facsimile et. alt.)"/>
+        <fileGrp ID="projectImages"
+            USE="Visual representations of the project's data (Facsimile et. alt.)"/>
         <fileGrp ID="projectData" USE="Project Data"/>
     </fileSec>
     <structMap TYPE="internal" ID="cr-data">

@@ -14,7 +14,8 @@
     <xqdoc:functions>
         <xqdoc:function>
             <xqdoc:name>trigger:after-update-document</xqdoc:name>
-            <xqdoc:signature>trigger:after-update-document($uri as xs:anyURI) as item()*</xqdoc:signature>
+            <xqdoc:signature>trigger:after-update-document($uri as xs:anyURI) as
+                item()*</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$uri </xqdoc:param>

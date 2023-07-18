@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://purl.org/NET/crm-owl#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:crm="http://purl.org/NET/crm-owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:oo="http://purl.org/openorg/" xmlns:service="http://purl.org/service/" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ox-service="http://vocab.ox.ac.uk/service/" version="1.0" exclude-result-prefixes="tei rdf rdfs owl xsd crm xsl xs oo foaf     service ox-service">
+<xsl:stylesheet xmlns="http://purl.org/NET/crm-owl#" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:crm="http://purl.org/NET/crm-owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:foaf="http://xmlns.com/foaf/0.1/"
+    xmlns:oo="http://purl.org/openorg/" xmlns:service="http://purl.org/service/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:html="http://www.w3.org/1999/xhtml" xmlns:ox-service="http://vocab.ox.ac.uk/service/"
+    version="1.0"
+    exclude-result-prefixes="tei rdf rdfs owl xsd crm xsl xs oo foaf     service ox-service">
     <xsl:param name="REQUEST">/</xsl:param>
     <xsl:param name="SERVER">http://www.oucs.ox.ac.uk</xsl:param>
     <xsl:output encoding="utf-8" method="xml" indent="yes"/>
@@ -9,27 +17,31 @@
             <xsl:apply-templates/>
         </rdf:RDF>
     </xsl:template>
-    <xsl:template match="html:link[@rev|@rel]">
+    <xsl:template match="html:link[@rev | @rel]">
         <service:Service rdf:about="{@href}">
-            <xsl:if test="@rev='ox-service:serviceLevelDescription'">
+            <xsl:if test="@rev = 'ox-service:serviceLevelDescription'">
                 <rdfs:label>
-                    <xsl:value-of select="ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title|ancestor::TEI.2/teiHeader/fileDesc/titleStmt/title"/>
+                    <xsl:value-of
+                        select="ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title | ancestor::TEI.2/teiHeader/fileDesc/titleStmt/title"
+                    />
                 </rdfs:label>
                 <service:maintainedBy>
                     <foaf:Group>
                         <xsl:attribute name="rdf:about">
-                            <xsl:value-of select="substring-before(@href,'service')"/>
+                            <xsl:value-of select="substring-before(@href, 'service')"/>
                             <xsl:text>group</xsl:text>
-                            <xsl:value-of select="substring-after(@href,'service')"/>
+                            <xsl:value-of select="substring-after(@href, 'service')"/>
                         </xsl:attribute>
-                        <foaf:mbox rdf:resource="mailto:{ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:authority|ancestor::TEI.2/teiHeader/fileDesc/publicationStmt/authority}"/>
+                        <foaf:mbox
+                            rdf:resource="mailto:{ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:authority|ancestor::TEI.2/teiHeader/fileDesc/publicationStmt/authority}"
+                        />
                     </foaf:Group>
                 </service:maintainedBy>
                 <oo:contact>
                     <xsl:attribute name="rdf:resource">
-                        <xsl:value-of select="substring-before(@href,'service')"/>
+                        <xsl:value-of select="substring-before(@href, 'service')"/>
                         <xsl:text>group</xsl:text>
-                        <xsl:value-of select="substring-after(@href,'service')"/>
+                        <xsl:value-of select="substring-after(@href, 'service')"/>
                     </xsl:attribute>
                 </oo:contact>
             </xsl:if>
@@ -41,7 +53,7 @@
             </xsl:element>
         </service:Service>
     </xsl:template>
-<!--  
+    <!--  
   <rdf:RDF
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
@@ -125,10 +137,10 @@
 -->
     <xsl:template name="teiname">
         <xsl:choose>
-            <xsl:when test="@type='place'">
+            <xsl:when test="@type = 'place'">
                 <xsl:call-template name="E53"/>
             </xsl:when>
-            <xsl:when test="@type='person'">
+            <xsl:when test="@type = 'person'">
                 <xsl:call-template name="E21"/>
             </xsl:when>
         </xsl:choose>
@@ -152,8 +164,7 @@
     </xsl:template>
     <xsl:template name="E5">
         <P11i_participated_in>
-            <E5_Event>
-      </E5_Event>
+            <E5_Event> </E5_Event>
         </P11i_participated_in>
     </xsl:template>
     <xsl:template name="E47">
@@ -221,7 +232,7 @@
                     </P131_is_identified_by>
                 </E21_Person>
             </xsl:when>
-            <xsl:when test="generate-id(.) = generate-id(key('persons',@ref)[1])">
+            <xsl:when test="generate-id(.) = generate-id(key('persons', @ref)[1])">
                 <E21_Person>
                     <xsl:call-template name="makeID"/>
                     <P131_is_identified_by>
@@ -248,7 +259,7 @@
                     </E48_Place_Name>
                 </P87_is_identified_by>
             </xsl:when>
-            <xsl:when test=".=''"/>
+            <xsl:when test=". = ''"/>
             <xsl:otherwise>
                 <E53_Place>
                     <xsl:call-template name="makeID"/>

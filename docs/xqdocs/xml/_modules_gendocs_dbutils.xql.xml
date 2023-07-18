@@ -14,7 +14,8 @@
     <xqdoc:functions>
         <xqdoc:function>
             <xqdoc:name>dbutil:find-by-mimetype</xqdoc:name>
-            <xqdoc:signature>dbutil:find-by-mimetype($collection as xs:anyURI, $mimeType as xs:string) as item()*</xqdoc:signature>
+            <xqdoc:signature>dbutil:find-by-mimetype($collection as xs:anyURI, $mimeType as
+                xs:string) as item()*</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$collection </xqdoc:param>
@@ -24,13 +25,13 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>dbutil:scan</xqdoc:name>
-            <xqdoc:signature>dbutil:scan($root as xs:anyURI, $func as function) as item()*</xqdoc:signature>
+            <xqdoc:signature>dbutil:scan($root as xs:anyURI, $func as function) as
+                item()*</xqdoc:signature>
             <xqdoc:comment>
-                <xqdoc:description> 
- Scan a collection tree recursively starting at $root. Call the supplied function once for each
- resource encountered. The first parameter to $func is the collection URI, the second the resource
- path (including the collection part).
-</xqdoc:description>
+                <xqdoc:description> Scan a collection tree recursively starting at $root. Call the
+                    supplied function once for each resource encountered. The first parameter to
+                    $func is the collection URI, the second the resource path (including the
+                    collection part). </xqdoc:description>
                 <xqdoc:param>$root </xqdoc:param>
                 <xqdoc:param>$func </xqdoc:param>
                 <xqdoc:return>item()* - </xqdoc:return>
@@ -38,9 +39,11 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>dbutil:scan-collections</xqdoc:name>
-            <xqdoc:signature>dbutil:scan-collections($root as xs:anyURI, $func as function) as item()*</xqdoc:signature>
+            <xqdoc:signature>dbutil:scan-collections($root as xs:anyURI, $func as function) as
+                item()*</xqdoc:signature>
             <xqdoc:comment>
-                <xqdoc:description> Scan a collection tree recursively starting at $root. Call $func once for each collection found </xqdoc:description>
+                <xqdoc:description> Scan a collection tree recursively starting at $root. Call $func
+                    once for each collection found </xqdoc:description>
                 <xqdoc:param>$root </xqdoc:param>
                 <xqdoc:param>$func </xqdoc:param>
                 <xqdoc:return>item()* - </xqdoc:return>
@@ -48,12 +51,12 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>dbutil:scan-resources</xqdoc:name>
-            <xqdoc:signature>dbutil:scan-resources($collection as xs:anyURI, $func as function) as item()*</xqdoc:signature>
+            <xqdoc:signature>dbutil:scan-resources($collection as xs:anyURI, $func as function) as
+                item()*</xqdoc:signature>
             <xqdoc:comment>
-                <xqdoc:description>
- List all resources contained in a collection and call the supplied function once for each
- resource with the complete path to the resource as parameter.
-</xqdoc:description>
+                <xqdoc:description> List all resources contained in a collection and call the
+                    supplied function once for each resource with the complete path to the resource
+                    as parameter. </xqdoc:description>
                 <xqdoc:param>$collection </xqdoc:param>
                 <xqdoc:param>$func </xqdoc:param>
                 <xqdoc:return>item()* - </xqdoc:return>

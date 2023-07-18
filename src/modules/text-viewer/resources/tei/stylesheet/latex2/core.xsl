@@ -1,41 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0" exclude-result-prefixes="a rng tei teix" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:rng="http://relaxng.org/ns/structure/1.0"
+    exclude-result-prefixes="a rng tei teix" version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p> TEI stylesheet dealing with elements from the core module, making
-      LaTeX output. </p>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p> TEI stylesheet dealing with elements from the core module, making LaTeX output. </p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: core.xsl 9844 2011-11-30 12:28:53Z rahtz $</p>
             <p>Copyright: 2011, TEI Consortium</p>
@@ -56,7 +46,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <xsl:template match="tei:cit">
         <xsl:choose>
-            <xsl:when test="@rend='display' or tei:q/tei:p or         tei:quote/tei:l or tei:quote/tei:p">
+            <xsl:when test="@rend = 'display' or tei:q/tei:p or tei:quote/tei:l or tei:quote/tei:p">
                 <xsl:text>
 \begin{quote}
 </xsl:text>
@@ -65,7 +55,7 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:value-of select="@n"/>
                     <xsl:text>) </xsl:text>
                 </xsl:if>
-                <xsl:apply-templates select="tei:q|tei:quote"/>
+                <xsl:apply-templates select="tei:q | tei:quote"/>
                 <xsl:text>\par
 </xsl:text>
                 <xsl:apply-templates select="tei:bibl"/>
@@ -142,9 +132,9 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>Process element eg|tei:q[@rend='eg']</desc>
     </doc>
-    <xsl:template match="tei:seg[@rend='pre']|tei:eg|tei:q[@rend='eg']">
+    <xsl:template match="tei:seg[@rend = 'pre'] | tei:eg | tei:q[@rend = 'eg']">
         <xsl:choose>
-            <xsl:when test="ancestor::tei:cell and count(*)=1 and string-length(.)&lt;60">
+            <xsl:when test="ancestor::tei:cell and count(*) = 1 and string-length(.) &lt; 60">
                 <xsl:variable name="stuff">
                     <xsl:apply-templates mode="eg"/>
                 </xsl:variable>
@@ -152,7 +142,7 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:value-of select="tei:escapeCharsVerbatim($stuff)"/>
                 <xsl:text>} </xsl:text>
             </xsl:when>
-            <xsl:when test="ancestor::tei:cell and not(*)  and string-length(.)&lt;60">
+            <xsl:when test="ancestor::tei:cell and not(*) and string-length(.) &lt; 60">
                 <xsl:variable name="stuff">
                     <xsl:apply-templates mode="eg"/>
                 </xsl:variable>
@@ -160,7 +150,7 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:value-of select="tei:escapeCharsVerbatim($stuff)"/>
                 <xsl:text>} </xsl:text>
             </xsl:when>
-            <xsl:when test="ancestor::tei:cell or @rend='pre'">
+            <xsl:when test="ancestor::tei:cell or @rend = 'pre'">
                 <xsl:text>\mbox{}\hfill\\[-10pt]\begin{Verbatim}[fontsize=\small]
 </xsl:text>
                 <xsl:apply-templates mode="eg"/>
@@ -168,7 +158,7 @@ of this software, even if advised of the possibility of such damage.
 \end{Verbatim}
 </xsl:text>
             </xsl:when>
-            <xsl:when test="ancestor::tei:list[@type='gloss']">
+            <xsl:when test="ancestor::tei:list[@type = 'gloss']">
                 <xsl:text>\hspace{1em}\hfill\linebreak</xsl:text>
                 <xsl:text>\bgroup</xsl:text>
                 <xsl:call-template name="exampleFontSet"/>
@@ -192,7 +182,7 @@ of this software, even if advised of the possibility of such damage.
 </xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-      <!--
+        <!--
     <xsl:choose>
       <xsl:when test="@n">
 	<xsl:text>
@@ -250,19 +240,22 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:text>
 \Div</xsl:text>
                 <xsl:choose>
-                    <xsl:when test="$depth=0">I</xsl:when>
-                    <xsl:when test="$depth=1">II</xsl:when>
-                    <xsl:when test="$depth=2">III</xsl:when>
-                    <xsl:when test="$depth=3">IV</xsl:when>
-                    <xsl:when test="$depth=4">V</xsl:when>
+                    <xsl:when test="$depth = 0">I</xsl:when>
+                    <xsl:when test="$depth = 1">II</xsl:when>
+                    <xsl:when test="$depth = 2">III</xsl:when>
+                    <xsl:when test="$depth = 3">IV</xsl:when>
+                    <xsl:when test="$depth = 4">V</xsl:when>
                     <xsl:otherwise>I</xsl:otherwise>
                 </xsl:choose>
                 <xsl:choose>
                     <xsl:when test="ancestor::tei:floatingText">Star</xsl:when>
-                    <xsl:when test="parent::tei:div/@rend='nonumber'">Star</xsl:when>
-                    <xsl:when test="ancestor::tei:back and not($numberBackHeadings='true')">Star</xsl:when>
-                    <xsl:when test="not($numberHeadings='true') and ancestor::tei:body">Star</xsl:when>
-                    <xsl:when test="ancestor::tei:front and not($numberFrontHeadings='true')">Star</xsl:when>
+                    <xsl:when test="parent::tei:div/@rend = 'nonumber'">Star</xsl:when>
+                    <xsl:when test="ancestor::tei:back and not($numberBackHeadings = 'true')"
+                        >Star</xsl:when>
+                    <xsl:when test="not($numberHeadings = 'true') and ancestor::tei:body"
+                        >Star</xsl:when>
+                    <xsl:when test="ancestor::tei:front and not($numberFrontHeadings = 'true')"
+                        >Star</xsl:when>
                 </xsl:choose>
                 <xsl:text>[</xsl:text>
                 <xsl:value-of select="normalize-space(.)"/>
@@ -305,52 +298,52 @@ of this software, even if advised of the possibility of such damage.
         <xsl:variable name="cmd">
             <xsl:choose>
                 <xsl:when test="not(@rend)">\textbf</xsl:when>
-                <xsl:when test="starts-with(@rend,'color')">\textcolor</xsl:when>
-                <xsl:when test="@rend='bold'">\textbf</xsl:when>
-                <xsl:when test="@rend='calligraphic'">\textcal</xsl:when>
-                <xsl:when test="@rend='capsall'">\uppercase</xsl:when>
-                <xsl:when test="@rend='center'">\centerline</xsl:when>
-                <xsl:when test="@rend='code'">\texttt</xsl:when>
-                <xsl:when test="@rend='expanded'">\textsc</xsl:when>
-                <xsl:when test="@rend='gothic'">\textgothic</xsl:when>
-                <xsl:when test="@rend='i'">\textit</xsl:when>
-                <xsl:when test="@rend='important'">\textbf</xsl:when>
-                <xsl:when test="@rend='it'">\textit</xsl:when>
-                <xsl:when test="@rend='ital'">\textit</xsl:when>
-                <xsl:when test="@rend='italic'">\textit</xsl:when>
-                <xsl:when test="@rend='italics'">\textit</xsl:when>
-                <xsl:when test="@rend='large'">\textlarge</xsl:when>
-                <xsl:when test="@rend='larger'">\textlarger</xsl:when>
-                <xsl:when test="@rend='noindex'">\textrm</xsl:when>
-                <xsl:when test="@rend='overbar'">\textoverbar</xsl:when>
-                <xsl:when test="@rend='plain'">\textrm</xsl:when>
-                <xsl:when test="@rend='quoted'">\textquoted</xsl:when>
-                <xsl:when test="@rend='sc'">\textsc</xsl:when>
-                <xsl:when test="@rend='small'">\textsmall</xsl:when>
-                <xsl:when test="@rend='smallcaps'">\textsc</xsl:when>
-                <xsl:when test="@rend='smaller'">\textsmaller</xsl:when>
-                <xsl:when test="@rend='strikethrough'">\sout</xsl:when>
-                <xsl:when test="@rend='sub'">\textsubscript</xsl:when>
-                <xsl:when test="@rend='subscript'">\textsubscript</xsl:when>
-                <xsl:when test="@rend='sup'">\textsuperscript</xsl:when>
-                <xsl:when test="@rend='superscript'">\textsuperscript</xsl:when>
-                <xsl:when test="@rend='typewriter'">\texttt</xsl:when>
-                <xsl:when test="@rend='ul'">\uline</xsl:when>
-                <xsl:when test="@rend='underwavyline'">\uwave</xsl:when>
-                <xsl:when test="@rend='underdoubleline'">\uuline</xsl:when>
-                <xsl:when test="@rend='underline'">\uline</xsl:when>
+                <xsl:when test="starts-with(@rend, 'color')">\textcolor</xsl:when>
+                <xsl:when test="@rend = 'bold'">\textbf</xsl:when>
+                <xsl:when test="@rend = 'calligraphic'">\textcal</xsl:when>
+                <xsl:when test="@rend = 'capsall'">\uppercase</xsl:when>
+                <xsl:when test="@rend = 'center'">\centerline</xsl:when>
+                <xsl:when test="@rend = 'code'">\texttt</xsl:when>
+                <xsl:when test="@rend = 'expanded'">\textsc</xsl:when>
+                <xsl:when test="@rend = 'gothic'">\textgothic</xsl:when>
+                <xsl:when test="@rend = 'i'">\textit</xsl:when>
+                <xsl:when test="@rend = 'important'">\textbf</xsl:when>
+                <xsl:when test="@rend = 'it'">\textit</xsl:when>
+                <xsl:when test="@rend = 'ital'">\textit</xsl:when>
+                <xsl:when test="@rend = 'italic'">\textit</xsl:when>
+                <xsl:when test="@rend = 'italics'">\textit</xsl:when>
+                <xsl:when test="@rend = 'large'">\textlarge</xsl:when>
+                <xsl:when test="@rend = 'larger'">\textlarger</xsl:when>
+                <xsl:when test="@rend = 'noindex'">\textrm</xsl:when>
+                <xsl:when test="@rend = 'overbar'">\textoverbar</xsl:when>
+                <xsl:when test="@rend = 'plain'">\textrm</xsl:when>
+                <xsl:when test="@rend = 'quoted'">\textquoted</xsl:when>
+                <xsl:when test="@rend = 'sc'">\textsc</xsl:when>
+                <xsl:when test="@rend = 'small'">\textsmall</xsl:when>
+                <xsl:when test="@rend = 'smallcaps'">\textsc</xsl:when>
+                <xsl:when test="@rend = 'smaller'">\textsmaller</xsl:when>
+                <xsl:when test="@rend = 'strikethrough'">\sout</xsl:when>
+                <xsl:when test="@rend = 'sub'">\textsubscript</xsl:when>
+                <xsl:when test="@rend = 'subscript'">\textsubscript</xsl:when>
+                <xsl:when test="@rend = 'sup'">\textsuperscript</xsl:when>
+                <xsl:when test="@rend = 'superscript'">\textsuperscript</xsl:when>
+                <xsl:when test="@rend = 'typewriter'">\texttt</xsl:when>
+                <xsl:when test="@rend = 'ul'">\uline</xsl:when>
+                <xsl:when test="@rend = 'underwavyline'">\uwave</xsl:when>
+                <xsl:when test="@rend = 'underdoubleline'">\uuline</xsl:when>
+                <xsl:when test="@rend = 'underline'">\uline</xsl:when>
             </xsl:choose>
         </xsl:variable>
         <xsl:value-of select="$cmd"/>
         <xsl:choose>
-            <xsl:when test="starts-with(@rend,'color(')">
+            <xsl:when test="starts-with(@rend, 'color(')">
                 <xsl:text>{</xsl:text>
-                <xsl:value-of select="substring-before(substring-after(@rend,'color('),')')"/>
+                <xsl:value-of select="substring-before(substring-after(@rend, 'color('), ')')"/>
                 <xsl:text>}</xsl:text>
             </xsl:when>
-            <xsl:when test="starts-with(@rend,'color')">
+            <xsl:when test="starts-with(@rend, 'color')">
                 <xsl:text>{</xsl:text>
-                <xsl:value-of select="substring-after(@rend,'color')"/>
+                <xsl:value-of select="substring-after(@rend, 'color')"/>
                 <xsl:text>}</xsl:text>
             </xsl:when>
         </xsl:choose>
@@ -432,28 +425,28 @@ of this software, even if advised of the possibility of such damage.
         </xsl:if>
         <xsl:choose>
             <xsl:when test="not(tei:item)"/>
-            <xsl:when test="@type='gloss' or tei:label">
+            <xsl:when test="@type = 'gloss' or tei:label">
                 <xsl:text>\begin{description}
 </xsl:text>
                 <xsl:apply-templates mode="gloss" select="tei:item"/>
                 <xsl:text>
 \end{description} </xsl:text>
             </xsl:when>
-            <xsl:when test="@type='unordered'">
+            <xsl:when test="@type = 'unordered'">
                 <xsl:text>\begin{itemize}
 </xsl:text>
                 <xsl:apply-templates/>
                 <xsl:text>
 \end{itemize} </xsl:text>
             </xsl:when>
-            <xsl:when test="@type='ordered'">
+            <xsl:when test="@type = 'ordered'">
                 <xsl:text>\begin{enumerate}
 </xsl:text>
                 <xsl:apply-templates/>
                 <xsl:text>
 \end{enumerate}</xsl:text>
             </xsl:when>
-            <xsl:when test="@type='runin' or @rend='runon'">
+            <xsl:when test="@type = 'runin' or @rend = 'runon'">
                 <xsl:apply-templates mode="runin" select="tei:item"/>
             </xsl:when>
             <xsl:otherwise>
@@ -474,7 +467,8 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:text>\begin{bibitemlist}{1}
 </xsl:text>
                 <xsl:for-each select="tei:biblStruct">
-                    <xsl:sort select="translate(string(tei:*[1]/tei:author/tei:surname or  tei:*[1]/tei:author/tei:orgName or  tei:*[1]/tei:author/tei:name or  tei:*[1]/tei:editor/tei:surname or  tei:*[1]/tei:editor/tei:name or  tei:*[1]/tei:title),$uc,$lc)"/>
+                    <xsl:sort
+                        select="translate(string(tei:*[1]/tei:author/tei:surname or tei:*[1]/tei:author/tei:orgName or tei:*[1]/tei:author/tei:name or tei:*[1]/tei:editor/tei:surname or tei:*[1]/tei:editor/tei:name or tei:*[1]/tei:title), $uc, $lc)"/>
                     <xsl:sort select="tei:monogr/tei:imprint/tei:date"/>
                     <xsl:text>\bibitem[</xsl:text>
                     <xsl:apply-templates select="." mode="xref"/>
@@ -504,7 +498,7 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="tei:bibl">
         <xsl:choose>
-            <xsl:when test="parent::tei:div|tei:listBibl">
+            <xsl:when test="parent::tei:div | tei:listBibl">
                 <xsl:text>\par \bgroup\itshape
 </xsl:text>
                 <xsl:apply-templates/>
@@ -533,12 +527,12 @@ of this software, even if advised of the possibility of such damage.
         </xsl:choose>
         <xsl:text>}</xsl:text>
         <xsl:choose>
-            <xsl:when test="parent::tei:listBibl/@xml:lang='zh-tw' or @xml:lang='zh-tw'">
+            <xsl:when test="parent::tei:listBibl/@xml:lang = 'zh-tw' or @xml:lang = 'zh-tw'">
                 <xsl:text>{\textChinese </xsl:text>
                 <xsl:apply-templates/>
                 <xsl:text>}</xsl:text>
             </xsl:when>
-            <xsl:when test="parent::tei:listBibl/@xml:lang='ja' or @xml:lang='ja'">
+            <xsl:when test="parent::tei:listBibl/@xml:lang = 'ja' or @xml:lang = 'ja'">
                 <xsl:text>{\textJapanese </xsl:text>
                 <xsl:apply-templates/>
                 <xsl:text>}</xsl:text>
@@ -568,12 +562,12 @@ of this software, even if advised of the possibility of such damage.
             <xsl:text>}{}</xsl:text>
         </xsl:if>
         <xsl:choose>
-            <xsl:when test="@place='inline' or ancestor::tei:bibl or ancestor::tei:biblStruct">
+            <xsl:when test="@place = 'inline' or ancestor::tei:bibl or ancestor::tei:biblStruct">
                 <xsl:text>(</xsl:text>
                 <xsl:apply-templates/>
                 <xsl:text>) </xsl:text>
             </xsl:when>
-            <xsl:when test="@place='end'">
+            <xsl:when test="@place = 'end'">
                 <xsl:text>\endnote{</xsl:text>
                 <xsl:if test="@xml:id">
                     <xsl:text>\label{</xsl:text>
@@ -588,7 +582,7 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:apply-templates/>
                 <xsl:text>}</xsl:text>
             </xsl:when>
-            <xsl:when test="count(key('APP',1))&gt;0">
+            <xsl:when test="count(key('APP', 1)) &gt; 0">
                 <xsl:text>\footnote{</xsl:text>
                 <xsl:apply-templates/>
                 <xsl:text>}</xsl:text>
@@ -611,7 +605,7 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="tei:p">
         <xsl:choose>
             <xsl:when test="parent::tei:note and not(preceding-sibling::tei:p)"/>
-            <xsl:when test="count(key('APP',1))&gt;0">
+            <xsl:when test="count(key('APP', 1)) &gt; 0">
                 <xsl:text>\pstart
 </xsl:text>
             </xsl:when>
@@ -620,11 +614,11 @@ of this software, even if advised of the possibility of such damage.
 </xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:if test="$numberParagraphs='true'">
+        <xsl:if test="$numberParagraphs = 'true'">
             <xsl:call-template name="numberParagraph"/>
         </xsl:if>
         <xsl:apply-templates/>
-        <xsl:if test="count(key('APP',1))&gt;0">
+        <xsl:if test="count(key('APP', 1)) &gt; 0">
             <xsl:text>
 \pend
 </xsl:text>
@@ -641,17 +635,16 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>
             <p>Process element pb</p>
-            <p>Indication of a page break. We make it an anchor if it has an
-    ID.</p>
+            <p>Indication of a page break. We make it an anchor if it has an ID.</p>
         </desc>
     </doc>
     <xsl:template match="tei:pb">
-   <!-- string " Page " is now managed through the i18n file -->
+        <!-- string " Page " is now managed through the i18n file -->
         <xsl:choose>
-            <xsl:when test="$pagebreakStyle='active'">
+            <xsl:when test="$pagebreakStyle = 'active'">
                 <xsl:text>\clearpage </xsl:text>
             </xsl:when>
-            <xsl:when test="$pagebreakStyle='visible'">
+            <xsl:when test="$pagebreakStyle = 'visible'">
                 <xsl:text>✁[</xsl:text>
                 <xsl:value-of select="@unit"/>
                 <xsl:text> </xsl:text>
@@ -662,7 +655,8 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:value-of select="@n"/>
                 <xsl:text>]✁</xsl:text>
             </xsl:when>
-            <xsl:when test="$pagebreakStyle='bracketsonly'"> <!-- To avoid trouble with the scisssors character "✁" -->
+            <xsl:when test="$pagebreakStyle = 'bracketsonly'">
+                <!-- To avoid trouble with the scisssors character "✁" -->
                 <xsl:text>[</xsl:text>
                 <xsl:value-of select="@unit"/>
                 <xsl:text> </xsl:text>
@@ -704,12 +698,12 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="parent::tei:cit">
                 <xsl:apply-templates/>
             </xsl:when>
-            <xsl:when test="@rend='inline'">
+            <xsl:when test="@rend = 'inline'">
                 <xsl:value-of select="$preQuote"/>
                 <xsl:apply-templates/>
                 <xsl:value-of select="$postQuote"/>
             </xsl:when>
-            <xsl:when test="@rend='display' or tei:p or tei:l or string-length(.)&gt;150">
+            <xsl:when test="@rend = 'display' or tei:p or tei:l or string-length(.) &gt; 150">
                 <xsl:text>\begin{quote}</xsl:text>
                 <xsl:apply-templates/>
                 <xsl:text>\end{quote}</xsl:text>
@@ -724,17 +718,17 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>Process elements p[@rend='display']</desc>
     </doc>
-    <xsl:template match="tei:p[@rend='display']"> \begin{quote}
-    <xsl:apply-templates/> \end{quote}</xsl:template>
+    <xsl:template match="tei:p[@rend = 'display']"> \begin{quote} <xsl:apply-templates/>
+        \end{quote}</xsl:template>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>Process elements q[@rend='display']</desc>
     </doc>
-    <xsl:template match="tei:q[@rend='display']"> \begin{quote}
-    <xsl:apply-templates/> \end{quote}</xsl:template>
+    <xsl:template match="tei:q[@rend = 'display']"> \begin{quote} <xsl:apply-templates/>
+        \end{quote}</xsl:template>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>Process element ref[@type='cite']</desc>
     </doc>
-    <xsl:template match="tei:ref[@type='cite']">
+    <xsl:template match="tei:ref[@type = 'cite']">
         <xsl:apply-templates/>
     </xsl:template>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
@@ -747,8 +741,7 @@ of this software, even if advised of the possibility of such damage.
     </xsl:template>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>
-            <p>Process attributes in text mode, escaping the LaTeX
-    command characters.</p>
+            <p>Process attributes in text mode, escaping the LaTeX command characters.</p>
             <p>as with text()</p>
         </desc>
     </doc>
@@ -760,8 +753,8 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:template match="text()" mode="eg">
         <xsl:choose>
-            <xsl:when test="starts-with(.,'&#xA;')">
-                <xsl:value-of select="substring-after(tei:escapeCharsVerbatim(.),'&#xA;')"/>
+            <xsl:when test="starts-with(., '&#xA;')">
+                <xsl:value-of select="substring-after(tei:escapeCharsVerbatim(.), '&#xA;')"/>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="tei:escapeCharsVerbatim(.)"/>
@@ -813,17 +806,17 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="class"/>
         <xsl:param name="content"/>
         <xsl:choose>
-            <xsl:when test="$class='titlem'">
+            <xsl:when test="$class = 'titlem'">
                 <xsl:text>\textit{</xsl:text>
                 <xsl:copy-of select="$content"/>
                 <xsl:text>}</xsl:text>
             </xsl:when>
-            <xsl:when test="$class='titlej'">
+            <xsl:when test="$class = 'titlej'">
                 <xsl:text>\textit{</xsl:text>
                 <xsl:copy-of select="$content"/>
                 <xsl:text>}</xsl:text>
             </xsl:when>
-            <xsl:when test="$class='titlea'">
+            <xsl:when test="$class = 'titlea'">
                 <xsl:text>‘</xsl:text>
                 <xsl:copy-of select="$content"/>
                 <xsl:text>’</xsl:text>

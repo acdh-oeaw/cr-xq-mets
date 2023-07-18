@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:teidocx="http://www.tei-c.org/ns/teidocx/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:fn="http://www.w3.org/2005/02/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mml="http://www.w3.org/1998/Math/MathML" version="2.0" exclude-result-prefixes="ve o r m v wp w10 w wne mml tbx iso tei a xs pic fn tei teidocx">
+<xsl:stylesheet xmlns:teidocx="http://www.tei-c.org/ns/teidocx/1.0"
+    xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:w10="urn:schemas-microsoft-com:office:word"
+    xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html"
+    xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0"
+    xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+    xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+    xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+    xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" version="2.0"
+    exclude-result-prefixes="ve o r m v wp w10 w wne mml tbx iso tei a xs pic fn tei teidocx">
     <!-- import conversion style -->
     <xsl:import href="../../../docx/to/teitodocx.xsl"/>
-    
+
     <!-- import functions -->
     <xsl:import href="default-functions.xsl"/>
     <xsl:param name="renderAddDel">true</xsl:param>
@@ -10,16 +27,15 @@
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
             <p> TEI stylesheet for making Word docx files from TEI XML (see tei-docx.xsl)</p>
-            <p> This library is free software; you can redistribute it and/or
-            modify it under the terms of the GNU Lesser General Public License as
-            published by the Free Software Foundation; either version 2.1 of the
-            License, or (at your option) any later version. This library is
-            distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-            without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-            PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
-            details. You should have received a copy of the GNU Lesser General Public
-            License along with this library; if not, write to the Free Software
-            Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA </p>
+            <p> This library is free software; you can redistribute it and/or modify it under the
+                terms of the GNU Lesser General Public License as published by the Free Software
+                Foundation; either version 2.1 of the License, or (at your option) any later
+                version. This library is distributed in the hope that it will be useful, but WITHOUT
+                ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+                PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You
+                should have received a copy of the GNU Lesser General Public License along with this
+                library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite
+                330, Boston, MA 02111-1307 USA </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: to.xsl 9329 2011-09-20 09:47:43Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
@@ -32,7 +48,7 @@
     <xsl:param name="styleDoc">
         <xsl:value-of select="concat($word-directory, '/word/styles.xml')"/>
     </xsl:param>
-    
+
     <!-- Styles -->
     <xsl:template match="tei:abbr" mode="get-style">abbr</xsl:template>
     <xsl:template match="tei:cit" mode="get-style">Quote</xsl:template>
@@ -87,7 +103,7 @@
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-    <xsl:template match="tei:seg[not(@*) and normalize-space(.)='']">
+    <xsl:template match="tei:seg[not(@*) and normalize-space(.) = '']">
         <w:r>
             <w:t>
                 <xsl:attribute name="xml:space">preserve</xsl:attribute>
@@ -96,13 +112,13 @@
         </w:r>
     </xsl:template>
 
-    
+
     <!-- 
         Block Templates:
         Here we can overwrite how block elements are rendered
     -->
-  
-    
+
+
     <!-- Dates -->
     <xsl:template match="tei:date[ancestor::tei:teiHeader]">
         <w:r>
@@ -139,8 +155,8 @@
             </xsl:if>
         </w:p>
     </xsl:template>
-    
-     
+
+
     <!-- 
         Special Notes (Footnotes) .. 
         @TODO: Ideally this should go into the general template, but for some
@@ -148,20 +164,20 @@
     -->
     <xsl:template match="tei:note[@place]">
         <xsl:choose>
-            <xsl:when test="@place='foot'  or @place='bottom' or @place='tablefoot' ">
+            <xsl:when test="@place = 'foot' or @place = 'bottom' or @place = 'tablefoot'">
                 <xsl:call-template name="create-footnote"/>
             </xsl:when>
-            <xsl:when test="@place='end'">
+            <xsl:when test="@place = 'end'">
                 <xsl:call-template name="create-endnote"/>
             </xsl:when>
-            <xsl:when test="@place='comment'">
+            <xsl:when test="@place = 'comment'">
                 <xsl:call-template name="create-comment"/>
             </xsl:when>
         </xsl:choose>
     </xsl:template>
-    
-    
-    
+
+
+
     <!-- Paragraphs in the front matter -->
     <xsl:template match="tei:front/tei:div/tei:p">
         <xsl:call-template name="block-element">
@@ -169,16 +185,18 @@
                 <w:pPr>
                     <w:pStyle>
                         <xsl:attribute name="w:val">
-                            <xsl:value-of select="concat(upper-case(substring(parent::tei:div/@type,1,1)),substring(parent::tei:div/@type,2))"/>
+                            <xsl:value-of
+                                select="concat(upper-case(substring(parent::tei:div/@type, 1, 1)), substring(parent::tei:div/@type, 2))"
+                            />
                         </xsl:attribute>
                     </w:pStyle>
                 </w:pPr>
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-   
-    
-    
+
+
+
     <!-- who created this document -->
     <xsl:template name="created-by">
         <xsl:text>TEI XSL</xsl:text>
@@ -196,7 +214,7 @@
     </xsl:template>
     <xsl:template match="tei:person">
         <tei:item>
-            <xsl:copy-of select="*|text()"/>
+            <xsl:copy-of select="* | text()"/>
         </tei:item>
     </xsl:template>
     <xsl:template match="tei:affiliation">
@@ -322,12 +340,13 @@
             </w:lvl>
         </w:abstractNum>
     </xsl:template>
-    <xsl:template match="@*|text()|comment()|processing-instruction()" mode="iden">
+    <xsl:template match="@* | text() | comment() | processing-instruction()" mode="iden">
         <xsl:copy-of select="."/>
     </xsl:template>
     <xsl:template match="*" mode="iden">
         <xsl:copy>
-            <xsl:apply-templates select="*|@*|processing-instruction()|comment()|text()" mode="iden"/>
+            <xsl:apply-templates select="* | @* | processing-instruction() | comment() | text()"
+                mode="iden"/>
         </xsl:copy>
     </xsl:template>
 </xsl:stylesheet>

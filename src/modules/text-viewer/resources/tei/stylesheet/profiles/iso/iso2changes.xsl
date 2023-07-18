@@ -1,40 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:cals="http://www.oasis-open.org/specs/tm9901" exclude-result-prefixes="tei cals tbx" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html"
+    xmlns:fn="http://www.w3.org/2005/xpath-functions"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:iso="http://www.iso.org/ns/1.0"
+    xmlns:h="http://www.w3.org/1999/xhtml" xmlns:cals="http://www.oasis-open.org/specs/tm9901"
+    exclude-result-prefixes="tei cals tbx" version="2.0">
     <xsl:import href="isoutils.xsl"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: iso2changes.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
@@ -63,20 +56,15 @@ of this software, even if advised of the possibility of such damage.
         </xsl:variable>
         <html>
             <head>
-                <title>Report on 
-    <xsl:value-of select="$isotitle"/>:
-    <xsl:value-of select="$isoyear"/>:
-    <xsl:value-of select="$isonumber"/>:
-    <xsl:value-of select="$isopart"/>
+                <title>Report on <xsl:value-of select="$isotitle"/>: <xsl:value-of select="$isoyear"
+                    />: <xsl:value-of select="$isonumber"/>: <xsl:value-of select="$isopart"/>
                 </title>
                 <link href="iso.css" rel="stylesheet" type="text/css"/>
             </head>
             <body>
                 <h1 class="maintitle">
-                    <xsl:value-of select="$isotitle"/>:
-	      <xsl:value-of select="$isoyear"/>:
-	      <xsl:value-of select="$isonumber"/>:
-	      <xsl:value-of select="$isopart"/>
+                    <xsl:value-of select="$isotitle"/>: <xsl:value-of select="$isoyear"/>:
+                        <xsl:value-of select="$isonumber"/>: <xsl:value-of select="$isopart"/>
                 </h1>
                 <xsl:for-each select="tei:text/tei:front">
                     <xsl:apply-templates/>
@@ -92,8 +80,8 @@ of this software, even if advised of the possibility of such damage.
             </body>
         </html>
     </xsl:template>
-    <xsl:template match="tei:div[not(@type='termHeading')]">
-        <xsl:variable name="depth" select="count(ancestor::tei:div)+2"/>
+    <xsl:template match="tei:div[not(@type = 'termHeading')]">
+        <xsl:variable name="depth" select="count(ancestor::tei:div) + 2"/>
         <xsl:variable name="stuff">
             <xsl:apply-templates/>
         </xsl:variable>
@@ -107,8 +95,8 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="*">
         <xsl:apply-templates select="*"/>
     </xsl:template>
-    <xsl:template match="tei:add|tei:del">
-        <xsl:if test="not(preceding-sibling::tei:del|preceding-sibling::tei:add)">
+    <xsl:template match="tei:add | tei:del">
+        <xsl:if test="not(preceding-sibling::tei:del | preceding-sibling::tei:add)">
             <p>
                 <xsl:for-each select="parent::*">
                     <xsl:choose>
@@ -157,7 +145,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:if>
         </img>
     </xsl:template>
-    <xsl:template match="tei:add|tei:del" mode="show">
+    <xsl:template match="tei:add | tei:del" mode="show">
         <span class="{local-name()}">
             <xsl:apply-templates mode="show"/>
             <span class="changeAttribution-{local-name()}">
@@ -184,8 +172,8 @@ of this software, even if advised of the possibility of such damage.
             <xsl:when test="ancestor::tei:body">
                 <xsl:number count="tei:div" from="tei:body" format="1" level="multiple"/>
             </xsl:when>
-            <xsl:when test="ancestor::tei:back">
-	   Annex <xsl:number count="tei:div" from="tei:back" format="A.1.1" level="multiple"/>
+            <xsl:when test="ancestor::tei:back"> Annex <xsl:number count="tei:div" from="tei:back"
+                    format="A.1.1" level="multiple"/>
             </xsl:when>
         </xsl:choose>
         <xsl:text> </xsl:text>
@@ -197,17 +185,19 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="value"/>
         <xsl:variable name="calcvalue">
             <xsl:choose>
-                <xsl:when test="contains($value,'in')">
-                    <xsl:value-of select="round($dpi * number(substring-before($value,'in')))"/>
+                <xsl:when test="contains($value, 'in')">
+                    <xsl:value-of select="round($dpi * number(substring-before($value, 'in')))"/>
                 </xsl:when>
-                <xsl:when test="contains($value,'pt')">
-                    <xsl:value-of select="round($dpi * (number(substring-before($value,'pt')) div 72))"/>
+                <xsl:when test="contains($value, 'pt')">
+                    <xsl:value-of
+                        select="round($dpi * (number(substring-before($value, 'pt')) div 72))"/>
                 </xsl:when>
-                <xsl:when test="contains($value,'cm')">
-                    <xsl:value-of select="round($dpi * (number(substring-before($value,'cm')) div 2.54 ))"/>
+                <xsl:when test="contains($value, 'cm')">
+                    <xsl:value-of
+                        select="round($dpi * (number(substring-before($value, 'cm')) div 2.54))"/>
                 </xsl:when>
-                <xsl:when test="contains($value,'px')">
-                    <xsl:value-of select="substring-before($value,'px')"/>
+                <xsl:when test="contains($value, 'px')">
+                    <xsl:value-of select="substring-before($value, 'px')"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$value"/>
@@ -218,13 +208,13 @@ of this software, even if advised of the possibility of such damage.
             <xsl:value-of select="$calcvalue"/>
         </xsl:attribute>
     </xsl:template>
-    <xsl:template match="tei:ref[@rend='TableFootnoteXref']" mode="show">
+    <xsl:template match="tei:ref[@rend = 'TableFootnoteXref']" mode="show">
         <span class="superscript">
             <xsl:apply-templates mode="show"/>
         </span>
     </xsl:template>
     <xsl:template match="text()" mode="show">
-        <xsl:value-of select="translate(.,'ߛ','-')"/>
+        <xsl:value-of select="translate(., 'ߛ', '-')"/>
     </xsl:template>
     <xsl:template name="block-element">
         <xsl:param name="select"/>

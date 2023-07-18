@@ -2,7 +2,7 @@
 <config type="module">
     <module key="fcs">
         <param key="scripts-url">modules/shared/scripts/</param>
-<!--        
+        <!--        
         <!-\-<param key="scripts.path">/db/apps/cr-xq/modules/fcs/xsl/</param>-\->
         <param key="scripts.path">/db/apps/cr-xq/modules/cs-xsl/</param>
         <param key="scan.xsl">fcs/scan2view_v2.xsl</param>

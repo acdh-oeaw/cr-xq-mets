@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" class="templates:surround?with=templates/page.html&amp;at=content">
+<div xmlns="http://www.w3.org/1999/xhtml"
+    class="templates:surround?with=templates/page.html&amp;at=content">
     <h3>Search</h3>
-    <div class="templates:include?path=templates/query_input.html">search
-    </div>
+    <div class="templates:include?path=templates/query_input.html">search </div>
     <div class="templates:if-parameter-set?param=query">
         <div id="results" class="app:query ">
-            <p>Found: <span id="hit-count" class="app:hit-count"/> matches.</p>
-            <div class="app:show-hits?howmany=20"/>
+            <p>Found: <span id="hit-count" class="app:hit-count"></span> matches.</p>
+            <div class="app:show-hits?howmany=20"></div>
         </div>
     </div>
     <script type="text/javascript">
@@ -25,13 +25,14 @@
                 loading = true;
                 current = current + itemsPerPage;
                 $.ajax("shakespeare-ajax.html", {
-                    data: { start: current },
+                    data: {
+                        start: current
+                    },
                     success: function (data) {
                         $("#results").append(data);
                         loading = false;
                     }
                 });
             });
-        });
-    </script>
+        });</script>
 </div>

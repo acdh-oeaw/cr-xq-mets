@@ -12,7 +12,8 @@
         <path key="resourcefragments" base="#data">_resourcefragments</path>
         <path key="templates" base="#data"/>
         <path key="scripts" xml:id="scripts" base="#app-root">modules/cs-xsl</path>
-        <path key="mod_accesscontrol" xml:id="mod_accesscontrol" base="#app-root">modules/access-control</path>
+        <path key="mod_accesscontrol" xml:id="mod_accesscontrol" base="#app-root"
+            >modules/access-control</path>
         <path key="writer.file" base="#mod_accesscontrol">writer.xml</path>
         <path key="termlabels.file" base="#project-home">termlabels.xml</path>
     </paths>

@@ -1,42 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:teidocx="http://www.tei-c.org/ns/teidocx/1.0" xmlns:iso="http://www.iso.org/ns/1.0" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:teix="http://www.tei-c.org/ns/Examples" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:fn="http://www.w3.org/2005/02/xpath-functions" xpath-default-namespace="http://www.tei-c.org/ns/1.0" version="2.0" exclude-result-prefixes="teix ve o r m v wp w10 w wne mml tbx iso a xs pic fn teidocx">
-  <!-- import conversion style -->
+<xsl:stylesheet xmlns="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:teidocx="http://www.tei-c.org/ns/teidocx/1.0" xmlns:iso="http://www.iso.org/ns/1.0"
+    xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+    xmlns:teix="http://www.tei-c.org/ns/Examples"
+    xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+    xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+    xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+    xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+    xmlns:w10="urn:schemas-microsoft-com:office:word"
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:tbx="http://www.lisa.org/TBX-Specification.33.0.html"
+    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML"
+    xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:fn="http://www.w3.org/2005/02/xpath-functions"
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0" version="2.0"
+    exclude-result-prefixes="teix ve o r m v wp w10 w wne mml tbx iso a xs pic fn teidocx">
+    <!-- import conversion style -->
     <xsl:import href="../../default/docx/to.xsl"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
             <p> TEI stylesheet for making Word docx files from TEI XML (see tei-docx.xsl) for Vesta </p>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: to.xsl 8197 2010-10-24 21:32:21Z rahtz $</p>
             <p>Copyright: 2008, TEI Consortium</p>
@@ -44,37 +49,38 @@ of this software, even if advised of the possibility of such damage.
     </doc>
     <xsl:param name="shadowGraphics">true</xsl:param>
     <xsl:param name="useNSPrefixes">false</xsl:param>
-    <xsl:template match="teix:egXML|p[@rend='eg']">
+    <xsl:template match="teix:egXML | p[@rend = 'eg']">
         <xsl:param name="simple">false</xsl:param>
         <xsl:param name="highlight"/>
         <xsl:call-template name="block-element">
             <xsl:with-param name="select">
-                <p rend="Special" iso:style="font-family:DejaVu Sans Mono; font-size:18; text-align:left;">
+                <p rend="Special"
+                    iso:style="font-family:DejaVu Sans Mono; font-size:18; text-align:left;">
                     <xsl:call-template name="create-egXML-section"/>
                 </p>
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-    <xsl:template match="table[@rend='roomlabel']">
+    <xsl:template match="table[@rend = 'roomlabel']">
         <xsl:variable name="data">
             <sessions>
                 <xsl:for-each select="row">
                     <session>
                         <weekday>
                             <xsl:choose>
-                                <xsl:when test="starts-with(cell[2],'Mon')">1</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Tue')">2</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Wed')">3</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Thu')">4</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Fri')">5</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Mon')">1</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Tue')">2</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Wed')">3</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Thu')">4</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Fri')">5</xsl:when>
                             </xsl:choose>
                         </weekday>
                         <roomsort>
                             <xsl:choose>
-                                <xsl:when test="starts-with(cell[1],'Evenlode')">1</xsl:when>
-                                <xsl:when test="starts-with(cell[1],'Isis')">2</xsl:when>
-                                <xsl:when test="starts-with(cell[1],'Windrush')">3</xsl:when>
-                                <xsl:when test="starts-with(cell[1],'Cherwell')">4</xsl:when>
+                                <xsl:when test="starts-with(cell[1], 'Evenlode')">1</xsl:when>
+                                <xsl:when test="starts-with(cell[1], 'Isis')">2</xsl:when>
+                                <xsl:when test="starts-with(cell[1], 'Windrush')">3</xsl:when>
+                                <xsl:when test="starts-with(cell[1], 'Cherwell')">4</xsl:when>
                             </xsl:choose>
                         </roomsort>
                         <room>
@@ -106,7 +112,7 @@ of this software, even if advised of the possibility of such damage.
             </sessions>
         </xsl:variable>
         <xsl:for-each select="$data2/sessions/session">
-<!--      <xsl:if test="not(weekday=preceding-sibling::session[1]/weekday)">
+            <!--      <xsl:if test="not(weekday=preceding-sibling::session[1]/weekday)">
         <w:p>
           <w:pPr>
             <w:pStyle>
@@ -118,7 +124,8 @@ of this software, even if advised of the possibility of such damage.
           </w:r>
         </w:p>
       </xsl:if> -->
-            <xsl:if test="not(room=preceding-sibling::session[1]/room) or not(weekday=preceding-sibling::session[1]/weekday)">
+            <xsl:if
+                test="not(room = preceding-sibling::session[1]/room) or not(weekday = preceding-sibling::session[1]/weekday)">
                 <w:p>
                     <w:pPr>
                         <w:pStyle>
@@ -144,7 +151,8 @@ of this software, even if advised of the possibility of such damage.
             </xsl:if>
             <xsl:call-template name="roomtable"/>
             <xsl:if test="following-sibling::session">
-                <xsl:if test="not(room=following-sibling::session[1]/room) or not(weekday=following-sibling::session[1]/weekday)">
+                <xsl:if
+                    test="not(room = following-sibling::session[1]/room) or not(weekday = following-sibling::session[1]/weekday)">
                     <w:p>
                         <w:r>
                             <w:br w:type="page"/>
@@ -154,19 +162,19 @@ of this software, even if advised of the possibility of such damage.
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
-    <xsl:template match="table[@rend='roomlabel2']">
-    <!-- room, date, start, end, title, person -->
+    <xsl:template match="table[@rend = 'roomlabel2']">
+        <!-- room, date, start, end, title, person -->
         <xsl:variable name="data">
             <sessions>
                 <xsl:for-each select="row">
                     <session>
                         <weekday>
                             <xsl:choose>
-                                <xsl:when test="starts-with(cell[2],'Mon')">1</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Tue')">2</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Wed')">3</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Thu')">4</xsl:when>
-                                <xsl:when test="starts-with(cell[2],'Fri')">5</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Mon')">1</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Tue')">2</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Wed')">3</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Thu')">4</xsl:when>
+                                <xsl:when test="starts-with(cell[2], 'Fri')">5</xsl:when>
                             </xsl:choose>
                         </weekday>
                         <room>
@@ -201,7 +209,8 @@ of this software, even if advised of the possibility of such damage.
             </sessions>
         </xsl:variable>
         <xsl:for-each select="$data2/sessions/session">
-            <xsl:if test="not(room=preceding-sibling::session[1]/room) or not(weekday=preceding-sibling::session[1]/weekday)">
+            <xsl:if
+                test="not(room = preceding-sibling::session[1]/room) or not(weekday = preceding-sibling::session[1]/weekday)">
                 <w:p>
                     <w:pPr>
                         <w:pStyle>
@@ -259,7 +268,8 @@ of this software, even if advised of the possibility of such damage.
             <w:p>
                 <w:r>
                     <xsl:choose>
-                        <xsl:when test="not(room=following-sibling::session[1]/room) or not(weekday=following-sibling::session[1]/weekday)">
+                        <xsl:when
+                            test="not(room = following-sibling::session[1]/room) or not(weekday = following-sibling::session[1]/weekday)">
                             <w:br w:type="page"/>
                         </xsl:when>
                         <xsl:otherwise>
@@ -291,7 +301,7 @@ of this software, even if advised of the possibility of such damage.
             </w:tblPr>
             <xsl:for-each select="p">
                 <xsl:choose>
-                    <xsl:when test="@name='coursename'">
+                    <xsl:when test="@name = 'coursename'">
                         <xsl:call-template name="twocells">
                             <xsl:with-param name="cell1">Course name</xsl:with-param>
                             <xsl:with-param name="cell2">
@@ -299,7 +309,7 @@ of this software, even if advised of the possibility of such damage.
                             </xsl:with-param>
                         </xsl:call-template>
                     </xsl:when>
-                    <xsl:when test="@name='date'">
+                    <xsl:when test="@name = 'date'">
                         <xsl:call-template name="twocells">
                             <xsl:with-param name="cell1">Date</xsl:with-param>
                             <xsl:with-param name="cell2">
@@ -307,7 +317,7 @@ of this software, even if advised of the possibility of such damage.
                             </xsl:with-param>
                         </xsl:call-template>
                     </xsl:when>
-                    <xsl:when test="@name='time'">
+                    <xsl:when test="@name = 'time'">
                         <xsl:call-template name="twocells">
                             <xsl:with-param name="cell1">Time</xsl:with-param>
                             <xsl:with-param name="cell2">
@@ -315,7 +325,7 @@ of this software, even if advised of the possibility of such damage.
                             </xsl:with-param>
                         </xsl:call-template>
                     </xsl:when>
-                    <xsl:when test="@name='room'">
+                    <xsl:when test="@name = 'room'">
                         <xsl:call-template name="twocells">
                             <xsl:with-param name="cell1">Lecture Room</xsl:with-param>
                             <xsl:with-param name="cell2">
@@ -323,7 +333,7 @@ of this software, even if advised of the possibility of such damage.
                             </xsl:with-param>
                         </xsl:call-template>
                     </xsl:when>
-                    <xsl:when test="@name='cost'">
+                    <xsl:when test="@name = 'cost'">
                         <xsl:call-template name="twocells">
                             <xsl:with-param name="cell1">Cost</xsl:with-param>
                             <xsl:with-param name="cell2">

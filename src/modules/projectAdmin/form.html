@@ -1,40 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:mets="http://www.loc.gov/METS/" xmlns:xf="http://www.w3.org/2002/xforms" mods:dummy="a" mets:dummy="a">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:mods="http://www.loc.gov/mods/v3" xmlns:mets="http://www.loc.gov/METS/"
+    xmlns:xf="http://www.w3.org/2002/xforms" mods:dummy="a" mets:dummy="a">
     <head>
         <title>cr_xq Project Administration</title>
-        <meta class="config:app-meta"/>
-        <link rel="shortcut icon" href="resources/images/favicon.ico"/>
-        <script type="text/javascript" src="$shared/resources/scripts/jquery/jquery-1.7.1.min.js"/>
-        <script type="text/javascript" src="$shared/resources/scripts/bootstrap.min.js"/>
-        <script type="text/javascript" src="$shared/resources/scripts/jquery/jquery.scrollExtend.min.js"/>
+        <meta class="config:app-meta" />
+        <link rel="shortcut icon" href="resources/images/favicon.ico" />
+        <script type="text/javascript" src="$shared/resources/scripts/jquery/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="$shared/resources/scripts/bootstrap.min.js"></script>
+        <script type="text/javascript" src="$shared/resources/scripts/jquery/jquery.scrollExtend.min.js"></script>
     </head>
     <body>
         <div>
             <xf:model>
-        
-        <!-- Data -->
+                <!-- Data -->
                 <xf:instance xmlns="" id="projectDmd">
                     <mods:mods/>
                 </xf:instance>
                 <xf:bind id="title" nodeset="mods:titleInfo/mods:title" instance="projectDmd"/>
                 <xf:bind id="persons" nodeset="mods:name" instance="projectDmd"/>
                 <xf:bind id="abstract" nodeset="mods:abstract" instance="projectDmd"/>
-                <xf:bind id="language" nodeset="mods:language/mods:languageTerm" instance="projectDmd"/>
-        
-
-        <!-- GUI Labels -->
-                <xf:instance xmlns="" id="labels" resource="/exist/restxq/projectAdmin/i18n/dmd/{$lang}"/>
+                <xf:bind id="language" nodeset="mods:language/mods:languageTerm"
+                    instance="projectDmd"/>
+                <!-- GUI Labels -->
+                <xf:instance xmlns="" id="labels"
+                    resource="/exist/restxq/projectAdmin/i18n/dmd/{$lang}"/>
                 <xf:bind id="label-title" ref="instance('labels')//label[@key='title']/text()"/>
                 <xf:bind id="label-role" ref="instance('labels')//label[@key='role']"/>
                 <xf:bind id="label-familyname" ref="instance('labels')//label[@key='familyname']"/>
                 <xf:bind id="label-givenname" ref="instance('labels')//label[@key='givenname']"/>
                 <xf:bind id="label-abstract" ref="instance('labels')//label[@key='abstract']"/>
                 <xf:bind id="label-language" ref="instance('labels')//label[@key='language']"/>
-                <xf:submission id="load" resource="/exist/restxq/cr_xq/{$project-pid}/dmd" method="get" replace="instance" instance="projectDmd">
-                    <xf:message ev:event="xforms-submit-done" level="ephemeral">Data loaded.</xf:message>
+                <xf:submission id="load" resource="/exist/restxq/cr_xq/{$project-pid}/dmd"
+                    method="get" replace="instance" instance="projectDmd">
+                    <xf:message ev:event="xforms-submit-done" level="ephemeral">Data
+                        loaded.</xf:message>
                 </xf:submission>
-                <xf:submission id="save" resource="/exist/restxq/cr_xq/{$project-pid}/dmd" method="put" replace="instance" instance="projectDmd">
-                    <xf:message ev:event="xforms-submit-done" level="ephemeral">Data saved.</xf:message>
+                <xf:submission id="save" resource="/exist/restxq/cr_xq/{$project-pid}/dmd"
+                    method="put" replace="instance" instance="projectDmd">
+                    <xf:message ev:event="xforms-submit-done" level="ephemeral">Data
+                        saved.</xf:message>
                 </xf:submission>
                 <xf:action ev:event="xforms-ready">
                     <xf:send submission="load"/>
@@ -87,7 +92,8 @@
                         <xf:trigger>
                             <xf:label>New</xf:label>
                             <xf:action>
-                                <xf:insert bind="persons" at="last()" position="after" origin="persons"/>
+                                <xf:insert bind="persons" at="last()" position="after"
+                                    origin="persons"/>
                             </xf:action>
                         </xf:trigger>
                     </xf:group>

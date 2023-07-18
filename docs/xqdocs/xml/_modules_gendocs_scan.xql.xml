@@ -14,7 +14,8 @@
     <xqdoc:functions>
         <xqdoc:function>
             <xqdoc:name>docs:cardinality</xqdoc:name>
-            <xqdoc:signature>docs:cardinality($cardinality as xs:string) as item()*</xqdoc:signature>
+            <xqdoc:signature>docs:cardinality($cardinality as xs:string) as
+                item()*</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$cardinality </xqdoc:param>
@@ -23,7 +24,8 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>docs:generate-signature</xqdoc:name>
-            <xqdoc:signature>docs:generate-signature($func as element()) as item()*</xqdoc:signature>
+            <xqdoc:signature>docs:generate-signature($func as element()) as
+                item()*</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$func </xqdoc:param>
@@ -41,7 +43,8 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>docs:load-fundocs</xqdoc:name>
-            <xqdoc:signature>docs:load-fundocs($source as xs:string, $target as xs:string) as item()*</xqdoc:signature>
+            <xqdoc:signature>docs:load-fundocs($source as xs:string, $target as xs:string) as
+                item()*</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$source </xqdoc:param>

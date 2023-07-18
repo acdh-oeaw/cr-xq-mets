@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:dcr="http://www.isocat.org/ns/dcr" xmlns="http://www.loc.gov/METS/" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:cmd="http://www.clarin.eu/cmd/" xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ann="http://www.clarin.eu" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:mets="http://www.loc.gov/METS/" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" exclude-result-prefixes="xs xd" version="2.0">
+<xsl:stylesheet xmlns:dcr="http://www.isocat.org/ns/dcr" xmlns="http://www.loc.gov/METS/"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:cmd="http://www.clarin.eu/cmd/"
+    xmlns:rts="http://cosimo.stanford.edu/sdr/metsrights/"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:ann="http://www.clarin.eu" xmlns:mods="http://www.loc.gov/mods/v3"
+    xmlns:mets="http://www.loc.gov/METS/" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd"
+    exclude-result-prefixes="xs xd" version="2.0">
     <xd:doc scope="stylesheet">
         <xd:desc>
             <xd:p>
@@ -43,12 +51,12 @@
             <xsl:value-of select="$MdCollectionDisplayName"/>
         </xsl:copy>
     </xsl:template>
-    <xsl:template match="cmd:ResourceProxy[cmd:ResourceType='LandingPage']/@id">
+    <xsl:template match="cmd:ResourceProxy[cmd:ResourceType = 'LandingPage']/@id">
         <xsl:attribute name="id">
             <xsl:value-of select="$project-pid"/>
         </xsl:attribute>
     </xsl:template>
-    <xsl:template match="cmd:ResourceProxy[cmd:ResourceType='LandingPage']/cmd:ResourceRef">
+    <xsl:template match="cmd:ResourceProxy[cmd:ResourceType = 'LandingPage']/cmd:ResourceRef">
         <xsl:copy>
             <xsl:copy-of select="@*"/>
             <xsl:value-of select="$project-LandingPage"/>

@@ -1,41 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:teidocx="http://www.tei-c.org/ns/teidocx/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:teix="http://www.tei-c.org/ns/" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:svg="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml" exclude-result-prefixes="svg a fo html rng tei teidocx teix m" version="2.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:teidocx="http://www.tei-c.org/ns/teidocx/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:teix="http://www.tei-c.org/ns/" xmlns:rng="http://relaxng.org/ns/structure/1.0"
+    xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:svg="http://www.w3.org/2000/svg"
+    xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+    xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes="svg a fo html rng tei teidocx teix m" version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p> TEI stylesheet dealing with elements from the figures module,
-      making HTML output. </p>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p> TEI stylesheet dealing with elements from the figures module, making HTML output. </p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: figures.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2011, TEI Consortium</p>
@@ -44,9 +37,9 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>Process elements m:*|@*|comment()|processing-instruction()|text()</desc>
     </doc>
-    <xsl:template match="m:*|@*|comment()|processing-instruction()|text()" mode="math">
+    <xsl:template match="m:* | @* | comment() | processing-instruction() | text()" mode="math">
         <xsl:copy>
-            <xsl:apply-templates mode="math" select="*|@*|processing-instruction()|text()"/>
+            <xsl:apply-templates mode="math" select="* | @* | processing-instruction() | text()"/>
         </xsl:copy>
     </xsl:template>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
@@ -64,7 +57,7 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="tei:cell">
         <xsl:variable name="cellname">
             <xsl:choose>
-                <xsl:when test="parent::tei:row[@rend='thead']">th</xsl:when>
+                <xsl:when test="parent::tei:row[@rend = 'thead']">th</xsl:when>
                 <xsl:otherwise>td</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -72,40 +65,41 @@ of this software, even if advised of the possibility of such damage.
             <xsl:attribute name="valign">top</xsl:attribute>
             <xsl:for-each select="@*">
                 <xsl:choose>
-                    <xsl:when test="name(.) = 'width' or name(.) =      'border' or name(.) = 'cellspacing'      or name(.) = 'cellpadding'">
+                    <xsl:when
+                        test="name(.) = 'width' or name(.) = 'border' or name(.) = 'cellspacing' or name(.) = 'cellpadding'">
                         <xsl:copy-of select="."/>
                     </xsl:when>
-                    <xsl:when test="name(.)='rend' and starts-with(.,'width:')">
+                    <xsl:when test="name(.) = 'rend' and starts-with(., 'width:')">
                         <xsl:attribute name="width">
-                            <xsl:value-of select="substring-after(.,'width:')"/>
+                            <xsl:value-of select="substring-after(., 'width:')"/>
                         </xsl:attribute>
                     </xsl:when>
-                    <xsl:when test="name(.)='rend' and starts-with(.,'class:')">
+                    <xsl:when test="name(.) = 'rend' and starts-with(., 'class:')">
                         <xsl:attribute name="class">
-                            <xsl:value-of select="substring-after(.,'class:')"/>
+                            <xsl:value-of select="substring-after(., 'class:')"/>
                         </xsl:attribute>
                     </xsl:when>
-                    <xsl:when test="name(.)='rend' and starts-with(.,'style=')">
+                    <xsl:when test="name(.) = 'rend' and starts-with(., 'style=')">
                         <xsl:attribute name="style">
-                            <xsl:value-of select="substring-after(.,'style=')"/>
+                            <xsl:value-of select="substring-after(., 'style=')"/>
                         </xsl:attribute>
                     </xsl:when>
-                    <xsl:when test="name(.)='rend'">
+                    <xsl:when test="name(.) = 'rend'">
                         <xsl:attribute name="class">
                             <xsl:value-of select="."/>
                         </xsl:attribute>
                     </xsl:when>
-                    <xsl:when test="name(.)='cols'">
+                    <xsl:when test="name(.) = 'cols'">
                         <xsl:attribute name="colspan">
                             <xsl:value-of select="."/>
                         </xsl:attribute>
                     </xsl:when>
-                    <xsl:when test="name(.)='rows'">
+                    <xsl:when test="name(.) = 'rows'">
                         <xsl:attribute name="rowspan">
                             <xsl:value-of select="."/>
                         </xsl:attribute>
                     </xsl:when>
-                    <xsl:when test="name(.)='align'">
+                    <xsl:when test="name(.) = 'align'">
                         <xsl:attribute name="align">
                             <xsl:value-of select="."/>
                         </xsl:attribute>
@@ -119,13 +113,13 @@ of this software, even if advised of the possibility of such damage.
                     </xsl:attribute>
                 </xsl:when>
                 <xsl:when test="@align"/>
-                <xsl:when test="not($cellAlign='left')">
+                <xsl:when test="not($cellAlign = 'left')">
                     <xsl:attribute name="align">
                         <xsl:value-of select="$cellAlign"/>
                     </xsl:attribute>
                 </xsl:when>
             </xsl:choose>
-            <xsl:if test="@role and not (@rend)">
+            <xsl:if test="@role and not(@rend)">
                 <xsl:attribute name="class">
                     <xsl:value-of select="@role"/>
                 </xsl:attribute>
@@ -146,12 +140,12 @@ of this software, even if advised of the possibility of such damage.
     <xsl:template match="tei:figure">
         <xsl:variable name="container">
             <xsl:choose>
-                <xsl:when test="$outputTarget='html5'">figure</xsl:when>
+                <xsl:when test="$outputTarget = 'html5'">figure</xsl:when>
                 <xsl:otherwise>div</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="parent::tei:head or @rend='inline' or @place='inline'">
+            <xsl:when test="parent::tei:head or @rend = 'inline' or @place = 'inline'">
                 <xsl:apply-templates/>
             </xsl:when>
             <xsl:when test="parent::tei:ref">
@@ -185,34 +179,38 @@ of this software, even if advised of the possibility of such damage.
                     <xsl:if test="tei:head">
                         <xsl:variable name="caption">
                             <xsl:choose>
-                                <xsl:when test="ancestor::tei:front and  $numberFrontFigures='true'">
+                                <xsl:when
+                                    test="ancestor::tei:front and $numberFrontFigures = 'true'">
                                     <xsl:call-template name="i18n">
                                         <xsl:with-param name="word">figureWord</xsl:with-param>
                                     </xsl:call-template>
                                     <xsl:text> </xsl:text>
-                                    <xsl:number count="tei:figure[tei:head]" from="tei:front" level="any"/>
+                                    <xsl:number count="tei:figure[tei:head]" from="tei:front"
+                                        level="any"/>
                                     <xsl:text>. </xsl:text>
                                 </xsl:when>
-                                <xsl:when test="ancestor::tei:back and $numberBackFigures='true'">
+                                <xsl:when test="ancestor::tei:back and $numberBackFigures = 'true'">
                                     <xsl:call-template name="i18n">
                                         <xsl:with-param name="word">figureWord</xsl:with-param>
                                     </xsl:call-template>
                                     <xsl:text> </xsl:text>
-                                    <xsl:number count="tei:figure[tei:head]" from="tei:back" level="any"/>
+                                    <xsl:number count="tei:figure[tei:head]" from="tei:back"
+                                        level="any"/>
                                     <xsl:text>. </xsl:text>
                                 </xsl:when>
-                                <xsl:when test="ancestor::tei:body and $numberFigures='true'">
+                                <xsl:when test="ancestor::tei:body and $numberFigures = 'true'">
                                     <xsl:call-template name="i18n">
                                         <xsl:with-param name="word">figureWord</xsl:with-param>
                                     </xsl:call-template>
                                     <xsl:text> </xsl:text>
-                                    <xsl:number count="tei:figure[tei:head]" from="tei:body" level="any"/>
+                                    <xsl:number count="tei:figure[tei:head]" from="tei:body"
+                                        level="any"/>
                                     <xsl:text>. </xsl:text>
                                 </xsl:when>
                             </xsl:choose>
                         </xsl:variable>
                         <xsl:choose>
-                            <xsl:when test="$outputTarget='html5'">
+                            <xsl:when test="$outputTarget = 'html5'">
                                 <figcaption>
                                     <xsl:copy-of select="$caption"/>
                                     <xsl:apply-templates select="tei:head"/>
@@ -283,12 +281,13 @@ of this software, even if advised of the possibility of such damage.
                 <xsl:call-template name="rendToClass">
                     <xsl:with-param name="id">false</xsl:with-param>
                 </xsl:call-template>
-                <xsl:if test="@rend='frame' or @rend='rules'">
+                <xsl:if test="@rend = 'frame' or @rend = 'rules'">
                     <xsl:attribute name="rules">all</xsl:attribute>
                     <xsl:attribute name="border">1</xsl:attribute>
                 </xsl:if>
                 <xsl:for-each select="@*">
-                    <xsl:if test="name(.)='summary' or name(.) = 'width' or name(.) = 'border' or name(.) = 'frame' or name(.) = 'rules' or name(.) = 'cellspacing' or name(.) = 'cellpadding'">
+                    <xsl:if
+                        test="name(.) = 'summary' or name(.) = 'width' or name(.) = 'border' or name(.) = 'frame' or name(.) = 'rules' or name(.) = 'cellspacing' or name(.) = 'cellpadding'">
                         <xsl:copy-of select="."/>
                     </xsl:if>
                 </xsl:for-each>
@@ -298,12 +297,12 @@ of this software, even if advised of the possibility of such damage.
                     </caption>
                 </xsl:if>
                 <xsl:choose>
-                    <xsl:when test="tei:row[@rend='thead']">
+                    <xsl:when test="tei:row[@rend = 'thead']">
                         <thead>
-                            <xsl:apply-templates select="tei:row[@rend='thead']"/>
+                            <xsl:apply-templates select="tei:row[@rend = 'thead']"/>
                         </thead>
                         <tbody>
-                            <xsl:apply-templates select="tei:row[not(@rend='thead')]"/>
+                            <xsl:apply-templates select="tei:row[not(@rend = 'thead')]"/>
                         </tbody>
                     </xsl:when>
                     <xsl:otherwise>
@@ -317,7 +316,7 @@ of this software, even if advised of the possibility of such damage.
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
         <desc>Process element table[@rend='simple']</desc>
     </doc>
-    <xsl:template match="tei:table[@rend='simple']">
+    <xsl:template match="tei:table[@rend = 'simple']">
         <table>
             <xsl:choose>
                 <xsl:when test="@rend">
@@ -330,7 +329,8 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:when>
             </xsl:choose>
             <xsl:for-each select="@*">
-                <xsl:if test="name(.)='summary'    or name(.) = 'width'    or name(.) = 'border'    or name(.) = 'frame'    or name(.) = 'rules'    or name(.) = 'cellspacing'    or name(.) = 'cellpadding'">
+                <xsl:if
+                    test="name(.) = 'summary' or name(.) = 'width' or name(.) = 'border' or name(.) = 'frame' or name(.) = 'rules' or name(.) = 'cellspacing' or name(.) = 'cellpadding'">
                     <xsl:copy-of select="."/>
                 </xsl:if>
             </xsl:for-each>
@@ -350,17 +350,19 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="value"/>
         <xsl:variable name="calcvalue">
             <xsl:choose>
-                <xsl:when test="contains($value,'in')">
-                    <xsl:value-of select="round($dpi * number(substring-before($value,'in')))"/>
+                <xsl:when test="contains($value, 'in')">
+                    <xsl:value-of select="round($dpi * number(substring-before($value, 'in')))"/>
                 </xsl:when>
-                <xsl:when test="contains($value,'pt')">
-                    <xsl:value-of select="round($dpi * (number(substring-before($value,'pt')) div 72))"/>
+                <xsl:when test="contains($value, 'pt')">
+                    <xsl:value-of
+                        select="round($dpi * (number(substring-before($value, 'pt')) div 72))"/>
                 </xsl:when>
-                <xsl:when test="contains($value,'cm')">
-                    <xsl:value-of select="round($dpi * (number(substring-before($value,'cm')) div 2.54 ))"/>
+                <xsl:when test="contains($value, 'cm')">
+                    <xsl:value-of
+                        select="round($dpi * (number(substring-before($value, 'cm')) div 2.54))"/>
                 </xsl:when>
-                <xsl:when test="contains($value,'px')">
-                    <xsl:value-of select="substring-before($value,'px')"/>
+                <xsl:when test="contains($value, 'px')">
+                    <xsl:value-of select="substring-before($value, 'px')"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$value"/>
@@ -379,13 +381,12 @@ of this software, even if advised of the possibility of such damage.
             <xsl:choose>
                 <xsl:when test="@url">
                     <xsl:value-of select="@url"/>
-                    <xsl:if test="not(contains(@url,'.'))">
+                    <xsl:if test="not(contains(@url, '.'))">
                         <xsl:value-of select="$graphicsSuffix"/>
                     </xsl:if>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:message terminate="yes">Cannot work out how to do a graphic
-          </xsl:message>
+                    <xsl:message terminate="yes">Cannot work out how to do a graphic </xsl:message>
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
@@ -415,14 +416,15 @@ of this software, even if advised of the possibility of such damage.
             </xsl:choose>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="$showFigures='true'">
+            <xsl:when test="$showFigures = 'true'">
                 <xsl:choose>
-                    <xsl:when test="@type='thumbnail'"/>
+                    <xsl:when test="@type = 'thumbnail'"/>
                     <xsl:when test="starts-with(@mimeType, 'video')">
                         <video src="{$graphicsPrefix}{$File}" controls="controls">
-                            <xsl:if test="../tei:graphic[@type='thumbnail']">
+                            <xsl:if test="../tei:graphic[@type = 'thumbnail']">
                                 <xsl:attribute name="poster">
-                                    <xsl:value-of select="../tei:graphic[@type='thumbnail']/@url"/>
+                                    <xsl:value-of select="../tei:graphic[@type = 'thumbnail']/@url"
+                                    />
                                 </xsl:attribute>
                             </xsl:if>
                         </video>
@@ -465,7 +467,7 @@ of this software, even if advised of the possibility of such damage.
                         <xsl:with-param name="word">figureWord</xsl:with-param>
                     </xsl:call-template>
                     <xsl:text> </xsl:text>
-                    <xsl:for-each select="self::tei:figure|parent::tei:figure">
+                    <xsl:for-each select="self::tei:figure | parent::tei:figure">
                         <xsl:number count="tei:figure[tei:head]" level="any"/>
                     </xsl:for-each>
                     <xsl:text> </xsl:text>
@@ -502,8 +504,8 @@ of this software, even if advised of the possibility of such damage.
                 </xsl:call-template>
             </xsl:if>
         </img>
-      <!-- also alt -->
-    <!-- this is what we'll need for IE:
+        <!-- also alt -->
+        <!-- this is what we'll need for IE:
 <style type="text/css">
    img {behavior: expression(fixBase64(this));}
   </style>

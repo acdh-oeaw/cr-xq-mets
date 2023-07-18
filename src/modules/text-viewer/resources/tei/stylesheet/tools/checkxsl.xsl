@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
-<!--This software is dual-licensed:
+    <!--This software is dual-licensed:
 
 1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
 Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
@@ -45,15 +45,14 @@ $Id: checkxsl.xsl 9646 2011-11-05 23:39:08Z rahtz $
             <xsl:call-template name="inclusions"/>
         </xsl:variable>
         <xsl:for-each select="$all">
-            <xsl:for-each select="key('TEMPLATES',1)">
-                <xsl:if test="count(key('CALLED_TEMPLATES',@name))=0">
-	Template <xsl:value-of select="@name"/> is not used
-      </xsl:if>
+            <xsl:for-each select="key('TEMPLATES', 1)">
+                <xsl:if test="count(key('CALLED_TEMPLATES', @name)) = 0"> Template <xsl:value-of
+                        select="@name"/> is not used </xsl:if>
             </xsl:for-each>
         </xsl:for-each>
     </xsl:template>
     <xsl:template name="inclusions">
-        <xsl:for-each select="xsl:import|xsl:include">
+        <xsl:for-each select="xsl:import | xsl:include">
             <xsl:for-each select="document(@href)/xsl:stylesheet">
                 <xsl:copy-of select="xsl:template"/>
                 <xsl:call-template name="inclusions"/>

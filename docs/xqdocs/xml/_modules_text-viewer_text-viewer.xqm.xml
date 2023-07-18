@@ -14,7 +14,8 @@
     <xqdoc:functions>
         <xqdoc:function>
             <xqdoc:name>text-viewer:getNavBar</xqdoc:name>
-            <xqdoc:signature>text-viewer:getNavBar($position as xs:string, $script_url as xs:string, $last as xs:string) as item()*</xqdoc:signature>
+            <xqdoc:signature>text-viewer:getNavBar($position as xs:string, $script_url as xs:string,
+                $last as xs:string) as item()*</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$position </xqdoc:param>
@@ -25,7 +26,8 @@
         </xqdoc:function>
         <xqdoc:function>
             <xqdoc:name>text-viewer:showText</xqdoc:name>
-            <xqdoc:signature>text-viewer:showText($node as node(), $model as map, $position as xs:integer) as element()</xqdoc:signature>
+            <xqdoc:signature>text-viewer:showText($node as node(), $model as map, $position as
+                xs:integer) as element()</xqdoc:signature>
             <xqdoc:comment>
                 <xqdoc:description/>
                 <xqdoc:param>$node </xqdoc:param>

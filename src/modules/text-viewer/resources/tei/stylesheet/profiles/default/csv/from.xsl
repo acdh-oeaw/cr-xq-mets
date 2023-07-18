@@ -1,60 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:jc="http://james.blushingbunny.net/ns.html" version="2.0" exclude-result-prefixes="xs tei jc">
+<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:jc="http://james.blushingbunny.net/ns.html" version="2.0"
+    exclude-result-prefixes="xs tei jc">
     <xsl:param name="input-encoding" select="'UTF-8'" as="xs:string"/>
     <xsl:output indent="yes" encoding="UTF-8"/>
     <xsl:param name="input-uri" select="'filename.csv'"/>
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: James Cummings</p>
             <p>Id: $Id: from.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2010, TEI Consortium</p>
-            <p>
-Usage:  saxon -it main styesheet.xsl input-uri=filename.csv
-
-<ul>
-                    <li> It assumes cells are comma separated and 
-rows are on individual lines...technically a linebreak 
-is allowed to occur inside a quoted CSV field, but in 
-this stylesheet it will be treated as two separate lines.</li>
-                    <li>If surrounded in double-quotes, it will remove 
-them.</li>
-                    <li>If there are extra or final commas, these will be changed 
-into empty <gi>cell/</gi> elements </li>
-                    <li> It assumes things are in UTF-8 but this can be 
-changed with the input-encoding parameter.  
-All output is converted to UTF-8.</li>
+            <p> Usage: saxon -it main styesheet.xsl input-uri=filename.csv <ul>
+                    <li> It assumes cells are comma separated and rows are on individual
+                        lines...technically a linebreak is allowed to occur inside a quoted CSV
+                        field, but in this stylesheet it will be treated as two separate lines.</li>
+                    <li>If surrounded in double-quotes, it will remove them.</li>
+                    <li>If there are extra or final commas, these will be changed into empty
+                            <gi>cell/</gi> elements </li>
+                    <li> It assumes things are in UTF-8 but this can be changed with the
+                        input-encoding parameter. All output is converted to UTF-8.</li>
                 </ul>
             </p>
         </desc>
@@ -63,7 +47,9 @@ All output is converted to UTF-8.</li>
         <xsl:param name="str" as="xs:string"/>
         <xsl:analyze-string select="concat($str, ',')" regex="((&#34;[^&#34;]*&#34;)+|[^,]*),">
             <xsl:matching-substring>
-                <xsl:sequence select="replace(regex-group(1), &#34;^&#34;&#34;|&#34;&#34;$|(&#34;&#34;)&#34;&#34;&#34;, &#34;$1&#34;)"/>
+                <xsl:sequence
+                    select="replace(regex-group(1), &#34;^&#34;&#34;|&#34;&#34;$|(&#34;&#34;)&#34;&#34;&#34;, &#34;$1&#34;)"
+                />
             </xsl:matching-substring>
         </xsl:analyze-string>
     </xsl:function>
@@ -91,7 +77,8 @@ All output is converted to UTF-8.</li>
                             <table>
                                 <xsl:for-each select="$lines">
                                     <row>
-                                        <xsl:variable name="lineItems" select="jc:splitCSV(.)" as="xs:string+"/>
+                                        <xsl:variable name="lineItems" select="jc:splitCSV(.)"
+                                            as="xs:string+"/>
                                         <xsl:for-each select="$lineItems">
                                             <xsl:variable name="pos" select="position()"/>
                                             <cell n="{$pos}">

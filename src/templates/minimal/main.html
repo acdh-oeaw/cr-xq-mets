@@ -2,20 +2,18 @@
 <div xmlns="http://www.w3.org/1999/xhtml" id="main">
     <div class="templates:if-parameter-unset?param=query">
         <!--<div class="app:info?key=projectDMD">welcome</div>    
-        <div class="app:list-resources">app:list-resources</div>-->
+<div class="app:list-resources">app:list-resources</div>-->
     </div>
-      
-      
     <!--<div class="templates:if-parameter-set?param=query">-->
     <div class="templates:include?path=query_input.html">search</div>
     <div class="templates:if-parameter-set?param=query">
         <div id="results" class="fcs:query">
-<!--            ?x-dataview=full-->
-            <p>Found: <span id="hit-count" class="fcs:hit-count"/> matches.</p>
-            <div class="fcs:show-hits?howmany=20"/>
+            <!--            ?x-dataview=full-->
+            <p>Found: <span id="hit-count" class="fcs:hit-count"></span> matches.</p>
+            <div class="fcs:show-hits?howmany=20"></div>
         </div>
     </div>
     <div class="templates:if-parameter-unset?param=query">
-        <div id="results"/>
+        <div id="results"></div>
     </div>
 </div>

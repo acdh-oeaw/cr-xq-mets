@@ -1,40 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="tei" version="2.0">
+<xsl:stylesheet xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="tei" version="2.0">
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" scope="stylesheet" type="stylesheet">
         <desc>
             <p> TEI stylesheet dealing with elements from the msdescription module. </p>
-            <p>This software is dual-licensed:
-
-1. Distributed under a Creative Commons Attribution-ShareAlike 3.0
-Unported License http://creativecommons.org/licenses/by-sa/3.0/ 
-
-2. http://www.opensource.org/licenses/BSD-2-Clause
-		
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-This software is provided by the copyright holders and contributors
-"as is" and any express or implied warranties, including, but not
-limited to, the implied warranties of merchantability and fitness for
-a particular purpose are disclaimed. In no event shall the copyright
-holder or contributors be liable for any direct, indirect, incidental,
-special, exemplary, or consequential damages (including, but not
-limited to, procurement of substitute goods or services; loss of use,
-data, or profits; or business interruption) however caused and on any
-theory of liability, whether in contract, strict liability, or tort
-(including negligence or otherwise) arising in any way out of the use
-of this software, even if advised of the possibility of such damage.
-</p>
+            <p>This software is dual-licensed: 1. Distributed under a Creative Commons
+                Attribution-ShareAlike 3.0 Unported License
+                http://creativecommons.org/licenses/by-sa/3.0/ 2.
+                http://www.opensource.org/licenses/BSD-2-Clause All rights reserved. Redistribution
+                and use in source and binary forms, with or without modification, are permitted
+                provided that the following conditions are met: * Redistributions of source code
+                must retain the above copyright notice, this list of conditions and the following
+                disclaimer. * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the documentation
+                and/or other materials provided with the distribution. This software is provided by
+                the copyright holders and contributors "as is" and any express or implied
+                warranties, including, but not limited to, the implied warranties of merchantability
+                and fitness for a particular purpose are disclaimed. In no event shall the copyright
+                holder or contributors be liable for any direct, indirect, incidental, special,
+                exemplary, or consequential damages (including, but not limited to, procurement of
+                substitute goods or services; loss of use, data, or profits; or business
+                interruption) however caused and on any theory of liability, whether in contract,
+                strict liability, or tort (including negligence or otherwise) arising in any way out
+                of the use of this software, even if advised of the possibility of such damage. </p>
             <p>Author: See AUTHORS</p>
             <p>Id: $Id: msdescription.xsl 9646 2011-11-05 23:39:08Z rahtz $</p>
             <p>Copyright: 2011, TEI Consortium</p>
@@ -68,7 +56,7 @@ of this software, even if advised of the possibility of such damage.
         <xsl:param name="text"/>
         <xsl:value-of select="$text"/>
     </xsl:template>
-  <!-- headings -->
+    <!-- headings -->
     <xsl:template match="tei:accMat">
         <xsl:call-template name="msSection">
             <xsl:with-param name="level">2</xsl:with-param>
@@ -267,7 +255,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-  <!-- inline -->
+    <!-- inline -->
     <xsl:template match="tei:abbr">
         <xsl:choose>
             <xsl:when test="parent::tei:choice"/>
@@ -358,19 +346,19 @@ of this software, even if advised of the possibility of such damage.
             <xsl:with-param name="after">: </xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-    <xsl:template match="tei:supplied[@reason='damage']">
+    <xsl:template match="tei:supplied[@reason = 'damage']">
         <xsl:call-template name="msInline">
             <xsl:with-param name="before">&lt;</xsl:with-param>
             <xsl:with-param name="after">&gt;</xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-    <xsl:template match="tei:supplied[@reason='illegible']">
+    <xsl:template match="tei:supplied[@reason = 'illegible']">
         <xsl:call-template name="msInline">
             <xsl:with-param name="before">[</xsl:with-param>
             <xsl:with-param name="after">]</xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-    <xsl:template match="tei:supplied[@reason='omitted']">
+    <xsl:template match="tei:supplied[@reason = 'omitted']">
         <xsl:call-template name="msInline">
             <xsl:with-param name="before">⟨</xsl:with-param>
             <xsl:with-param name="after">⟩</xsl:with-param>
@@ -386,7 +374,8 @@ of this software, even if advised of the possibility of such damage.
             <xsl:with-param name="after">[?]</xsl:with-param>
         </xsl:call-template>
     </xsl:template>
-    <xsl:template match="tei:placeName|tei:genName|tei:geogName|tei:roleName|tei:name|tei:persName">
+    <xsl:template
+        match="tei:placeName | tei:genName | tei:geogName | tei:roleName | tei:name | tei:persName">
         <xsl:choose>
             <xsl:when test="*">
                 <xsl:apply-templates/>
@@ -402,7 +391,7 @@ of this software, even if advised of the possibility of such damage.
             <xsl:call-template name="msLiteral">
                 <xsl:with-param name="text">
                     <xsl:choose>
-                        <xsl:when test="string-length(.)=0 and @extent">
+                        <xsl:when test="string-length(.) = 0 and @extent">
                             <xsl:value-of select="@extent"/>
                         </xsl:when>
                         <xsl:when test="@unit">
@@ -439,7 +428,7 @@ of this software, even if advised of the possibility of such damage.
             </xsl:call-template>
         </xsl:if>
     </xsl:template>
-  <!--
+    <!--
     <handNote scribe="AM_544_4to_1"
     script="carolingian-insular minuscule"
     medium="ink" scope="sole"> 
@@ -450,7 +439,7 @@ of this software, even if advised of the possibility of such damage.
                 <tei:list type="ordered">
                     <xsl:for-each select="../tei:handNote">
                         <item>
-                            <xsl:copy-of select="*|text()"/>
+                            <xsl:copy-of select="* | text()"/>
                         </item>
                     </xsl:for-each>
                 </tei:list>

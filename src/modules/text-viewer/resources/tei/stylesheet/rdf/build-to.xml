@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="dist" name="teitordf">
-<!--
+    <!--
 	This library is free software; you can redistribute it and/or
 	modify it under the terms of the GNU Lesser General Public
 	License as published by the Free Software Foundation; either
@@ -18,18 +18,18 @@
         Id: $Id: build-to.xml 9319 2011-09-14 15:25:52Z rahtz $
         Copyright: 2011, TEI Consortium<
 -->
-  <!--
+    <!--
  Convert TEI documents into RDF files.
  -->
-  <!-- Path to TEI XML file. -->
+    <!-- Path to TEI XML file. -->
     <property name="inputFile" value=""/>
-  <!-- Path where the output schema file will be saved. -->
+    <!-- Path where the output schema file will be saved. -->
     <property name="outputFile" value=""/>
-  <!-- which profile -->
+    <!-- which profile -->
     <property name="profile" value="default"/>
-  <!-- where does oxygen keep stuff -->
+    <!-- where does oxygen keep stuff -->
     <property name="oxygenlib" value=""/>
-  <!-- Stylesheet for transformation -->
+    <!-- Stylesheet for transformation -->
     <property name="odd2rdf" value="../profiles/${profile}/rdf/to.xsl"/>
     <dirname property="inputFileDir" file="${inputFile}"/>
     <dirname property="outputDir" file="${outputFile}"/>
@@ -43,10 +43,11 @@
     </target>
     <target name="dist" depends="setup,convert,cleanup"/>
     <target name="convert">
-    <!-- Recreate temporary output directory -->
-    <!-- The transformation for RDF output. -->
+        <!-- Recreate temporary output directory -->
+        <!-- The transformation for RDF output. -->
         <echo level="info">XSLT generate RDF file</echo>
-        <xslt force="yes" style="${odd2rdf}" in="${inputFile}" out="${outputFile}" classpath="classpath">
+        <xslt force="yes" style="${odd2rdf}" in="${inputFile}" out="${outputFile}"
+            classpath="classpath">
             <xmlcatalog>
                 <catalogpath>
                     <pathelement location="../../../../catalog.xml"/>
@@ -56,11 +57,11 @@
             <factory name="net.sf.saxon.TransformerFactoryImpl"/>
             <classpath location="${oxygenlib}/saxon9ee.jar"/>
             <param name="directory" expression="file:///${outputTempDir}"/>
-      <!-- supply name of language-->
+            <!-- supply name of language-->
             <param name="lang" expression="${lang}" if="lang"/>
-      <!-- emit some diagnostics"-->
+            <!-- emit some diagnostics"-->
             <param name="debug" expression="${debug}" if="debug"/>
-      <!-- be verbose-->
+            <!-- be verbose-->
             <param name="verbose" expression="${verbose}" if="verbose"/>
         </xslt>
     </target>
