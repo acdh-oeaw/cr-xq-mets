@@ -82,15 +82,17 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
 (:~ invokes the scan-function of the fcs-module
 tries to use x-context parameter from the configuration, if no explicit x-context was given
 :)
-
+(: DS 2015/02/13: removed default value for $sort
+   in order to provide a default order on the index map definition
+   while only request parameters to fcs:scan() should be used 
+   to override this default order :)
 declare 
     %templates:wrap
     %templates:default("x-context","")
     %templates:default("x-format","html")
     %templates:default("start-term",1)
     %templates:default("max-terms",50)
-    %templates:default("sort","size")
-function fcs:scan($node as node()*, $model as map(*), $scanClause as xs:string, $start-term as xs:integer, $max-terms as xs:integer,  $sort as xs:string, 
+function fcs:scan($node as node()*, $model as map(*), $scanClause as xs:string, $start-term as xs:integer, $max-terms as xs:integer,  $sort as xs:string?, 
 $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
     
     let $x-context-x := if ($x-context='') then config:param-value($node, $model,'fcs','','x-context') else $x-context
@@ -99,11 +101,11 @@ $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
     let $result :=
             fcsm:scan($scanClause, $x-context-x, $start-term, $max-terms, 1, 1, $sort, '', $model("config"))
     
-    let $params := <parameters><param name="format" value="{$x-format}"/>
-                  			         <param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>
-                  			         <param name="sort" value="{$sort}"/>
-              			            <param name="x-context" value="{$x-context-x}"/>             			            
-    
+    let $params := <parameters>
+                        <param name="format" value="{$x-format}"/>
+                  		<param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>
+                  		{if ($sort != '') then <param name="sort" value="{$sort}"/> else ()}	         
+              			<param name="x-context" value="{$x-context-x}"/>             			            
                   </parameters>
      return  repo-utils:serialise-as($result, $x-format, 'scan', $model("config"), $params)
      

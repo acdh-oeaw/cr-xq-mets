@@ -8,6 +8,7 @@ import module namespace repo-utils = "http://aac.ac.at/content_repository/utils"
 import module namespace f = "http://aac.ac.at/content_repository/file" at "../../core/file.xqm";
 import module namespace project = "http://aac.ac.at/content_repository/project" at "../../core/project.xqm";
 import module namespace viewer = "http://sade/viewer" at "viewer.xqm" ;
+import module namespace get = "http://aac.ac.at/content_repository/get" at "get.xqm";
 
 let $project := request:get-parameter("project","")
 
@@ -17,28 +18,16 @@ let $config-map := if ($project!='' and exists($mets)) then config:config-map($p
 (:~ process the relative path; expecting one or two components:
 first component $id, second optional: $type :)
 let $path := request:get-parameter("rel-path",""),
-    $path-components := tokenize($path,'/')[.!='' and .!="get"]
+    $log := util:log-app("DEBUG", $config:app-name, '$path = '||$path),
+    $path-parsed := get:parse-relPath($path, $project)
 
-(:~ $id of a project, resource or resourcefragment :)
-(: if the 1st path component is already a type keyword, the user asks for the whole project:)
-let $id :=  if ($path-components[1] = ("data","metadata", "entry"))
-            then $project
-            else $path-components[1]
-            
+let $id := $path-parsed("id"),
+    $type := $path-parsed("type"),
+    $subtype := $path-parsed("subtype"),
+    $path-components := $path-parsed("path-components")
+    
 let $parse-id := if (exists($config-map)) then repo-utils:parse-x-context($id,$config-map) else ()
-
-
-(:~ @param $type 'data' | 'entry' | 'metadata' | 'download' ; default: 'metadata'  :)
-(: download: to download files residing in a dedicated (word-readable) collection inside the cr-project collection; configured via the project-parameter "download" :)
-let $type := 
-(:        if ($id = $project):)
-        if ($path-components[1] = ("data","metadata", "entry", "download"))
-        then ($path-components[1],'metadata')[1]
-        else ($path-components[2],'metadata')[1],
-    $subtype := 
-        if ($path-components[1] = ("data","metadata", "entry", "download"))
-        then $path-components[2]
-        else $path-components[3]
+    
 
 (: content negotiation
 text/html -> human readable 
@@ -67,7 +56,7 @@ return
     switch(true())
         case ($project = '') return <response status="">unspecified project</response>
         case (not($mets instance of element(mets:mets))) return <response status="">unknown project {$project}</response>
-        case (not($parse-id[1] instance of map())) return <response status="">unknown project, resource, resource fragment or file ID (unresolvable context "{$id}")</response>
+        (:case (not($parse-id[1] instance of map())) return <response status="">unknown project, resource, resource fragment or file ID (unresolvable context "{$id}")</response>:)
         case ($id = '') return <response status="">no id specified</response>
         case ($type = 'download') return     
             let $entry := f:get-file-entry($id, $project),
@@ -89,7 +78,7 @@ return
                         return response:stream-binary(xs:base64Binary($data),xmldb:get-mime-type(xs:anyURI($filepath)),$filename)
                     else 
                         (: replace with diagnostics :)
-                        <response status="400">data for item {$id} could not be located</response>
+                        <response status="400">data for item {$id} could not be located at {$filepath}</response>
                 else 
                     if (doc-available($filepath))
                     then 
@@ -99,5 +88,5 @@ return
                         return response:stream($data,"method=xml")
                     else 
                         (: replace with diagnostics :)
-                        <response status="400">data for item {$id} could not be located</response>
+                        <response status="400">data for item {$id} could not be located {$filepath}</response>
         default return viewer:display($config-map, $id, map:get($parse-id[1],"project-pid"), $type, $subtype, $format)

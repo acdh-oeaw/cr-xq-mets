@@ -107,8 +107,8 @@ declare function wc:generate($resource-pid as xs:string, $project-pid as xs:stri
                     let $preprocess := 
                         if ($preprocess-xsl = '' or not(doc-available($preprocess-xsl))) 
                         then $master 
-                        else (transform:transform($master,doc($preprocess-xsl),()),
-                              util:log-app("INFO",$config:app-name,"resource "||$resource-pid||"(project "||$project-pid||") has been preprocessed by "||$preprocess-xsl))
+                        else (util:log-app("ERROR",$config:app-name,"resource "||$resource-pid||"(project "||$project-pid||") has been preprocessed by "||$preprocess-xsl),
+                              transform:transform($master,doc($preprocess-xsl),()))
                     let $wc:generated := transform:transform($preprocess,doc($wc:path-to-xsl),$xsl-params),
                         $store-wc := repo-utils:store($wc:path,$wc:filename,$wc:generated,true(),$config),
                         $wc:filepath := base-uri($store-wc),

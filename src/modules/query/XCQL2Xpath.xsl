@@ -107,8 +107,7 @@
         <xsl:param name="op"/>
         <xsl:param name="left"/>
         <xsl:param name="right"/>
-        <xsl:message>XCQL2XPath.template-boolean.$op:<xsl:value-of select="$op"/>
-        </xsl:message>
+        <xsl:message>XCQL2XPath.template-boolean.$op:<xsl:value-of select="$op"/></xsl:message>
         <xsl:choose>
             <xsl:when test="$op = 'and'">
                 <xsl:text/>

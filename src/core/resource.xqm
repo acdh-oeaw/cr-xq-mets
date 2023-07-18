@@ -19,7 +19,7 @@ declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace cmd="http://www.clarin.eu/cmd/";
 declare namespace oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/";
-
+declare namespace xi = "http://www.w3.org/2001/XInclude";
 
 (: declaration of helper namespaces for better code structuring :)
 declare namespace param="userinput.parameters";
@@ -28,6 +28,9 @@ declare namespace this="current.object";
 declare variable $resource:mdtypes := ("MARC","MODS","EAD","DC","NISOIMG","LC-AV","VRA","TEIHDR","DDI","FGDC","LOM","PREMIS","PREMIS:OBJECT","PREMIS:AGENT","PREMIS:RIGHTS","PREMIS:EVENT","TEXTMD","METSRIGHTS","ISO 19115:2003 NAP","OTHER");
 
 declare variable $resource:othermdtypes := ("CMDI"); 
+
+(: default location when storing md with resource:dmd#5 :)
+declare variable $resource:defaultMDStoreLocation := "db";
 
 
 declare function resource:make-file($fileid as xs:string, $filepath as xs:string, $type as xs:string) as element(mets:file) {
@@ -477,7 +480,7 @@ declare function resource:dmd-from-id($type as xs:string, $resource-pid as xs:st
  
  
 declare function resource:dmd($resource, $project) as element()? {
-    resource:dmd((),$resource,$project)    
+    resource:dmd((),$resource,$project)
 };
 
 (:~ if reference to $resource and $project-config already available, skip the id-based resolution :)
@@ -490,7 +493,7 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
         $project-pid :=   typeswitch($project) case element(mets:mets) return $project/@OBJID case xs:string return $project case text() return $project case attribute(OBJID) return data($project) default return (),
         $project := if ($project instance of element(mets:mets)) then $project else project:get($project-pid),
         $resource := if ($resource instance of element(mets:div)) then $resource else resource:get($resource-pid,$project-pid),:)
-    let $resource-pid := repo-utils:get-record-pid($resource),
+    let $resource-pid := repo-utils:get-record-pid($resource), 
         $resource := repo-utils:get-record($resource),
         $project-pid := repo-utils:get-record-pid($project),
         $project := repo-utils:get-record($project)
@@ -502,11 +505,24 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
                     then $dmdSecs[*/@MDTYPE = $type and */@MDTYPE != 'OTHER' or */@MDTYPE='OTHER' and */@OTHERMDTYPE = $type] 
                     else ($dmdSecs[@STATUS='default'],$dmdSecs[1])[1]
     return
+        if (not(exists($resource)))
+        then util:log-app("ERROR",$config:app-name,"resource:dmd 2nd parameter $resource missing")
+        else
+        if (not(exists($project)))
+        then util:log-app("ERROR",$config:app-name,"resource:dmd 3rd parameter $project missing")
+        else
         if (exists($dmdSec))
         then 
-            typeswitch($dmdSec/*)
-                case element(mets:mdWrap) return $dmdSec//mets:xmlData/*
-                case element(mets:mdRef) return 
+            switch(true())
+                case exists($dmdSec/mets:mdWrap/mets:xmlData/xi:include) 
+                    return repo-utils:xinclude-to-fragment($dmdSec/mets:mdWrap/mets:xmlData/xi:include)
+            
+                case exists($dmdSec/mets:mdWrap) 
+                    return 
+                        for $x in $dmdSec//mets:xmlData/*
+                        return $x
+                        
+                case exists($dmdSec/mets:mdRef) return 
                     let $location := $dmdSec/mets:mdRef/@xlink:href
                     return 
                         (:if (util:is-binary-doc($location))
@@ -514,7 +530,8 @@ declare function resource:dmd($type as xs:string?, $resource, $project) as eleme
                         else:) 
                             if (doc-available($location))
                             then doc($location)/*
-                            else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
+                        else util:log-app("INFO",$config:app-name,"The Metadata for resource "||$resource-pid||" could not be retrieved from "||$location)
+                
                 default return util:log-app("INFO",$config:app-name,"Invalid content in Metadata Section for resource "||$resource-pid||".")
         else util:log-app("INFO",$config:app-name,"No Metadata is registered for resource "||$resource-pid||".")
 };
@@ -527,7 +544,7 @@ declare function resource:create-dmd-from-template($resource-pid as xs:string, $
     let $template := resource:dmd-template($dmd-template)
     let $mdtype := substring-before($dmd-template,'_')    
     return if ($template) then 
-            resource:dmd($resource-pid,$project,$template,$mdtype,true())
+            resource:dmd($resource-pid,$project,$template,$mdtype,$resource:defaultMDStoreLocation)
         else
            util:log-app("ERROR",$config:app-name,"coulnt create a md-record, dmd-template "||$dmd-template||" not available.")
 };
@@ -541,29 +558,34 @@ declare function resource:dmd($resource-pid as xs:string, $project, $data as ite
  : 
  : @param $resource-pid the PID of the resource
  : @param $project-pid the PID of the project
- : @param $data either a string with an db-path leading to an (existing) file, or the content of the metadata as a element or document-node.
- : @param $store-to-db if set to true(), the metdata resource is stored as an independend resource to the database () and only referenced in the mets record (default behaviour), if set to false(), the metadata is inlined in the the project's mets record.   
+ : @param $data either a string with an db-path leading to an (existing) file or a xpointer expression leading to a resource fragment, a xi:include fragment, or the content of the metadata as a element or document-node.
+ : @param $store-to-db possible values are 'db' (default behaviour: metdata resource is stored as an independent resource to the database and only referenced in the mets record, 'inline' (metadata resource is embedded in the project.xml) or 'xinclude' (an xi:include element is inserted pointing to $data)
+ TODO implement xinclude-storage
  : @return empty()
 ~:)
-declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string, $store-to-db as xs:boolean?) as empty() {
+declare function resource:dmd($resource-pid as xs:string, $project, $data as item(), $mdtype as xs:string, $store-location as xs:string?) as empty() {
     let $doc:=          project:get($project),
         $current :=     resource:dmd($resource-pid,$project),
         $data-location:=base-uri($current),
         $dmdid :=       $resource-pid||$mdtype||$config:RESOURCE_DMDID_SUFFIX,
-        $dmdSec :=      $doc//mets:dmdSec[@ID = $dmdid]
+        $dmdSec :=      $doc//mets:dmdSec[@ID = $dmdid],
+        $store-location := ($store-location_param,$resource:defaultMDStoreLocation)[1],
+        $store-to-db := xs:boolean($store-location='db')
     return 
         switch (true())
             (: wrong declaration of Metadata Format :)
-            case not($mdtype=($resource:mdtypes,$resource:othermdtypes)) return util:log-app("INFO",$config:app-name,"invalid value for parameter $mdtype for resource "||$resource-pid)
+            case not($mdtype=($resource:mdtypes,$resource:othermdtypes)) return util:log-app("ERROR",$config:app-name,"invalid value for parameter $mdtype for resource "||$resource-pid)
             
             (: $data is not a document, element node or string :)
-            case (not($data instance of document-node()) and not($data instance of element()) and not($data instance of xs:string)) return util:log-app("INFO",$config:app-name,"parameter $data has invalid type (resource "||$resource-pid||") allowed are: document-node() or element() for content, or xs:string for db-path.") 
+            case (not($data instance of document-node()) and not($data instance of element()) and not($data instance of xs:string)) return util:log-app("ERROR",$config:app-name,"parameter $data has invalid type (resource "||$resource-pid||") allowed are: document-node() or element() for content, or xs:string for db-path.") 
             
             (: $data is empty > remove current content of dmd, external files and references to this dmd :)
             case (not(exists($data)) and exists($current)) return 
-                let $rm-data := if ($data-location eq base-uri($doc)) 
-                                then update delete $current
-                                else xmldb:remove(util:collection-name($data),util:document-name($data)),
+                let $rm-data := switch($data-location)
+                                    case ($data-location eq base-uri($doc)) return update delete $current
+                                    (: in-memory fragment - get the dmdSec via its ID :)
+                                    case ($data-location = ('','/')) return util:log-app("DEBUG",$config:app-name,"returning in-memory-fragments by resource:dmd() is not implemented yet.") 
+                                    default return xmldb:remove(util:collection-name($data),util:document-name($data)),
                     $rm-dmdSec:=update delete $doc//mets:dmdSec[@ID = $dmdid],
                     $rm-ref-attrs:= 
                         for $mdref in $doc//@DMDREF[matches(.,'\s*'||$dmdid||'\s*')] 

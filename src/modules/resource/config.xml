@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config type="module">
-    <module key="resource">
-        <param key="pid-service">http://pid.gwdg.de/handles/11022/</param>
-        <param key="pid-resolver">http://hdl.handle.net/11022/</param>
-        <param key="pid-username">1013-01</param>
-        <param key="repo-baseuri">http://acdh.oeaw.ac.at/cr/get/</param>
-        <!--<param key="pid-ResourceProxy-id-prefix">at.icltt.cr.</param>-->
-        <param key="pid-resourceproxy-prefix"/>
-        <param key="pid-pwd">********</param>
-    </module>
+        <module key="resource">
+                <param key="pid-service">http://pid.gwdg.de/handles/11022/</param>
+                <param key="pid-resolver">http://hdl.handle.net/11022/</param>
+                <param key="pid-username">1013-01</param>
+                <param key="repo-baseuri">http://acdh.oeaw.ac.at/cr/get/</param>
+                <!--<param key="pid-ResourceProxy-id-prefix">at.icltt.cr.</param>-->
+                <param key="pid-resourceproxy-prefix"/>
+                <param key="pid-pwd">********</param>
+        </module>
 </config>

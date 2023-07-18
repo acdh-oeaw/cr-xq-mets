@@ -50,8 +50,7 @@
                             <!-- 0-n "inline" elements with QNames to not be treated as a token boundary by the fulltext indexer -->
                             <!--<inline/>-->
                             <!-- 0-n "ignore" elements with QNames be ignored by the fulltext indexer -->
-                            <!--<ignore/>-->
-                        </ft>
+                            <!--<ignore/>--></ft>
                     </map>
                 </xmlData>
             </mdWrap>
@@ -73,8 +72,7 @@
                         <param key="index.prefix">/db/cr-data/_indexes/index_</param>
                         <param key="scripts.path">/db/cr-projects/abacus/</param>
                         <param key="scan.xsl">scan2view_custom.xsl</param>
-                        <param key="searchRetrieve.xsl">result2view_v1_custom.xsl</param>-->
-                    </module>
+                        <param key="searchRetrieve.xsl">result2view_v1_custom.xsl</param>--></module>
                 </xmlData>
             </mdWrap>
         </techMD>
@@ -90,8 +88,7 @@
                 <xmlData>
                     <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager"
                         owner="noone" group="nogroup" mode="---------">
-                        <!-- this is just a template and will be filled by project:new() -->
-                    </sm:permission>
+                        <!-- this is just a template and will be filled by project:new() --></sm:permission>
                 </xmlData>
             </mdWrap>
         </rightsMD>

@@ -1,114 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events"
-    xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xf="http://www.w3.org/2002/xforms"
-    xmlns:cr="http://aac.ac.at/content_repository"
-    xmlns:xhtml="http://www.w3.org/1999/xhtml">
-    <h1>Project Resources</h1>
-    <xf:group>
-        <xf:group>
-            <xf:trigger appearance="minimal">
-                <xf:label>Manage</xf:label>
-                <xf:toggle case="tabmanage"/>
-                <xf:action>
-                    <xf:setvalue ref="instance('help-output')"
-                        value="instance('help')//xhtml:div[@id='help-resources-manage']"/>
-                </xf:action>
-            </xf:trigger> | <xf:trigger appearance="minimal">
-                <xf:label>Edit</xf:label>
-                <xf:toggle case="tabedit"/>
-                <xf:action>
-                    <xf:setvalue ref="instance('help-output')"
-                        value="instance('help')//xhtml:div[@id='help-resources-edit']"/>
-                </xf:action>
-            </xf:trigger> | <xf:trigger appearance="minimal">
-                <xf:label>Resource Fragments</xf:label>
-                <xf:toggle case="tabfragments"/>
-                <xf:action>
-                    <xf:setvalue ref="instance('help-output')"
-                        value="instance('help')//xhtml:div[@id='help-resources-fragments']"
-                    />
-                </xf:action>
-            </xf:trigger> | <xf:trigger appearance="minimal">
-                <xf:label>Images</xf:label>
-                <xf:toggle case="tabimages"/>
-                <xf:action>
-                    <xf:setvalue ref="instance('help-output')"
-                        value="instance('help')//xhtml:div[@id='help-resources-images']"/>
-                </xf:action>
-            </xf:trigger>
-        </xf:group>
-    </xf:group>
-    <xf:switch id="tabSwitch">
-        <xf:case id="tabmanage">
-            <h3>Manage Resources</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Label</th>
-                        <th>ID</th>
-                        <!--<th>Filename</th>
-                <th>Created</th>-->
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody xf:repeat-bind="resources" id="resources-repeat">
-                    <tr>
-                        <td>
-                            <xf:input ref="@LABEL"/>
-                        </td>
-                        <td>
-                            <xf:output ref="@ID"/>
-                        </td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
-            <xf:trigger>
-                <xf:label>Create New Resource</xf:label>
-                <xf:toggle case="createNewResource"/>
-            </xf:trigger>
-            <div style="margin-top: 35px;">
-                <xf:switch>
-                    <xf:case id="hide"/>
-                    <xf:case id="createNewResource">
-                        <h4>New Resource</h4>
-                        <xf:input bind="newResource-label">
-                            <xf:label>Resource Name</xf:label>
-                        </xf:input>
-                        <xf:ouput ref="newResource-label">
-                            <xf:label>Resource Name</xf:label>
-                        </xf:ouput>
-                        <xf:upload mediatype="text/xml" bind="newResource-data"/>
-                        <xf:group>
-                            <xf:trigger>
-                                <xf:label>Store</xf:label>
-                                <xf:action>
-                                    <xf:send submission="uploadResource"/>
-                                </xf:action>
-                            </xf:trigger>
-                        </xf:group>
+<div xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:ev="http://www.w3.org/2001/xml-events"
+          xmlns:mods="http://www.loc.gov/mods/v3"
+          xmlns:xf="http://www.w3.org/2002/xforms"
+          xmlns:cr="http://aac.ac.at/content_repository"
+          xmlns:xhtml="http://www.w3.org/1999/xhtml">
+          <h1>Project Resources</h1>
+          <xf:group>
+                    <xf:group><xf:trigger appearance="minimal"
+                              ><xf:label>Manage</xf:label><xf:toggle
+                              case="tabmanage"/><xf:action><xf:setvalue
+                              ref="instance('help-output')"
+                              value="instance('help')//xhtml:div[@id='help-resources-manage']"
+                              /></xf:action></xf:trigger> | <xf:trigger
+                              appearance="minimal"
+                              ><xf:label>Edit</xf:label><xf:toggle
+                              case="tabedit"/><xf:action><xf:setvalue
+                              ref="instance('help-output')"
+                              value="instance('help')//xhtml:div[@id='help-resources-edit']"
+                              /></xf:action></xf:trigger> | <xf:trigger
+                              appearance="minimal"><xf:label>Resource
+                              Fragments</xf:label><xf:toggle case="tabfragments"
+                              /><xf:action><xf:setvalue
+                              ref="instance('help-output')"
+                              value="instance('help')//xhtml:div[@id='help-resources-fragments']"
+                              /></xf:action></xf:trigger> | <xf:trigger
+                              appearance="minimal"
+                              ><xf:label>Images</xf:label><xf:toggle
+                              case="tabimages"/><xf:action><xf:setvalue
+                              ref="instance('help-output')"
+                              value="instance('help')//xhtml:div[@id='help-resources-images']"
+                              /></xf:action></xf:trigger></xf:group>
+          </xf:group>
+          <xf:switch id="tabSwitch">
+                    <xf:case id="tabmanage">
+                              <h3>Manage Resources</h3>
+                              <table>
+                              <thead>
+                              <tr>
+                              <th>Label</th>
+                              <th>ID</th>
+                              <!--<th>Filename</th>
+<th>Created</th>-->
+                              <th></th>
+                              </tr>
+                              </thead>
+                              <tbody xf:repeat-bind="resources"
+                              id="resources-repeat">
+                              <tr>
+                              <td><xf:input ref="@LABEL"/></td>
+                              <td><xf:output ref="@ID"/></td>
+                              <td></td>
+                              </tr>
+                              </tbody>
+                              </table>
+                              <xf:trigger>
+                              <xf:label>Create New Resource</xf:label>
+                              <xf:toggle case="createNewResource"/>
+                              </xf:trigger>
+                              <div style="margin-top: 35px;">
+                              <xf:switch>
+                              <xf:case id="hide"/>
+                              <xf:case id="createNewResource">
+                              <h4>New Resource</h4>
+                              <xf:input bind="newResource-label">
+                              <xf:label>Resource Name</xf:label>
+                              </xf:input>
+                              <xf:ouput ref="newResource-label">
+                              <xf:label>Resource Name</xf:label>
+                              </xf:ouput>
+                              <xf:upload mediatype="text/xml"
+                              bind="newResource-data"/>
+                              <xf:group>
+                              <xf:trigger>
+                              <xf:label>Store</xf:label>
+                              <xf:action>
+                              <xf:send submission="uploadResource"/>
+                              </xf:action>
+                              </xf:trigger>
+                              </xf:group>
+                              </xf:case>
+                              </xf:switch>
+                              </div>
                     </xf:case>
-                </xf:switch>
-            </div>
-        </xf:case>
-        <xf:case id="tabedit">
-            <h3>Edit</h3>
-        </xf:case>
-        <xf:case id="tabfragments">
-            <h3>Resource Fragments</h3>
-        </xf:case>
-        <xf:case id="tabimages">
-            <h3>Images</h3>
-        </xf:case>
-    </xf:switch>
-    <!-- reset + save buttons -->
-    <div style="margin-top: 45px;">
-        <xf:submit submission="save">
-            <xf:label bind="label-form-save"/>
-        </xf:submit>
-        <xf:trigger ev:event="DOMActivate">
-            <xf:label bind="label-form-reset"/>
-            <xf:reset model="model" ev:event="DOMActivate"/>
-        </xf:trigger>
-    </div>
+                    <xf:case id="tabedit">
+                              <h3>Edit</h3>
+                    </xf:case>
+                    <xf:case id="tabfragments">
+                              <h3>Resource Fragments</h3>
+                    </xf:case>
+                    <xf:case id="tabimages">
+                              <h3>Images</h3>
+                    </xf:case>
+          </xf:switch>
+          <!-- reset + save buttons -->
+          <div style="margin-top: 45px;">
+                    <xf:submit submission="save">
+                              <xf:label bind="label-form-save"/>
+                    </xf:submit>
+                    <xf:trigger ev:event="DOMActivate">
+                              <xf:label bind="label-form-reset"/>
+                              <xf:reset model="model" ev:event="DOMActivate"/>
+                    </xf:trigger>
+          </div>
 </div>

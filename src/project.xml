@@ -22,13 +22,7 @@
                     <titleInfo>
                         <title/>
                     </titleInfo>
-                    <name>
-                        <namePart type="family"/>
-                        <namePart type="given"/>
-                        <role>
-                            <roleTerm type="text"/>
-                        </role>
-                    </name>
+                    <name><namePart type="family"/><namePart type="given"/><role><roleTerm type="text"/></role></name>
                     <language>
                         <languageTerm type="text"/>
                     </language>
@@ -59,8 +53,7 @@
                             <!-- 0-n "inline" elements with QNames to not be treated as a token boundary by the fulltext indexer -->
                             <!--<inline/>-->
                             <!-- 0-n "ignore" elements with QNames be ignored by the fulltext indexer -->
-                            <!--<ignore/>-->
-                        </ft>
+                            <!--<ignore/>--></ft>
                     </map>
                 </xmlData>
             </mdWrap>
@@ -100,8 +93,7 @@
                 <xmlData>
                     <sm:permission xmlns:sm="http://exist-db.org/xquery/securitymanager"
                         owner="noone" group="nogroup" mode="---------">
-                        <!-- this is just a template and will be filled by project:new() -->
-                    </sm:permission>
+                        <!-- this is just a template and will be filled by project:new() --></sm:permission>
                 </xmlData>
             </mdWrap>
         </rightsMD>

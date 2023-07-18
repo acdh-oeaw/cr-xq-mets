@@ -6,10 +6,8 @@
     exclude-result-prefixes="index xd xsl xs" version="2.0">
     <xd:doc scope="stylesheet">
         <xd:desc>
-            <xd:p>
-                <xd:b>Created on:</xd:b> Nov 29, 2013</xd:p>
-            <xd:p>
-                <xd:b>Author:</xd:b> daniel</xd:p>
+            <xd:p><xd:b>Created on:</xd:b> Nov 29, 2013</xd:p>
+            <xd:p><xd:b>Author:</xd:b> daniel</xd:p>
             <xd:p>Transforms cr_xq index definitions (mappings) to a eXist-collection-config
                 (xconfig) file.</xd:p>
         </xd:desc>
@@ -50,16 +48,14 @@
     </xsl:variable>
     <xsl:template match="/map">
         <collection>
-            <index xmlns:cr="http://aac.ac.at/content_repository"
-                xmlns:fcs="http://clarin.eu/fcs/1.0">
+            <index xmlns:fcs="http://clarin.eu/fcs/1.0"
+                xmlns:cr="http://aac.ac.at/content_repository">
                 <xsl:namespace name="xs">http://www.w3.org/2001/XMLSchema</xsl:namespace>
                 <xsl:apply-templates select="namespaces/ns"/>
 
                 <!-- disable legacy fulltext index -->
                 <xsl:comment>disable legacy fulltext index</xsl:comment>
-                <xsl:comment>
-                    <fulltext default="none" attributes="no"/>
-                </xsl:comment>
+                <xsl:comment><fulltext default="none" attributes="no"/></xsl:comment>
 
                 <!-- fulltext index definitions -->
                 <xsl:if test="exists($fulltext-indexes)">
@@ -103,8 +99,7 @@
                         path/text())/index:qnamesFromPath(.)] except ."/>
         <xsl:comment>index key '<xsl:value-of select="@key"/>'</xsl:comment>
         <xsl:if test="$indexes-with-same-qname">
-            <xsl:comment>indexes sharing the same element/attribute: <xsl:value-of select="string-join($indexes-with-same-qname/@key, ',')"/>
-            </xsl:comment>
+            <xsl:comment>indexes sharing the same element/attribute: <xsl:value-of select="string-join($indexes-with-same-qname/@key, ',')"/></xsl:comment>
         </xsl:if>
         <xsl:variable name="type" select="(@data-type, $default-data-type)[1]"/>
         <xsl:variable name="all-paths" as="item()*" select="

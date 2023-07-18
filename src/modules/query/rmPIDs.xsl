@@ -4,10 +4,8 @@
     exclude-result-prefixes="xs xd" version="2.0">
     <xd:doc scope="stylesheet">
         <xd:desc>
-            <xd:p>
-                <xd:b>Created on:</xd:b> Oct 16, 2013</xd:p>
-            <xd:p>
-                <xd:b>Author:</xd:b> Daniel</xd:p>
+            <xd:p><xd:b>Created on:</xd:b> Oct 16, 2013</xd:p>
+            <xd:p><xd:b>Author:</xd:b> Daniel</xd:p>
             <xd:p>removes queries for indexes 'resource-pid' and 'resourcefragment-pid'</xd:p>
         </xd:desc>
     </xd:doc>

@@ -43,8 +43,11 @@ var search_container_selector = '#search-result';
  * Base URL for the AJAX calls, replaces index.html
  * (or whatever the original URL ends in)
  */
-var baseurl = currentUrl.clone();
-baseurl.filename("fcs");
+//var baseurl = currentUrl.clone();
+var cUrl_ = currentUrl.clone();
+cUrl_.query("");
+cUrl_.filename("fcs");
+var baseurl = cUrl_.toString();
 
 /**
  * Initialization for the ui.
@@ -93,7 +96,8 @@ function minimal_template_ui_setup() {
     
     
     // refresh persistent link
-    $("a#persistent-link").live('hover', persistentLink);
+    $("a#persistent-link-invoke").live('hover', persistentLink);
+    $("a#persistent-link-invoke").live('click', persistentLink);
     
     
     // handle link to toggle info
@@ -107,7 +111,8 @@ function minimal_template_ui_setup() {
     // handle loading to main (scan -> search) (.content - to distinguish from .header .prev-next) 
     $("#navigation .load-main .content a").live('click', load_main);
     // paging in scan
-    $("#navigation .scan .prev-next a").live('click', load_scan);
+    //$("#navigation .scan .prev-next a").live('click', load_scan);
+    $("#navigation .scan a.internal").live('click', load_scan)
     
     //
     $("#navigation a.toc").live('click', load_toc);
@@ -118,7 +123,8 @@ function minimal_template_ui_setup() {
     $("#navigation a.index").live('click', load_scan);
         
     $("#navigation .load-detail a").live('click', load_detail);
-    
+
+
     // register filter
     $("#navigation form").live('submit', filter_default_nav_results);
   
@@ -167,21 +173,29 @@ function processParams () {
             load_detail_data(detail_request);
          }
          
+         if (cr_config.params["debug"]) {
+            $(".debug").show();
+            }
            
 }
 
 /** generate a persistent link - capturing the current search and detail 
-  *  and set the a#persistent-link.href accordingly
+  *  and set the a#persistent-link.href AND window.location.href accordingly
+ 
   */
 function persistentLink() {
     
-    var url = currentUrl;
-        
-    link = url.attr("path") + '?' + $.param(cr_config.params);
+    var url = currentUrl.clone();
+    
+    url.query(cr_config.params);    
+    link = url.href();
     
     $.extend((new URI()).query(true),
 cr_config.params)
-    $("#persistent-link").attr("href",link);
+console.log("persistent-link:" + link);
+    // FIXME: want to just set the location, but not reload page
+    // window.location.href=link;
+    $("#persistent-link").val(link);
     return link;    
 }
 
@@ -190,10 +204,13 @@ just a wrapper around jQuery.load() to ensure consistent functionality
 */
 function load_(targetContainer, targetRequest, callback) {
 
-     targetContainer.addClass("cmd_get");
-     targetContainer.html('');
+console.log("load_: " + targetRequest );
+     loading(targetContainer, 'start');
+     
+     //targetContainer.html('');
      targetContainer.load(targetRequest, function( response, status, xhr ) {
-            targetContainer.removeClass("cmd_get");
+            loading(targetContainer, 'stop');
+            //targetContainer.removeClass("cmd_get");
             if (status=='error') { 
             
             targetContainer.append("<p class='error'>Sorry, there was an error!</p>" +
@@ -216,7 +233,8 @@ function load_explain(event) {
         $.get(targetRequest,function(data) {
                 target.append(data);
                 target.append("<div class='scan load-main' />");
-                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                //$(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                $(target).prepend("<span class='fa fa-close' />");
                 close_button = $(target).find(".cmd_close");
                 close_button.click(function() { target.find('.explain').toggle(); target.find('.scan').toggle(); });                
             }        
@@ -243,16 +261,21 @@ function load_scan(event) {
         target.show();
 /*       target.toggleClass("cmd_get");*/
        load_(target, targetRequest, function() {               
-                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                //$(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                $(target).prepend("<span class='fa fa-close cmd_close' />");                
                 close_button = $(target).find(".cmd_close");
                 close_button.click(function() { target.toggle(); });
-                customizeIcons();                
+                customizeIcons();
+
+                target.find("ul").treeview({
+        			collapsed: true,
+        			animated: "medium"
+        		});
             }        
-            ); 
+       ); 
 /*     target.load(targetRequest, function() {target.toggleClass("cmd_get");});        */
      
 }
-
 
 
 function load_toc(event) {
@@ -262,14 +285,25 @@ function load_toc(event) {
     if (target.find('.scan-index-fcs-toc').length > 0)  
        { target.toggle(); }
       else { 
+            //var targetRequest = $(this).attr('href') + " ul.resource";
             var targetRequest = $(this).attr('href');
+            // a hack to have the correct element as target even though we are stripping the envelope of the response and just retrieve the inner list (ul.resource)    
+            //target_wrapper.append("<div class='scan-index-fcs-toc' />");
+            //var target = target_wrapper.find('.scan-index-fcs-toc');
     //var detailFragment = targetRequest + ' ' + search_container_selector;
         /*target.append("<div class='scan load-main' />");
         wrap = target.find(".scan");*/        
         load_(target, targetRequest, function() {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
-                close_button.click(function() { target.toggle(); });                
+                close_button.click(function() { target.toggle(); });                     
+    // a hack to remove the top element (Work itself)    
+    var ul_resource = target.find('ul.resource');
+    // workaround: IE does not append the content of ul.resource ?! jQuery version 1.11.2?
+    var ul_resource_content = ul_resource.html();
+    target.find('.scan-index-fcs-toc').html('').append(ul_resource);
+    // workaroung: now in IE we hava a ul.resource without any child nodes :(           
+    target.find('ul.resource').html(ul_resource_content);
             }        
         );        
       }
@@ -285,8 +319,9 @@ function query(event) {
     var query = $(event.target).find("input[name='query']").val();
     var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
-    cr_config.params["query"] = query;    
-    load_(target, targetRequest, customizeIcons );
+    cr_config.params["query"] = query;
+    // persistentLink();    
+    load_(target, targetRequest + ' .result-header,.result-body', customizeIcons );
 }
 
 
@@ -308,13 +343,13 @@ function load_main(event) {
     cr_config.params["query"] = params["query"];
     
     // set the query into the query input field
-    $('#input-query').val(params["query"]);
+    $('#query').val(params["query"]);
     
     // Recreate the x-dataview param from scratch    
     params["x-dataview"] = cr_config.main.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     
-    load_(target,targetRequest, customizeIcons );
+    load_(target,targetRequest  + ' .result-header,.result-body', customizeIcons );
 }
 
 function toggle_info(event) {
@@ -342,7 +377,7 @@ click in nested levels loads in detail
 */
 function handle_toc(event) {
     event.preventDefault();
-    var parent_span = $(this).parent('span')
+    var parent_span = $(this).parent('span');
     if (parent_span.hasClass('resource')) {
      var parent_li  = parent_span.parent('li');
      parent_li.find('ul .chapter').toggle();    
@@ -369,7 +404,21 @@ function filter_default_nav_results(event) {
         var targetRequest = baseurl + '?' + $(this).serialize();
         // + ' #' + loadParentID;
         console.log(targetRequest);
-        loadParent.load(targetRequest,customizeIcons);
+        //loadParent.load(targetRequest,customizeIcons);
+        target = loadParent;
+        loadParent.load(targetRequest,
+            function() {
+                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                close_button = $(target).find(".cmd_close");
+                close_button.click(function() { target.toggle(); });
+                customizeIcons();
+
+                target.find("ul").treeview({
+      				collapsed: true,
+      				animated: "medium"
+      			});
+            }  
+            );
     //}
 }  
 
@@ -421,19 +470,34 @@ function load_detail_data(targetRequest) {
     params["x-dataview"] = cr_config.detail.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     cr_config.params["detail.query"]=params["query"];
+    // persistentLink();
     // The detail view is hidden at first
     detail.show();
     var classes_interested_in = " .title, .data-view, .navigation";
     var detailFragment = targetRequest + classes_interested_in;
     
+    //loading(detail.find('.detail-header'),"start");
+    loading(detail.find('h2'),"start");
     // clear the current-detail:
-    detail.find(".detail-content").html('');
-    detail.find('.detail-header').html('').toggleClass("cmd_get cmd");
+//    detail.find(".detail-content").html('');
+  //  detail.find('.detail-header').html('').toggleClass("cmd_get cmd");
     
-    console.log("load_detail:" + detailFragment);
+    //console.log("load_detail:" + detailFragment);
+    //console.log("load_detail:" + baseurl);
     detail.find(".detail-content").load(detailFragment, function () {
-                        
-                        detail.find('.detail-header').toggleClass("cmd_get cmd");
+    //                    detail.find('.detail-header').toggleClass("cmd_get cmd");
+                        var img =  detail.find(".detail-content img");
+                        if (img.length === 1) {
+                          img.one("load", function() {
+                              //loading(detail.find('.detail-header'), "stop");
+                              loading(detail.find('h2'),"stop");
+                          }).each(function() {
+                              if(this.complete) $(this).load();
+                          });
+                        }
+                        else 
+                        // loading(detail.find('.detail-header'), "stop");
+                          loading(detail.find('h2'),"stop");
                         
                         // activate zoom functionality on the images, expects: jquery.elevateZoom-3.0.8.min.js
                         // deactivated for now
@@ -453,32 +517,7 @@ function load_detail_data(targetRequest) {
                         // get rid-off the links
                         $('#tabs-1').find('a').replaceWith(function(){  return $(this).contents();});
                         */
-                        
                       });
-    /*switch (selected) {
-    case 0:
-    $('#tabs-1').load(detailFragment, function() {
-        extract_header.call(this);
-        create_unannotated_text_in.call(this, $('#tabs-1'));
-    });
-    break;
-    case 1:
-    $('#tabs-2').load(detailFragment, extract_header);
-    break;
-    case 2:
-    $('#tabs-3').load(detailFragment, extract_header);
-    break;
-    case 3:
-    $('#tabs-4').load(detailFragment, function() {
-        extract_header.call(this);
-        // Create a CodeMirror viewer using the provided textarea.
-        xmlViewer = CodeMirror.fromTextArea($('#tabs-4 textarea').get()[0], {
-            mode : "xml",
-            readOnly : true
-        });
-    });
-    break;
-    }*/
 }
 
 /**
@@ -533,6 +572,19 @@ function load_in_context_details(event) {
 }
 
 function customizeIcons () {
-    $('.cmd_prev, .navigation .prev').addClass("ui-icon ui-icon-circle-triangle-w").removeClass("cmd prev cmd_prev");
-    $('.cmd_next, .navigation .next').addClass("ui-icon ui-icon-circle-triangle-e").removeClass("cmd next cmd_next");;
+    $('.cmd_prev, .cmd_next, .navigation .prev, .navigation .next').html(""); 
+    $('.cmd_prev, .navigation .prev').addClass("fa fa-chevron-left").removeClass("cmd prev cmd_prev");
+    $('.cmd_next, .navigation .next').addClass("fa fa-chevron-right").removeClass("cmd next cmd_next");;
+}
+
+function loading(targetContainer, startstop) {
+
+if (startstop=='start') {
+    targetContainer.prepend("<span class='loading' >loading...</span>");
+    var  loading = targetContainer.find(".loading"); 
+    loading.modernBlink({duration: '1500'});
+   } else {
+      var  loading = targetContainer.find(".loading");
+      loading.remove();
+ }  
 }

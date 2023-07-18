@@ -17,8 +17,10 @@ declare namespace mets="http://www.loc.gov/METS/";
 let $url:=request:get-parameter('url',''),
     $token:=request:get-parameter($url||'-token',''),
     $client-ip:=request:get-remote-addr(),
-    $user:=session:get-attribute($url||"-username"),
-    $pw:=session:get-attribute($url||"-password"),
+(:  :    $user:=session:get-attribute($url||"-username"),
+    $pw:=session:get-attribute($url||"-password"), :)
+    $user:='',
+    $pw:='',
     $auth-type:=request:get-parameter('auth-method','basic'),
     $send-authorization:=request:get-parameter('send-authorization','false')
 let $debug:=request:get-parameter('debug','no')
@@ -51,7 +53,8 @@ return
     if ($debug = 'yes')
     then 
         <debug>
-            {$response-header}
+            
+            {($url,$request,$response-header)}
             <client-ip>{$client-ip}</client-ip>
             {for $p in request:get-parameter-names()
             return <param name="{$p}" value="{request:get-parameter($p,'')}"/>}

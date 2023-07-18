@@ -633,7 +633,9 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	           $xslParams:=    <parameters>
 	                               <param name="format" value="{$format}"/>
 	                               <param name="x-context" value="{$x-context}"/>
+	                               <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
 	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
 	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
 	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
@@ -656,8 +658,10 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="format" value="{$format}"/>
               			           <param name="operation" value="{$operation}"/>
               			           <param name="x-context" value="{$x-context}"/>
+              			           <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
+	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
-                                    <param name="base_url" value="{config:param-value($config,'base-url')}"/>
                                     <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
                                     <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
@@ -670,7 +674,17 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 <param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
 :)
 	       let $res := if (exists($xslDoc)) 
-	                   then transform:transform($item,$xslDoc, $xslParams)
+	                   then
+	                       let $log := util:log-app("INFO", $config:app-name, "repo-utils:serialise-as $xslDoc := "||base-uri($xslDoc)||" $xslParams := "||serialize($xslParams))
+	                       return
+	                          try {
+	                             transform:transform($item,$xslDoc, $xslParams)
+	                          } catch * {
+	                             let $log := util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as transform:transform failed! $item := "||substring(serialize($item), 1, 500000)||
+	                                                                                                                                    " $xslDoc := "||base-uri($xslDoc)||
+	                                                                                                                                    " $xslParams := "||serialize($xslParams))
+	                             return diag:diagnostics("general-error", "transform:transform failed! "||$err:code||": "||$err:description||" "||$err:additional)
+	                          }
 	                   else 
 	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))

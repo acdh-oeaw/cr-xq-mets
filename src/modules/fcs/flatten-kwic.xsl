@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:cr="http://aac.ac.at/content_repository"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0"
-    xmlns:exist="http://exist.sourceforge.net/NS/exist" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:tei="http://www.tei-c.org/ns/1.0"
+    xmlns:cr="http://aac.ac.at/content_repository" version="2.0">
 
     <!--    <xsl:strip-space elements="*"/>-->
     <!--    <xsl:preserve-space elements="tei:seg"/>-->
@@ -14,19 +14,15 @@
         </xsl:variable>
         <xsl:apply-templates select="$record" mode="groupMatches"/>
     </xsl:template>
-
     <xsl:template match="* | @*" mode="#all">
         <!--<xsl:text> </xsl:text> -->
         <xsl:apply-templates select="node() | @*" mode="#current"/>
-
     </xsl:template>
-
     <xsl:template match="node() | @*" mode="groupMatches" priority="1">
         <xsl:copy>
             <xsl:apply-templates select="node() | @*" mode="#current"/>
         </xsl:copy>
     </xsl:template>
-
     <xsl:template match="tei:seg[@type = 'whitespace']/text()">
         <!--        <xsl:value-of select="normalize-space(.)"/>-->
         <xsl:copy> </xsl:copy>
@@ -51,14 +47,11 @@
             </xsl:choose>
         </xsl:copy>
     </xsl:template>
-
-
     <xsl:template
         match="l | tei:l | p | tei:p | head | tei:head | titlePage | tei:titlePage | table | tei:table">
         <xsl:apply-templates select="node() | @*"/>
         <xsl:text> </xsl:text>
     </xsl:template>
-
     <xsl:template
         match="tei:supplied | supplied | tei:corr | corr | tei:reg | reg | tei:figure | figure | tei:note | note"/>
 
@@ -89,7 +82,6 @@
     </xsl:template>
     
     -->
-
     <xsl:template match="*[exist:match]" mode="groupMatches" priority="2">
         <xsl:variable name="seq" select="node()[not(normalize-space(.) = (' ', ''))]" as="item()*"/>
         <xsl:copy>
@@ -108,7 +100,6 @@
             </xsl:for-each-group>
         </xsl:copy>
     </xsl:template>
-
     <xsl:template match="exist:match" mode="inMatchGroup" priority="2">
         <xsl:variable name="this" select="."/>
         <xsl:apply-templates mode="#current"/>
@@ -117,6 +108,4 @@
             select="following-sibling::node()[normalize-space(.) = (' ', '')][preceding-sibling::exist:match[1] is $this]"
         />
     </xsl:template>
-
-
 </xsl:stylesheet>

@@ -24,6 +24,12 @@ html, body, table{
 a, a:link, a:hover {
     color: #c00000;
 }
+
+.logo.right {
+    height: 80%;
+    height: calc(100% - 10px - 10px);
+}
+
 input, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget area, .ui-widget button {
     border:  1px solid #A6C9E2;
 }
@@ -41,6 +47,12 @@ label, .label, .cmds-elem-prop .label { font-size: 0.9em; color: #014172; font-s
     font-size: 1.1em; font-weight: bold;  margin: 0;
 }
 
+/* prev next */
+.navigation a { margin: 0 1em; }
+
+.prev-next span { content:""; margin: 0.5em;}
+
+.result-pager { margin: 0 0.5em; /*float:left;*/}
 
 tr.record-top td {
     border-top: 1px solid #A8A7A3; /* #C6C5C3;*/ 

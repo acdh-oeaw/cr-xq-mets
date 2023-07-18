@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:cr="http://aac.ac.at/content_repository" xmlns:sru="http://www.loc.gov/zing/srw/"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fcs="http://clarin.eu/fcs/1.0" version="2.0">
+    xmlns:sru="http://www.loc.gov/zing/srw/" xmlns:fcs="http://clarin.eu/fcs/1.0"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:cr="http://aac.ac.at/content_repository"
+    version="2.0">
 
 
     <!--
@@ -107,8 +108,7 @@
         <!--        <xsl:message><xsl:value-of select="$match-position" /></xsl:message>-->
         <xsl:message>scan-clause: <xsl:value-of select="$scan-clause"/> filter: <xsl:value-of
                 select="$filter"/> only-filtered: <xsl:value-of select="$only-filtered"/> count:
-                <xsl:value-of select="count($filtered)"/>
-        </xsl:message>
+                <xsl:value-of select="count($filtered)"/></xsl:message>
 
         <!-- expect ordered data 
             except for cmd.profile ! -->
@@ -143,8 +143,7 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <xsl:message>ordered: <xsl:value-of select="count($ordered/*)"/>
-        </xsl:message>
+        <xsl:message>ordered: <xsl:value-of select="count($ordered/*)"/></xsl:message>
 
         <!-- 		<xsl:variable name="count-items" select="count($filtered)" />-->
         <xsl:copy>

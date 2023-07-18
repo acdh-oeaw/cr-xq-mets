@@ -1,0 +1,450 @@
+/* A two column user changeable layout for minimal */
+
+/* Automatic responsive styling */
+
+@media all and (min-width: 800px) {    
+    .content-part {        
+        height: 100%;
+    }
+    #navigation, #main {
+        padding-left: 0.5em;
+    }
+
+    #main {
+        padding-right: 0.5em;
+        float: left;
+        width: 24%;
+/* don't know if this is needed, it breaks virtual keyboard.*/
+/*        overflow-y: hidden; */
+    }
+
+    #navigation {        
+        float: left;
+        width: 24%;
+    }
+
+    #detail.content-part { 
+        margin-left: 48%;   
+        width: 52%; 
+    }
+
+    #detail > h2,
+    #main > h2,
+    #navigation > h2 {
+        height: 5%;
+        height: calc(26px);
+    }
+
+    #navigation-content {
+        height: 95%;
+        height: calc(100% - 26px);
+    }
+
+    #main h2 ~ #query-input {
+        height: 7%;
+        height: calc(2.5em);
+    }
+
+    #results {
+        height: 88%;
+        height: calc(100% - 26px - 2.5em);
+        overflow-y: hidden;
+    }
+
+    .result-header {
+        height: 20%;
+        height: calc(7.2em);
+        overflow-y: auto;
+    }
+    .result-body {
+        height: 80%;
+        height: calc(100% - 7.2em);
+    }
+
+}
+
+@media all and (min-width: 800px) and (max-width: 1199px) {
+    #main {
+        clear: left;
+/* don't know if this is needed, it breaks virtual keyboard.*/
+/*        overflow-y: hidden; */
+    }
+
+    #detail.content-part { 
+        margin-left: 33%;   
+        width: 66%;
+    }
+
+    #main-show:checked ~ #detail.content-part,
+    #navigation-show:checked ~ #detail.content-part { 
+        margin-left: 33%;   
+        width: 66%;
+    }
+    
+    #navigation,
+    #main, 
+    #main-show:checked ~ #main,
+    #main-show:checked ~ #navigation,
+    #navigation-show:checked ~ #main,
+    #navigation-show:checked ~ #navigation {
+        width: 33%;
+        padding-right: 0.8em;
+        float: left;
+    }
+
+    #navigation {
+        height: 7%;
+        height: calc(26px + 4px);
+    }
+
+    #main {
+        height: 50%;
+    }
+
+    #main-showing,
+    #main-hidden,
+    #navigation-showing,
+    #navigation-hidden,
+    #main-show:checked ~ #main #main-showing,
+    #main-show:checked ~ #main #main-hidden,
+    #main-show:checked ~ #navigation #navigation-showing,
+    #main-show:checked ~ #navigation #navigation-hidden,       
+    #navigation-show:checked ~ #main #main-showing,
+    #navigation-show:checked ~ #main #main-hidden,
+    #navigation-show:checked ~ #navigation #navigation-showing,
+    #navigation-show:checked ~ #navigation #navigation-hidden {
+        left: auto;
+        bottom: auto;
+        right: 1em;
+    }
+
+    #main-show:checked ~ #main > h2 img,
+    #main-show:checked ~ #navigation > h2 img,
+    #navigation-show:checked ~ #main > h2 img,
+    #navigation-show:checked ~ #navigation > h2 img  {
+        display: inline-block;
+    }
+
+    #main h2 ~ #query-input {
+        height: 7%;
+        height: calc(2.5em);
+        display: none;
+    }
+
+    #main-show:checked ~ #main h2 ~ #query-input,
+    #navigation-show:checked ~ #main h2 ~ #query-input {
+        display: block;
+    }
+
+    .result-header {
+        height: 27%;
+        height: calc(7.2em);
+        overflow-y: auto;
+    }
+    .result-body {
+        height: 73%;
+        height: calc(100% - 7.2em);
+    }
+
+    #main-show:checked ~ #main {      
+        height: 93%;
+        height: calc(100% - 26px - 4px);
+    }
+
+    #main-show:checked ~ #navigation {
+        height: 7%;
+        height: calc(26px + 4px);
+    }
+
+    #main-show:checked ~ #main > h2 {
+        height: 5.37%;
+        height: calc(26px);
+    }
+
+    #main-show:checked ~ #navigation > h2 {
+        height: 71.4%;
+        height: calc(26px);
+    }
+
+    #navigation-show:checked ~ #main {
+        height: 14%;
+        height: calc(2.5em + 26px);
+    }
+
+    #navigation-show:checked ~ #navigation {
+        height: 86%;
+        height: calc(100% - 2.5em - 26px - 4px);
+        padding-bottom: 4px;
+    }
+
+    #navigation-show:checked ~ #main > h2 {
+        height: 35.7%;
+        height: calc(26px);
+    }
+
+    #navigation-show:checked ~ #navigation > h2 {
+        height: 6.02%;
+        height: calc(26px);
+    }
+
+    #navigation-show:checked ~ #main-show:checked ~ #main {       
+        height: 60%;        
+    }
+
+    #navigation-show:checked ~ #main-show:checked ~ #navigation {
+        height: 40%;        
+    }
+
+    #navigation-show:checked ~ #main-show:checked ~ #main > h2 {
+        height: 8%;
+        height: calc(26px);
+    }
+
+    #navigation-show:checked ~ #main-show:checked ~ #navigation > h2 {
+        height: 12%;
+        height: calc(26px);
+    }
+
+    #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-content {
+        height: 88%;
+        height: calc(100% - 26px);
+    }
+
+    #navigation-show:checked ~ #main-show:checked ~ #main #query-input {
+        height: 11%;
+        height: calc(2.5em);
+    }
+
+    #navigation-show:checked ~ #main-show:checked ~ #main #results {
+        height: 81%;
+        height: calc(100% - 2.5em - 26px);
+    }
+}
+
+/* forced styling */
+
+#col-layout-2c:checked ~  #content-container  #main {
+    clear: left;
+}
+#col-layout-2c:checked ~  #content-container  #detail.content-part { 
+    margin-left: 33%;
+    width: 66%;
+    /*Why ... ?*/
+    height: 99%;
+}
+
+#col-layout-2c:checked ~  #content-container #main-show:checked ~ #detail.content-part,
+#col-layout-2c:checked ~  #content-container #navigation-show:checked ~ #detail.content-part { 
+    margin-left: 33%;   
+    width: 66%;       
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main,
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #navigation,
+#col-layout-2c:checked ~ #content-container #navigation,
+#col-layout-2c:checked ~ #content-container #main {
+    width: 33%;
+    padding-right: 0.8em;
+    width: 33%;
+    float: left;
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-showing,
+#col-layout-2c:checked ~ #content-container #navigation-hidden
+#col-layout-2c:checked ~ #content-container #main-showing,
+#col-layout-2c:checked ~ #content-container #main-hidden {
+    right: 1em;
+}
+
+#col-layout-2c:checked ~ #content-container #main {
+    height: 60%;
+}
+
+#col-layout-2c:checked ~ #content-container #navigation {
+    height: 7%;
+    height: calc(26px + 4px);
+}
+
+#col-layout-2c:checked ~  #content-container #main-showing,
+#col-layout-2c:checked ~  #content-container #main-hidden,
+#col-layout-2c:checked ~  #content-container #navigation-showing,
+#col-layout-2c:checked ~  #content-container #navigation-hidden,
+#col-layout-2c:checked ~  #content-container #main-show:checked ~ #main #main-showing,
+#col-layout-2c:checked ~  #content-container #main-show:checked ~ #main #main-hidden,
+#col-layout-2c:checked ~  #content-container #main-show:checked ~ #navigation #navigation-showing,
+#col-layout-2c:checked ~  #content-container #main-show:checked ~ #navigation #navigation-hidden,       
+#col-layout-2c:checked ~  #content-container #navigation-show:checked ~ #main #main-showing,
+#col-layout-2c:checked ~  #content-container #navigation-show:checked ~ #main #main-hidden,
+#col-layout-2c:checked ~  #content-container #navigation-show:checked ~ #navigation #navigation-showing,
+#col-layout-2c:checked ~  #content-container #navigation-show:checked ~ #navigation #navigation-hidden {
+    left: auto;
+    bottom: auto;
+    /* right: 1em; */
+    width: 100%;    
+    text-align:right;
+}
+
+#col-layout-2c:checked ~  #content-container     #main-show:checked ~ #main > h2 img,
+#col-layout-2c:checked ~  #content-container     #main-show:checked ~ #navigation > h2 img,
+#col-layout-2c:checked ~  #content-container     #navigation-show:checked ~ #main > h2 img,
+#col-layout-2c:checked ~  #content-container  #navigation-show:checked ~ #navigation > h2 img  {
+    display: inline-block;
+}
+
+#col-layout-2c:checked ~  #content-container   #query-input {
+    height: 14%;
+    height: calc(2.5em);
+}
+#col-layout-2c:checked ~   #content-container  #results {
+    height: 78%;
+    height: calc(100% - 26px - 2.5em);
+    overflow-y: hidden;
+}
+#col-layout-2c:checked ~   #content-container  .result-header {
+    height: 27%;
+    height: calc(7.2em);
+}
+#col-layout-2c:checked ~   #content-container  .result-body {
+    height: 73%;
+    height: calc(100% - 7.2em);
+}
+.flexbox #col-layout-2c:checked ~   #content-container  .result-header,
+.flexbox #col-layout-2c:checked ~   #content-container  .result-body {
+    height: auto;
+}
+
+#col-layout-2c:checked ~ #content-container  #navigation-content {
+    height: 93.98%;
+    height: calc(100% - 26px);
+}
+
+#col-layout-2c:checked ~ #content-container #main-showing,
+#col-layout-2c:checked ~ #content-container #navigation-showing {    
+    display: none;
+}
+
+#col-layout-2c:checked ~ #content-container #main-hidden,
+#col-layout-2c:checked ~ #content-container #navigation-hidden {
+    display: inline-block;
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ div #main-showing,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ div #navigation-showing {
+    display: inline-block;
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ div #main-hidden,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ div #navigation-hidden {
+    display: none;
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main {      
+    height: 93%;
+    height: calc(100% - 26px - 4px);        
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation {
+    height: 7%;
+    height: calc(26px + 4px);
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main > h2 {
+    height: 5.37%;
+    height: calc(26px);
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #query-input {
+    height: 7%;
+    height: calc(2.5em);
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #results {
+    height: 87.73%;
+    height: calc(100% - 2.5em - 26px);
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation > h2 {
+    height: 71.4%;
+    height: calc(26px);
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main {
+    height: 14%;
+    height: calc(2.5em + 26px);
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #navigation {
+    height: 86%;
+    height: calc(100% - 2.5em - 26px - 4px);
+    padding-bottom: 4px;
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main > h2 {
+    height: 35.7%;
+    height: calc(26px);
+}
+
+#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation > h2 {
+    height: 6.02%;
+    height: calc(26px);
+}
+
+#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main {       
+    height: 60%;        
+}
+
+#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #navigation {
+    height: 40%;        
+}
+
+#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main > h2 {
+    height: 8%;
+    height: calc(26px);
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation > h2 {
+    height: 12%;
+    height: calc(26px);
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-content {
+    height: 88%;
+    height: calc(100% - 26px);
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #main #query-input {
+    height: 11%;
+    height: calc(2.5em);
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #main #results {
+    height: 81%;
+    height: calc(100% - 2.5em - 26px);
+}
+
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #results,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #navigation #navigation-content,
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #query-input,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main #query-input {
+    display: block;
+}
+
+.flexbox #col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #results {
+    display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+    display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+    display: -ms-flexbox;      /* TWEENER - IE 10 */
+    display: -webkit-flex;     /* NEW - Chrome */
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-flow: column nowrap;
+}
+
+/* resetter */
+#col-layout-2c:checked ~ #content-container #main #results,
+#col-layout-2c:checked ~ #content-container #main #query-input,
+#col-layout-2c:checked ~ #content-container #navigation #navigation-content {
+    display: none;
+}

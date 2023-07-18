@@ -92,27 +92,15 @@
                     <h3>Persons</h3>
                     <table class="table">
                         <thead>
-                            <th>
-                                <xf:label bind="label-role"/>
-                            </th>
-                            <th>
-                                <xf:label bind="label-familyname"/>
-                            </th>
-                            <th>
-                                <xf:label bind="label-givenname"/>
-                            </th>
+                            <th><xf:label bind="label-role"/></th>
+                            <th><xf:label bind="label-familyname"/></th>
+                            <th><xf:label bind="label-givenname"/></th>
                         </thead>
                         <tbody id="persons-repeat" xf:repeat-bind="names">
                             <tr>
-                                <td>
-                                    <xf:input ref="mods:role/mods:roleTerm"/>
-                                </td>
-                                <td>
-                                    <xf:input ref="mods:namePart[@type='family']"/>
-                                </td>
-                                <td>
-                                    <xf:input ref="mods:namePart[@type='given']"/>
-                                </td>
+                                <td><xf:input ref="mods:role/mods:roleTerm"/></td>
+                                <td><xf:input ref="mods:namePart[@type='family']"/></td>
+                                <td><xf:input ref="mods:namePart[@type='given']"/></td>
                             </tr>
                         </tbody>
                     </table>
