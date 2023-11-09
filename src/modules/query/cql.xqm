@@ -117,7 +117,7 @@ declare function cql:xcql-to-xpath ($xcql as node(), $context as xs:string, $map
         if ($xcql instance of document-node())
         then cql:process-xcql($xcql/*, $map)
         else cql:process-xcql($xcql, $map)
-    return string-join($xpath,'') 
+    return '/'||string-join($xpath,'') 
 };
 
 (:~ the default recursive processor of the parsed query expects map with indexes defined
@@ -156,7 +156,7 @@ declare function cql:boolean($value as element(value), $modifiers as element(mod
             default return cql:intersect($leftOperand, $rightOperand, $map)
     (: TODO make it right: this adding a / should only happen on the outermost boolean connection.
        Now it is reversed for intersect to allow and chains. :)
-    return concat('/',string-join($parts,""))
+    return string-join($parts,"")
  };
 
 declare function cql:searchClause($clause as element(searchClause), $map) {
@@ -179,6 +179,7 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
                                 if (contains($term,'*')) then 
                                             'ft:query('||$match-on||',<query><wildcard>'||$term||'</wildcard></query>)'
                                         else
+(:                                            'ft:query('||$match-on||',&apos;'||$sanitized-term||'&apos;)':)
                                             'ft:query('||$match-on||',<query><phrase>'||$term||'</phrase></query>)'
 (:                                    case ('exact') return 'ft:query('||$match-on||',"'||$sanitized-term||'")':)
 (:                                    case ('starts-with') return 'ft:query('||$match-on||',"'||$sanitized-term||'*")':)
